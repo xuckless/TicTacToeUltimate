@@ -1,0 +1,36 @@
+# Build output
+bin/
+obj/
+
+# Rider / IntelliJ
+.idea/
+*.sln.iml
+
+# User-specific
+*.user
+*.swp
+*.suo
+*.userosscache
+*.userprefs
+
+# Logs
+*.log
+
+# Local secrets
+BackendWebAPI/appsettings.Auth.json
+BackendWebAPI/appsettings.Stripe.json
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# MAUI specific (optional, but keeps it clean)
+*.apk
+*.aab
+*.keystore
+
+# VS Code (if anyone opens it)
+.vscode/
