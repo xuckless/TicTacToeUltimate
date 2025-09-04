@@ -35,3 +35,4 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Shared/obj/Debug/net9.0/refint/TicTacToeUltimate.Shared.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Shared/obj/Debug/net9.0/TicTacToeUltimate.Shared.pdb
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Shared/obj/Debug/net9.0/ref/TicTacToeUltimate.Shared.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Shared/obj/Debug/net9.0/TicTacToeUltimate.Shared.sourcelink.json

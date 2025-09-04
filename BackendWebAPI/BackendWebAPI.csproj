@@ -18,6 +18,7 @@
         </PackageReference>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
         <PackageReference Include="StackExchange.Redis" Version="2.9.11" />
+        <PackageReference Include="Stripe.net" Version="48.5.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
     </ItemGroup>
 
