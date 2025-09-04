@@ -1,0 +1,45 @@
+{
+  "Files": [
+    {
+      "Id": "/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Shared/obj/Debug/net9.0/scopedcss/projectbundle/TicTacToeUltimate.Shared.bundle.scp.css",
+      "PackagePath": "staticwebassets/TicTacToeUltimate.Shared.xavdfzjdzp.bundle.scp.css"
+    },
+    {
+      "Id": "/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Shared/wwwroot/app.css",
+      "PackagePath": "staticwebassets/app.css"
+    },
+    {
+      "Id": "/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Shared/wwwroot/bootstrap/bootstrap.min.css",
+      "PackagePath": "staticwebassets/bootstrap/bootstrap.min.css"
+    },
+    {
+      "Id": "/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Shared/wwwroot/bootstrap/bootstrap.min.css.map",
+      "PackagePath": "staticwebassets/bootstrap/bootstrap.min.css.map"
+    },
+    {
+      "Id": "/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Shared/wwwroot/favicon.png",
+      "PackagePath": "staticwebassets/favicon.png"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.TicTacToeUltimate.Shared.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.TicTacToeUltimate.Shared.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.build.TicTacToeUltimate.Shared.props",
+      "PackagePath": "build\\TicTacToeUltimate.Shared.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.buildMultiTargeting.TicTacToeUltimate.Shared.props",
+      "PackagePath": "buildMultiTargeting\\TicTacToeUltimate.Shared.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.buildTransitive.TicTacToeUltimate.Shared.props",
+      "PackagePath": "buildTransitive\\TicTacToeUltimate.Shared.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

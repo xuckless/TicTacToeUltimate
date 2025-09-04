@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "F+15ofL8ics=",
+  "success": true,
+  "projectFilePath": "/Users/ali/RiderProjects/TicTacToeUltimate/WebApplication1/WebApplication1.csproj",
+  "expectedPackageFiles": [
+    "/Users/ali/.nuget/packages/microsoft.aspnetcore.openapi/9.0.8/microsoft.aspnetcore.openapi.9.0.8.nupkg.sha512",
+    "/Users/ali/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}

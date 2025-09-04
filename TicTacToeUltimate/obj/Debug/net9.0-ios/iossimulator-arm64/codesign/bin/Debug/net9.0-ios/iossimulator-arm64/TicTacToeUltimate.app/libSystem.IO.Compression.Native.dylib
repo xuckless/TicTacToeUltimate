@@ -1,0 +1,1 @@
+-v --force --timestamp=none --sign - /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/TicTacToeUltimate.app/libSystem.IO.Compression.Native.dylib
