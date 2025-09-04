@@ -1,16 +1,19 @@
+using System.Text;
+using AspNet.Security.OAuth.Apple;
+using BackendWebAPI.Config;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
-using System.Text;
-using AspNet.Security.OAuth.Apple;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load local (untracked) secrets if present
-builder.Configuration.AddJsonFile("appsettings.Auth.json", optional: true);
+// Load optional local secrets
+builder.Configuration
+    .AddJsonFile("appsettings.Auth.json", optional: true)
+    .AddJsonFile("appsettings.Stripe.json", optional: true);
 
 // Postgres + EF Core
 builder.Services.AddDbContext<AppDbContext>(opt =>
@@ -19,6 +22,12 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 // Redis
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(builder.Configuration.GetValue<string>("Redis")));
+
+// Stripe
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+var stripe = builder.Configuration.GetSection("Stripe").Get<StripeSettings>();
+if (!string.IsNullOrWhiteSpace(stripe?.SecretKey))
+    Stripe.StripeConfiguration.ApiKey = stripe.SecretKey;
 
 // Auth: JWT for API, Cookie for external OAuth handshakes
 builder.Services.AddAuthentication(o =>
@@ -54,10 +63,11 @@ builder.Services.AddAuthentication(o =>
     o.KeyId    = builder.Configuration["Auth:Apple:KeyId"]!;
     o.GenerateClientSecret = true;
 
-    var pem = builder.Configuration["Auth:Apple:PrivateKey"]!;
+    var pem = builder.Configuration["Auth:Apple:PrivateKey"] ?? "";
     if (!pem.Contains("BEGIN PRIVATE KEY"))
         pem = $"-----BEGIN PRIVATE KEY-----\n{pem}\n-----END PRIVATE KEY-----";
 
+    // Matches provider delegate: (keyId, CancellationToken) => Task<ReadOnlyMemory<char>>
     o.PrivateKey = (keyId, _) => Task.FromResult(pem.AsMemory());
 });
 
@@ -72,7 +82,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()!)
+        policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>())
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials());
@@ -92,13 +102,46 @@ app.UseAuthorization();
 app.MapGet("/ping", () => "pong");
 app.MapHub<GameHub>("/hubs/game");
 
-// (Optional) OAuth endpoints to initiate sign-in
+// OAuth kickoffs
 app.MapGet("/auth/google", () => Results.Challenge(
     new AuthenticationProperties { RedirectUri = "/auth/external/callback" },
     new[] { "Google" }));
+
 app.MapGet("/auth/apple", () => Results.Challenge(
     new AuthenticationProperties { RedirectUri = "/auth/external/callback" },
     new[] { AppleAuthenticationDefaults.AuthenticationScheme }));
+
+// Stripe endpoints
+app.MapPost("/payments/create-intent", async
+    (CreatePaymentRequest req, Microsoft.Extensions.Options.IOptions<StripeSettings> opt) =>
+{
+    var amount = (long)(req.Amount * 100); // minor units
+    var svc = new Stripe.PaymentIntentService();
+    var intent = await svc.CreateAsync(new Stripe.PaymentIntentCreateOptions
+    {
+        Amount = amount,
+        Currency = opt.Value.Currency,
+        AutomaticPaymentMethods = new Stripe.PaymentIntentAutomaticPaymentMethodsOptions { Enabled = true }
+    });
+    return Results.Ok(new { intent.ClientSecret, opt.Value.PublishableKey });
+});
+
+app.MapPost("/payments/webhook", async (HttpRequest r, Microsoft.Extensions.Options.IOptions<StripeSettings> opt) =>
+{
+    using var sr = new StreamReader(r.Body);
+    var json = await sr.ReadToEndAsync();
+    var sig = r.Headers["Stripe-Signature"];
+    try
+    {
+        var e = Stripe.EventUtility.ConstructEvent(json, sig, opt.Value.WebhookSecret);
+        // TODO: handle e.Type (payment_intent.succeeded, etc.)
+        return Results.Ok();
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(ex.Message);
+    }
+});
 
 app.Run();
 
@@ -108,3 +151,6 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 }
 public class GameHub : Microsoft.AspNetCore.SignalR.Hub { }
+
+// DTOs
+public record CreatePaymentRequest(decimal Amount);
