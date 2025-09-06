@@ -12,6 +12,10 @@
 		<data>
 		FF3R3XmnZPt0JYt76/h4HMbB/K4=
 		</data>
+		<key>Resources/MauiInfo.plist</key>
+		<data>
+		A/74dbGgxu/fUONI00Bycn7+qco=
+		</data>
 		<key>Resources/MonoTouchDebugConfiguration.txt</key>
 		<data>
 		oowkf1sL6T19nanXUObgmuayWqM=
@@ -169,11 +173,60 @@
 			bh5snHr1shd+tG2ZBFQWS6M7sDygm6/qzDg08sXiyUQ=
 			</data>
 		</dict>
+		<key>MonoBundle/Microsoft.AspNetCore.Connections.Abstractions.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			EMSCM24Ov1vo2VAWIN97DOpULn/j0V9BD33xB0goZr0=
+			</data>
+		</dict>
+		<key>MonoBundle/Microsoft.AspNetCore.Http.Connections.Client.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			vDcnlDV3BvyF8V8DyYf774FRYLAK3YGaYhKOsGqMOLU=
+			</data>
+		</dict>
+		<key>MonoBundle/Microsoft.AspNetCore.Http.Connections.Common.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			SWp1Dw5FxLgjLi6eb7jrgxkMGFnMgoVoND20oSH/q4s=
+			</data>
+		</dict>
 		<key>MonoBundle/Microsoft.AspNetCore.Metadata.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
 			er5fXzV+D8EedIMD1JvpsXRTcOxsLr0iiu/uUgNGtfU=
+			</data>
+		</dict>
+		<key>MonoBundle/Microsoft.AspNetCore.SignalR.Client.Core.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			xgaWIcqj9ZRHEtU6FzKmlsLdV6P7n+5lPKlAWperk0I=
+			</data>
+		</dict>
+		<key>MonoBundle/Microsoft.AspNetCore.SignalR.Client.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			vBOHrweHX92S528uFnemfqTheJ5WJ+ZrIVKTxErhhzU=
+			</data>
+		</dict>
+		<key>MonoBundle/Microsoft.AspNetCore.SignalR.Common.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			gQFftgpwGhwfkXKhIdk8NcwJtZKL5FY0Nm/nC2gBgy0=
+			</data>
+		</dict>
+		<key>MonoBundle/Microsoft.AspNetCore.SignalR.Protocols.Json.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			9XbR2HWbSh1uGdDoyZjZwFcG5kpd/+QbNF7T+yPA3Xc=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.CSharp.dll</key>
@@ -230,6 +283,13 @@
 			<key>hash2</key>
 			<data>
 			oBrzb4SPVFSTIzMlZbpThdfLOW48/dCiXtlHpx+zlDA=
+			</data>
+		</dict>
+		<key>MonoBundle/Microsoft.Extensions.Features.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			euIyi5tLvUHN/trNqvuRJPiItjKhjJp+ZxkSaqBDmrY=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Extensions.FileProviders.Abstractions.dll</key>
@@ -867,6 +927,13 @@
 			<key>hash2</key>
 			<data>
 			YXVG0F0RcjdTNmbp/2emr2SV0VVdpFZgU6Yzpmflhqk=
+			</data>
+		</dict>
+		<key>MonoBundle/System.Net.ServerSentEvents.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			REJ3hcH+NFlDgxXwnxIgMuZSFw7b9jdTlTgpRlhdmzA=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Net.ServicePoint.dll</key>
@@ -1524,28 +1591,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			46lyDZzL3R2NM3tuPRskx+jWF6lkhlg4q5BWKNdVJMA=
+			uyrLXJZEwC10gPkr6kMNtvOmyQYTX/o4q3WtlY4i+7Q=
 			</data>
 		</dict>
 		<key>MonoBundle/TicTacToeUltimate.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			7ACJ60kr3pV1nHhpQ/g7BHD527fodIZqycPFMJlTomA=
+			jdC7SsEIMJZTRsv2j3+0b7bkQ4VWRd2mi4A0BbSJnBI=
 			</data>
 		</dict>
 		<key>MonoBundle/TicTacToeUltimate.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			HWuVQaLqnU7u89yfysFGRUrWMCL6sxkxmdyWr7iXRvE=
+			bHfjQfzHztaJb8/iPugad7Dt2wLo41bQsMidm2NkI7U=
 			</data>
 		</dict>
 		<key>MonoBundle/TicTacToeUltimate.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			G61Qz8+ql1ZAsQYsVGhsD8sacjd3jQ4Z1/67xMuZCSk=
+			Tz5Ysn3Go1LAwF5CVLkpRHQ8S4D9likaNfHgeGV3hBc=
 			</data>
 		</dict>
 		<key>MonoBundle/WindowsBase.dll</key>
@@ -1826,6 +1893,13 @@
 			<key>hash2</key>
 			<data>
 			a7e7b1YfliWXw73fY1TRcOSs5+dRFTp9AE/8ETQ/698=
+			</data>
+		</dict>
+		<key>Resources/MauiInfo.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			UEORARmYMQB21vcObyk2tL7rhjGOSCGHQz3UGRUssW0=
 			</data>
 		</dict>
 		<key>Resources/MonoTouchDebugConfiguration.txt</key>

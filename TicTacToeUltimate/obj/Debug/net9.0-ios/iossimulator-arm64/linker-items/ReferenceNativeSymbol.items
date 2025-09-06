@@ -1,6 +1,282 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADRequest">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADPortraitInlineAdaptiveBannerAdSizeWithWidth">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADLandscapeInlineAdaptiveBannerAdSizeWithWidth">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADCurrentOrientationInlineAdaptiveBannerAdSizeWithWidth">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADInlineAdaptiveBannerAdSizeWithWidthAndMaxHeight">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADPortraitAnchoredAdaptiveBannerAdSizeWithWidth">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADLandscapeAnchoredAdaptiveBannerAdSizeWithWidth">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADAdSizeFromCGSize">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADAdSizeFullWidthPortraitWithHeight">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADAdSizeFullWidthLandscapeWithHeight">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADAdSizeEqualToSize">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_CGSizeFromGADAdSize">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_IsGADAdSizeValid">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADAdSizeIsFluid">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_NSStringFromGADAdSize">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_NSValueFromGADAdSize">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADAdSizeFromNSValue">
+      <SymbolType>Function</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADAdapterStatus">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADAdChoicesView">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADAdLoaderAdTypeCustomNative">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADAdLoaderAdTypeGAMBanner">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADAdLoaderAdTypeNative">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADAdLoader">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADAdLoaderOptions">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADAdNetworkResponseInfo">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADAdReward">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADAdValue">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADAppOpenAd">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADAudioVideoManager">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADBannerView">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADCustomEventExtras">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADCustomEventRequest">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADCustomNativeAd">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADDebugOptionsViewController">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADDisplayAdMeasurement">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADExtras">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADInitializationStatus">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADInterstitialAd">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADMaxAdContentRatingGeneral">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADMaxAdContentRatingMatureAudience">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADMaxAdContentRatingParentalGuidance">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADMaxAdContentRatingTeen">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMediaContent">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMediationAdConfiguration">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMediationAppOpenAdConfiguration">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMediationBannerAdConfiguration">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMediationCredentials">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMediationInterstitialAdConfiguration">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMediationNativeAdConfiguration">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMediationRewardedAdConfiguration">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMediationServerConfiguration">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMediaView">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMobileAds">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMultipleAdsAdLoaderOptions">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADMuteThisAdReason">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADNativeAd">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADNativeAdChoicesViewAsset">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADNativeAdvertiserAsset">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADNativeBodyAsset">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADNativeCallToActionAsset">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADNativeHeadlineAsset">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADNativeIconAsset">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADNativeImageAsset">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADNativeMediaViewAsset">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADNativePriceAsset">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADNativeStarRatingAsset">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADNativeStoreAsset">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADNativeAdImage">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADNativeAdImageAdLoaderOptions">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADNativeAdMediaAdLoaderOptions">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADNativeAdView">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADNativeAdViewAdOptions">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADNativeMuteThisAdLoaderOptions">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADRequestConfiguration">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_GADGoogleAdNetworkClassName">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADResponseInfo">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADRewardedAd">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADRewardedInterstitialAd">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADServerSideVerificationOptions">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADVideoController">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GADVideoOptions">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GAMBannerView">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GAMBannerViewOptions">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GAMInterstitialAd">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_GAMRequest">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_UMPConsentForm">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_UMPErrorDomain">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_UMPVersionString">
+      <SymbolType>Field</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_UMPConsentInformation">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_UMPDebugSettings">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
+    <ReferenceNativeSymbol Include="_OBJC_CLASS_$_UMPRequestParameters">
+      <SymbolType>ObjectiveCClass</SymbolType>
+    </ReferenceNativeSymbol>
     <ReferenceNativeSymbol Include="_xamarin_CGPoint__VNNormalizedFaceBoundingBoxPointForLandmarkPoint_Vector2_CGRect_nuint_nuint_string">
       <SymbolType>Function</SymbolType>
     </ReferenceNativeSymbol>

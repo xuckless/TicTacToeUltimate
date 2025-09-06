@@ -16,13 +16,13 @@
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"0fetsqr0xw"},{"Name":"integrity","Value":"sha256-POJuM0L0Yyw2C0yqxJI674spcOSp5tSKbbS3n\u002BKpX6k="},{"Name":"label","Value":"index.html"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"778"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u0022POJuM0L0Yyw2C0yqxJI674spcOSp5tSKbbS3n\u002BKpX6k=\u0022"},{"Name":"Last-Modified","Value":"Thu, 04 Sep 2025 20:15:44 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"778"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u0022POJuM0L0Yyw2C0yqxJI674spcOSp5tSKbbS3n\u002BKpX6k=\u0022"},{"Name":"Last-Modified","Value":"Sat, 06 Sep 2025 02:31:52 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="index.html">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-POJuM0L0Yyw2C0yqxJI674spcOSp5tSKbbS3n\u002BKpX6k="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"778"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u0022POJuM0L0Yyw2C0yqxJI674spcOSp5tSKbbS3n\u002BKpX6k=\u0022"},{"Name":"Last-Modified","Value":"Thu, 04 Sep 2025 20:15:44 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"778"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u0022POJuM0L0Yyw2C0yqxJI674spcOSp5tSKbbS3n\u002BKpX6k=\u0022"},{"Name":"Last-Modified","Value":"Sat, 06 Sep 2025 02:31:52 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="TicTacToeUltimate.4mlhh4tkcb.styles.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\TicTacToeUltimate.styles.css'))</AssetFile>
