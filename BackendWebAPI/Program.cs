@@ -1,6 +1,7 @@
 using System.Text;
 using AspNet.Security.OAuth.Apple;
 using BackendWebAPI.Config;
+using BackendWebAPI.Hubs;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,7 +11,6 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load optional local secrets
 builder.Configuration
     .AddJsonFile("appsettings.Auth.json", optional: true)
     .AddJsonFile("appsettings.Stripe.json", optional: true);
@@ -29,7 +29,7 @@ var stripe = builder.Configuration.GetSection("Stripe").Get<StripeSettings>();
 if (!string.IsNullOrWhiteSpace(stripe?.SecretKey))
     Stripe.StripeConfiguration.ApiKey = stripe.SecretKey;
 
-// Auth: JWT for API, Cookie for external OAuth handshakes
+// Auth
 builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -44,11 +44,10 @@ builder.Services.AddAuthentication(o =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 })
-.AddCookie("External") // transient cookie for Google/Apple sign-in
+.AddCookie("External")
 .AddGoogle(o =>
 {
     o.SignInScheme = "External";
@@ -66,8 +65,6 @@ builder.Services.AddAuthentication(o =>
     var pem = builder.Configuration["Auth:Apple:PrivateKey"] ?? "";
     if (!pem.Contains("BEGIN PRIVATE KEY"))
         pem = $"-----BEGIN PRIVATE KEY-----\n{pem}\n-----END PRIVATE KEY-----";
-
-    // Matches provider delegate: (keyId, CancellationToken) => Task<ReadOnlyMemory<char>>
     o.PrivateKey = (keyId, _) => Task.FromResult(pem.AsMemory());
 });
 
@@ -78,14 +75,14 @@ builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CORS
+// CORS (dev-friendly)
 builder.Services.AddCors(opt =>
 {
-    opt.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>())
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials());
+    opt.AddPolicy("AllowFrontend", p => p
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()
+        .SetIsOriginAllowed(_ => true)); // DEV ONLY
 });
 
 var app = builder.Build();
@@ -93,7 +90,12 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+// In Development, allow both HTTP/HTTPS (don’t force redirect)
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
@@ -101,6 +103,7 @@ app.UseAuthorization();
 // Minimal API & SignalR
 app.MapGet("/ping", () => "pong");
 app.MapHub<GameHub>("/hubs/game");
+app.MapHub<TestHub>("/hubs/test");
 
 // OAuth kickoffs
 app.MapGet("/auth/google", () => Results.Challenge(
@@ -115,7 +118,7 @@ app.MapGet("/auth/apple", () => Results.Challenge(
 app.MapPost("/payments/create-intent", async
     (CreatePaymentRequest req, Microsoft.Extensions.Options.IOptions<StripeSettings> opt) =>
 {
-    var amount = (long)(req.Amount * 100); // minor units
+    var amount = (long)(req.Amount * 100);
     var svc = new Stripe.PaymentIntentService();
     var intent = await svc.CreateAsync(new Stripe.PaymentIntentCreateOptions
     {
@@ -134,7 +137,6 @@ app.MapPost("/payments/webhook", async (HttpRequest r, Microsoft.Extensions.Opti
     try
     {
         var e = Stripe.EventUtility.ConstructEvent(json, sig, opt.Value.WebhookSecret);
-        // TODO: handle e.Type (payment_intent.succeeded, etc.)
         return Results.Ok();
     }
     catch (Exception ex)

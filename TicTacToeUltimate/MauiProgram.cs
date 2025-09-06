@@ -2,7 +2,10 @@
 using TicTacToeUltimate.Shared.Services;
 using TicTacToeUltimate.Services;
 using Plugin.AdMob;
-using Plugin.AdMob.Configuration; // <-- needed for AdConfig
+using Plugin.AdMob.Configuration;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Maui.Devices;
+using System.Net.Http;
 
 namespace TicTacToeUltimate;
 
@@ -14,24 +17,97 @@ public static class MauiProgram
 
         builder
             .UseMauiApp<App>()
-            .UseAdMob() // REQUIRED by Plugin.AdMob
-            .ConfigureFonts(fonts =>
-            {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-            });
+            .UseAdMob()
+            .ConfigureFonts(f => f.AddFont("OpenSans-Regular.ttf", "OpenSansRegular"));
 
-        // Shared services
         builder.Services.AddSingleton<IFormFactor, FormFactor>();
         builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
-
-        // Enable Google test AdUnitIds in Debug mode
         AdConfig.UseTestAdUnitIds = true;
 #endif
 
+        // ---- Candidate backends (HTTPS for simulator/Mac) ----
+        const string LAN_IP = "192.168.1.123"; // set if testing on physical iPhone
+        string[] candidates;
+
+        if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+        {
+            candidates = new[] { "https://localhost:7086", "http://localhost:5091" };
+        }
+        else if (DeviceInfo.Platform == DevicePlatform.iOS)
+        {
+            bool isSimulator = DeviceInfo.DeviceType == DeviceType.Virtual;
+            candidates = isSimulator
+                ? new[] { "https://localhost:7086", "http://localhost:5091" }
+                : new[] { $"https://{LAN_IP}:7086", $"http://{LAN_IP}:5091" };
+        }
+        else if (DeviceInfo.Platform == DevicePlatform.Android)
+        {
+            candidates = new[] { "http://10.0.2.2:5091", "https://10.0.2.2:7086" };
+        }
+        else
+        {
+            candidates = new[] { "https://localhost:7086", "http://localhost:5091" };
+        }
+
+        var loggerFactory = LoggerFactory.Create(lb => lb.AddDebug().SetMinimumLevel(LogLevel.Information));
+        var logger = loggerFactory.CreateLogger("BackendProbe");
+        string backendBase = ProbeCandidates(candidates, logger);
+
+        builder.Services.AddSingleton(sp =>
+            new HubConnectionBuilder()
+                .WithUrl($"{backendBase}/hubs/test", o =>
+                {
+                    // Force LongPolling so the HTTP handler/cert bypass applies
+                    o.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.LongPolling;
+
+#if DEBUG
+                    o.HttpMessageHandlerFactory = _ => new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
+                    };
+#endif
+                })
+                .WithAutomaticReconnect()
+                .ConfigureLogging(lb => lb.SetMinimumLevel(LogLevel.Debug))
+                .Build());
+
         return builder.Build();
+    }
+
+    private static string ProbeCandidates(string[] urls, ILogger logger)
+    {
+        using var handler = new HttpClientHandler();
+#if DEBUG
+        handler.ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true;
+#endif
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(1500) };
+
+        foreach (var url in urls)
+        {
+            try
+            {
+                var resp = client.GetAsync($"{url}/ping").Result;
+                if (resp.IsSuccessStatusCode)
+                {
+                    var txt = resp.Content.ReadAsStringAsync().Result.Trim();
+                    if (txt.Equals("pong", StringComparison.OrdinalIgnoreCase))
+                    {
+                        logger.LogInformation("Backend reachable: {Url}", url);
+                        return url;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning("Probe failed for {Url}: {Msg}", url, ex.Message);
+            }
+        }
+
+        logger.LogError("No backend found, using first candidate: {Url}", urls.First());
+        return urls.First();
     }
 }
