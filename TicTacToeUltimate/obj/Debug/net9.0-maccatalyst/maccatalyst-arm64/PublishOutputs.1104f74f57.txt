@@ -39,7 +39,14 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.AspNetCore.Components.Web.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.AspNetCore.Components.WebView.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.AspNetCore.Components.WebView.Maui.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.AspNetCore.Connections.Abstractions.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.AspNetCore.Http.Connections.Client.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.AspNetCore.Http.Connections.Common.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.AspNetCore.Metadata.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.AspNetCore.SignalR.Client.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.AspNetCore.SignalR.Client.Core.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.AspNetCore.SignalR.Common.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.AspNetCore.SignalR.Protocols.Json.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.Configuration.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.Configuration.Abstractions.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.Configuration.Binder.dll
@@ -47,6 +54,7 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.Configuration.Json.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.DependencyInjection.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.Features.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.FileProviders.Abstractions.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.FileProviders.Composite.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.FileProviders.Embedded.dll
@@ -58,11 +66,14 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.Options.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Extensions.Primitives.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.JSInterop.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Maui.Controls.Compatibility.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Maui.Controls.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Maui.Controls.Xaml.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Maui.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Maui.Essentials.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.Maui.Graphics.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Plugin.AdMob.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/System.Net.ServerSentEvents.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/TicTacToeUltimate.Shared.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/TicTacToeUltimate.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/publish/../TicTacToeUltimate.app/Contents/MonoBundle/Microsoft.CSharp.dll

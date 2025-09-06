@@ -383,6 +383,13 @@
 			j+KiWbZcCJUOyam/4b/5JndkCv+mKF0/hcalQ0Bqtgg=
 			</data>
 		</dict>
+		<key>MonoBundle/Microsoft.Maui.Controls.Compatibility.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			d5ApsYq55m9UZscioSx5z/MFeadFSh4lBD5jFLdJeqg=
+			</data>
+		</dict>
 		<key>MonoBundle/Microsoft.Maui.Controls.Xaml.dll</key>
 		<dict>
 			<key>hash2</key>
@@ -444,6 +451,13 @@
 			<key>hash2</key>
 			<data>
 			VoL6i/ebvjtvRzwa3trVFoeq5kPKyyeqpC81S5X+070=
+			</data>
+		</dict>
+		<key>MonoBundle/Plugin.AdMob.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			aJ26ZE3w4jnSdZRB1A+1myFfUX9T++fLZ3gZlBQ+HKs=
 			</data>
 		</dict>
 		<key>MonoBundle/System.AppContext.dll</key>
@@ -1591,28 +1605,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			uyrLXJZEwC10gPkr6kMNtvOmyQYTX/o4q3WtlY4i+7Q=
+			cWhEpa5kAw9awsApoFd8JSRKk9DaHzUOebahyLwFYtI=
 			</data>
 		</dict>
 		<key>MonoBundle/TicTacToeUltimate.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			jdC7SsEIMJZTRsv2j3+0b7bkQ4VWRd2mi4A0BbSJnBI=
+			RSk5Or2CnheUK5QJugl8DYK9U7zBarazdvV5sdAMzp4=
 			</data>
 		</dict>
 		<key>MonoBundle/TicTacToeUltimate.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			bHfjQfzHztaJb8/iPugad7Dt2wLo41bQsMidm2NkI7U=
+			u5wut13joIz5xHPFyNlSzjvKgHYMkn+UwtUs/HOqt74=
 			</data>
 		</dict>
 		<key>MonoBundle/TicTacToeUltimate.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Tz5Ysn3Go1LAwF5CVLkpRHQ8S4D9likaNfHgeGV3hBc=
+			fu39JgNDTI3D6iETfLBsPuWpCdphBqedXd8yxVk8zTI=
 			</data>
 		</dict>
 		<key>MonoBundle/WindowsBase.dll</key>

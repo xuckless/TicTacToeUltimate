@@ -72,3 +72,12 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/obj/Debug/net9.0/TicTacToeUltimate.Web.pdb
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/obj/Debug/net9.0/TicTacToeUltimate.Web.genruntimeconfig.cache
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/obj/Debug/net9.0/ref/TicTacToeUltimate.Web.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/Microsoft.AspNetCore.Connections.Abstractions.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/Microsoft.AspNetCore.Http.Connections.Client.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/Microsoft.AspNetCore.Http.Connections.Common.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/Microsoft.AspNetCore.SignalR.Client.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/Microsoft.AspNetCore.SignalR.Client.Core.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/Microsoft.AspNetCore.SignalR.Common.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/Microsoft.AspNetCore.SignalR.Protocols.Json.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/Microsoft.Extensions.Features.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/System.Net.ServerSentEvents.dll

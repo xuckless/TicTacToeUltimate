@@ -147,3 +147,7 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/AspNet.Security.OAuth.Apple.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/Microsoft.AspNetCore.Authentication.Google.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/obj/Debug/net9.0/BackendWebAPI.sourcelink.json
+/Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/appsettings.Stripe.json
+/Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/Stripe.net.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/System.Configuration.ConfigurationManager.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/System.Security.Cryptography.ProtectedData.dll

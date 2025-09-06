@@ -41,7 +41,14 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.AspNetCore.Components.Web.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.AspNetCore.Components.WebView.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.AspNetCore.Components.WebView.Maui.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.AspNetCore.Connections.Abstractions.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.AspNetCore.Http.Connections.Client.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.AspNetCore.Http.Connections.Common.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.AspNetCore.Metadata.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.AspNetCore.SignalR.Client.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.AspNetCore.SignalR.Client.Core.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.AspNetCore.SignalR.Common.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.AspNetCore.SignalR.Protocols.Json.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Extensions.Configuration.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Extensions.Configuration.Abstractions.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Extensions.Configuration.Binder.dll
@@ -49,6 +56,7 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Extensions.Configuration.Json.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Extensions.DependencyInjection.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Extensions.Features.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Extensions.FileProviders.Abstractions.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Extensions.FileProviders.Composite.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Extensions.FileProviders.Embedded.dll
@@ -67,6 +75,7 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Maui.Essentials.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.Maui.Graphics.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Plugin.AdMob.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/System.Net.ServerSentEvents.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/TicTacToeUltimate.Shared.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/TicTacToeUltimate.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/bin/Debug/net9.0-ios/iossimulator-arm64/publish/../TicTacToeUltimate.app/Microsoft.CSharp.dll

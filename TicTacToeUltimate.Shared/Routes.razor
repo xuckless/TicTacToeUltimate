@@ -1,6 +1,7 @@
-﻿<Router AppAssembly="typeof(Layout.MainLayout).Assembly">
+﻿<Router AppAssembly="@typeof(Layout.MainLayout).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)"/>
-        <FocusOnNavigate RouteData="routeData" Selector="h1"/>
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
+    <NotFound><h3 class="p-4">Page not found</h3></NotFound>
 </Router>
