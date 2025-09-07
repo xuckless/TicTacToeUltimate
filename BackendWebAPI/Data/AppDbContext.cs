@@ -5,6 +5,7 @@ namespace BackendWebAPI.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    // Create a player class to connect with the database
     public DbSet<Player> Players => Set<Player>();
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -21,6 +22,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.Elo).HasColumnName("elo").HasDefaultValue(500);
             e.Property(x => x.Email).HasColumnName("email").IsRequired();
             e.Property(x => x.Age).HasColumnName("age");
+            // Add constraints
             e.HasIndex(x => x.Username).IsUnique();
             e.HasIndex(x => x.Email).IsUnique();
             e.HasIndex(x => x.Sub).IsUnique();
