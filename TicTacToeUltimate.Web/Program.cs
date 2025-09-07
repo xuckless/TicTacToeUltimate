@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.SignalR.Client;
 using TicTacToeUltimate.Web.Components;
 using TicTacToeUltimate.Shared.Services;
 using TicTacToeUltimate.Web.Services;
@@ -9,12 +10,20 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-// Add device-specific services used by the TicTacToeUltimate.Shared project
+// Shared/device services
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
+
+// SignalR client for server-side features (points to BackendWebAPI)
+var backendBase = builder.Configuration["BackendBaseUrl"] ?? "https://localhost:7086";
+builder.Services.AddSingleton(sp =>
+    new HubConnectionBuilder()
+        .WithUrl($"{backendBase}/hubs/test")
+        .WithAutomaticReconnect()
+        .Build());
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
@@ -22,12 +31,10 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 app.UseAntiforgery();
 
