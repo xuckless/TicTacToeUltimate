@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using TicTacToeUltimate.Web.Components;
 using TicTacToeUltimate.Shared.Services;
 using TicTacToeUltimate.Web.Services;
+using TicTacToeUltimate.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddSingleton<IFormFactor, FormFactor>();
 
 // SignalR client for server-side features (points to BackendWebAPI)
 var backendBase = builder.Configuration["BackendBaseUrl"] ?? "https://localhost:7086";
+builder.Services.AddHttpClient<ApiClient>(c => c.BaseAddress = new Uri(backendBase));
 builder.Services.AddSingleton(sp =>
     new HubConnectionBuilder()
         .WithUrl($"{backendBase}/hubs/test")
@@ -22,6 +24,7 @@ builder.Services.AddSingleton(sp =>
         .Build());
 
 var app = builder.Build();
+
 
 // Pipeline
 if (app.Environment.IsDevelopment())

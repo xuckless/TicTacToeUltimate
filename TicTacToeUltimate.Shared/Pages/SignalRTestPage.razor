@@ -16,13 +16,14 @@
 </ul>
 
 @code {
-    string message;
-    string lastError;
-    string lastStatus;
+    string message = "";
+    string lastError = "";
+    string lastStatus = "";
     List<string> messages = new();
 
     protected override void OnInitialized()
     {
+        // Listen for broadcasts from the hub
         Hub.On<string>("ReceiveMessage", msg =>
         {
             messages.Add(msg);
@@ -32,21 +33,21 @@
         Hub.Closed += e =>
         {
             lastStatus = "Closed";
-            lastError = e?.ToString();
+            lastError = e?.ToString() ?? "";
             InvokeAsync(StateHasChanged);
             return Task.CompletedTask;
         };
         Hub.Reconnecting += e =>
         {
             lastStatus = "Reconnecting…";
-            lastError = e?.ToString();
+            lastError = e?.ToString() ?? "";
             InvokeAsync(StateHasChanged);
             return Task.CompletedTask;
         };
         Hub.Reconnected += _ =>
         {
             lastStatus = "Reconnected";
-            lastError = null;
+            lastError = "";
             InvokeAsync(StateHasChanged);
             return Task.CompletedTask;
         };
@@ -62,7 +63,7 @@
                 await Hub.StartAsync();
                 lastStatus = "Connected";
             }
-            lastError = null;
+            lastError = "";
         }
         catch (Exception ex)
         {
@@ -76,9 +77,14 @@
         try
         {
             if (Hub.State == HubConnectionState.Connected)
-                await Hub.InvokeAsync("SendMessage", message ?? "hello");
+            {
+                await Hub.InvokeAsync("SendMessage", string.IsNullOrWhiteSpace(message) ? "hello" : message);
+                lastError = "";
+            }
             else
+            {
                 lastStatus = "Not connected";
+            }
         }
         catch (Exception ex)
         {

@@ -1,7 +1,7 @@
 using System.Text;
 using AspNet.Security.OAuth.Apple;
 using BackendWebAPI.Config;
-using BackendWebAPI.Hubs;
+using BackendWebAPI.Models;            // + for Player
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -75,6 +75,9 @@ builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Controllers
+builder.Services.AddControllers();
+
 // CORS (dev-friendly)
 builder.Services.AddCors(opt =>
 {
@@ -90,7 +93,6 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// In Development, allow both HTTP/HTTPS (don’t force redirect)
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
@@ -99,6 +101,9 @@ if (!app.Environment.IsDevelopment())
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Map Controllers
+app.MapControllers();
 
 // Minimal API & SignalR
 app.MapGet("/ping", () => "pong");
@@ -147,12 +152,32 @@ app.MapPost("/payments/webhook", async (HttpRequest r, Microsoft.Extensions.Opti
 
 app.Run();
 
-// EF DbContext + Hub
+// EF DbContext + Hubs (inline)
 public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
+    // NEW: expose Players and map to existing table
+    public DbSet<Player> Players => Set<Player>();
+
+    protected override void OnModelCreating(ModelBuilder b)
+    {
+        b.HasDefaultSchema("tttu");
+        var e = b.Entity<Player>();
+        e.ToTable("players");
+        e.HasKey(x => x.PlayerId);
+        e.Property(x => x.PlayerId).HasColumnName("player_id").ValueGeneratedOnAdd();
+        e.Property(x => x.Sub).HasColumnName("sub").IsRequired();
+        e.Property(x => x.Username).HasColumnName("username").HasMaxLength(32).IsRequired();
+        e.Property(x => x.Elo).HasColumnName("elo").HasDefaultValue(500);
+        e.Property(x => x.Email).HasColumnName("email").IsRequired();
+        e.Property(x => x.Age).HasColumnName("age");
+        e.HasIndex(x => x.Username).IsUnique();
+        e.HasIndex(x => x.Email).IsUnique();
+        e.HasIndex(x => x.Sub).IsUnique();
+    }
 }
 public class GameHub : Microsoft.AspNetCore.SignalR.Hub { }
+public class TestHub : Microsoft.AspNetCore.SignalR.Hub { }
 
-// DTOs
 public record CreatePaymentRequest(decimal Amount);
