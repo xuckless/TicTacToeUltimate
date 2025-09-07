@@ -2,6 +2,7 @@ using System.Text;
 using AspNet.Security.OAuth.Apple;
 using BackendWebAPI.Config;
 using BackendWebAPI.Models;            // + for Player
+using BackendWebAPI.Hubs;              // + use the real TestHub in Hubs/
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -108,7 +109,7 @@ app.MapControllers();
 // Minimal API & SignalR
 app.MapGet("/ping", () => "pong");
 app.MapHub<GameHub>("/hubs/game");
-app.MapHub<TestHub>("/hubs/test");
+app.MapHub<TestHub>("/hubs/test");     // uses BackendWebAPI.Hubs.TestHub
 
 // OAuth kickoffs
 app.MapGet("/auth/google", () => Results.Challenge(
@@ -178,6 +179,6 @@ public class AppDbContext : DbContext
     }
 }
 public class GameHub : Microsoft.AspNetCore.SignalR.Hub { }
-public class TestHub : Microsoft.AspNetCore.SignalR.Hub { }
+// (removed the inline TestHub to avoid shadowing)
 
 public record CreatePaymentRequest(decimal Amount);
