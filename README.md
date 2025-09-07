@@ -1,3 +1,5 @@
+# © 2025 Xuckless. All Rights Reserved. This software may not be used, copied, modified, or distributed without prior written consent.
+
 # TicTacToeUltimate
 
 Multiplayer Tic-Tac-Toe with MAUI (mobile + hybrid), Blazor (web), ASP.NET Core backend, PostgreSQL, Redis, SignalR, and Stripe (Apple Pay + Google Pay).
