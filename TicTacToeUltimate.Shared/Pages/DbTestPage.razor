@@ -1,0 +1,50 @@
+@page "/db-test"
+@using TicTacToeUltimate.Shared.Models
+@inject TicTacToeUltimate.Shared.Services.ApiClient Api
+
+<h3>Database Test</h3>
+
+<button class="btn btn-primary me-2" @onclick="Ping">Ping</button>
+<button class="btn btn-secondary" @onclick="Load">Load Players</button>
+
+<p class="mt-3"><b>@message</b></p>
+
+@if (players?.Count > 0)
+{
+    <ul>
+        @foreach (var p in players)
+        {
+            <li>@p.Username (@p.Elo)</li>
+        }
+    </ul>
+}
+
+@code {
+    string message = "Not tested yet";
+    List<PlayerDto> players = new();
+
+    async Task Ping()
+    {
+        try
+        {
+            message = await Api.PingAsync();
+        }
+        catch (Exception ex)
+        {
+            message = $"Ping failed: {ex.Message}";
+        }
+    }
+
+    async Task Load()
+    {
+        try
+        {
+            players = await Api.GetPlayersAsync();
+            message = $"Loaded {players.Count} players";
+        }
+        catch (Exception ex)
+        {
+            message = $"Load failed: {ex.Message}";
+        }
+    }
+}

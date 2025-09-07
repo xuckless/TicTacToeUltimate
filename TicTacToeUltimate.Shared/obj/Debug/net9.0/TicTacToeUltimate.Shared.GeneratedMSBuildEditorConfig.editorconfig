@@ -24,6 +24,10 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQ291bnRlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Shared/Pages/DbTestPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvRGJUZXN0UGFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Shared/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvSG9tZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 

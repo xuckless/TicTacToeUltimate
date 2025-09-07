@@ -10,10 +10,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("backendwebapi-ali-local-001")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("BackendWebAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d26e3e24815a892e315d8750394104b8d23f5b20")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8c73117f3ca95005d2fef0ec0dc65e4e1233f29f")]
 [assembly: System.Reflection.AssemblyProductAttribute("BackendWebAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BackendWebAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

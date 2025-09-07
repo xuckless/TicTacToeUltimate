@@ -72,6 +72,11 @@
           },
           "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.304/PortableRuntimeIdentifierGraph.json"
         }
+      },
+      "runtimes": {
+        "iossimulator-arm64": {
+          "#import": []
+        }
       }
     },
     "/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/TicTacToeUltimate.csproj": {
@@ -146,6 +151,10 @@
               "target": "Package",
               "version": "[9.0.8, )"
             },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
               "version": "[9.0.5, )"
@@ -197,6 +206,10 @@
               "target": "Package",
               "version": "[9.0.8, )"
             },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
               "version": "[9.0.5, )"
@@ -245,6 +258,10 @@
               "version": "[9.0.82, )"
             },
             "Microsoft.AspNetCore.SignalR.Client": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            },
+            "Microsoft.Extensions.Http": {
               "target": "Package",
               "version": "[9.0.8, )"
             },

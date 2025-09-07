@@ -54,7 +54,6 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/System.Composition.Runtime.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/System.Composition.TypedParts.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll
-/Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/System.Net.WebSockets.WebSocketProtocol.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/cs/Microsoft.CodeAnalysis.resources.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/de/Microsoft.CodeAnalysis.resources.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/es/Microsoft.CodeAnalysis.resources.dll
