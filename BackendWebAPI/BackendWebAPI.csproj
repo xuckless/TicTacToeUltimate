@@ -20,4 +20,8 @@
     <PackageReference Include="Stripe.net" Version="48.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TicTacToeUltimate.Shared\TicTacToeUltimate.Shared.csproj" />
+  </ItemGroup>
 </Project>

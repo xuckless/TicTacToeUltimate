@@ -17,14 +17,25 @@ builder.Services.AddSingleton<IFormFactor, FormFactor>();
 // SignalR client for server-side features (points to BackendWebAPI)
 var backendBase = builder.Configuration["BackendBaseUrl"] ?? "https://localhost:7086";
 builder.Services.AddHttpClient<ApiClient>(c => c.BaseAddress = new Uri(backendBase));
+
+// Add connection to game engine client
+builder.Services.AddSingleton<GameClient>();
+
+// TestHub connection
 builder.Services.AddSingleton(sp =>
     new HubConnectionBuilder()
         .WithUrl($"{backendBase}/hubs/test")
         .WithAutomaticReconnect()
         .Build());
 
-var app = builder.Build();
+// GameHub connection
+builder.Services.AddSingleton(sp =>
+    new HubConnectionBuilder()
+        .WithUrl($"{backendBase}/hubs/game")
+        .WithAutomaticReconnect()
+        .Build());
 
+var app = builder.Build();
 
 // Pipeline
 if (app.Environment.IsDevelopment())

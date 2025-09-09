@@ -1,0 +1,120 @@
+@page "/game-test"
+@using Microsoft.AspNetCore.SignalR.Client
+@inject HubConnection Hub
+
+<div class="game-wrap">
+  <h3>Game Test</h3>
+
+  <!-- Status placeholders -->
+  <p><em>Status:</em> @lastStatus</p>
+  <p class="mono">@lastError</p>
+
+  <!-- Top controls -->
+  <div class="controls">
+    <button @onclick="Connect">Connect</button>
+    <button>Disconnect</button>
+    <button>New Game</button>
+  </div>
+
+  <!-- Render string + congrats placeholder -->
+  <div class="status">
+    <p><b>Render:</b> <span>(none)</span></p>
+    <p class="congrats">Congratulations!</p>
+  </div>
+
+  <!-- 3×3 board -->
+  <div class="board">
+    @for (var r = 1; r <= 3; r++)
+    {
+      @for (var c = 1; c <= 3; c++)
+      {
+        <button class="cell">
+          <!-- placeholder label -->
+        </button>
+      }
+    }
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <span class="swatch oldest"></span> Oldest move (will show as red)
+    <span class="spacer"></span>
+    <span class="swatch win"></span> Winning cells (will show as green)
+  </div>
+</div>
+
+<style>
+  .game-wrap{
+    box-sizing:border-box;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 12px 14px;
+    width: 100%;
+  }
+  .mono{ white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+
+  .controls{
+    display:flex; gap:8px; align-items:center; margin: 12px 0; flex-wrap: wrap;
+  }
+  .controls input{
+    padding:6px 10px; width: min(260px, 100%); flex: 1 1 180px;
+  }
+  .controls button{
+    padding:8px 12px; flex: 0 0 auto;
+  }
+
+  .status{ margin: 10px 0; }
+  .congrats{ color: green; font-weight: 700; display: none; }
+
+  .board{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+  }
+  .cell{
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    font-size: clamp(18px, 6vw, 28px);
+    font-weight: 700;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    background: #fff;
+    user-select: none;
+  }
+
+  .legend{
+    margin-top: 16px; font-size: 14px; color: #555; display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+  }
+  .swatch{
+    display:inline-block; width:18px; height:18px; border-radius:4px; margin-right:6px;
+  }
+  .swatch.oldest{ background:#c62828; }
+  .swatch.win{ background:lightgreen; }
+  .spacer{ width: 18px; display: inline-block; }
+</style>
+
+@code {
+    string lastStatus = "Not connected";
+    string lastError = "";
+
+    async Task Connect()
+    {
+        try
+        {
+            if (Hub.State != HubConnectionState.Connected)
+            {
+                lastStatus = "Connecting…";
+                await Hub.StartAsync();
+                lastStatus = "Connected";
+                lastError = "";
+            }
+        }
+        catch (Exception ex)
+        {
+            lastStatus = "Connect failed";
+            lastError = ex.ToString();
+        }
+    }
+}

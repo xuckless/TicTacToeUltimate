@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @inject HubConnection Hub
 
+
 <h3>SignalR Test</h3>
 <p>State: @Hub.State</p>
 @if (!string.IsNullOrEmpty(lastStatus)) { <p><em>@lastStatus</em></p> }

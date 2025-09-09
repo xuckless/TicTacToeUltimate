@@ -240,14 +240,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			BXbVvzXtzU3Jtn4o3nxiFmt1EMPrklZbr7pY5+i5IeI=
+			mxRYxWutZhyPT8/ciX6ujkgip8GIqdxb7zq4NELsrZM=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Extensions.Configuration.Binder.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			DihV7CK6Ddy8yJtC+Hh3cb0zCCg5p+fWeAB7IPf8eaM=
+			sI7L2Z+IUH4IsKPw7hRaqg5U2lnrM3sDf34gPwnNRys=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Extensions.Configuration.FileExtensions.dll</key>
@@ -268,7 +268,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			X+f9SgR23haohmwk5tk9zYfdv6qCFqGkvWdDygCc1NI=
+			qvHEptw5euWLl/k4BjdII00Swp8ciKQ1MuOx7L8s7So=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Extensions.DependencyInjection.Abstractions.dll</key>
@@ -283,6 +283,20 @@
 			<key>hash2</key>
 			<data>
 			oBrzb4SPVFSTIzMlZbpThdfLOW48/dCiXtlHpx+zlDA=
+			</data>
+		</dict>
+		<key>MonoBundle/Microsoft.Extensions.Diagnostics.Abstractions.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			VI2T8EtqzXr+2k9/UUt+gHgMMHkbnLLrqAuy6b2uRLQ=
+			</data>
+		</dict>
+		<key>MonoBundle/Microsoft.Extensions.Diagnostics.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			YimUNf9mCsEn0Duwvqe34JL5Vp5f/rTZpjihprpjt/8=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Extensions.Features.dll</key>
@@ -327,6 +341,13 @@
 			M6qyaRCJjE1u9QC+ocpzs61hHt0McYd2FQi9HgRGU/4=
 			</data>
 		</dict>
+		<key>MonoBundle/Microsoft.Extensions.Http.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			/briLSREdS1XdC7/nCbB68hNRxAHPrwNvPMlwaEkxPw=
+			</data>
+		</dict>
 		<key>MonoBundle/Microsoft.Extensions.Logging.Abstractions.dll</key>
 		<dict>
 			<key>hash2</key>
@@ -346,6 +367,13 @@
 			<key>hash2</key>
 			<data>
 			aixSiEiZl4n486f785HLrykuMY9wBiMAralMOmpTf5g=
+			</data>
+		</dict>
+		<key>MonoBundle/Microsoft.Extensions.Options.ConfigurationExtensions.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			BPy3+k0p7pM8bXbFLKJ4PKP3JO+K2wchmywixykqu9o=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Extensions.Options.dll</key>
@@ -1605,28 +1633,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			IrmZ8Th4fk/9qz+oh9/aehmSgj5N77U1BMx/MFG4NaI=
+			NhxwMcrCxb+5iNS4tNMc34lErK78yP3o207MnEr2AdY=
 			</data>
 		</dict>
 		<key>MonoBundle/TicTacToeUltimate.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			b2ZsZyHzeljV2UDiG7/KLA4eiEBa/xaMv1ETNAb4VWo=
+			7hWJGUqxD6xm+ap+l+1PN7rxrT9v+gBLdSskpysE9fQ=
 			</data>
 		</dict>
 		<key>MonoBundle/TicTacToeUltimate.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			EPJiX+7YAOp7Dwl/HNLQTjGKr2AHLLYCDZPEikeYe8c=
+			txXg19PR7RHwwdOc/JNJ2kIo2sAvTGtdsu5y7e1NQoU=
 			</data>
 		</dict>
 		<key>MonoBundle/TicTacToeUltimate.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			HNKblSK95ClnIsqsoMhcWIEY1oJ4TrZZCe7MlTlE6g4=
+			fZ/qZUJ6B+3Tyl/AA4FxgHVTMDMRar2UffCW4JfjAw4=
 			</data>
 		</dict>
 		<key>MonoBundle/WindowsBase.dll</key>
