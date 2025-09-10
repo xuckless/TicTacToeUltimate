@@ -1,103 +1,106 @@
 @page "/game-test"
 @using Microsoft.AspNetCore.SignalR.Client
+@using TicTacToeUltimate.Shared.Models
 @inject HubConnection Hub
 
 <div class="game-wrap">
   <h3>Game Test</h3>
 
-  <!-- Status placeholders -->
   <p><em>Status:</em> @lastStatus</p>
   <p class="mono">@lastError</p>
 
-  <!-- Top controls -->
   <div class="controls">
     <button @onclick="Connect">Connect</button>
-    <button>Disconnect</button>
-    <button>New Game</button>
+    <button @onclick="Disconnect">Disconnect</button>
+    <button @onclick="NewGame">New Game</button>
   </div>
 
-  <!-- Render string + congrats placeholder -->
   <div class="status">
-    <p><b>Render:</b> <span>(none)</span></p>
-    <p class="congrats">Congratulations!</p>
+    <p><b>Render:</b> <span>@(snapshot?.RenderString ?? "(none)")</span></p>
+    <p class="congrats" style="@(snapshot?.Victory == true ? "display:block" : "display:none")">
+      Congratulations!
+    </p>
   </div>
 
-  <!-- 3×3 board -->
   <div class="board">
-    @for (var r = 1; r <= 3; r++)
-    {
-      @for (var c = 1; c <= 3; c++)
+      @for (var r = 1; r <= 3; r++)
       {
-        <button class="cell">
-          <!-- placeholder label -->
-        </button>
+          @for (var c = 1; c <= 3; c++)
+          {
+              var rr = r; var cc = c;   // capture values per cell
+
+              <button class="@CellClass(rr,cc)"
+                      title="@CellTitle(rr,cc)"
+                      @onclick="@(() => SendMove(rr,cc))">
+                  @CellLabel(rr,cc)
+              </button>
+          }
       }
-    }
   </div>
 
-  <!-- Legend -->
+  @code {
+      string CellLabel(int r,int c) => grid[r-1,c-1] ?? "";
+      bool   IsOldest(int r,int c)  => oldest?.row == r && oldest?.col == c;
+      bool   IsWin(int r,int c)     => win[r-1,c-1];
+      string CellClass(int r,int c)
+          => $"cell{(IsOldest(r,c) ? " oldest" : "")}{(IsWin(r,c) ? " win" : "")}";
+      string CellTitle(int r,int c) => $"{r}{c}"; // “12” == row1 col2
+  }
+
   <div class="legend">
-    <span class="swatch oldest"></span> Oldest move (will show as red)
+    <span class="swatch oldest"></span> Oldest move (red)
     <span class="spacer"></span>
-    <span class="swatch win"></span> Winning cells (will show as green)
+    <span class="swatch win"></span> Winning cells (green)
   </div>
 </div>
 
 <style>
-  .game-wrap{
-    box-sizing:border-box;
-    max-width: 520px;
-    margin: 0 auto;
-    padding: 12px 14px;
-    width: 100%;
-  }
-  .mono{ white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
-
-  .controls{
-    display:flex; gap:8px; align-items:center; margin: 12px 0; flex-wrap: wrap;
-  }
-  .controls input{
-    padding:6px 10px; width: min(260px, 100%); flex: 1 1 180px;
-  }
-  .controls button{
-    padding:8px 12px; flex: 0 0 auto;
-  }
-
-  .status{ margin: 10px 0; }
-  .congrats{ color: green; font-weight: 700; display: none; }
-
-  .board{
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    width: 100%;
-    max-width: 100%;
-  }
-  .cell{
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    font-size: clamp(18px, 6vw, 28px);
-    font-weight: 700;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    background: #fff;
-    user-select: none;
-  }
-
-  .legend{
-    margin-top: 16px; font-size: 14px; color: #555; display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
-  }
-  .swatch{
-    display:inline-block; width:18px; height:18px; border-radius:4px; margin-right:6px;
-  }
-  .swatch.oldest{ background:#c62828; }
-  .swatch.win{ background:lightgreen; }
-  .spacer{ width: 18px; display: inline-block; }
+  .game-wrap{box-sizing:border-box;max-width:520px;margin:0 auto;padding:12px 14px;width:100%;}
+  .mono{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;}
+  .controls{display:flex;gap:8px;align-items:center;margin:12px 0;flex-wrap:wrap;}
+  .controls button{padding:8px 12px;}
+  .status{margin:10px 0;}
+  .congrats{color:green;font-weight:700;display:none;}
+  .board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;}
+  .cell{width:100%;aspect-ratio:1/1;font-size:clamp(18px,6vw,28px);font-weight:700;border-radius:10px;border:1px solid #ccc;background:#fff;user-select:none;}
+  .cell.oldest{border-color:#c62828;color:#c62828;}
+  .cell.win{background:lightgreen;}
+  .legend{margin-top:16px;font-size:14px;color:#555;display:flex;align-items:center;flex-wrap:wrap;gap:10px;}
+  .swatch{display:inline-block;width:18px;height:18px;border-radius:4px;margin-right:6px;}
+  .swatch.oldest{background:#c62828;}
+  .swatch.win{background:lightgreen;}
+  .spacer{width:18px;display:inline-block;}
 </style>
 
 @code {
     string lastStatus = "Not connected";
     string lastError = "";
+
+    const bool FLIP_RC = false;
+
+    GameSnapshotDto? snapshot;
+
+    // render state
+    string?[,] grid = new string?[3, 3];
+    bool[,] win = new bool[3, 3];
+    (int row, int col)? oldest;
+
+    protected override void OnInitialized()
+    {
+        // Wire handlers BEFORE connecting
+        Hub.On<GameSnapshotDto>("Snapshot", s =>
+        {
+            snapshot = s;
+            ApplySnapshot(s);
+            InvokeAsync(StateHasChanged);
+        });
+
+        Hub.On<string>("Error", e =>
+        {
+            lastError = e;
+            InvokeAsync(StateHasChanged);
+        });
+    }
 
     async Task Connect()
     {
@@ -109,12 +112,101 @@
                 await Hub.StartAsync();
                 lastStatus = "Connected";
                 lastError = "";
+                // join default game on first connect (server will push Snapshot)
+                await Hub.InvokeAsync("Join", "default");
             }
         }
         catch (Exception ex)
         {
             lastStatus = "Connect failed";
             lastError = ex.ToString();
+        }
+    }
+
+    async Task Disconnect()
+    {
+        try
+        {
+            if (Hub.State != HubConnectionState.Disconnected)
+            {
+                await Hub.StopAsync();
+                lastStatus = "Disconnected";
+            }
+        }
+        catch (Exception ex)
+        {
+            lastError = ex.ToString();
+        }
+    }
+
+    async Task NewGame()
+    {
+        try
+        {
+            await Hub.InvokeAsync("NewGame", "default");
+            lastError = "";
+        }
+        catch (Exception ex)
+        {
+            lastError = ex.ToString();
+        }
+    }
+
+    async Task SendMove(int row, int col)
+    {
+        try
+        {
+            var r = FLIP_RC ? col : row;
+            var c = FLIP_RC ? row : col;
+            await Hub.InvokeAsync("Move", r, c, "default");
+            lastStatus = $"Sent move {r}{c}";
+            lastError = "";
+        }
+        catch (Exception ex)
+        {
+            lastError = ex.ToString();
+        }
+    }
+
+    bool DisableBoard => snapshot?.Victory == true;
+
+    void ApplySnapshot(GameSnapshotDto s)
+    {
+        Array.Clear(grid, 0, grid.Length);
+        Array.Clear(win, 0, win.Length);
+        oldest = null;
+
+        var tokens = (s.RenderString ?? "")
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        for (int i = 0; i < tokens.Length; i++)
+        {
+            var t = tokens[i];
+            if (t.Length < 3) continue;
+
+            char p = t[0];
+            if (!int.TryParse(t[1].ToString(), out var r)) continue;
+            if (!int.TryParse(t[2].ToString(), out var c)) continue;
+
+            int rr = (r is >= 1 and <= 3) ? r - 1 : r;
+            int cc = (c is >= 1 and <= 3) ? c - 1 : c;
+            if (FLIP_RC) (rr, cc) = (cc, rr);
+            if (rr is < 0 or > 2 || cc is < 0 or > 2) continue;
+
+            grid[rr, cc] = (p is 'a' or 'A') ? "X" : (p is 'b' or 'B') ? "O" : p.ToString().ToUpperInvariant();
+            if (i == 0) oldest = (rr + 1, cc + 1);
+        }
+
+        if (s.VictoryRow is { Length: > 0 })
+        {
+            foreach (var pair in s.VictoryRow)
+            {
+                if (pair is not { Length: 2 }) continue;
+                int rr = (pair[0] is >= 1 and <= 3) ? pair[0] - 1 : pair[0];
+                int cc = (pair[1] is >= 1 and <= 3) ? pair[1] - 1 : pair[1];
+                if (FLIP_RC) (rr, cc) = (cc, rr);
+                if (rr is >= 0 and <= 2 && cc is >= 0 and <= 2) win[rr, cc] = true;
+            }
         }
     }
 }
