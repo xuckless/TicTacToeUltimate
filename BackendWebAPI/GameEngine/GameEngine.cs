@@ -65,8 +65,13 @@ public class GameEngine : IGameEngine
             state.Turn = state.Turn == 'a' ? 'b' : 'a';
 
         // --- 4) LOG: render string + pretty board ---
-        var render = string.Join(';', state.Moves);
-        Console.WriteLine($"[GameEngine] Moves[{state.Moves.Count}] = {render}");
+        // var render = string.Join(';', state.Moves);
+        // Console.WriteLine($"[GameEngine] Moves[{state.Moves.Count}] = {render}");
+        // Console.WriteLine(BoardPretty(board));
+        
+        state.RenderString = string.Join(';', state.Moves);
+
+        Console.WriteLine($"[GameEngine] Moves[{state.Moves.Count}] = {state.RenderString}");
         Console.WriteLine(BoardPretty(board));
 
         Debug.Assert(state.Moves.Count <= Window, "Window invariant violated");

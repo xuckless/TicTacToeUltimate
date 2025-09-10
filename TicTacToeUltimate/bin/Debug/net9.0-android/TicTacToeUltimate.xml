@@ -4,12 +4,6 @@
         <name>TicTacToeUltimate</name>
     </assembly>
     <members>
-        <member name="M:TicTacToeUltimate.MauiProgram.ProbeCandidates(System.String[],Microsoft.Extensions.Logging.ILogger)">
-            <summary>
-            Tries each URL in <paramref name="urls"/> by calling GET /ping and returns the first base that responds with "pong".
-            Falls back to the first URL if none respond (so the app still boots and logs an error).
-            </summary>
-        </member>
         <member name="T:TicTacToeUltimate.Resource">
             <summary>
             Android Resource Designer class.

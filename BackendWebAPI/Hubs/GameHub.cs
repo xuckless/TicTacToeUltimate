@@ -9,7 +9,7 @@ public class GameHub(IGameEngine engine, RedisStore store, ILogger<GameHub> log)
 {
     private static GameSnapshotDto ToSnapshot(GameState s) => new()
     {
-        RenderString = string.Join(';', s.Moves),
+        RenderString = s.RenderString,   // no recompute here
         Victory      = s.Victory,
         VictoryRow   = s.VictoryRow
     };
@@ -49,21 +49,19 @@ public class GameHub(IGameEngine engine, RedisStore store, ILogger<GameHub> log)
         try
         {
             var state = await store.GetOrCreateAsync(gameId, engine);
-            var beforeCount = state.Moves.Count;
-
+            var before = string.Join(';', state.Moves);   // or: var before = state.RenderString;
             state = engine.ApplyMove(state, row, col, state.Turn);
+            var after  = string.Join(';', state.Moves);   // or: var after  = state.RenderString;
 
-            // If nothing changed (occupied cell on current 6-move board), tell caller
-            if (state.Moves.Count == beforeCount)
+            if (after == before)
             {
                 await Clients.Caller.SendAsync("Error", "Cell is occupied on the current board.");
                 return;
             }
 
             await store.SaveAsync(gameId, state);
-
-            // broadcast only to this game's group
             await Clients.Group(gameId).SendAsync("Snapshot", ToSnapshot(state));
+            
         }
         catch (Exception ex)
         {

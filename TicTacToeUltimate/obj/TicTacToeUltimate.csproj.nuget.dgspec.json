@@ -72,6 +72,11 @@
           },
           "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.304/PortableRuntimeIdentifierGraph.json"
         }
+      },
+      "runtimes": {
+        "iossimulator-arm64": {
+          "#import": []
+        }
       }
     },
     "/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate/TicTacToeUltimate.csproj": {

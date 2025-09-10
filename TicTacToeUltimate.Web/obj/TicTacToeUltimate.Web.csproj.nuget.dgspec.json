@@ -72,6 +72,11 @@
           },
           "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.304/PortableRuntimeIdentifierGraph.json"
         }
+      },
+      "runtimes": {
+        "iossimulator-arm64": {
+          "#import": []
+        }
       }
     },
     "/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web.Client/TicTacToeUltimate.Web.Client.csproj": {
@@ -164,6 +169,9 @@
       "runtimes": {
         "browser-wasm": {
           "#import": []
+        },
+        "iossimulator-arm64": {
+          "#import": []
         }
       }
     },
@@ -237,6 +245,11 @@
             }
           },
           "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.304/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "iossimulator-arm64": {
+          "#import": []
         }
       }
     }
