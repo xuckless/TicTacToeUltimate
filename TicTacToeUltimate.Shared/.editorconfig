@@ -1,0 +1,5 @@
+# Analyzer & compiler warning tuning
+dotnet_analyzer_diagnostic.category-Style.severity = suggestion
+dotnet_analyzer_diagnostic.category-Design.severity = warning
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CA1822.severity = suggestion

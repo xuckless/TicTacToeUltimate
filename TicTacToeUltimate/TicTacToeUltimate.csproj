@@ -1,6 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
+
+        <Deterministic>true</Deterministic>
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+
+        <!-- Lock restore for identical packages across machines -->
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+
+        <!-- Diagnostics without breaking builds -->
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+
+        <!-- Keep warnings non-fatal -->
+        <!-- <TreatWarningsAsErrors>true</TreatWarningsAsErrors> -->
+
+        <!-- Trim path noise in PDBs for reproducibility -->
+        <PathMap>$(MSBuildProjectDirectory)=/src</PathMap>
+
         <TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
         <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
         <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
@@ -18,14 +35,14 @@
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
         <ImplicitUsings>enable</ImplicitUsings>
-        <EnableDefaultCssItems>false</EnableDefaultCssItems>
+        <EnableDefaultCssItems>true</EnableDefaultCssItems>
         <Nullable>enable</Nullable>
 
         <!-- Display name -->
         <ApplicationTitle>TicTacToeUltimate</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.tictactoeultimate</ApplicationId>
+        <ApplicationId>com.wedirectsoftwares.tictactoeultimate</ApplicationId>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -42,12 +59,31 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
     </PropertyGroup>
 
+    <!-- macOS store rule: both archs or x64 only -->
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(Configuration)'=='Release'">
+        <Content Update="wwwroot\**\*">
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+    </ItemGroup>
+
     <ItemGroup>
         <!-- App Icon -->
         <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4"/>
 
         <!-- Splash Screen -->
         <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128"/>
+
+        <!-- Blazor static web assets -->
+        <Content Include="wwwroot\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+
+        <!-- If you have MAUI (non-Blazor) CSS, include it explicitly -->
+        <!-- <MauiCss Include="Resources\Styles\**\*.css" /> -->
 
         <!-- Images -->
         <MauiImage Include="Resources\Images\*"/>
