@@ -38,3 +38,6 @@ desktop.ini
 
 # VS Code (if anyone opens it)
 .vscode/
+
+.idea/
+WebApplication1/
