@@ -19,7 +19,7 @@ var backendBase = builder.Configuration["BackendBaseUrl"] ?? "https://localhost:
 builder.Services.AddHttpClient<ApiClient>(c => c.BaseAddress = new Uri(backendBase));
 
 // Add connection to game engine client
-builder.Services.AddSingleton<GameClient>();
+builder.Services.AddScoped<GameClient>();
 
 // TestHub connection
 builder.Services.AddSingleton(sp =>
