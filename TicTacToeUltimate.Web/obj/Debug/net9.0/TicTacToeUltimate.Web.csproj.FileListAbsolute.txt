@@ -81,3 +81,4 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/Microsoft.AspNetCore.SignalR.Protocols.Json.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/Microsoft.Extensions.Features.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/System.Net.ServerSentEvents.dll
+/Users/ali/RiderProjects/TicTacToeUltimate/TicTacToeUltimate.Web/bin/Debug/net9.0/TicTacToeUltimate.Shared.xml

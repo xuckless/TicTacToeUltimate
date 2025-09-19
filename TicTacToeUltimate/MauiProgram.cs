@@ -92,7 +92,7 @@ public static class MauiProgram
                 .ConfigureLogging(lb => lb.SetMinimumLevel(LogLevel.Debug))
                 .Build());
 
-        builder.Services.AddSingleton<GameClient>();
+        builder.Services.AddScoped<GameClient>();
 
         return builder.Build();
     }

@@ -14,7 +14,7 @@
       <AssetTraitValue></AssetTraitValue>
       <Fingerprint>ulwx5ug5io</Fingerprint>
       <Integrity>rj8ePGmpNx+FtocWz9XNQoiDc8+pvufrDYT0D4KxSFk=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <FileLength>397</FileLength>
       <LastWriteTime>Thu, 04 Sep 2025 20:15:44 GMT</LastWriteTime>
@@ -34,7 +34,7 @@
       <AssetTraitValue></AssetTraitValue>
       <Fingerprint>0fetsqr0xw</Fingerprint>
       <Integrity>POJuM0L0Yyw2C0yqxJI674spcOSp5tSKbbS3n+KpX6k=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <FileLength>778</FileLength>
       <LastWriteTime>Sat, 06 Sep 2025 02:31:52 GMT</LastWriteTime>

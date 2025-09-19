@@ -171,3 +171,4 @@
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/TicTacToeUltimate.Shared.dll
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/TicTacToeUltimate.Shared.pdb
 /Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/obj/Debug/net9.0/compressed/jodycx5jfc-4mlhh4tkcb.gz
+/Users/ali/RiderProjects/TicTacToeUltimate/BackendWebAPI/bin/Debug/net9.0/TicTacToeUltimate.Shared.xml

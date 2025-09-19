@@ -41,3 +41,84 @@ desktop.ini
 
 .idea/
 WebApplication1/
+
+
+# Build outputs
+bin/
+obj/
+*/bin/
+*/obj/
+
+# .NET Core
+*.rptproj
+*.dotSettings.user
+*.UserSettings.xml
+
+# Visual Studio / Rider / IDE stuff
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+*.sublime*
+.vscode/
+
+# NuGet
+*.nupkg
+# The packages folder can be ignored because of PackageReference
+# packages/
+
+# Others
+*.log
+*.tmp
+*.temp
+*.cache
+
+# MAUI / Xamarin
+platforms/
+Properties/launchSettings.json
+MauiLayouts/
+*.plist
+obj/**/android/assets/*
+
+# Blazor / Web
+wwwroot/bin/
+wwwroot/obj/
+wwwroot/**/*.g.*
+wwwroot/**/*.bundle.*
+wwwroot/**/*.map
+
+# Tools
+*.vsix
+*.dbmdl
+*.backup
+*.userprefs
+
+# Mac / macOS
+.DS_Store
+*.DS_Store
+
+# Apple Simulator / Derived Data
+DerivedData/
+*.xcassets
+*.xcuserstate
+
+# Certificates, secrets etc.
+*.p12
+*.key
+secrets.json
+
+# Lock file
+packages.lock.json
+
+# Rider caches
+.idea/
+.idea_modules/
+.idea/*.iml
+.idea/workspace.xml
+.idea/tasks.xml
+
+# Rider build outputs
+*.dotCover
+## Rider plugin configs

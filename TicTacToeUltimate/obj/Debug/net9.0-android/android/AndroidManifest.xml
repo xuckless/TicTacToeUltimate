@@ -5,12 +5,12 @@
     Changes to this file may cause incorrect behavior and will be lost if
     the contents are regenerated.
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" package="com.companyname.tictactoeultimate" android:versionCode="1" android:versionName="1.0">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" package="com.wedirectsoftwares.tictactoeultimate" android:versionCode="1" android:versionName="1.0">
   <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="35" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.INTERNET" />
-  <permission android:name="com.companyname.tictactoeultimate.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" android:protectionLevel="signature" />
-  <uses-permission android:name="com.companyname.tictactoeultimate.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+  <permission android:name="com.wedirectsoftwares.tictactoeultimate.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" android:protectionLevel="signature" />
+  <uses-permission android:name="com.wedirectsoftwares.tictactoeultimate.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
   <uses-permission android:name="android.permission.WAKE_LOCK" />
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" tools:node="merge" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -44,7 +44,7 @@
       </intent-filter>
     </activity>
     <activity android:name="crc6468b6408a11370c2f.WebAuthenticatorIntermediateActivity" android:configChanges="orientation|screenSize" android:exported="false" />
-    <provider android:name="microsoft.maui.essentials.fileProvider" android:authorities="com.companyname.tictactoeultimate.fileProvider" android:exported="false" android:grantUriPermissions="true">
+    <provider android:name="microsoft.maui.essentials.fileProvider" android:authorities="com.wedirectsoftwares.tictactoeultimate.fileProvider" android:exported="false" android:grantUriPermissions="true">
       <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/microsoft_maui_essentials_fileprovider_file_paths" />
     </provider>
     <receiver android:name="crc64e53d2f592022988e.ConnectivityBroadcastReceiver" android:enabled="true" android:exported="false" android:label="Essentials Connectivity Broadcast Receiver" />
@@ -52,8 +52,8 @@
     <receiver android:name="crc640a8d9a12ddbf2cf2.BatteryBroadcastReceiver" android:enabled="true" android:exported="false" android:label="Essentials Battery Broadcast Receiver" />
     <receiver android:name="crc640a8d9a12ddbf2cf2.EnergySaverBroadcastReceiver" android:enabled="true" android:exported="false" android:label="Essentials Energy Saver Broadcast Receiver" />
     <service android:name="crc64396a3fe5f8138e3f.KeepAliveService" />
-    <provider android:name="mono.MonoRuntimeProvider" android:authorities="com.companyname.tictactoeultimate.mono.MonoRuntimeProvider.__mono_init__" android:exported="false" android:initOrder="1999999999" />
-    <provider android:name="androidx.startup.InitializationProvider" android:authorities="com.companyname.tictactoeultimate.androidx-startup" android:exported="false" tools:node="merge">
+    <provider android:name="mono.MonoRuntimeProvider" android:authorities="com.wedirectsoftwares.tictactoeultimate.mono.MonoRuntimeProvider.__mono_init__" android:exported="false" android:initOrder="1999999999" />
+    <provider android:name="androidx.startup.InitializationProvider" android:authorities="com.wedirectsoftwares.tictactoeultimate.androidx-startup" android:exported="false" tools:node="merge">
       <meta-data android:name="androidx.profileinstaller.ProfileInstallerInitializer" android:value="androidx.startup" />
       <meta-data android:name="androidx.work.WorkManagerInitializer" android:value="androidx.startup" />
       <meta-data android:name="androidx.lifecycle.ProcessLifecycleInitializer" android:value="androidx.startup" />
@@ -122,7 +122,7 @@
     <uses-library android:name="androidx.window.sidecar" android:required="false" />
     <!-- Include the AdActivity and InAppPurchaseActivity configChanges and themes. -->
     <activity android:name="com.google.android.gms.ads.AdActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" android:exported="false" android:theme="@android:style/Theme.Translucent" tools:ignore="MissingClass" />
-    <provider android:name="com.google.android.gms.ads.MobileAdsInitProvider" android:authorities="com.companyname.tictactoeultimate.mobileadsinitprovider" android:exported="false" android:initOrder="100" tools:ignore="MissingClass" />
+    <provider android:name="com.google.android.gms.ads.MobileAdsInitProvider" android:authorities="com.wedirectsoftwares.tictactoeultimate.mobileadsinitprovider" android:exported="false" android:initOrder="100" tools:ignore="MissingClass" />
     <service android:name="com.google.android.gms.ads.AdService" android:enabled="true" android:exported="false" tools:ignore="MissingClass" />
     <activity android:name="com.google.android.gms.ads.OutOfContextTestingActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" android:exported="false" tools:ignore="MissingClass" />
     <activity android:name="com.google.android.gms.ads.NotificationHandlerActivity" android:excludeFromRecents="true" android:exported="false" android:launchMode="singleTask" android:taskAffinity="" android:theme="@android:style/Theme.Translucent.NoTitleBar" tools:ignore="MissingClass" />
