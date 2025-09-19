@@ -30,6 +30,10 @@
           }
         },
         "warningProperties": {
+          "noWarn": [
+            "NU1603",
+            "NU1701"
+          ],
           "warnAsError": [
             "NU1605"
           ]
@@ -71,11 +75,6 @@
             }
           },
           "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.304/PortableRuntimeIdentifierGraph.json"
-        }
-      },
-      "runtimes": {
-        "iossimulator-arm64": {
-          "#import": []
         }
       }
     },
@@ -131,6 +130,10 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreLockProperties": {
+          "restorePackagesWithLockFile": "true",
+          "nuGetLockFilePath": ""
         },
         "restoreAuditProperties": {
           "enableAudit": "true",

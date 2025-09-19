@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "TicTacToeUltimate.Web.Client",
   "resources": {
-    "hash": "sha256-4aXajP7O+yXetao9s+jbYIbAbHvAObeuBKxhKFXmoWg=",
+    "hash": "sha256-oq/l6OS1I50+B3h13evs8i9eb9NFu9xNFjuLmcrNdvE=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Authorization.n7we7nbch1.wasm": "Microsoft.AspNetCore.Authorization.wasm",
       "Microsoft.AspNetCore.Components.waskkzx0nn.wasm": "Microsoft.AspNetCore.Components.wasm",
@@ -210,10 +210,10 @@
       "icudt_CJK.tjcz0u77k5.dat": "icudt_CJK.dat",
       "icudt_EFIGS.tptq2av103.dat": "icudt_EFIGS.dat",
       "icudt_no_CJK.lfu7j35m59.dat": "icudt_no_CJK.dat",
-      "TicTacToeUltimate.Shared.bw0xqcuob0.wasm": "TicTacToeUltimate.Shared.wasm",
-      "TicTacToeUltimate.Shared.xn24807p9c.pdb": "TicTacToeUltimate.Shared.pdb",
-      "TicTacToeUltimate.Web.Client.1xjgagmdae.wasm": "TicTacToeUltimate.Web.Client.wasm",
-      "TicTacToeUltimate.Web.Client.773q7b9zif.pdb": "TicTacToeUltimate.Web.Client.pdb"
+      "TicTacToeUltimate.Shared.9g8im3x2de.wasm": "TicTacToeUltimate.Shared.wasm",
+      "TicTacToeUltimate.Shared.6sina8vsel.pdb": "TicTacToeUltimate.Shared.pdb",
+      "TicTacToeUltimate.Web.Client.4j40hdg337.wasm": "TicTacToeUltimate.Web.Client.wasm",
+      "TicTacToeUltimate.Web.Client.euab9aqm1x.pdb": "TicTacToeUltimate.Web.Client.pdb"
     },
     "jsModuleNative": {
       "dotnet.native.50iqa8w3ys.js": "sha256-pQdXuxfVeqYHOwd5HUM2ERd7OnXirj9JTF37b6OdTAc="
@@ -432,12 +432,12 @@
       "WindowsBase.361km0836k.wasm": "sha256-FacUCEIJYTnbOWgX/R9QP2QnurqRZwRIkDAH0N9z69s=",
       "mscorlib.qiu3j3msqk.wasm": "sha256-QvztpxTOEw4aMIl7zP3QtsPLNv/IWaK5wq22J4ReGrA=",
       "netstandard.lp03u0xxi4.wasm": "sha256-WVQsxULiAiEbyXLKolS7txnWVT82SsvsuMe4jJ+SqqI=",
-      "TicTacToeUltimate.Shared.bw0xqcuob0.wasm": "sha256-y2yW3vnzRUVUHzzgbDNCXW3hmhsege2Nh7/xSCKJ/ds=",
-      "TicTacToeUltimate.Web.Client.1xjgagmdae.wasm": "sha256-1fIMMStuknFIK1zJgPNN270HVf7ZdUsB6oJD22GyUqw="
+      "TicTacToeUltimate.Shared.9g8im3x2de.wasm": "sha256-t7JsnaSK02KrpoO+EfimdZfDYx0G0rthdwLyD+Kngow=",
+      "TicTacToeUltimate.Web.Client.4j40hdg337.wasm": "sha256-8Ns4Ks/H3vlMmYBAxJm2Q16Wk7Z5DbZjXgkAiMbRVhk="
     },
     "pdb": {
-      "TicTacToeUltimate.Shared.xn24807p9c.pdb": "sha256-g2E5rJjY5QWdKezkZQHyXvQOxttJ3yrK58qzzjQcv4g=",
-      "TicTacToeUltimate.Web.Client.773q7b9zif.pdb": "sha256-s1VD+Eb0kysWcqm8a5vSmEi23f5SVIXipUBo1WIF9/U="
+      "TicTacToeUltimate.Shared.6sina8vsel.pdb": "sha256-1hgKEp5OKeMWCGzeps2Ni3MIEH+SHyhDDTijajkxVW8=",
+      "TicTacToeUltimate.Web.Client.euab9aqm1x.pdb": "sha256-WsOgfw6SBaGOzDqgi1/J88hcRwnuSI23vYar7Xekc7c="
     }
   },
   "cacheBootResources": true,
