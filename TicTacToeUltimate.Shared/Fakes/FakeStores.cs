@@ -195,6 +195,8 @@ public static class FakeServiceCollectionExtensions
         services.TryAddSingleton<FakeSettingsStore>(); services.TryAddSingleton<ISettingsStore>(sp => sp.GetRequiredService<FakeSettingsStore>());
         services.TryAddSingleton<FakeAdCoordinator>(); services.TryAddSingleton<IAdCoordinator>(sp => sp.GetRequiredService<FakeAdCoordinator>());
         services.TryAddSingleton<IGameQueries, FakeGameQueries>();
+        services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<TicTacToeUltimate.Client.Local.LocalPlaySession>();
         return services;
     }
 }

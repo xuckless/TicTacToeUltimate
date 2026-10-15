@@ -251,3 +251,8 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
 - **Challenge links (fix, 2026-10-15):** the web "Invite by link" silently failed. A guest or username-less user got a HubException (`guest_not_allowed` / `username_required`) that the UI never caught.
   - **Decision:** guests may create and accept OPEN (untargeted) casual invite links, which are unrated and fit "guests = casual PvP". Friend-targeted and Daily challenges still require an account.
   - `InviteLinkButton` now shows specific error toasts.
+### Offline Pass & Play (2026-10-15)
+- Routes `/local` (setup) and `/local/play` (board, MatchLayout so no ads). `AuthGate` lets `local*` routes through with no session/server; its "Can't reach the server" splash links to Pass & Play.
+- Logic: `TicTacToeUltimate.Client/Local/LocalGameController.cs` (pure engine + local `MoveClock`; host calls `Tick()` at 10 Hz). `LocalPlaySession` singleton shares it between pages.
+- Rules: Classic `n3k3-fifo7-v1-w0-none`, optional pie (`…-pie`). Clocks: Unlimited (no timeout), Casual x2/x4 (timeout = random legal move, or keep sides in the pie decision), Sudden death = Ranked schedule (timeout = loss). Leaving the board pauses the clock.
+- Rematch swaps who opens as X; session score kept in memory. No rating, streak, quest or ads.

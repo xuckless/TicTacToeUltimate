@@ -1,0 +1,82 @@
+@page "/local"
+@using TicTacToeUltimate.Client.Local
+@inject LocalPlaySession Local
+@inject NavigationManager Nav
+
+<PageTitle>Pass &amp; Play · TTT Ultimate</PageTitle>
+<h1 class="t-title">Pass &amp; Play</h1>
+<p class="t-small t-muted" style="margin:0">Two players, one device. Works offline. Unrated: no rating, streak or quest progress.</p>
+
+@if (Local.Current is { } cur)
+{
+    <Card Title="Current session">
+        <p style="margin:0" data-testid="local-current">
+            @cur.NameOf(0) <strong class="t-num">@cur.Score[0] – @cur.Score[1]</strong> @cur.NameOf(1)
+            · @(cur.IsLive ? $"game {cur.GameNumber} in progress" : $"{cur.GameNumber} played")
+        </p>
+        <Button Href="local/play" Block="true">@(cur.IsLive ? "Resume" : "Back to board")</Button>
+    </Card>
+}
+
+<Card Title="Players">
+    <TextField Label="Player 1 (starts as X)" Value="@_p1" ValueChanged="v => _p1 = v" Placeholder="@LocalGameOptions.DefaultPlayer1" MaxLength="LocalGameOptions.MaxNameLength" />
+    <TextField Label="Player 2" Value="@_p2" ValueChanged="v => _p2 = v" Placeholder="@LocalGameOptions.DefaultPlayer2" MaxLength="LocalGameOptions.MaxNameLength" OnEnter="Start" />
+    <p class="t-small t-muted" style="margin:0">Colours swap every rematch.</p>
+</Card>
+
+<Card Title="Clock">
+    <div class="local-options" role="radiogroup" aria-label="Clock">
+        @foreach (var c in Clocks)
+        {
+            var on = _tc == c.Tc;
+            <button type="button" role="radio" aria-checked="@(on ? "true" : "false")" class="mode-btn local-opt @(on ? "on" : null)"
+                    data-testid="@($"tc-{c.Tc}")" @onclick="() => _tc = c.Tc">
+                <span class="t-label">@c.Name</span><span class="sub">@c.Sub</span>
+            </button>
+        }
+    </div>
+</Card>
+
+<Card Title="Rules">
+    <p class="t-small t-muted" style="margin:0">Classic: 7 pieces on the board, the oldest vanishes. The faded piece is about to vanish and can't complete a line.</p>
+    <label class="local-toggle">
+        <input type="checkbox" checked="@_pie" @onchange="e => _pie = e.Value is true" data-testid="pie" />
+        <span><strong>Pie rule</strong><br /><span class="t-small t-muted">After X's first move, O may take X's position instead.</span></span>
+    </label>
+</Card>
+
+<Button Variant="hero" Block="true" OnClick="Start" data-testid="local-start">@(Local.Current is null ? "Start" : "Start new session")</Button>
+
+@code {
+    private sealed record ClockOption(TimeControl Tc, string Name, string Sub);
+
+    private static readonly ClockOption[] Clocks =
+    [
+        new(TimeControl.Unlimited, "Unlimited", "No clock"),
+        new(TimeControl.CasualX4, "Casual x4", "60s · timeout auto-moves"),
+        new(TimeControl.CasualX2, "Casual x2", "30s · timeout auto-moves"),
+        new(TimeControl.Ranked, "Sudden death", "15s, shrinking · timeout loses"),
+    ];
+
+    private string _p1 = "", _p2 = "";
+    private TimeControl _tc = TimeControl.Unlimited;
+    private bool _pie;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Local.Current?.Options is { } o)
+        {
+            _p1 = o.Player1 == LocalGameOptions.DefaultPlayer1 ? "" : o.Player1;
+            _p2 = o.Player2 == LocalGameOptions.DefaultPlayer2 ? "" : o.Player2;
+            _tc = o.TimeControl;
+            _pie = o.Pie;
+        }
+    }
+
+    private void Start()
+    {
+        Local.Start(new LocalGameOptions { Player1 = _p1, Player2 = _p2, TimeControl = _tc, Pie = _pie });
+        Nav.NavigateTo("local/play");
+    }
+}

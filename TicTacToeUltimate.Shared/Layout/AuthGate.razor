@@ -2,12 +2,18 @@
 @inject NavigationManager Nav
 @implements IDisposable
 
-@if (_error is not null && Session.State.Status == SessionStatus.Initializing)
+@if (IsOfflineRoute)
+{
+    @* Pass & Play works with no server and no session. *@
+    @ChildContent
+}
+else if (_error is not null && Session.State.Status == SessionStatus.Initializing)
 {
     <div class="splash" style="flex-direction:column;gap:16px;text-align:center;padding:16px">
         <span>Can't reach the server</span>
         <span class="t-small t-muted">@_error</span>
         <Button OnClick="Init">Retry</Button>
+        <Button Variant="secondary" Href="local">Play offline · Pass &amp; Play</Button>
     </div>
 }
 else if (Session.State.Status == SessionStatus.Initializing || RedirectTarget() is not null)
@@ -49,9 +55,13 @@ else
 
     private string Path => Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].Trim('/').ToLowerInvariant();
 
+    /// <summary>Offline pass-and-play routes never wait for (or redirect on) the session.</summary>
+    private bool IsOfflineRoute => Path == "local" || Path.StartsWith("local/", StringComparison.Ordinal);
+
     /// <summary>Where the current route must redirect to, or null.</summary>
     private string? RedirectTarget()
     {
+        if (IsOfflineRoute) return null;
         var s = Session.State;
         var path = Path;
         if (s.Status == SessionStatus.SignedOut)
