@@ -1,0 +1,650 @@
+{
+ "random|random": {
+  "xWin": 0.522,
+  "oWin": 0.476,
+  "draw": 0.002,
+  "games": 1000,
+  "KO": 0.305,
+  "overtime": 0.353
+ },
+ "random|greedy": {
+  "xWin": 0.116,
+  "oWin": 0.884,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.905,
+  "overtime": 0.025
+ },
+ "random|mm1": {
+  "xWin": 0.011,
+  "oWin": 0.989,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.753,
+  "overtime": 0.039
+ },
+ "random|mm2": {
+  "xWin": 0.013,
+  "oWin": 0.987,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.542,
+  "overtime": 0.144
+ },
+ "random|mm3": {
+  "xWin": 0.02,
+  "oWin": 0.98,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.595,
+  "overtime": 0.135
+ },
+ "random|novice": {
+  "xWin": 0.163,
+  "oWin": 0.836,
+  "draw": 0.001,
+  "games": 1000,
+  "KO": 0.731,
+  "overtime": 0.108
+ },
+ "random|casual": {
+  "xWin": 0.061,
+  "oWin": 0.939,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.439,
+  "overtime": 0.234
+ },
+ "random|club": {
+  "xWin": 0.033,
+  "oWin": 0.967,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.515,
+  "overtime": 0.156
+ },
+ "random|strong": {
+  "xWin": 0.02666666666666667,
+  "oWin": 0.9733333333333334,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.5066666666666667,
+  "overtime": 0.18666666666666668
+ },
+ "greedy|random": {
+  "xWin": 0.948,
+  "oWin": 0.052,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.903,
+  "overtime": 0.029
+ },
+ "greedy|greedy": {
+  "xWin": 0.614,
+  "oWin": 0.386,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.993,
+  "overtime": 0.006
+ },
+ "greedy|mm1": {
+  "xWin": 0.128,
+  "oWin": 0.872,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.942,
+  "overtime": 0.037
+ },
+ "greedy|mm2": {
+  "xWin": 0.058,
+  "oWin": 0.942,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.757,
+  "overtime": 0.18
+ },
+ "greedy|mm3": {
+  "xWin": 0.07,
+  "oWin": 0.93,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.8116666666666666,
+  "overtime": 0.13166666666666665
+ },
+ "greedy|novice": {
+  "xWin": 0.706,
+  "oWin": 0.294,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.983,
+  "overtime": 0.015
+ },
+ "greedy|casual": {
+  "xWin": 0.337,
+  "oWin": 0.663,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.776,
+  "overtime": 0.166
+ },
+ "greedy|club": {
+  "xWin": 0.157,
+  "oWin": 0.843,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.73,
+  "overtime": 0.206
+ },
+ "greedy|strong": {
+  "xWin": 0.09333333333333334,
+  "oWin": 0.9066666666666666,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.785,
+  "overtime": 0.14833333333333334
+ },
+ "mm1|random": {
+  "xWin": 0.992,
+  "oWin": 0.008,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.809,
+  "overtime": 0.026
+ },
+ "mm1|greedy": {
+  "xWin": 0.943,
+  "oWin": 0.057,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.958,
+  "overtime": 0.028
+ },
+ "mm1|mm1": {
+  "xWin": 0.519,
+  "oWin": 0.472,
+  "draw": 0.009,
+  "games": 1000,
+  "KO": 0.387,
+  "overtime": 0.455
+ },
+ "mm1|mm2": {
+  "xWin": 0.301,
+  "oWin": 0.696,
+  "draw": 0.003,
+  "games": 1000,
+  "KO": 0.286,
+  "overtime": 0.618
+ },
+ "mm1|mm3": {
+  "xWin": 0.28833333333333333,
+  "oWin": 0.7083333333333334,
+  "draw": 0.0033333333333333335,
+  "games": 600,
+  "KO": 0.4666666666666667,
+  "overtime": 0.37
+ },
+ "mm1|novice": {
+  "xWin": 0.954,
+  "oWin": 0.046,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.941,
+  "overtime": 0.025
+ },
+ "mm1|casual": {
+  "xWin": 0.668,
+  "oWin": 0.331,
+  "draw": 0.001,
+  "games": 1000,
+  "KO": 0.526,
+  "overtime": 0.338
+ },
+ "mm1|club": {
+  "xWin": 0.44,
+  "oWin": 0.555,
+  "draw": 0.005,
+  "games": 1000,
+  "KO": 0.385,
+  "overtime": 0.503
+ },
+ "mm1|strong": {
+  "xWin": 0.365,
+  "oWin": 0.63,
+  "draw": 0.005,
+  "games": 600,
+  "KO": 0.485,
+  "overtime": 0.345
+ },
+ "mm2|random": {
+  "xWin": 0.99,
+  "oWin": 0.01,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.606,
+  "overtime": 0.114
+ },
+ "mm2|greedy": {
+  "xWin": 0.942,
+  "oWin": 0.058,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.791,
+  "overtime": 0.164
+ },
+ "mm2|mm1": {
+  "xWin": 0.724,
+  "oWin": 0.265,
+  "draw": 0.011,
+  "games": 1000,
+  "KO": 0.39,
+  "overtime": 0.535
+ },
+ "mm2|mm2": {
+  "xWin": 0.496,
+  "oWin": 0.422,
+  "draw": 0.082,
+  "games": 1000,
+  "KO": 0.051,
+  "overtime": 0.812
+ },
+ "mm2|mm3": {
+  "xWin": 0.27166666666666667,
+  "oWin": 0.7283333333333334,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.26,
+  "overtime": 0.6533333333333333
+ },
+ "mm2|novice": {
+  "xWin": 0.958,
+  "oWin": 0.042,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.748,
+  "overtime": 0.159
+ },
+ "mm2|casual": {
+  "xWin": 0.789,
+  "oWin": 0.2,
+  "draw": 0.011,
+  "games": 1000,
+  "KO": 0.198,
+  "overtime": 0.61
+ },
+ "mm2|club": {
+  "xWin": 0.62,
+  "oWin": 0.339,
+  "draw": 0.041,
+  "games": 1000,
+  "KO": 0.116,
+  "overtime": 0.755
+ },
+ "mm2|strong": {
+  "xWin": 0.32666666666666666,
+  "oWin": 0.6716666666666666,
+  "draw": 0.0016666666666666668,
+  "games": 600,
+  "KO": 0.2683333333333333,
+  "overtime": 0.6416666666666667
+ },
+ "mm3|random": {
+  "xWin": 0.99,
+  "oWin": 0.01,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.6283333333333333,
+  "overtime": 0.125
+ },
+ "mm3|greedy": {
+  "xWin": 0.9483333333333334,
+  "oWin": 0.051666666666666666,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.8583333333333333,
+  "overtime": 0.085
+ },
+ "mm3|mm1": {
+  "xWin": 0.6866666666666666,
+  "oWin": 0.30833333333333335,
+  "draw": 0.005,
+  "games": 600,
+  "KO": 0.5633333333333334,
+  "overtime": 0.3016666666666667
+ },
+ "mm3|mm2": {
+  "xWin": 0.7283333333333334,
+  "oWin": 0.27,
+  "draw": 0.0016666666666666668,
+  "games": 600,
+  "KO": 0.2866666666666667,
+  "overtime": 0.6683333333333333
+ },
+ "mm3|mm3": {
+  "xWin": 0.505,
+  "oWin": 0.495,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.4,
+  "overtime": 0.49833333333333335
+ },
+ "mm3|novice": {
+  "xWin": 0.96,
+  "oWin": 0.04,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.7683333333333333,
+  "overtime": 0.12166666666666667
+ },
+ "mm3|casual": {
+  "xWin": 0.845,
+  "oWin": 0.155,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.4266666666666667,
+  "overtime": 0.4666666666666667
+ },
+ "mm3|club": {
+  "xWin": 0.8266666666666667,
+  "oWin": 0.17333333333333334,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.32166666666666666,
+  "overtime": 0.6
+ },
+ "mm3|strong": {
+  "xWin": 0.5666666666666667,
+  "oWin": 0.43333333333333335,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.43,
+  "overtime": 0.475
+ },
+ "novice|random": {
+  "xWin": 0.863,
+  "oWin": 0.137,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.706,
+  "overtime": 0.131
+ },
+ "novice|greedy": {
+  "xWin": 0.417,
+  "oWin": 0.583,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.975,
+  "overtime": 0.022
+ },
+ "novice|mm1": {
+  "xWin": 0.079,
+  "oWin": 0.921,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.897,
+  "overtime": 0.047
+ },
+ "novice|mm2": {
+  "xWin": 0.048,
+  "oWin": 0.952,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.679,
+  "overtime": 0.19
+ },
+ "novice|mm3": {
+  "xWin": 0.055,
+  "oWin": 0.945,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.7283333333333334,
+  "overtime": 0.16166666666666665
+ },
+ "novice|novice": {
+  "xWin": 0.565,
+  "oWin": 0.435,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.931,
+  "overtime": 0.053
+ },
+ "novice|casual": {
+  "xWin": 0.248,
+  "oWin": 0.752,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.658,
+  "overtime": 0.222
+ },
+ "novice|club": {
+  "xWin": 0.112,
+  "oWin": 0.888,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.661,
+  "overtime": 0.233
+ },
+ "novice|strong": {
+  "xWin": 0.06833333333333333,
+  "oWin": 0.9316666666666666,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.7166666666666667,
+  "overtime": 0.18166666666666667
+ },
+ "casual|random": {
+  "xWin": 0.94,
+  "oWin": 0.059,
+  "draw": 0.001,
+  "games": 1000,
+  "KO": 0.492,
+  "overtime": 0.183
+ },
+ "casual|greedy": {
+  "xWin": 0.714,
+  "oWin": 0.286,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.818,
+  "overtime": 0.132
+ },
+ "casual|mm1": {
+  "xWin": 0.364,
+  "oWin": 0.635,
+  "draw": 0.001,
+  "games": 1000,
+  "KO": 0.529,
+  "overtime": 0.334
+ },
+ "casual|mm2": {
+  "xWin": 0.23,
+  "oWin": 0.756,
+  "draw": 0.014,
+  "games": 1000,
+  "KO": 0.18,
+  "overtime": 0.608
+ },
+ "casual|mm3": {
+  "xWin": 0.15833333333333333,
+  "oWin": 0.8416666666666667,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.3933333333333333,
+  "overtime": 0.45166666666666666
+ },
+ "casual|novice": {
+  "xWin": 0.802,
+  "oWin": 0.198,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.68,
+  "overtime": 0.211
+ },
+ "casual|casual": {
+  "xWin": 0.506,
+  "oWin": 0.488,
+  "draw": 0.006,
+  "games": 1000,
+  "KO": 0.235,
+  "overtime": 0.556
+ },
+ "casual|club": {
+  "xWin": 0.319,
+  "oWin": 0.669,
+  "draw": 0.012,
+  "games": 1000,
+  "KO": 0.21,
+  "overtime": 0.603
+ },
+ "casual|strong": {
+  "xWin": 0.215,
+  "oWin": 0.7833333333333333,
+  "draw": 0.0016666666666666668,
+  "games": 600,
+  "KO": 0.36333333333333334,
+  "overtime": 0.4633333333333333
+ },
+ "club|random": {
+  "xWin": 0.983,
+  "oWin": 0.017,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.575,
+  "overtime": 0.149
+ },
+ "club|greedy": {
+  "xWin": 0.882,
+  "oWin": 0.118,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.811,
+  "overtime": 0.145
+ },
+ "club|mm1": {
+  "xWin": 0.575,
+  "oWin": 0.424,
+  "draw": 0.001,
+  "games": 1000,
+  "KO": 0.458,
+  "overtime": 0.437
+ },
+ "club|mm2": {
+  "xWin": 0.342,
+  "oWin": 0.626,
+  "draw": 0.032,
+  "games": 1000,
+  "KO": 0.104,
+  "overtime": 0.754
+ },
+ "club|mm3": {
+  "xWin": 0.21833333333333332,
+  "oWin": 0.7816666666666666,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.32166666666666666,
+  "overtime": 0.575
+ },
+ "club|novice": {
+  "xWin": 0.904,
+  "oWin": 0.096,
+  "draw": 0.0,
+  "games": 1000,
+  "KO": 0.749,
+  "overtime": 0.168
+ },
+ "club|casual": {
+  "xWin": 0.663,
+  "oWin": 0.33,
+  "draw": 0.007,
+  "games": 1000,
+  "KO": 0.204,
+  "overtime": 0.607
+ },
+ "club|club": {
+  "xWin": 0.486,
+  "oWin": 0.49,
+  "draw": 0.024,
+  "games": 1000,
+  "KO": 0.142,
+  "overtime": 0.723
+ },
+ "club|strong": {
+  "xWin": 0.24666666666666667,
+  "oWin": 0.7533333333333333,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.35,
+  "overtime": 0.5266666666666666
+ },
+ "strong|random": {
+  "xWin": 0.9833333333333333,
+  "oWin": 0.016666666666666666,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.62,
+  "overtime": 0.13333333333333333
+ },
+ "strong|greedy": {
+  "xWin": 0.915,
+  "oWin": 0.085,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.8416666666666667,
+  "overtime": 0.10333333333333333
+ },
+ "strong|mm1": {
+  "xWin": 0.6866666666666666,
+  "oWin": 0.31166666666666665,
+  "draw": 0.0016666666666666668,
+  "games": 600,
+  "KO": 0.52,
+  "overtime": 0.33666666666666667
+ },
+ "strong|mm2": {
+  "xWin": 0.7316666666666667,
+  "oWin": 0.26666666666666666,
+  "draw": 0.0016666666666666668,
+  "games": 600,
+  "KO": 0.24166666666666667,
+  "overtime": 0.7166666666666667
+ },
+ "strong|mm3": {
+  "xWin": 0.47833333333333333,
+  "oWin": 0.5216666666666666,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.46166666666666667,
+  "overtime": 0.3983333333333333
+ },
+ "strong|novice": {
+  "xWin": 0.94,
+  "oWin": 0.06,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.7633333333333333,
+  "overtime": 0.13333333333333333
+ },
+ "strong|casual": {
+  "xWin": 0.8683333333333333,
+  "oWin": 0.13166666666666665,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.42,
+  "overtime": 0.4633333333333333
+ },
+ "strong|club": {
+  "xWin": 0.79,
+  "oWin": 0.21,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.355,
+  "overtime": 0.5833333333333334
+ },
+ "strong|strong": {
+  "xWin": 0.52,
+  "oWin": 0.48,
+  "draw": 0.0,
+  "games": 600,
+  "KO": 0.42833333333333334,
+  "overtime": 0.46166666666666667
+ }
+}

@@ -1,0 +1,54 @@
+{
+ "casual-casual": {
+  "scoringMoves": 10832,
+  "P_oppScoresImmediately": 0.32210118168389956,
+  "P_sameScorerNextOwnTurn": 0.002861890694239291,
+  "gamesWithStreak2": 0.0145,
+  "tiedAtTime": 0.5255,
+  "timeoutMarginHist": {
+   "10": 11,
+   "15": 14,
+   "25": 358,
+   "35": 2,
+   "40": 3,
+   "50": 8
+  }
+ },
+ "club-club": {
+  "scoringMoves": 10524,
+  "P_oppScoresImmediately": 0.3677309007981756,
+  "P_sameScorerNextOwnTurn": 0.0005701254275940707,
+  "gamesWithStreak2": 0.003,
+  "tiedAtTime": 0.715,
+  "timeoutMarginHist": {
+   "10": 2,
+   "15": 6,
+   "25": 243,
+   "50": 6
+  }
+ },
+ "strong-strong": {
+  "scoringMoves": 12238,
+  "P_oppScoresImmediately": 0.29065206733126325,
+  "P_sameScorerNextOwnTurn": 0.012256904722993954,
+  "gamesWithStreak2": 0.0745,
+  "tiedAtTime": 0.462,
+  "timeoutMarginHist": {
+   "10": 57,
+   "15": 4,
+   "25": 133,
+   "35": 3
+  }
+ },
+ "afterShatter_club": {
+  "piecesLeftHist": {
+   "0": 121,
+   "1": 76,
+   "2": 4786,
+   "3": 137,
+   "4": 5707
+  },
+  "avgScorerPieces": 0.9921492564884086,
+  "avgVictimPieces": 2.045349588990487
+ }
+}

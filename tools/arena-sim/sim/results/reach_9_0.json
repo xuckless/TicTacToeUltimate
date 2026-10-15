@@ -1,0 +1,1 @@
+{"n": 3, "k": 3, "W": 9, "ghost": 0, "states": 7726814, "complete": true, "transitions": 13925522, "scoring_moves": 5687792, "crit_moves": 803168, "crit_share_of_scoring": 0.14120910187995622, "first_crit_ply": 9, "witness_moves": [0, 1, 2, 3, 4, 6, 5, 7, 8], "secs": 193.6}
