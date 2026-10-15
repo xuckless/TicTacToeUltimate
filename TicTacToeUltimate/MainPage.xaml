@@ -8,7 +8,7 @@
     BackgroundColor="{DynamicResource PageBackgroundColor}">
 
     <Grid RowDefinitions="*,Auto">
-        <BlazorWebView Grid.Row="0" x:Name="blazorWebView" HostPage="wwwroot/index.html">
+        <BlazorWebView Grid.Row="0" x:Name="BlazorWebView" HostPage="wwwroot/index.html">
             <BlazorWebView.RootComponents>
                 <RootComponent Selector="#app" ComponentType="{x:Type shared:Routes}" />
             </BlazorWebView.RootComponents>

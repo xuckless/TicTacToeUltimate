@@ -12,28 +12,33 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 
+// <summary>
+// Entry point for the BackendWebAPI application.
+// Configures services, authentication, database connections, and middleware pipeline.
+// </summary>
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuration setup - loads additional JSON files for auth and payment settings
 builder.Configuration
     .AddJsonFile("appsettings.Auth.json", optional: true)
     .AddJsonFile("appsettings.Stripe.json", optional: true);
 
-// Postgres + EF Core
+// Postgres + EF Core - configures Entity Framework with PostgreSQL database
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 
-// Redis
+// Redis - configures Redis connection for caching and session storage
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(builder.Configuration.GetValue<string>("Redis")));
 builder.Services.AddSingleton<BackendWebAPI.Services.RedisStore>();
 
-// Stripe
+// Stripe - configures Stripe payment processing with API key
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 var stripe = builder.Configuration.GetSection("Stripe").Get<StripeSettings>();
 if (!string.IsNullOrWhiteSpace(stripe?.SecretKey))
     Stripe.StripeConfiguration.ApiKey = stripe.SecretKey;
 
-// Auth
+// Authentication - configures JWT Bearer tokens with Google and Apple OAuth providers
 builder.Services.AddAuthentication(o =>
 {
     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -72,20 +77,20 @@ builder.Services.AddAuthentication(o =>
     o.PrivateKey = (keyId, _) => Task.FromResult(pem.AsMemory());
 });
 
-// SignalR
+// SignalR - configures real-time communication with detailed error reporting
 builder.Services.AddSignalR().AddHubOptions<GameHub>(o => o.EnableDetailedErrors = true);
 
-// Swagger
+// Swagger - configures API documentation generation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Controllers
+// Controllers - registers MVC controllers
 builder.Services.AddControllers();
 
-// Game Engine
+// Game Engine - registers the game logic service as singleton
 builder.Services.AddSingleton<IGameEngine, GameEngine>();
 
-// CORS (dev-friendly)
+// CORS - configures cross-origin requests (development-friendly, allows all origins)
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("AllowFrontend", p => p
@@ -97,28 +102,32 @@ builder.Services.AddCors(opt =>
 
 var app = builder.Build();
 
+// Swagger UI - enables API documentation interface
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// HTTPS redirection - enforces HTTPS in production environments
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
 
+// Middleware pipeline - configures request processing order
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Minimal API & SignalR
-app.MapGet("/ping", () => "pong");
-app.MapHub<GameHub>("/hubs/game");
-app.MapHub<TestHub>("/hubs/test");
-
-// OAuth kickoffs & Stripe endpoints unchanged…
+// Minimal API endpoints and SignalR hubs
+app.MapGet("/ping", () => "pong"); // Health check endpoint
+app.MapHub<GameHub>("/hubs/game"); // Game logic SignalR hub
+app.MapHub<TestHub>("/hubs/test"); // Testing SignalR hub
 
 app.Run();
 
-// EF DbContext unchanged…
+/// <summary>
+/// Represents a request to create a payment with the specified amount.
+/// </summary>
+/// <param name="Amount">The payment amount in decimal format.</param>
 public record CreatePaymentRequest(decimal Amount);
