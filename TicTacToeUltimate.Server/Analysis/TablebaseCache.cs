@@ -26,6 +26,7 @@ public sealed partial class TablebaseCache : ITablebaseCache, IHostedService, ID
     private readonly CancellationTokenSource _cts = new();
     private readonly ILogger<TablebaseCache> _log;
     private readonly long _maxStates;
+    private int _disposed;
     private readonly IReadOnlyList<string> _precompute;
 
     /// <summary>Creates the cache from options.</summary>
@@ -124,13 +125,14 @@ public sealed partial class TablebaseCache : ITablebaseCache, IHostedService, ID
     /// <inheritdoc />
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        _cts.Cancel();
+        if (Volatile.Read(ref _disposed) == 0) _cts.Cancel();
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
         _cts.Cancel();
         _cts.Dispose();
         _gate.Dispose();

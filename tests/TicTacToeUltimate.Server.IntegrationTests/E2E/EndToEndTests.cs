@@ -42,7 +42,7 @@ public sealed class EndToEndTests
         await using var b = await f.SignInAsync(TttAppFactory.NewUsername("rb"));
         var (x, o, matchId) = await QueuePairAsync(f, a, b, TimeControl.Ranked);
         var snapX = await x.InvokeAsync<MatchSnapshotDto>(nameof(IGameHub.JoinMatch), matchId);
-        await o.InvokeAsync<MatchSnapshotDto>(nameof(IGameHub.JoinMatch), matchId);
+        var snapO = await o.InvokeAsync<MatchSnapshotDto>(nameof(IGameHub.JoinMatch), matchId);
         Assert.True(snapX.Rated);
         Assert.Equal(OpeningRule.PieSwap, snapX.Rules.Opening);
 
@@ -61,8 +61,13 @@ public sealed class EndToEndTests
         Assert.Equal(0, end.Result.WinnerSeat);
         Assert.Equal([0, 1, 2], end.Result.WinLine);
 
-        var seqX = x.EventsFor(matchId).Select(e => e.Seq).ToArray();
-        var seqO = o.EventsFor(matchId).Select(e => e.Seq).ToArray();
+        // Spec §5 join ordering: each client receives every event after its own snapshot Seq,
+        // so the streams are identical from the later of the two join snapshots on.
+        var joined = Math.Max(snapX.Seq, snapO.Seq);
+        var seqX = x.EventsFor(matchId).Select(e => e.Seq).Where(s => s > joined).ToArray();
+        var seqO = o.EventsFor(matchId).Select(e => e.Seq).Where(s => s > joined).ToArray();
+        Assert.NotEmpty(seqX);
+        Assert.Equal(x.EventsFor(matchId).Min(e => e.Seq), snapX.Seq + 1);
         Assert.Equal(seqX, seqO);
         Assert.Equal(seqX.Order(), seqX);
         Assert.Equal(seqX.Distinct().Count(), seqX.Length);

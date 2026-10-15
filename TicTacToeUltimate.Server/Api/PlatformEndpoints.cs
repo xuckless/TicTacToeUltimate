@@ -5,6 +5,7 @@ using TicTacToeUltimate.Server.Abstractions;
 using TicTacToeUltimate.Server.Abstractions.Persistence;
 using TicTacToeUltimate.Server.Auth;
 using TicTacToeUltimate.Server.Hosting;
+using TicTacToeUltimate.Server.Matches;
 using TicTacToeUltimate.Server.Persistence;
 using TicTacToeUltimate.Server.Progression;
 using TicTacToeUltimate.Server.Ratings;

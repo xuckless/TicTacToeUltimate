@@ -5,6 +5,7 @@ using TicTacToeUltimate.Engine.Clocks;
 using TicTacToeUltimate.Server.Abstractions;
 using TicTacToeUltimate.Server.Abstractions.Persistence;
 using TicTacToeUltimate.Server.Hosting;
+using TicTacToeUltimate.Server.Matches;
 using TicTacToeUltimate.Server.Progression;
 
 namespace TicTacToeUltimate.Server.Persistence.InMemory;
@@ -96,19 +97,11 @@ public static class DevFixtures
     }
 }
 
-/// <summary>Deterministic random playouts for fixtures. Uses the engine; falls back to a local §4.2 simulation if the engine is not built yet.</summary>
+/// <summary>Deterministic random playouts for fixtures. Uses the engine.</summary>
 public static class FixturePlayout
 {
-    private static readonly int[][] Lines3 = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
-
     /// <summary>Plays one game. Timeouts end games that exceed 60 plies.</summary>
     public static (IReadOnlyList<StoredAction> Actions, bool Swapped, MatchResultDto Result) Play(RuleSet rules, ulong seed, bool rated, DateTimeOffset start)
-    {
-        try { return PlayEngine(rules, seed, rated, start); }
-        catch (NotImplementedException) { return PlayLocal(rules, seed, rated, start); }
-    }
-
-    private static (IReadOnlyList<StoredAction>, bool, MatchResultDto) PlayEngine(RuleSet rules, ulong seed, bool rated, DateTimeOffset start)
     {
         var rng = new SplitMix64(seed);
         var state = Rules.Initial(rules);
@@ -124,39 +117,6 @@ public static class FixturePlayout
             state = r.State;
         }
         return (actions, state.Swapped, Result(state.Outcome, state.WinLine.ToArray(), state.ToMove, state.Swapped, rated));
-    }
-
-    private static (IReadOnlyList<StoredAction>, bool, MatchResultDto) PlayLocal(RuleSet rules, ulong seed, bool rated, DateTimeOffset start)
-    {
-        var rng = new SplitMix64(seed);
-        var pieces = new List<(int Cell, Color Color)>();
-        var actions = new List<StoredAction>();
-        var toMove = Color.X;
-        var placements = 0;
-        var ply = 0;
-        while (actions.Count < 60)
-        {
-            if (rules.Opening == OpeningRule.PieSwap && placements == 1 && ply == 1)
-            {
-                actions.Add(new StoredAction(ply++, 1, GameAction.KeepSides, 1500, false, null, start.AddSeconds(actions.Count * 3)));
-                continue;
-            }
-            int? removed = pieces.Count == rules.Window ? pieces[0].Cell : null;
-            var occupied = pieces.Skip(removed is null ? 0 : 1).Select(p => p.Cell).ToHashSet();
-            var legal = Enumerable.Range(0, 9).Where(c => !occupied.Contains(c)).ToArray();
-            if (legal.Length == 0) return (actions, false, new MatchResultDto(Outcome.Draw, null, EndReason.Draw, [], rated, null));
-            var cell = legal[rng.NextInt(legal.Length)];
-            if (removed is not null) pieces.RemoveAt(0);
-            pieces.Add((cell, toMove));
-            placements++;
-            actions.Add(new StoredAction(ply++, toMove == Color.X ? 0 : 1, GameAction.Place(cell), 800 + rng.NextInt(4000), false, removed, start.AddSeconds(actions.Count * 3)));
-            var mine = pieces.Where((p, i) => p.Color == toMove && !(pieces.Count == rules.Window && i == 0 && !rules.VanishingPieceCanWin)).Select(p => p.Cell).ToHashSet();
-            var line = Lines3.FirstOrDefault(l => l.All(mine.Contains));
-            if (line is not null)
-                return (actions, false, Result(toMove == Color.X ? Outcome.XWins : Outcome.OWins, line, toMove, false, rated));
-            toMove = toMove == Color.X ? Color.O : Color.X;
-        }
-        return (actions, false, Result(Outcome.None, [], toMove, false, rated));
     }
 
     private static int SeatOf(Color c, bool swapped) => (c == Color.X) != swapped ? 0 : 1;

@@ -1,7 +1,6 @@
-using System.Globalization;
-using System.Text.RegularExpressions;
-using TicTacToeUltimate.Engine;
+using System.Diagnostics.CodeAnalysis;
 using TicTacToeUltimate.Engine.Clocks;
+using TicTacToeUltimate.Engine;
 
 namespace TicTacToeUltimate.Server.Matches;
 
@@ -67,22 +66,19 @@ public sealed class EngineClockSchedule : IClockSchedule
     public (TimeSpan AtGameElapsed, TimeSpan Allowance)? NextStep(TimeControl tc, TimeSpan gameElapsed) => MoveClock.NextStep(tc, gameElapsed);
 }
 
-/// <summary>Canonical rules-id parser local to WP2 (mirrors <see cref="RuleSet.Id"/>).</summary>
-public static partial class RuleIds
+/// <summary>Ruleset-id helpers over the engine's <see cref="RuleSet.TryParse"/> (single source of truth for ids).</summary>
+public static class RuleIds
 {
-    [GeneratedRegex(@"^n(\d+)k(\d+)-(?:fifo(\d+)|cap(\d+)|(none))-v([01])-w([01])-(none|pie|ban)$")]
-    private static partial Regex IdRegex();
-
-    /// <summary>Parses an id such as "n3k3-fifo7-v1-w0-pie"; falls back to <paramref name="fallback"/> on bad input.</summary>
-    public static RuleSet Parse(string? id, RuleSet fallback)
+    /// <summary>Parses an id such as "n3k3-fifo7-v1-w0-pie"; false when malformed.</summary>
+    public static bool TryParse(string? id, [NotNullWhen(true)] out RuleSet? rules)
     {
-        if (string.IsNullOrWhiteSpace(id)) return fallback;
-        var m = IdRegex().Match(id.Trim());
-        if (!m.Success) return fallback;
-        int I(int g) => int.Parse(m.Groups[g].Value, CultureInfo.InvariantCulture);
-        var removal = m.Groups[3].Success ? RemovalKind.GlobalFifo : m.Groups[4].Success ? RemovalKind.PerPlayerCap : RemovalKind.None;
-        var window = m.Groups[3].Success ? I(3) : m.Groups[4].Success ? I(4) : 0;
-        var opening = m.Groups[8].Value switch { "pie" => OpeningRule.PieSwap, "ban" => OpeningRule.BanCenter, _ => OpeningRule.None };
-        return new RuleSet(I(1), I(2), removal, window, m.Groups[6].Value == "1", m.Groups[7].Value == "1", opening);
+        rules = null;
+        return !string.IsNullOrWhiteSpace(id) && RuleSet.TryParse(id.Trim(), out rules);
     }
+
+    /// <summary>Parses an id; falls back to <paramref name="fallback"/> on bad input.</summary>
+    public static RuleSet Parse(string? id, RuleSet fallback) => TryParse(id, out var r) ? r : fallback;
+
+    /// <summary>Parses or falls back to <see cref="RuleSet.Default"/>.</summary>
+    public static RuleSet ParseOrDefault(string? id) => Parse(id, RuleSet.Default);
 }

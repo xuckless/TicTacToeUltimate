@@ -27,7 +27,7 @@ public static class CoreServiceCollectionExtensions
                 o.EnableDetailedErrors = env.IsDevelopment();
             })
             .AddJsonProtocol(o => InsertContracts(o.PayloadSerializerOptions.TypeInfoResolverChain));
-        services.TryAddSingleton<IUserIdProvider, SubUserIdProvider>();
+        services.Replace(ServiceDescriptor.Singleton<IUserIdProvider, SubUserIdProvider>());   // AddSignalR TryAdds DefaultUserIdProvider (NameIdentifier); we key users by "sub".
 
         services.AddAuthentication();
         services.AddAuthorization();
