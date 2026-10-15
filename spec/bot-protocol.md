@@ -38,7 +38,7 @@ Actions are idempotent per connection: the server derives the action id from `(s
 
 ```jsonc
 {"type":"hello","protocol":1,"botId":"…","botName":"dev_bot","serverTimeMs":1760500000000}
-{"type":"gameStart","matchId":"…","mode":"Casual","timeControl":"CasualX2","rules":{"id":"n3k3-fifo7-v1-w0-none","boardSize":3,"winLength":3,"removal":"GlobalFifo","window":7,"vacatedCellPlayable":true,"vanishingPieceCanWin":false,"opening":"None"},"seat":1,"you":"O","opponent":{"userId":"…","displayName":"ali_xo","avatarId":"a1","kind":"Account","provisional":false}}
+{"type":"gameStart","matchId":"…","mode":"Casual","timeControl":"CasualX2","rules":{"id":"n3k3-cap3-v0-w1-none","boardSize":3,"winLength":3,"removal":"PerPlayerCap","window":3,"vacatedCellPlayable":false,"vanishingPieceCanWin":true,"opening":"None"},"seat":1,"you":"O","opponent":{"userId":"…","displayName":"ali_xo","avatarId":"a1","kind":"Account","provisional":false}}
 {"type":"state","matchId":"…","seq":9,"ply":7,"phase":"AwaitingPlacement","toMove":"O","you":"O","yourTurn":true,"board":"O.OOXXX.X","actions":"4,0,8,2,6,3,5","nextToVanish":4,"legal":[1,4,7],"swapped":false,"deadlineAtMs":1760500031000,"allowanceMs":30000,"serverTimeMs":1760500001000}
 {"type":"ack","id":"m-17","matchId":"…","seq":10}
 {"type":"error","id":"m-17","matchId":"…","code":"occupied","message":"Cell 4 is occupied"}

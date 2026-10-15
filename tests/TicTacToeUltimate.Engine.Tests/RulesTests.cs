@@ -4,7 +4,8 @@ namespace TicTacToeUltimate.Engine.Tests;
 
 public class RulesTests
 {
-    private static readonly RuleSet D = RuleSet.Default;
+    /// <summary>Legacy FIFO-7 ghost rule (still the Arena board); the launch default is covered by the Default* tests below.</summary>
+    private static readonly RuleSet D = RuleSet.LegacyFifo7Ghost;
     private static readonly RuleSet Legacy = new(VanishingPieceCanWin: true);
 
     [Fact]
@@ -172,7 +173,7 @@ public class RulesTests
     [Fact]
     public void ReplayEqualsStepwiseApply_IllegalDoesNotMutate_CapacityHolds()
     {
-        foreach (var id in new[] { "n3k3-fifo7-v1-w0-none", "n3k3-fifo7-v1-w0-pie", "n3k3-cap3-v1-w1-none", "n4k3-fifo8-v1-w1-none" })
+        foreach (var id in new[] { "n3k3-cap3-v0-w1-none", "n3k3-cap3-v0-w1-pie", "n3k3-fifo7-v1-w0-none", "n3k3-fifo7-v1-w0-pie", "n3k3-cap3-v1-w1-none", "n4k3-fifo8-v1-w1-none" })
         {
             var r = Parse(id);
             int capacity = r.Removal == RemovalKind.PerPlayerCap ? 2 * r.Window : r.Window;
@@ -225,6 +226,7 @@ public class RulesTests
     [InlineData("n3k3-fifo7-v1-w0-pie")]
     [InlineData("n3k3-fifo7-v1-w1-ban")]
     [InlineData("n3k3-cap3-v0-w1-none")]
+    [InlineData("n3k3-cap3-v0-w1-pie")]
     [InlineData("n4k3-fifo8-v1-w1-none")]
     [InlineData("n5k4-none-v1-w0-none")]
     public void RuleSetIdRoundTrips(string id)
@@ -247,8 +249,60 @@ public class RulesTests
     [Fact]
     public void DefaultIds()
     {
-        Assert.Equal("n3k3-fifo7-v1-w0-none", RuleSet.Default.Id);
-        Assert.Equal("n3k3-fifo7-v1-w0-pie", RuleSet.RankedDefault.Id);
+        Assert.Equal("n3k3-cap3-v0-w1-none", RuleSet.Default.Id);
+        Assert.Equal("n3k3-cap3-v0-w1-pie", RuleSet.RankedDefault.Id);
+        Assert.Equal("n3k3-fifo7-v1-w0-none", RuleSet.LegacyFifo7Ghost.Id);
         Assert.Equal(8, LineTable.For(3, 3).Length);
+    }
+
+    [Fact]
+    public void Default_OwnOldestVanishesFirst_ThenVisibleLineWins()
+    {
+        // X: 8,0,1 (8 oldest); O: 3,7,6. X places 2: its oldest (8) vanishes first, then 0-1-2 wins.
+        var s = Play(RuleSet.Default, "8,3,0,7,1,6");
+        Assert.Equal(Color.X, s.ToMove);
+        Assert.Equal(8, Rules.NextToVanish(s));
+        Assert.Equal(new[] { 2 }, Rules.ImmediateWins(s, Color.X));
+        var won = Rules.Apply(s, GameAction.Place(2));
+        Assert.True(won.Ok);
+        Assert.Equal(8, won.VanishedCell);
+        Assert.Equal(Outcome.XWins, won.State.Outcome);
+        Assert.Equal(new[] { 0, 1, 2 }, won.State.WinLine);
+    }
+
+    [Fact]
+    public void Default_VisibleThreeInARowAlwaysWins()
+    {
+        // The playtest bug: under the ghost rule a visible line through the mover's oldest piece did not win.
+        // Under the launch rule any line of the mover's pieces on the board after the placement wins.
+        var r = RuleSet.Default;
+        for (ulong seed = 1; seed <= 300; seed++)
+        {
+            var rng = new SplitMix64(seed);
+            var s = Rules.Initial(r);
+            while (s.Phase != GamePhase.Ended)
+            {
+                var legal = Rules.LegalActions(s);
+                var mover = s.ToMove;
+                var next = Rules.Apply(s, legal[rng.NextInt(legal.Length)]).State;
+                bool visibleLine = LineTable.For(3, 3).Any(l => l.All(c => next.At(c) == mover));
+                Assert.Equal(visibleLine, next.Outcome == (mover == Color.X ? Outcome.XWins : Outcome.OWins));
+                Assert.True(next.Pieces.Count(p => p.Color == mover) <= 3);
+                s = next;
+                if (s.Ply > 60) break;
+            }
+        }
+    }
+
+    [Fact]
+    public void Default_JustVacatedCellIsNotPlayable()
+    {
+        var s = Play(RuleSet.Default, "0,4,1,5,8,6");
+        Assert.Equal(0, Rules.NextToVanish(s));
+        Assert.DoesNotContain(0, Rules.LegalCells(s));
+        Assert.Equal(MoveError.CellJustVacated, Rules.Apply(s, GameAction.Place(0)).Error);
+        // Next turn the cell is free again for X.
+        var s2 = Play(RuleSet.Default, "0,4,1,5,8,6,2,3");
+        Assert.Contains(0, Rules.LegalCells(s2));
     }
 }

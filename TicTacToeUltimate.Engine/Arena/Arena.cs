@@ -46,7 +46,7 @@ public enum ArenaEnd : byte
 public sealed record ArenaRules
 {
     /// <summary>Board rules (must be GlobalFifo, no opening rule). Ghost rule = <see cref="RuleSet.VanishingPieceCanWin"/> false.</summary>
-    public RuleSet Board { get; init; } = RuleSet.Default;
+    public RuleSet Board { get; init; } = RuleSet.LegacyFifo7Ghost;
     /// <summary>Starting HP per player.</summary>
     public int Hp { get; init; } = 125;
     /// <summary>Line damage by combo step (1st, 2nd, 3rd+ unanswered line).</summary>

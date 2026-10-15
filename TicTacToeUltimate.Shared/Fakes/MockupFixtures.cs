@@ -65,7 +65,7 @@ public static class MockupFixtures
 
     /// <summary>Open CasualX2 challenge from rook_raider.</summary>
     public static readonly ChallengeDto Challenge = new("K7Q2MX", "http://localhost:5028/c/K7Q2MX", Rook, Ali.UserId, TimeControl.CasualX2,
-        new RuleSetDto("n3k3-fifo7-v1-w0-none", 3, 3, RemovalKind.GlobalFifo, 7, true, false, OpeningRule.None),
+        new RuleSetDto("n3k3-cap3-v0-w1-none", 3, 3, RemovalKind.PerPlayerCap, 3, false, true, OpeningRule.None),
         ChallengeStatus.Open, Now.AddDays(1), null);
 
     /// <summary>Social state.</summary>
@@ -96,7 +96,7 @@ public static class MockupFixtures
         [new RatingDto(RatingPool.Ranked, 1552, 60, 412, false, GoldII, 38), new RatingDto(RatingPool.Daily, 1610, 80, 40, false, GoldI, 0)],
         new ProfileStatsDto(412, 239, 170, 3, 0.58, 12, 31, 4), [.. RecentGames], FriendStatus.Self);
 
-    private static readonly RuleSetDto RankedRules = new("n3k3-fifo7-v1-w0-pie", 3, 3, RemovalKind.GlobalFifo, 7, true, false, OpeningRule.PieSwap);
+    private static readonly RuleSetDto RankedRules = new("n3k3-cap3-v0-w1-pie", 3, 3, RemovalKind.PerPlayerCap, 3, false, true, OpeningRule.PieSwap);
 
     private static SeatDto[] Seats(bool sd) =>
     [
@@ -111,26 +111,26 @@ public static class MockupFixtures
         => new(snap.MatchId, snap, null!, null, snap.YourSeat, snap.YourSeat is null, myTurn, threats.IsDefault ? [] : threats, [], result, summary,
             false, false, null, false, null);
 
-    /// <summary>Match mockup: Ranked, game 0:41, your move (X), faded O at cell 2.</summary>
+    /// <summary>Match mockup: Ranked, game 0:41, your move (X, holding 3), your faded X at cell 0 vanishes when you place.</summary>
     public static MatchView Match(int? yourSeat = 0, bool myTurn = true)
     {
-        const string board = "X.OOOX.XO";
+        const string board = "X.OO.X.XO";
         var clock = new ClockDto(TimeControl.Ranked, 0, 15000, 15000, 41000, false, 10000, 60000, [4000, 4000]);
         var snap = new MatchSnapshotDto(MatchId, 40, MatchMode.Ranked, TimeControl.Ranked, true, RankedRules, Seats(false), false, [], board,
-            8, GamePhase.AwaitingPlacement, Color.X, myTurn ? 0 : 1, Empty(board), 2, clock, null, yourSeat, 0, false, 0);
+            6, GamePhase.AwaitingPlacement, Color.X, myTurn ? 0 : 1, Empty(board), 0, clock, null, yourSeat, 0, false, 0);
         return View(snap, myTurn);
     }
 
     /// <summary>Match mockup clock.</summary>
     public static ClockView MatchClock(bool myTurn = true) => new(11000, 15000, 41000, false, 10000, 19000, ClockUrgency.Normal, myTurn ? 0 : 1);
 
-    /// <summary>Sudden-death mockup: game 1:31, 8s window → 7s in 5s, 3s left, threat at cell 2, faded O at cell 0.</summary>
+    /// <summary>Sudden-death mockup: game 1:31, 8s window → 7s in 5s, 3s left, threat at cell 2 (O's 4-6 diagonal), your faded X at cell 3.</summary>
     public static MatchView SuddenDeath()
     {
-        const string board = "OX.XOOO.X";
+        const string board = ".X.XOOO.X";
         var clock = new ClockDto(TimeControl.Ranked, 0, 8000, 8000, 91000, true, 7000, 96000, [3000, 3500]);
         var snap = new MatchSnapshotDto(MatchId, 80, MatchMode.Ranked, TimeControl.Ranked, true, RankedRules, Seats(true), false, [], board,
-            14, GamePhase.AwaitingPlacement, Color.X, 0, Empty(board), 0, clock, null, 0, 0, false, 0);
+            14, GamePhase.AwaitingPlacement, Color.X, 0, Empty(board), 3, clock, null, 0, 0, false, 0);
         return View(snap, true, [2]);
     }
 

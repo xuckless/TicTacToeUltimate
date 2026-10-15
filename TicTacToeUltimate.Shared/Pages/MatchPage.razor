@@ -38,16 +38,28 @@ else
         <div class="match-board">
             <ThreatCallout Visible="@(_view.ThreatCells.Length > 0 && CanMove)" />
             <div class="arena-board-wrap @HitStopClass">
-            <Board Size="snap.Rules.BoardSize" Cells="@snap.Board" Ghost="Ghost" WinLine="@(IsArena ? null : snap.Result?.WinLine ?? _view.Result?.WinLine)"
+            <Board Size="snap.Rules.BoardSize" Cells="@snap.Board" Ghost="Ghost" Aging="Aging" WinLine="@(IsArena ? null : snap.Result?.WinLine ?? _view.Result?.WinLine)"
                    Winner="Winner" Threats="_view.ThreatCells" Legal="snap.LegalCells" Interactive="CanMove"
-                   Pending="_view.PendingCell" PendingColor="me?.Color" LastPlaced="LastPlaced" SuddenDeath="@(sd || ArenaRed)" OnCellSelected="Place" />
+                   Pending="_view.PendingCell" PendingColor="me?.Color" LastPlaced="LastPlaced" SuddenDeath="@(sd || ArenaRed)" OnCellSelected="Place" OnBlockedSelected="Blocked" />
             @if (IsArena && _hit is { } hit)
             {
                 <ShatterBurst Size="snap.Rules.BoardSize" Cells="hit.Shattered" Piece="ColorOfSeat(hit.Seat)" Damage="hit.Damage" Crit="hit.Crit"
                               RedAlert="hit.RedAlert" Ply="hit.Ply" />
             }
             </div>
-            <div class="match-hint">@HintText</div>
+            <div class="match-hint" data-testid="match-hint">
+                @if (BlockedText is { } bt)
+                {
+                    <span class="match-hint-blocked" role="alert">@bt</span>
+                }
+                else
+                {
+                    var (mover, waiting) = HintText;
+                    if (mover is not null) { <span>@mover</span> }
+                    if (mover is not null && waiting is not null) { <br /> }
+                    if (waiting is not null) { <span class="match-hint-sub">@waiting</span> }
+                }
+            </div>
             @if (_view.LastError is not null) { <div class="t-alert t-small" role="alert">@ErrorText(_view.LastError)</div> }
         </div>
 
@@ -251,6 +263,24 @@ else
     /// <summary>The faded piece: the next to vanish, only while the game runs.</summary>
     private int? Ghost => Ended ? null : _view?.Snapshot.NextToVanish;
 
+    /// <summary>Classic engine state (null in Arena, where the server's legal cells are used).</summary>
+    private GameState? EngineState => _view?.Snapshot.ArenaRules is null ? _view?.Engine : null;
+
+    /// <summary>The waiting side's oldest piece (vanishes on their next placement; per-player cap only).</summary>
+    private int? Aging => Ended ? null : BoardHints.WaitingVanish(EngineState);
+
+    private string? _blocked;
+    private int _blockedPly = -1;
+
+    private string? BlockedText => _blocked is not null && _view?.Snapshot.Ply == _blockedPly && CanMove ? _blocked : null;
+
+    private void Blocked(int cell)
+    {
+        if (!CanMove || _view is null) return;
+        _blocked = BoardHints.BlockedReason(EngineState, cell) ?? "You can't play there";
+        _blockedPly = _view.Snapshot.Ply;
+    }
+
     private Color? Winner => (_view?.Result ?? _view?.Snapshot.Result)?.Outcome switch
     {
         Outcome.XWins => Color.X,
@@ -289,14 +319,21 @@ else
         }
     }
 
-    private string? HintText
+    private (string? Mover, string? Waiting) HintText
     {
         get
         {
-            if (_view is null || Ended || Ghost is not int g) return null;
+            if (_view is null || Ended) return (null, null);
+            var spectator = _view.IsSpectator;
+            if (EngineState is { } e)
+                return (BoardHints.MoverCaption(e, moverIsYou: _view.IsMyTurn), BoardHints.WaitingCaption(e, waitingIsYou: !_view.IsMyTurn && !spectator));
+            if (Ghost is not int g) return (null, null);
             var c = _view.Snapshot.Board.Length > g ? _view.Snapshot.Board[g] : '.';
-            if (c == '.') return null;
-            return _view.IsMyTurn ? $"Faded {c} vanishes when you place" : $"Faded {c} vanishes on their move";
+            if (c == '.') return (null, null);
+            var mine = MySeatDto is { } me && (me.Color == Color.X ? 'X' : 'O') == c;
+            var blocked = !_view.Snapshot.Rules.VacatedCellPlayable;
+            if (_view.IsMyTurn && mine) return ($"Your faded {c} vanishes when you place{(blocked ? " — you can't play there this turn" : "")}", null);
+            return (_view.IsMyTurn ? $"Faded {c} vanishes when you place" : $"Faded {c} vanishes on their move", null);
         }
     }
 
@@ -352,7 +389,11 @@ else
     };
 
     // ---- intents ----
-    private Task Place(int cell) => CanMove ? Matches.PlaceAsync(Id, cell) : Task.CompletedTask;
+    private Task Place(int cell)
+    {
+        _blocked = null;
+        return CanMove ? Matches.PlaceAsync(Id, cell) : Task.CompletedTask;
+    }
     private Task Decide(bool swap) => Matches.DecideSwapAsync(Id, swap);
     private Task Resign() => Matches.ResignAsync(Id);
     private Task Emote(string id) => Matches.SendEmoteAsync(Id, id);

@@ -7,16 +7,18 @@
         var cell = i;
         var piece = PieceAt(cell);
         var ghost = piece is not null && Ghost == cell && !Mini;
+        var aging = piece is not null && Aging == cell && !ghost && !Mini;
         var threat = piece is null && Threats?.Contains(cell) == true;
         var pending = Pending == cell && piece is null;
         var shown = pending ? PendingColor : piece;
         var win = EffectiveWinLine.Contains(cell);
-        var enabled = Interactive && piece is null && !pending && (Legal is null || Legal.Contains(cell));
+        var enabled = Interactive && !pending && (Legal is null ? piece is null : Legal.Contains(cell));
+        var explain = Interactive && !enabled && !pending && OnBlockedSelected.HasDelegate;
         <button type="button" role="gridcell" data-cell="@cell"
-                class="t-cell @PieceClass(shown) @(ghost ? "fading" : null) @(threat ? "threat" : null) @(pending ? "pending" : null) @(win ? "win" : null)"
-                disabled="@(!enabled)" tabindex="@(Mini ? "-1" : null)"
-                aria-label="@CellLabel(cell, piece, ghost, threat, win)"
-                @onclick="() => Select(cell, enabled)" @onkeydown="e => OnKey(e, cell)">
+                class="t-cell @PieceClass(shown) @(ghost ? "fading" : null) @(aging ? "aging" : null) @(threat ? "threat" : null) @(pending ? "pending" : null) @(win ? "win" : null) @(explain ? "blocked" : null)"
+                disabled="@(!enabled && !explain)" aria-disabled="@(explain ? "true" : null)" tabindex="@(Mini ? "-1" : null)"
+                aria-label="@CellLabel(cell, piece, ghost, aging, threat, win)"
+                @onclick="() => Select(cell, enabled, explain)" @onkeydown="e => OnKey(e, cell)">
             @if (shown is not null)
             {
                 <span class="glyph @(LastPlaced == cell || pending ? "placed" : null)" aria-hidden="true">@(shown == Color.X ? "X" : "O")</span>
@@ -36,8 +38,10 @@
     [Parameter] public int Size { get; set; } = 3;
     /// <summary>N² chars row-major: 'X', 'O' or '.'.</summary>
     [Parameter] public string? Cells { get; set; }
-    /// <summary>Cell whose piece vanishes next (drawn faded). Pass null once the game ended.</summary>
+    /// <summary>Cell whose piece vanishes when the side to move places (drawn faded + dashed). Pass null once the game ended.</summary>
     [Parameter] public int? Ghost { get; set; }
+    /// <summary>The waiting side's piece that vanishes on their next placement (subtle clock marker). Null when none.</summary>
+    [Parameter] public int? Aging { get; set; }
     /// <summary>Winning cells (empty unless won). Never drawn through the ghost cell.</summary>
     [Parameter] public IReadOnlyList<int>? WinLine { get; set; }
     /// <summary>Winner colour for the line.</summary>
@@ -60,6 +64,8 @@
     [Parameter] public bool Mini { get; set; }
     /// <summary>Cell chosen.</summary>
     [Parameter] public EventCallback<int> OnCellSelected { get; set; }
+    /// <summary>A cell the mover can't play was clicked (e.g. the just-vacated cell); when set, such cells stay clickable so the page can explain why.</summary>
+    [Parameter] public EventCallback<int> OnBlockedSelected { get; set; }
 
     /// <summary>Win line actually drawn: empty when it would pass through the ghost (vanishing) piece.</summary>
     public IReadOnlyList<int> EffectiveWinLine =>
@@ -73,16 +79,18 @@
 
     private static string? PieceClass(Color? c) => c switch { Color.X => "x", Color.O => "o", _ => null };
 
-    private string CellLabel(int cell, Color? piece, bool ghost, bool threat, bool win)
+    private string CellLabel(int cell, Color? piece, bool ghost, bool aging, bool threat, bool win)
     {
         var s = $"Row {cell / Size + 1}, column {cell % Size + 1}, {(piece is null ? "empty" : piece.ToString())}";
-        if (ghost) s += ", vanishes next";
+        if (ghost) s += ", vanishes when the player to move places";
+        if (aging) s += ", vanishes on the other player's next move";
         if (threat) s += ", opponent threatens here";
         if (win) s += ", winning line";
         return s;
     }
 
-    private Task Select(int cell, bool enabled) => enabled ? OnCellSelected.InvokeAsync(cell) : Task.CompletedTask;
+    private Task Select(int cell, bool enabled, bool explain)
+        => enabled ? OnCellSelected.InvokeAsync(cell) : explain ? OnBlockedSelected.InvokeAsync(cell) : Task.CompletedTask;
 
     private async Task OnKey(KeyboardEventArgs e, int cell)
     {

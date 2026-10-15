@@ -114,7 +114,7 @@ public sealed class BotGatewayTests : IAsyncLifetime
         Assert.Equal(1, start.Seat);
         Assert.Equal(Color.O, start.You);
         Assert.Equal("human", start.Opponent.DisplayName);
-        Assert.Equal("n3k3-fifo7-v1-w0-none", start.Rules.Id);
+        Assert.Equal("n3k3-cap3-v0-w1-none", start.Rules.Id);
         var s0 = await bot.ExpectAsync<BotState>();
         Assert.False(s0.YourTurn);
         Assert.Equal(0, s0.Ply);

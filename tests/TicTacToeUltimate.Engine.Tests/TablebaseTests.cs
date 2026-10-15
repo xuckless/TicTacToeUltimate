@@ -53,12 +53,19 @@ public class TablebaseTests
     [Fact]
     public void DefaultOracles()
     {
-        var tb = Table("n3k3-fifo7-v1-w0-none");
+        var tb = Table("n3k3-cap3-v0-w1-none");
         var d = RuleSet.Default;
+        Assert.Equal(128_170, tb.StateCount);
+        Assert.Equal(116_074, tb.NonTerminalCount);
         Assert.Equal(new PositionValue(Value.Win, 13), tb.Evaluate(Rules.Initial(d)));
         Assert.Equal(new PositionValue(Value.Loss, 12), tb.Evaluate(Play(d, "1")));
         Assert.Equal(new PositionValue(Value.Draw, 0), tb.Evaluate(Play(d, "4")));
         Assert.Equal(new PositionValue(Value.Draw, 0), tb.Evaluate(Play(d, "0")));
+
+        var ghost = Table("n3k3-fifo7-v1-w0-none");
+        var g = RuleSet.LegacyFifo7Ghost;
+        Assert.Equal(new PositionValue(Value.Win, 13), ghost.Evaluate(Rules.Initial(g)));
+        Assert.Equal(new PositionValue(Value.Loss, 12), ghost.Evaluate(Play(g, "1")));
 
         var legacy = Table("n3k3-fifo7-v1-w1-none");
         var l = Parse("n3k3-fifo7-v1-w1-none");
@@ -74,7 +81,7 @@ public class TablebaseTests
         var sw = Stopwatch.StartNew();
         var tb = Tablebase.Build(RuleSet.Default, 5_000_000, CancellationToken.None);
         sw.Stop();
-        Assert.Equal(369_802, tb.StateCount);
+        Assert.Equal(128_170, tb.StateCount);
         Assert.True(sw.Elapsed < TimeSpan.FromSeconds(3), $"build took {sw.Elapsed}");
     }
 
@@ -90,7 +97,7 @@ public class TablebaseTests
     [Fact]
     public void MoveClassesAndPie()
     {
-        var tb = Table("n3k3-fifo7-v1-w0-none");
+        var tb = Table("n3k3-cap3-v0-w1-none");
         var moves = tb.EvaluateMoves(Rules.Initial(RuleSet.Default));
         Assert.Equal(9, moves.Length);
         foreach (var m in moves)
@@ -114,7 +121,7 @@ public class TablebaseTests
     [Fact]
     public void AnalyzerMarksBlunders()
     {
-        var tb = Table("n3k3-fifo7-v1-w0-none");
+        var tb = Table("n3k3-cap3-v0-w1-none");
         var actions = Notation.Parse("4,0,8,2,6,3,5");
         var plies = GameAnalyzer.Analyze(tb, RuleSet.Default, actions);
         Assert.Equal(actions.Length, plies.Length);

@@ -22,15 +22,22 @@ public sealed record RuleSet(
     bool VanishingPieceCanWin = false,
     OpeningRule Opening = OpeningRule.None)
 {
-    /// <summary>3x3, K3, FIFO 7, vacated playable, vanishing piece CANNOT win (owner's rule), no opening rule.</summary>
-    public static RuleSet Default { get; } = new();
-    /// <summary>Default + PieSwap (Ranked/Daily default).</summary>
-    public static RuleSet RankedDefault { get; } = new(Opening: OpeningRule.PieSwap);
+    /// <summary>
+    /// Launch rule (owner, 2026-10-15, replaces the w0 "ghost" rule): 3x3, K3, each player holds at most 3 pieces
+    /// (PerPlayerCap W=3). Placing a 4th removes the mover's OWN oldest piece first; that just-vacated cell is not
+    /// playable this turn; then any K-in-a-row of the mover's visible pieces wins. Id <c>n3k3-cap3-v0-w1-none</c>.
+    /// Note: the record's parameter defaults (<c>new RuleSet()</c>) are the legacy FIFO-7 ghost rule, see <see cref="LegacyFifo7Ghost"/>.
+    /// </summary>
+    public static RuleSet Default { get; } = new(Removal: RemovalKind.PerPlayerCap, Window: 3, VacatedCellPlayable: false, VanishingPieceCanWin: true);
+    /// <summary>Default + PieSwap (Ranked/Daily default), id <c>n3k3-cap3-v0-w1-pie</c>.</summary>
+    public static RuleSet RankedDefault { get; } = Default with { Opening = OpeningRule.PieSwap };
+    /// <summary>Superseded launch rule: global FIFO 7, vacated playable, the piece about to vanish cannot win (<c>n3k3-fifo7-v1-w0-none</c>). Still the Arena board.</summary>
+    public static RuleSet LegacyFifo7Ghost { get; } = new();
 
     /// <summary>Number of cells (N²).</summary>
     public int CellCount => BoardSize * BoardSize;
 
-    /// <summary>Canonical id: "n{N}k{K}-{fifo{W}|cap{W}|none}-v{0|1}-w{0|1}-{none|pie|ban}", e.g. "n3k3-fifo7-v1-w0-none".</summary>
+    /// <summary>Canonical id: "n{N}k{K}-{fifo{W}|cap{W}|none}-v{0|1}-w{0|1}-{none|pie|ban}", e.g. "n3k3-cap3-v0-w1-none".</summary>
     public string Id => string.Create(CultureInfo.InvariantCulture,
         $"n{BoardSize}k{WinLength}-{RemovalId}-v{(VacatedCellPlayable ? 1 : 0)}-w{(VanishingPieceCanWin ? 1 : 0)}-{OpeningId}");
 

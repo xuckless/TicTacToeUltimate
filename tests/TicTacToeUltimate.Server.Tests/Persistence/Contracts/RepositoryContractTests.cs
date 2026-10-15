@@ -146,7 +146,7 @@ public abstract class GameRepositoryContractTests<TF> : ContractBase<TF> where T
         Assert.Equal(2, back.Actions.Count);
         Assert.Equal(ActionKind.Swap, back.Actions[1].Action.Kind);
         Assert.Equal(setup.Seed, back.Setup.Seed);
-        Assert.Equal("n3k3-fifo7-v1-w0-pie", back.Setup.Rules.Id);
+        Assert.Equal("n3k3-cap3-v0-w1-pie", back.Setup.Rules.Id);
         Assert.Equal([0, 4, 8], back.Result.WinLine);
         Assert.Equal(1510, back.Ratings[0].After);
         var list = await R.Games.ListForUserAsync(b.Id, null, 10, Ct);
@@ -248,7 +248,7 @@ public abstract class ChallengeRepositoryContractTests<TF> : ContractBase<TF> wh
     {
         var code = "C" + Guid.NewGuid().ToString("N")[..7];
         var target = Guid.NewGuid();
-        var rec = new ChallengeRecord(code, Guid.NewGuid(), target, TimeControl.CasualX2, "n3k3-fifo7-v1-w0-none", ChallengeStatus.Open, null, null, T0, T0.AddHours(24));
+        var rec = new ChallengeRecord(code, Guid.NewGuid(), target, TimeControl.CasualX2, "n3k3-cap3-v0-w1-none", ChallengeStatus.Open, null, null, T0, T0.AddHours(24));
         Assert.True(await R.Challenges.CreateAsync(rec, Ct));
         Assert.False(await R.Challenges.CreateAsync(rec, Ct));
         Assert.Single(await R.Challenges.ListOpenForTargetAsync(target, T0, Ct));

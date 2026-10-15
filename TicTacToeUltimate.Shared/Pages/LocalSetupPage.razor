@@ -38,7 +38,16 @@
 </Card>
 
 <Card Title="Rules">
-    <p class="t-small t-muted" style="margin:0">Classic: 7 pieces on the board, the oldest vanishes. The faded piece is about to vanish and can't complete a line.</p>
+    <div class="local-options" role="radiogroup" aria-label="Rules">
+        @foreach (var p in Presets)
+        {
+            var on = _preset == p.Preset;
+            <button type="button" role="radio" aria-checked="@(on ? "true" : "false")" class="mode-btn local-opt @(on ? "on" : null)"
+                    data-testid="@($"rules-{p.Preset}")" @onclick="() => _preset = p.Preset">
+                <span class="t-label">@p.Name</span><span class="sub">@p.Sub</span>
+            </button>
+        }
+    </div>
     <label class="local-toggle">
         <input type="checkbox" checked="@_pie" @onchange="e => _pie = e.Value is true" data-testid="pie" />
         <span><strong>Pie rule</strong><br /><span class="t-small t-muted">After X's first move, O may take X's position instead.</span></span>
@@ -49,6 +58,14 @@
 
 @code {
     private sealed record ClockOption(TimeControl Tc, string Name, string Sub);
+    private sealed record PresetOption(LocalRulePreset Preset, string Name, string Sub);
+
+    private static readonly PresetOption[] Presets =
+    [
+        new(LocalRulePreset.Classic, "Classic", "3 pieces each. Placing a 4th removes your own oldest (you can't replay that cell this turn). Any 3 in a row wins."),
+        new(LocalRulePreset.Legacy7, "Legacy 7-piece", "7 pieces on the board, the oldest vanishes. The faded piece can't complete a line."),
+    ];
+    private LocalRulePreset _preset = LocalRulePreset.Classic;
 
     private static readonly ClockOption[] Clocks =
     [
@@ -71,12 +88,13 @@
             _p2 = o.Player2 == LocalGameOptions.DefaultPlayer2 ? "" : o.Player2;
             _tc = o.TimeControl;
             _pie = o.Pie;
+            _preset = o.Preset;
         }
     }
 
     private void Start()
     {
-        Local.Start(new LocalGameOptions { Player1 = _p1, Player2 = _p2, TimeControl = _tc, Pie = _pie });
+        Local.Start(new LocalGameOptions { Player1 = _p1, Player2 = _p2, TimeControl = _tc, Pie = _pie, Preset = _preset });
         Nav.NavigateTo("local/play");
     }
 }

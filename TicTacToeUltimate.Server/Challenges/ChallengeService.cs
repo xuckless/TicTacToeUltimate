@@ -56,7 +56,8 @@ public sealed class ChallengeService(
         ChallengeRecord? rec = null;
         for (var i = 0; i < 5 && rec is null; i++)
         {
-            var candidate = new ChallengeRecord(NewCode(), creator.UserId, request.ToUserId, request.TimeControl, RuleSet.Default.Id,
+            var candidate = new ChallengeRecord(NewCode(), creator.UserId, request.ToUserId, request.TimeControl,
+                MoveClock.IsArena(request.TimeControl) ? MatchModes.RulesFor(options, request.TimeControl).Id : RuleSet.Default.Id,
                 ChallengeStatus.Open, null, null, now, now.AddHours(options.Challenges.TtlHours));
             if (await repo.CreateAsync(candidate, ct).ConfigureAwait(false)) rec = candidate;
         }

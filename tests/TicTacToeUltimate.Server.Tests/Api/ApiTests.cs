@@ -29,9 +29,10 @@ public class ConfigTests
         using var p = new TestPlatform();
         var cfg = PlatformEndpoints.BuildConfig(p.Get<IOptions<TttOptions>>().Value, p.Get<TierCalculator>());
         Assert.True(cfg.DevAuth);
-        Assert.Equal("n3k3-fifo7-v1-w0-pie", cfg.Modes.Single(m => m.TimeControl == TimeControl.Ranked).Rules.Id);
-        Assert.False(cfg.Modes.Single(m => m.TimeControl == TimeControl.Ranked).Rules.VanishingPieceCanWin);
-        Assert.Equal("n3k3-fifo7-v1-w0-none", cfg.Modes.Single(m => m.TimeControl == TimeControl.CasualX2).Rules.Id);
+        Assert.Equal("n3k3-cap3-v0-w1-pie", cfg.Modes.Single(m => m.TimeControl == TimeControl.Ranked).Rules.Id);
+        Assert.True(cfg.Modes.Single(m => m.TimeControl == TimeControl.Ranked).Rules.VanishingPieceCanWin);
+        Assert.False(cfg.Modes.Single(m => m.TimeControl == TimeControl.Ranked).Rules.VacatedCellPlayable);
+        Assert.Equal("n3k3-cap3-v0-w1-none", cfg.Modes.Single(m => m.TimeControl == TimeControl.CasualX2).Rules.Id);
         Assert.Equal(6, cfg.Tiers.Length);
         Assert.Equal(EmoteCatalog.All.Count, cfg.Emotes.Length);
     }
@@ -39,6 +40,8 @@ public class ConfigTests
     [Theory]
     [InlineData("n3k3-fifo7-v1-w0-none")]
     [InlineData("n3k3-fifo7-v1-w0-pie")]
+    [InlineData("n3k3-cap3-v0-w1-none")]
+    [InlineData("n3k3-cap3-v0-w1-pie")]
     [InlineData("n4k3-cap4-v0-w1-ban")]
     [InlineData("n5k4-none-v1-w0-none")]
     public void RuleIdsRoundTrip(string id)

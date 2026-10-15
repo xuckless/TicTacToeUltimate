@@ -35,7 +35,7 @@ public class AnalysisTests
     [Fact]
     public async Task CacheWarmsInBackgroundAndNormalizesPie()
     {
-        using var cache = NewCache("n3k3-fifo7-v1-w0-none");
+        using var cache = NewCache("n3k3-cap3-v0-w1-none");
         var start = cache.StartAsync(TestContext.Current.CancellationToken);
         Assert.True(start.IsCompleted);   // never blocks host startup (/health)
         Assert.NotEqual(TablebaseStatus.Unavailable, cache.GetStatus(RuleSet.Default));
@@ -45,7 +45,7 @@ public class AnalysisTests
         Assert.True(cache.TryGet(RuleSet.RankedDefault, out var b));
         Assert.Same(a, b);
         Assert.Equal(TablebaseStatus.Ready, cache.GetStatus(RuleSet.RankedDefault));
-        Assert.Equal(369_802, a.StateCount);
+        Assert.Equal(128_170, a.StateCount);
 
         var ban = RuleSet.Default with { Opening = OpeningRule.BanCenter };
         Assert.NotEqual(TablebaseStatus.Ready, cache.GetStatus(ban));   // BanCenter is not normalized
@@ -61,7 +61,7 @@ public class AnalysisTests
         Assert.False(cache.TryGet(big, out _));
         Assert.Equal(TablebaseStatus.Unavailable, cache.GetStatus(big));
 
-        var legacy = RuleSet.Default with { VanishingPieceCanWin = true };
+        var legacy = RuleSet.LegacyFifo7Ghost with { VanishingPieceCanWin = true };
         Assert.False(cache.TryGet(legacy, out _));
         Assert.Equal(TablebaseStatus.Warming, cache.GetStatus(legacy));
         await WaitReady(cache, legacy);
@@ -78,7 +78,7 @@ public class AnalysisTests
         var dto = await svc.AnalyzeAsync(game, TestContext.Current.CancellationToken);
         Assert.NotNull(dto);
         Assert.Equal(game.Id, dto.GameId);
-        Assert.Equal("n3k3-fifo7-v1-w0-none", dto.RulesId);
+        Assert.Equal("n3k3-cap3-v0-w1-none", dto.RulesId);
         Assert.Equal(7, dto.Plies.Length);
         Assert.Equal(MoveClass.Blunder, dto.Plies[0].Class);
         Assert.Equal(0, dto.Plies[0].Seat);

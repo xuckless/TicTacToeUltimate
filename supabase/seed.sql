@@ -38,7 +38,7 @@ on conflict do nothing;
 
 -- 06 -> ali_xo open targeted CasualX2 challenge
 insert into challenges (code, creator_id, target_user_id, time_control, rules_id, status, expires_at) values
-  ('ROOK06', '00000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', 'CasualX2', 'n3k3-fifo7-v1-w0-none', 'Open', now() + interval '23 hours')
+  ('ROOK06', '00000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000001', 'CasualX2', 'n3k3-cap3-v0-w1-none', 'Open', now() + interval '23 hours')
 on conflict do nothing;
 
 -- ali_xo: streak 12 (best 31), 2 quest wins today (local day in America/Toronto)

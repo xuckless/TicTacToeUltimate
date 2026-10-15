@@ -69,7 +69,7 @@ public sealed class EngineClockSchedule : IClockSchedule
 /// <summary>Ruleset-id helpers over the engine's <see cref="RuleSet.TryParse"/> (single source of truth for ids).</summary>
 public static class RuleIds
 {
-    /// <summary>Parses an id such as "n3k3-fifo7-v1-w0-pie"; false when malformed.</summary>
+    /// <summary>Parses an id such as "n3k3-cap3-v0-w1-pie"; false when malformed.</summary>
     public static bool TryParse(string? id, [NotNullWhen(true)] out RuleSet? rules)
     {
         rules = null;

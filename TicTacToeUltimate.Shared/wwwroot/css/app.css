@@ -38,6 +38,8 @@ body { min-height: 100dvh; }
 .match.sd .match-header .clockinfo { color: var(--alert); }
 .match-board { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; }
 .match-hint { font: var(--type-body-sm); color: var(--ink-muted); text-align: center; min-height: 20px; }
+.match-hint-blocked { color: var(--alert); font-weight: 600; }
+.match-hint-sub { opacity: .8; }
 .threat-callout { font: 400 28px/1 var(--font-display); color: var(--alert); letter-spacing: .02em; }
 .match-actions { display: flex; gap: 12px; justify-content: center; }
 .match .emote-bubble { position: absolute; right: 12px; top: -14px; background: var(--surface-raised); border-radius: var(--radius-md); padding: 4px 10px; font-weight: 800; box-shadow: var(--ledge-neutral); z-index: 2; }

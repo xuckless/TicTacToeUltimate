@@ -44,7 +44,7 @@ public sealed class PersistenceOptions
     public PostgresOptions Postgres { get; set; } = new();
 }
 public sealed class PostgresOptions { public string ConnectionString { get; set; } = ""; }
-public sealed class ModeOptions { public string Rules { get; set; } = "n3k3-fifo7-v1-w0-none"; public bool Rated { get; set; } public bool GuestsAllowed { get; set; } /// <summary>Arena ruleset id ("arena-c"); arena time controls only.</summary>
+public sealed class ModeOptions { public string Rules { get; set; } = "n3k3-cap3-v0-w1-none"; public bool Rated { get; set; } public bool GuestsAllowed { get; set; } /// <summary>Arena ruleset id ("arena-c"); arena time controls only.</summary>
     public string? Arena { get; set; } }
 public sealed class ClockOptions
 {

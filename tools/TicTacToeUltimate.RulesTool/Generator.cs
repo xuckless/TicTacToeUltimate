@@ -14,6 +14,8 @@ public static class Generator
     /// <summary>Vector files (§7.2).</summary>
     public static readonly string[] VectorIds =
     [
+        "n3k3-cap3-v0-w1-none",
+        "n3k3-cap3-v0-w1-pie",
         "n3k3-fifo7-v1-w0-none",
         "n3k3-fifo7-v1-w0-pie",
         "n3k3-fifo7-v1-w1-none",
@@ -107,6 +109,8 @@ public static class Generator
         {
             list.Add(("cap-removal", "0,4,1,5,8,6,2"));
             list.Add(("cap-removal-both", "0,4,1,5,8,6,2,3"));
+            list.Add(("cap-vacated-cell", "0,4,1,5,8,6,0"));
+            list.Add(("cap-win-after-own-oldest-vanishes", "8,3,0,7,1,6,2"));
         }
         if (r.BoardSize > r.WinLength)
         {

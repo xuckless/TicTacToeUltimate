@@ -17,7 +17,9 @@
     {"name": "wrong-action-kind-keep-at-start", "actions": "keep", "error": {"atIndex": 0, "code": "WrongActionKind"}},
     {"name": "game-over", "actions": "0,4,1,8,2,3", "error": {"atIndex": 5, "code": "GameOver"}},
     {"name": "cap-removal", "actions": "0,4,1,5,8,6,2", "expect": {"ply": 7, "placements": 7, "phase": "AwaitingPlacement", "toMove": "O", "outcome": "None", "board": ".XX.OOO.X", "legal": [0,3,4,7], "nextToVanish": 4, "winLine": null, "swapped": false, "lastVanished": 0}},
-    {"name": "cap-removal-both", "actions": "0,4,1,5,8,6,2,3", "expect": {"ply": 8, "placements": 8, "phase": "AwaitingPlacement", "toMove": "X", "outcome": "None", "board": ".XXO.OO.X", "legal": [0,1,4,7], "nextToVanish": 1, "winLine": null, "swapped": false, "lastVanished": 4}}
+    {"name": "cap-removal-both", "actions": "0,4,1,5,8,6,2,3", "expect": {"ply": 8, "placements": 8, "phase": "AwaitingPlacement", "toMove": "X", "outcome": "None", "board": ".XXO.OO.X", "legal": [0,1,4,7], "nextToVanish": 1, "winLine": null, "swapped": false, "lastVanished": 4}},
+    {"name": "cap-vacated-cell", "actions": "0,4,1,5,8,6,0", "expect": {"ply": 7, "placements": 7, "phase": "AwaitingPlacement", "toMove": "O", "outcome": "None", "board": "XX..OOO.X", "legal": [2,3,4,7], "nextToVanish": 4, "winLine": null, "swapped": false, "lastVanished": 0}},
+    {"name": "cap-win-after-own-oldest-vanishes", "actions": "8,3,0,7,1,6,2", "expect": {"ply": 7, "placements": 7, "phase": "Ended", "toMove": "X", "outcome": "XWins", "board": "XXXO..OO.", "legal": [], "nextToVanish": null, "winLine": [0,1,2], "swapped": false, "lastVanished": 8}}
   ],
   "playouts": [
     {"seed": "1000", "actions": "4,8,7,3,1", "finalBoard": ".X.OX..XO", "outcome": "XWins"},

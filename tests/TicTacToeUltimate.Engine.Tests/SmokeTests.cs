@@ -7,8 +7,10 @@ public class SmokeTests
     [Fact]
     public void DefaultRuleSetIdsMatchSpec()
     {
-        Assert.Equal("n3k3-fifo7-v1-w0-none", RuleSet.Default.Id);
-        Assert.Equal("n3k3-fifo7-v1-w0-pie", RuleSet.RankedDefault.Id);
-        Assert.False(RuleSet.Default.VanishingPieceCanWin);
+        Assert.Equal("n3k3-cap3-v0-w1-none", RuleSet.Default.Id);
+        Assert.Equal("n3k3-cap3-v0-w1-pie", RuleSet.RankedDefault.Id);
+        Assert.True(RuleSet.Default.VanishingPieceCanWin);
+        Assert.False(RuleSet.Default.VacatedCellPlayable);
+        Assert.Equal(RemovalKind.PerPlayerCap, RuleSet.Default.Removal);
     }
 }

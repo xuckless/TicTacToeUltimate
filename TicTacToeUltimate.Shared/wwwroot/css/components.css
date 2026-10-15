@@ -84,6 +84,9 @@ a { color: var(--primary); }
 .t-cell:disabled { cursor: default; }
 .t-cell.x { color: var(--piece-x); } .t-cell.o { color: var(--piece-o); }
 .t-cell.fading { opacity: .35; outline: 2px dashed currentColor; outline-offset: -8px; }
+.t-cell.aging { opacity: .7; }
+.t-cell.aging::after { content: "\23F1"; position: absolute; top: 4px; right: 6px; font-size: 12px; line-height: 1; opacity: .8; }
+.t-cell.blocked { cursor: not-allowed; }
 .t-cell.threat { outline: 3px solid var(--alert); outline-offset: -4px; }
 .t-cell.pending { opacity: .7; }
 .t-cell.win { box-shadow: var(--ledge-neutral), inset 0 0 0 3px currentColor; }

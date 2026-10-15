@@ -8,8 +8,9 @@ Implemented by `TicTacToeUltimate.Engine` (`Rules.Apply`). Any other engine (Go 
 Canonical id: `n{N}k{K}-{fifo{W}|cap{W}|none}-v{0|1}-w{0|1}-{none|pie|ban}`.
 Valid: 3 ≤ N ≤ 7, 3 ≤ K ≤ N; GlobalFifo 2K−1 ≤ W ≤ N²; PerPlayerCap K ≤ W ≤ ⌊N²/2⌋; None ignores W.
 
-- **Default** `n3k3-fifo7-v1-w0-none` (Casual, Unlimited, Challenge): 3x3, 3 in a row, global FIFO of 7, the vacated cell is playable, **the piece about to vanish cannot count toward a win**.
-- **Ranked/Daily** `n3k3-fifo7-v1-w0-pie`: Default + pie rule.
+- **Default** `n3k3-cap3-v0-w1-none` (Casual, Unlimited, Challenge, Offline "Classic"; owner decision 2026-10-15 after playtesting): 3x3, 3 in a row, **each player holds at most 3 pieces**. Placing a 4th removes **your own oldest piece first**; you may not place on that just-vacated cell this turn; then **any 3-in-a-row of your visible pieces wins immediately** (no ghost exclusion).
+- **Ranked/Daily** `n3k3-cap3-v0-w1-pie`: Default + pie rule.
+- **Legacy** `n3k3-fifo7-v1-w0-none` (superseded "ghost" rule; still the Arena board and the Offline "Legacy 7-piece" preset): global FIFO of 7, the vacated cell is playable, the piece about to vanish cannot count toward a win. Replaced because a visible line through the mover's ghost did not win, which playtesters found confusing.
 
 Cells are row-major `0..N²−1`. X places first. `Pieces` are kept oldest → newest.
 
@@ -52,4 +53,10 @@ Actions joined by `,`: a cell number for Place, `swap`, `keep` (e.g. `4,swap,0`)
 
 Forward BFS over placement positions (pie ignored), retrograde labelling; positions never resolved are draws (perfect play cycles). Values are for the side to move; distance = plies to the forced end (winner fastest, loser slowest), 0 for draws and ended positions. `NonTerminalCount` counts every reachable position not already won (stuck positions included), as in the study.
 
-Default oracle: X wins in 13; edge openings win for X (O to move: Loss in 12); centre and corner openings are draws; with pie, perfect play is a draw.
+Default oracle (`n3k3-cap3-v0-w1-none`): reachable 128,170, non-terminal 116,074; X wins in 13; edge openings win for X (O to move: Loss in 12); centre and corner openings are draws; with pie, perfect play is a draw. (Same values as the legacy `n3k3-fifo7-v1-w0-none` start/openings, but a different, smaller state space: 369,802 / 331,066.)
+
+## UI hints (derived, client-side)
+
+- The mover's piece that vanishes when they place (`NextToVanish`) is drawn faded + dashed, captioned "Your faded X vanishes when you place — you can't play there this turn". Clicking it explains why instead of failing silently.
+- Under a per-player cap the waiting side's oldest piece (the one that vanishes on their next placement) gets a subtler ⏱ marker.
+- Threat hints ("BLOCK IT!") use `Rules.ImmediateWins` on each position after the mover's possible placements, list only cells the mover can actually play, and are hidden when the mover can win immediately.

@@ -158,7 +158,7 @@ public static class MatchModes
         if (o.Modes.TryGetValue(tc.ToString(), out var m)) return m;
         var pie = tc is TimeControl.Ranked or TimeControl.Daily;
         if (MoveClock.IsArena(tc))
-            return new ModeOptions { Rules = RuleSet.Default.Id, Rated = tc == TimeControl.ArenaRanked, GuestsAllowed = tc == TimeControl.ArenaCasual, Arena = ArenaRules.RulesetC.Id };
+            return new ModeOptions { Rules = ArenaRules.RulesetC.Board.Id, Rated = tc == TimeControl.ArenaRanked, GuestsAllowed = tc == TimeControl.ArenaCasual, Arena = ArenaRules.RulesetC.Id };
         return new ModeOptions { Rules = pie ? RuleSet.RankedDefault.Id : RuleSet.Default.Id, Rated = pie, GuestsAllowed = !pie };
     }
 
@@ -177,7 +177,8 @@ public static class MatchModes
 
     /// <summary>Ruleset for a queue time control.</summary>
     public static RuleSet RulesFor(TttOptions o, TimeControl tc)
-        => RuleIds.Parse(Options(o, tc).Rules, tc is TimeControl.Ranked or TimeControl.Daily ? RuleSet.RankedDefault : RuleSet.Default);
+        => RuleIds.Parse(Options(o, tc).Rules, tc is TimeControl.Ranked or TimeControl.Daily ? RuleSet.RankedDefault
+            : MoveClock.IsArena(tc) ? ArenaRules.RulesetC.Board : RuleSet.Default);
 
     /// <summary>True for casual-like controls where guests may fall back into the account pool.</summary>
     public static bool IsCasualLike(TimeControl tc) => tc is TimeControl.CasualX2 or TimeControl.CasualX4 or TimeControl.Unlimited or TimeControl.ArenaCasual;

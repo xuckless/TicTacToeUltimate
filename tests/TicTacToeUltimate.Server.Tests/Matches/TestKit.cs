@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 using TicTacToeUltimate.Contracts;
 using TicTacToeUltimate.Engine;
+using TicTacToeUltimate.Engine.Arena;
 using TicTacToeUltimate.Engine.Clocks;
 using TicTacToeUltimate.Server.Abstractions;
 using TicTacToeUltimate.Server.Abstractions.Persistence;
@@ -296,7 +297,7 @@ public sealed class Harness
         new SeatSetup(A, "alice", AccountKind.Account), new SeatSetup(B, "bob", AccountKind.Account), seed, MatchOrigin.Queue, null, null);
 
     public Task<Guid> CreateAsync(TimeControl tc, RuleSet? rules = null, bool rated = false, ulong seed = 42)
-        => Gateway.CreateMatchAsync(Setup(tc, rules ?? RuleSet.Default, rated, seed), CancellationToken.None);
+        => Gateway.CreateMatchAsync(Setup(tc, rules ?? (MoveClock.IsArena(tc) ? ArenaRules.RulesetC.Board : RuleSet.Default), rated, seed), CancellationToken.None);
 
     public Task<MoveAckDto> PlaceAsync(Guid id, Guid user, int ply, int cell, Guid? actionId = null)
         => Gateway.SubmitActionAsync(id, user, ply, GameAction.Place(cell), actionId ?? Guid.NewGuid(), CancellationToken.None);

@@ -76,9 +76,9 @@ public sealed class TestPlatform : IDisposable
         {
             ["Ttt:Auth:Dev:Enabled"] = "true",
             ["Ttt:Auth:Dev:SigningKey"] = "test-signing-key-test-signing-key-0123456789",
-            ["Ttt:Modes:Ranked:Rules"] = "n3k3-fifo7-v1-w0-pie", ["Ttt:Modes:Ranked:Rated"] = "true",
-            ["Ttt:Modes:CasualX2:Rules"] = "n3k3-fifo7-v1-w0-none", ["Ttt:Modes:CasualX2:GuestsAllowed"] = "true",
-            ["Ttt:Modes:Daily:Rules"] = "n3k3-fifo7-v1-w0-pie", ["Ttt:Modes:Daily:Rated"] = "true",
+            ["Ttt:Modes:Ranked:Rules"] = "n3k3-cap3-v0-w1-pie", ["Ttt:Modes:Ranked:Rated"] = "true",
+            ["Ttt:Modes:CasualX2:Rules"] = "n3k3-cap3-v0-w1-none", ["Ttt:Modes:CasualX2:GuestsAllowed"] = "true",
+            ["Ttt:Modes:Daily:Rules"] = "n3k3-cap3-v0-w1-pie", ["Ttt:Modes:Daily:Rated"] = "true",
         };
         if (settings is not null) foreach (var kv in settings) values[kv.Key] = kv.Value;
         var cfg = new ConfigurationBuilder().AddInMemoryCollection(values).Build();

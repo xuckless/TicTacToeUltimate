@@ -52,7 +52,7 @@ public sealed record MatchView(
     GameState Engine,                         // Rules.Replay of Snapshot.Actions (authoritative)
     int? PendingCell,                         // optimistic placement awaiting ack
     int? MySeat, bool IsSpectator, bool IsMyTurn,
-    ImmutableArray<int> ThreatCells,          // opponent ImmediateWins on my turn; empty if hints off or Ranked/Daily
+    ImmutableArray<int> ThreatCells,          // BoardHints.Threats (ImmediateWins after each of my moves, blockable cells only); empty if hints off or Ranked/Daily
     ImmutableArray<EmoteView> RecentEmotes,
     MatchResultDto? Result, PostGameSummaryDto? Summary,
     bool RematchOfferedByMe, bool RematchOfferedByOpponent, Guid? RematchMatchId,

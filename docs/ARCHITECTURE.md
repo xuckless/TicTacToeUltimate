@@ -46,7 +46,8 @@ From the variant study (`tools/study/results.txt`, two independent solvers). The
 | Per-player cap 3, vacated playable | 128,170 | 116,074 | draw | – | equivalent to FIFO W=6 |
 | Per-player cap 4, vacated NOT playable | 549,946 | 375,418 | X wins | 11 | |
 | FIFO W=7, ban centre on move 1 | 360,137 | 258,201 | **O wins** | 10 | |
-| FIFO W=7, vacated playable, vanishing piece cannot win (**Default**, owner's original rule, `w0`) | 369,802 | 331,066 | X wins | 13 | openings: edges (1,3,5,7) X wins in 12; centre and corners (0,2,4,6,8) draw (perfect play cycles forever; the clock decides). Draw positions 11.643%. Pie: **draw** (X opens a corner/centre) |
+| Per-player cap 3, vacated NOT playable, any visible line wins (**Default** since 2026-10-15 playtest, `n3k3-cap3-v0-w1`) | 128,170 | 116,074 | X wins | 13 | openings: edges (1,3,5,7) X wins in 12; centre and corners draw. Pie: **draw** |
+| FIFO W=7, vacated playable, vanishing piece cannot win (superseded default, `w0` "ghost" rule; Arena board) | 369,802 | 331,066 | X wins | 13 | openings: edges (1,3,5,7) X wins in 12; centre and corners (0,2,4,6,8) draw (perfect play cycles forever; the clock decides). Draw positions 11.643%. Pie: **draw** (X opens a corner/centre) |
 
 "start dist" is plies to the forced end from the empty board, with perfect play by both sides (winner fastest, loser slowest).
 
@@ -76,7 +77,7 @@ Items marked **[OPEN]** have a working default so nobody is blocked; the owner m
 - **D1 Topology.** The authoritative game server stays a **separate ASP.NET Core host**, `TicTacToeUltimate.Server`, which replaces `BackendWebAPI`. `TicTacToeUltimate.Web` only serves the Blazor WASM app. Web (browser) and MAUI both connect to the server URL from config. CORS is enabled for the web origins. A web deploy never restarts live matches.
 - **D2 Web render mode.** Global `InteractiveWebAssembly` with `prerender: false`. There is no Interactive Server, so there is no circuit double hop to distort RTT.
 - **D3 One engine everywhere.** `TicTacToeUltimate.Engine` is pure and deterministic, with no package dependencies. It is used by the server (authority), the client (derived UI only: faded piece, legal hints, threat hints, replay), the RulesTool and the tests. Go conforms through the JSON vectors.
-- **D4 Ruleset.** The default is the OWNER'S ORIGINAL RULE (decided 2026-10-15): 3x3, K=3, global FIFO W=7, vacated cell playable, **the piece about to vanish cannot count toward a win** (`VanishingPieceCanWin=false`, id segment `w0`). The old BackendWebAPI engine let it count; that was a bug. **Ranked and Daily** add the pie rule (`n3k3-fifo7-v1-w0-pie`). Casual, Unlimited and Challenge use the default with no opening rule. Everything is configurable per mode (§6.10). With pie, perfect play is a draw (endless cycle), so ranked games are decided by skill under the clock. 4x4 variants remain under study; 3x3 is final for launch.
+- **D4 Ruleset.** **Superseded 2026-10-15 (playtest):** the default is now `n3k3-cap3-v0-w1-none` / Ranked+Daily `n3k3-cap3-v0-w1-pie`: each player holds at most 3 pieces, placing a 4th removes your own oldest first, that cell can't be replayed this turn, any visible 3-in-a-row wins (solved: X wins in 13, edges win, corners/centre draw, pie = draw). The `w0` ghost interpretation below was a misunderstanding of the owner's rule; it remains available (Arena board, Offline "Legacy 7-piece"). Former text: the default was 3x3, K=3, global FIFO W=7, vacated cell playable, **the piece about to vanish cannot count toward a win** (`VanishingPieceCanWin=false`, id segment `w0`). The old BackendWebAPI engine let it count; that was a bug. **Ranked and Daily** add the pie rule (`n3k3-fifo7-v1-w0-pie`). Casual, Unlimited and Challenge use the default with no opening rule. Everything is configurable per mode (§6.10). With pie, perfect play is a draw (endless cycle), so ranked games are decided by skill under the clock. 4x4 variants remain under study; 3x3 is final for launch.
 - **D5 Pie mechanics.** After X's first placement, O (the chooser) takes a separate turn with a clock to choose Swap or Keep. With Swap, the board colours are unchanged and the colour O is still to move, but **the seats exchange colours**: the first player now owns O and moves next. The engine tracks `Swapped`; the server maps seat↔colour (`SeatColors`). The tablebase does not need to know about pie.
 - **D6 Move allowance is fixed when the turn starts:** `allowance = MoveClock.Allowance(tc, gameElapsedAtTurnStart)`. Text like "window 8s → 7s in 5s" describes what *future* turns will get.
 - **D7 Game elapsed** is the **sum of the credited think times (`ThinkMs`) of all completed turns**. A swap decision is a turn. This makes the schedule replayable from the action log and independent of server queueing.
@@ -244,7 +245,7 @@ public sealed record RuleSet(
 
     public int CellCount => BoardSize * BoardSize;
 
-    /// <summary>Canonical id: "n{N}k{K}-{fifo{W}|cap{W}|none}-v{0|1}-w{0|1}-{none|pie|ban}", e.g. "n3k3-fifo7-v1-w0-none".</summary>
+    /// <summary>Canonical id: "n{N}k{K}-{fifo{W}|cap{W}|none}-v{0|1}-w{0|1}-{none|pie|ban}", e.g. "n3k3-cap3-v0-w1-none".</summary>
     public string Id { get; }   // computed in the record body (not a positional member)
 
     public static bool TryParse(string id, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out RuleSet? rules);
@@ -421,7 +422,7 @@ public static class GameAnalyzer
 ```
 The state key is ruleset-independent within a `Tablebase` (the ruleset is fixed per table). Storage uses sorted `ulong[]` keys plus parallel packed values (`sbyte` value, `ushort` distance) with binary search, or a `Dictionary<ulong,int>`; this is WP1's choice. A **build-time guard test** requires the Default table to build in under 3 s.
 
-Oracles (Default = `w0`, see §0.3 and the §7.2 tablebase block): `Evaluate(Initial(Default)) == (Win, 13)`; after `1`: `(Loss, 12)` for O; after `4`: `(Draw, 0)`; after `0`: `(Draw, 0)`. Draw values come from cycles (positions never resolved by retrograde analysis), so the table and `GameAnalyzer` must carry `Draw` and must not assume every position is decided. Legacy `w1` (`n3k3-fifo7-v1-w1-none`): start `(Win, 9)`; after `4`: `(Loss, 8)` for O; after `0`: `(Win, 9)` for O.
+Oracles (Default = `n3k3-cap3-v0-w1-none`; the legacy `w0` table has the same start/opening values, see §0.3 and the §7.2 tablebase block): `Evaluate(Initial(Default)) == (Win, 13)`; after `1`: `(Loss, 12)` for O; after `4`: `(Draw, 0)`; after `0`: `(Draw, 0)`. Draw values come from cycles (positions never resolved by retrograde analysis), so the table and `GameAnalyzer` must carry `Draw` and must not assume every position is decided. Legacy `w1` (`n3k3-fifo7-v1-w1-none`): start `(Win, 9)`; after `4`: `(Loss, 8)` for O; after `0`: `(Win, 9)` for O.
 
 ---
 
@@ -1375,11 +1376,11 @@ Relationships and progress:
     },
     "Persistence": { "Provider": "InMemory", "SeedFixtures": true, "Postgres": { "ConnectionString": "" } },
     "Modes": {
-      "Ranked":    { "Rules": "n3k3-fifo7-v1-w0-pie",  "Rated": true,  "GuestsAllowed": false },
-      "CasualX2":  { "Rules": "n3k3-fifo7-v1-w0-none", "Rated": false, "GuestsAllowed": true },
-      "CasualX4":  { "Rules": "n3k3-fifo7-v1-w0-none", "Rated": false, "GuestsAllowed": true },
-      "Unlimited": { "Rules": "n3k3-fifo7-v1-w0-none", "Rated": false, "GuestsAllowed": true },
-      "Daily":     { "Rules": "n3k3-fifo7-v1-w0-pie",  "Rated": true,  "GuestsAllowed": false }
+      "Ranked":    { "Rules": "n3k3-cap3-v0-w1-pie",  "Rated": true,  "GuestsAllowed": false },
+      "CasualX2":  { "Rules": "n3k3-cap3-v0-w1-none", "Rated": false, "GuestsAllowed": true },
+      "CasualX4":  { "Rules": "n3k3-cap3-v0-w1-none", "Rated": false, "GuestsAllowed": true },
+      "Unlimited": { "Rules": "n3k3-cap3-v0-w1-none", "Rated": false, "GuestsAllowed": true },
+      "Daily":     { "Rules": "n3k3-cap3-v0-w1-pie",  "Rated": true,  "GuestsAllowed": false }
     },
     "Clock": { "LagCreditCapMs": 300, "LagBudgetMs": 4000, "RttSamples": 5, "PingLiveSeconds": 2, "PingIdleSeconds": 15 },
     "Unlimited": { "DisconnectForfeitMinutes": 10 },
@@ -1388,7 +1389,7 @@ Relationships and progress:
                      "GuestFallbackSeconds": 10, "BotFallbackSeconds": 20, "DisconnectGraceSeconds": 5 },
     "Challenges": { "TtlHours": 24 },
     "Rematch": { "WindowSeconds": 60 },
-    "Analysis": { "MaxStates": 5000000, "Precompute": [ "n3k3-fifo7-v1-w0-none" ] },
+    "Analysis": { "MaxStates": 5000000, "Precompute": [ "n3k3-cap3-v0-w1-none", "n3k3-fifo7-v1-w0-none" ] },
     "Bots": { "Enabled": true, "Ranked": false, "AllowQueryKey": false,
               "DevKeys": [ { "Name": "dev_bot", "Key": "tttb_devkey01_devsecret01" } ] },
     "Ratings": { "Tau": 0.5, "ProvisionalGames": 10, "IdlePeriodDays": 7, "MinRatedGames": 20 },
@@ -1426,7 +1427,7 @@ Launch profile: `http://0.0.0.0:5091` and `https://0.0.0.0:7086;http://0.0.0.0:5
 ```jsonc
 // server -> bot
 {"type":"hello","protocol":1,"botId":"…","botName":"dev_bot","serverTimeMs":1760500000000}
-{"type":"gameStart","matchId":"…","mode":"Casual","timeControl":"CasualX2","rules":{"id":"n3k3-fifo7-v1-w0-none","boardSize":3,"winLength":3,"removal":"GlobalFifo","window":7,"vacatedCellPlayable":true,"vanishingPieceCanWin":false,"opening":"None"},"seat":1,"you":"O","opponent":{"userId":"…","displayName":"ali_xo","avatarId":"a1","kind":"Account","provisional":false}}
+{"type":"gameStart","matchId":"…","mode":"Casual","timeControl":"CasualX2","rules":{"id":"n3k3-cap3-v0-w1-none","boardSize":3,"winLength":3,"removal":"PerPlayerCap","window":3,"vacatedCellPlayable":false,"vanishingPieceCanWin":true,"opening":"None"},"seat":1,"you":"O","opponent":{"userId":"…","displayName":"ali_xo","avatarId":"a1","kind":"Account","provisional":false}}
 {"type":"state","matchId":"…","seq":9,"ply":7,"phase":"AwaitingPlacement","toMove":"O","you":"O","yourTurn":true,"board":"O.OOXXX.X","actions":"4,0,8,2,6,3,5","nextToVanish":4,"legal":[1,4,7],"swapped":false,"deadlineAtMs":1760500031000,"allowanceMs":30000,"serverTimeMs":1760500001000}
 {"type":"ack","id":"m-17","matchId":"…","seq":10}
 {"type":"error","id":"m-17","matchId":"…","code":"occupied","message":"Cell 4 is occupied"}
@@ -1445,8 +1446,10 @@ Launch profile: `http://0.0.0.0:5091` and `https://0.0.0.0:7086;http://0.0.0.0:5
 
 ### 7.2 Rule vectors (WP1; generated, never hand-edited)
 - Path: `spec/rules/vectors/{rulesId}.json`. Files:
-  - `n3k3-fifo7-v1-w0-none` (default)
-  - `n3k3-fifo7-v1-w0-pie` (ranked/daily)
+  - `n3k3-cap3-v0-w1-none` (default)
+  - `n3k3-cap3-v0-w1-pie` (ranked/daily)
+  - `n3k3-fifo7-v1-w0-none` (superseded ghost rule; Arena board)
+  - `n3k3-fifo7-v1-w0-pie`
   - `n3k3-fifo7-v1-w1-none` (legacy: vanishing piece can win)
   - `n3k3-fifo7-v1-w1-pie`
   - `n3k3-fifo7-v1-w1-ban`

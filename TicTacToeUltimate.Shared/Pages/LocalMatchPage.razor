@@ -21,7 +21,7 @@ else
     var sd = g.SuddenDeath;
     <div class="match @AlertClass" data-testid="local-match">
         <div class="match-header">
-            <span>Pass &amp; Play · @Ui.TimeControlName(g.TimeControl)@(g.Options.Pie ? " · Pie" : "")</span>
+            <span>Pass &amp; Play · @Ui.TimeControlName(g.TimeControl)@(g.Options.Preset == LocalRulePreset.Legacy7 ? " · Legacy 7-piece" : "")@(g.Options.Pie ? " · Pie" : "")</span>
             <span class="t-num" data-testid="local-score" aria-label="Session score">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)</span>
         </div>
         <h1 class="sr-only">Pass and play: @g.NameOf(0) vs @g.NameOf(1)</h1>
@@ -32,9 +32,22 @@ else
             <div class="local-banner @(g.State.ToMove == Color.X ? "x" : "o") @(g.IsLive ? null : "ended")" role="status" data-testid="local-banner">
                 @BannerText
             </div>
-            <Board Size="g.State.Rules.BoardSize" Cells="@g.Board" Ghost="g.Ghost" WinLine="g.Result?.WinLine" Winner="g.Result?.WinnerColor"
-                   Legal="g.LegalCells" Interactive="CanPlace" LastPlaced="g.LastPlaced" SuddenDeath="sd" OnCellSelected="Place" />
-            <div class="match-hint">@HintText</div>
+            <Board Size="g.State.Rules.BoardSize" Cells="@g.Board" Ghost="g.Ghost" Aging="g.WaitingGhost" WinLine="g.Result?.WinLine" Winner="g.Result?.WinnerColor"
+                   Legal="g.LegalCells" Interactive="CanPlace" LastPlaced="g.LastPlaced" SuddenDeath="sd" OnCellSelected="Place" OnBlockedSelected="Blocked" />
+            <div class="match-hint" data-testid="local-hint">
+                @if (_blocked is not null)
+                {
+                    <span class="match-hint-blocked" role="alert">@_blocked</span>
+                }
+                else if (g.IsLive)
+                {
+                    var mover = BoardHints.MoverCaption(g.State);
+                    var waiting = BoardHints.WaitingCaption(g.State);
+                    if (mover is not null) { <span>@mover</span> }
+                    if (mover is not null && waiting is not null) { <br /> }
+                    if (waiting is not null) { <span class="match-hint-sub">@waiting</span> }
+                }
+            </div>
         </div>
 
         @PlayerRow(0, clock, sd)
@@ -106,6 +119,7 @@ else
     private LocalGameController? _g;
     private bool _resign, _showOverlay;
     private string _announce = "";
+    private string? _blocked;
     private int _impactTrigger, _lastWarnSecond;
     private string _impactKind = "win", _impactText = "", _impactToken = "alert-fill";
     private CancellationTokenSource? _cts;
@@ -156,17 +170,6 @@ else
             var who = g.NameOf(g.ToMoveSeat);
             if (g.AwaitingSwap) return $"{who} decides: swap or keep — pass the device";
             return $"{g.State.ToMove}'s turn ({who}) — pass the device";
-        }
-    }
-
-    private string? HintText
-    {
-        get
-        {
-            var g = _g!;
-            if (!g.IsLive || g.Ghost is not int c) return null;
-            var color = g.State.At(c);
-            return color is null ? null : $"Faded {color} vanishes on the next move";
         }
     }
 
@@ -286,7 +289,16 @@ else
     private void Place(int cell)
     {
         if (!CanPlace) return;
-        if (_g!.Place(cell) != MoveError.None) { Sfx(SoundCue.Error); Haptic(HapticCue.Error); }
+        _blocked = null;
+        if (_g!.Place(cell) != MoveError.None) { Blocked(cell); }
+    }
+
+    private void Blocked(int cell)
+    {
+        if (!CanPlace) return;
+        _blocked = BoardHints.BlockedReason(_g!.State, cell);
+        _announce = _blocked ?? _announce;
+        Sfx(SoundCue.Error); Haptic(HapticCue.Error);
     }
 
     private void Decide(bool swap) => _g?.DecideSwap(swap);

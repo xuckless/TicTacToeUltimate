@@ -8,10 +8,10 @@ namespace TicTacToeUltimate.Client.Tests;
 public class LocalGameControllerTests
 {
     private static (LocalGameController G, FakeTimeProvider T) Make(TimeControl tc = TimeControl.Unlimited, bool pie = false,
-        string p1 = "", string p2 = "")
+        string p1 = "", string p2 = "", LocalRulePreset preset = LocalRulePreset.Classic)
     {
         var t = new FakeTimeProvider(new DateTimeOffset(2026, 10, 15, 12, 0, 0, TimeSpan.Zero));
-        var g = new LocalGameController(new LocalGameOptions { Player1 = p1, Player2 = p2, TimeControl = tc, Pie = pie }, t, seed: 7);
+        var g = new LocalGameController(new LocalGameOptions { Player1 = p1, Player2 = p2, TimeControl = tc, Pie = pie, Preset = preset }, t, seed: 7);
         return (g, t);
     }
 
@@ -26,7 +26,7 @@ public class LocalGameControllerTests
         var (g, _) = Make(p1: "  ", p2: "Ben");
         Assert.Equal("Player 1", g.NameOf(0));
         Assert.Equal("Ben", g.NameOf(1));
-        Assert.Equal("n3k3-fifo7-v1-w0-none", g.State.Rules.Id);
+        Assert.Equal("n3k3-cap3-v0-w1-none", g.State.Rules.Id);
         Assert.False(g.HasClock);
         Assert.Equal(1, g.GameNumber);
     }
@@ -35,7 +35,41 @@ public class LocalGameControllerTests
     public void Pie_option_uses_pie_ruleset()
     {
         var (g, _) = Make(pie: true);
-        Assert.Equal("n3k3-fifo7-v1-w0-pie", g.State.Rules.Id);
+        Assert.Equal("n3k3-cap3-v0-w1-pie", g.State.Rules.Id);
+        Assert.Equal("n3k3-fifo7-v1-w0-pie", Make(pie: true, preset: LocalRulePreset.Legacy7).G.State.Rules.Id);
+        Assert.Equal("n3k3-fifo7-v1-w0-none", Make(preset: LocalRulePreset.Legacy7).G.State.Rules.Id);
+    }
+
+    [Fact]
+    public void Classic_own_oldest_vanishes_first_and_visible_line_wins()
+    {
+        var (g, _) = Make();
+        Play(g, 8, 3, 0, 7, 1);
+        Assert.Null(g.Ghost);                // O to move with 2 pieces: nothing vanishes on O's move
+        Assert.Equal(8, g.WaitingGhost);     // X holds 3: its oldest (8) vanishes on X's next placement
+        Play(g, 6);
+        Assert.Equal(8, g.Ghost);            // X to move: own oldest is faded + dashed
+        Assert.Equal(3, g.WaitingGhost);     // O's oldest marked for O's next move
+        Assert.DoesNotContain(8, g.LegalCells);
+        Assert.Equal(MoveError.CellJustVacated, g.Place(8));
+        Assert.Equal("Your faded X vanishes when you place — you can't play there this turn", BoardHints.BlockedReason(g.State, 8));
+        Play(g, 2);                          // 8 vanishes first, then 0-1-2 is a visible line: X wins
+        Assert.NotNull(g.Result);
+        Assert.Equal(new[] { 0, 1, 2 }, g.Result!.WinLine);
+        Assert.Null(g.State.At(8));
+    }
+
+    [Fact]
+    public void Threat_hints_follow_the_rules()
+    {
+        var (g, _) = Make();
+        Play(g, 8, 3, 0, 4);                 // O threatens 5 (3-4-5)
+        Assert.Equal(new[] { 5 }, BoardHints.Threats(g.State, Color.X));
+        Play(g, 5, 7);                       // X blocks; O threatens 1 (1-4-7)
+        // X can win now? X holds 8,0,5: placing removes 8 first, so no X line is available; must block 1.
+        Assert.Empty(Rules.ImmediateWins(g.State, Color.X));
+        Assert.Equal(new[] { 1 }, BoardHints.Threats(g.State, Color.X));
+        Assert.Empty(BoardHints.Threats(g.State, Color.O));   // not O's turn
     }
 
     [Fact]
@@ -70,9 +104,9 @@ public class LocalGameControllerTests
     }
 
     [Fact]
-    public void Ghost_piece_is_next_to_vanish_and_cannot_complete_a_line()
+    public void Legacy7_ghost_piece_is_next_to_vanish_and_cannot_complete_a_line()
     {
-        var (g, _) = Make();
+        var (g, _) = Make(preset: LocalRulePreset.Legacy7);
         Play(g, 0, 4, 1, 8, 6, 3);
         Assert.Null(g.Ghost);              // 6 pieces: the FIFO window (7) is not full, nothing vanishes yet
         Play(g, 2);                        // X 0-1-2, but 0 is the ghost (vanishes on the next placement)

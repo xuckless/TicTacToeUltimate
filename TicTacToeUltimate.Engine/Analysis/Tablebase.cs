@@ -138,9 +138,9 @@ public sealed class Tablebase
 
     /// <summary>Ruleset.</summary>
     public RuleSet Rules { get; }
-    /// <summary>Reachable incl. terminal; Default = 369,802.</summary>
+    /// <summary>Reachable incl. terminal; Default (cap3-v0-w1) = 128,170; legacy fifo7-w0 = 369,802.</summary>
     public int StateCount { get; }
-    /// <summary>Reachable positions not already won by the previous mover (stuck "no legal move" draws count as non-terminal, as in the study). Default = 331,066.</summary>
+    /// <summary>Reachable positions not already won by the previous mover (stuck "no legal move" draws count as non-terminal, as in the study). Default = 116,074; legacy fifo7-w0 = 331,066.</summary>
     public int NonTerminalCount { get; }
 
     /// <summary>Raw lookup of a placement position (pieces + colour to place).</summary>

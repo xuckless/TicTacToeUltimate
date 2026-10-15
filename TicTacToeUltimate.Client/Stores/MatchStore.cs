@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging;
 using TicTacToeUltimate.Client.Abstractions;
+using TicTacToeUltimate.Client.Local;
 using TicTacToeUltimate.Client.Services;
 using TicTacToeUltimate.Client.State;
 using TicTacToeUltimate.Contracts;
@@ -433,7 +434,7 @@ public sealed class MatchStore : StoreBase<MatchesState>, IMatchStore, IDisposab
         if (myTurn && engine is not null && _settings.State.ThreatHints && snap.Mode is not (MatchMode.Ranked or MatchMode.Daily or MatchMode.ArenaRanked)
             && snap.Phase == GamePhase.AwaitingPlacement)
         {
-            try { threats = Rules.ImmediateWins(engine, Other(MyColor(v))); }
+            try { threats = BoardHints.Threats(engine, MyColor(v)); }
             catch (Exception) { threats = []; }
         }
         return v with { Engine = engine!, IsMyTurn = myTurn, ThreatCells = threats, Result = v.Result ?? snap.Result };

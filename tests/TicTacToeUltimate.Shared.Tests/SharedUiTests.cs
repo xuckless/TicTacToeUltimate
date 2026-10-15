@@ -48,7 +48,7 @@ public sealed class SharedUiTests : IDisposable
         var cells = cut.FindAll(".t-cell");
         Assert.Contains("fading", cells[2].ClassList);
         Assert.Single(cut.FindAll(".t-cell.fading"));
-        Assert.Equal("Row 1, column 3, O, vanishes next", cells[2].GetAttribute("aria-label"));
+        Assert.Equal("Row 1, column 3, O, vanishes when the player to move places", cells[2].GetAttribute("aria-label"));
         Assert.Equal("Row 1, column 1, X", cells[0].GetAttribute("aria-label"));
         Assert.Equal("Row 1, column 2, empty", cells[1].GetAttribute("aria-label"));
     }
@@ -80,6 +80,41 @@ public sealed class SharedUiTests : IDisposable
         Assert.False(cells[1].HasAttribute("disabled"));
         cells[1].Click();
         Assert.Equal(1, picked);
+    }
+
+    [Fact]
+    public void Board_marks_waiting_oldest_and_explains_blocked_clicks()
+    {
+        int picked = -1, blocked = -1;
+        // X to move holding 3 (0 is its oldest, faded); O's oldest (2) gets the subtle marker. Legal excludes the vacated cell 0.
+        var cut = _ctx.Render<Board>(p => p.Add(x => x.Cells, "XXO.O..XO").Add(x => x.Ghost, 0).Add(x => x.Aging, 2)
+            .Add(x => x.Legal, new[] { 3, 5, 6 }).Add(x => x.Interactive, true)
+            .Add(x => x.OnCellSelected, EventCallback.Factory.Create<int>(this, c => picked = c))
+            .Add(x => x.OnBlockedSelected, EventCallback.Factory.Create<int>(this, c => blocked = c)));
+        var cells = cut.FindAll(".t-cell");
+        Assert.Contains("fading", cells[0].ClassList);
+        Assert.Contains("aging", cells[2].ClassList);
+        Assert.DoesNotContain("fading", cells[2].ClassList);
+        Assert.Contains("vanishes on the other player's next move", cells[2].GetAttribute("aria-label"), StringComparison.Ordinal);
+        Assert.False(cells[0].HasAttribute("disabled"));          // clickable so the page can explain why
+        Assert.Equal("true", cells[0].GetAttribute("aria-disabled"));
+        cells[0].Click();
+        Assert.Equal(0, blocked);
+        Assert.Equal(-1, picked);
+        cut.FindAll(".t-cell")[3].Click();
+        Assert.Equal(3, picked);
+    }
+
+    [Fact]
+    public void ReplayFrames_cap_ghost_is_next_placers_oldest()
+    {
+        var rules = new RuleSetDto("n3k3-cap3-v0-w1-none", 3, 3, RemovalKind.PerPlayerCap, 3, false, true, OpeningRule.None);
+        var cells = new[] { 0, 4, 1, 5, 8, 6 };
+        var actions = cells.Select((c, i) => new ActionDto(i, i % 2, ActionKind.Place, c, i % 2 == 0 ? Color.X : Color.O, null, 1000, false)).ToList();
+        var frames = ReplayFrames.Build(rules, actions);
+        Assert.Null(frames[4].Ghost);      // X to move with 2 pieces
+        Assert.Null(frames[5].Ghost);      // after X's 3rd piece: O to move with 2
+        Assert.Equal(0, frames[6].Ghost);  // X to move holding 3: its oldest (0)
     }
 
     // ---------- Clock ----------
@@ -170,8 +205,9 @@ public sealed class SharedUiTests : IDisposable
         Assert.Contains("Game 0:41 · move 15s", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("kestrel_99", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("Your move", cut.Markup, StringComparison.Ordinal);
-        Assert.Contains("Faded O vanishes when you place", cut.Markup, StringComparison.Ordinal);
-        Assert.Contains("fading", cut.FindAll(".t-board .t-cell")[2].ClassList);
+        Assert.Contains("Your faded X vanishes when you place", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("play there this turn", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("fading", cut.FindAll(".t-board .t-cell")[0].ClassList);
         cut.FindAll(".t-board .t-cell")[1].Click();
         Assert.Contains("Place:1", store.Calls);
     }

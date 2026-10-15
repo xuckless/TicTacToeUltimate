@@ -20,6 +20,7 @@ public class VectorTests
     {
         string[] expected =
         [
+            "n3k3-cap3-v0-w1-none", "n3k3-cap3-v0-w1-pie",
             "n3k3-fifo7-v1-w0-none", "n3k3-fifo7-v1-w0-pie", "n3k3-fifo7-v1-w1-none", "n3k3-fifo7-v1-w1-pie", "n3k3-fifo7-v1-w1-ban",
             "n3k3-fifo7-v0-w1-none", "n3k3-fifo5-v1-w1-none", "n3k3-fifo6-v1-w1-none", "n3k3-fifo9-v0-w1-none", "n3k3-cap3-v1-w1-none",
             "n4k3-fifo8-v1-w1-none",

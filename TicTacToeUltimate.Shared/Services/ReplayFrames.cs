@@ -9,7 +9,8 @@ public sealed record ReplayFrame(int Ply, string Board, int? Ghost, int? LastPla
 
 /// <summary>
 /// Rebuilds read-only replay positions from a recorded action log. The server recorded each placement's colour and vanished cell,
-/// so no rules evaluation is needed; the ghost (next to vanish) is the oldest piece once a FIFO window is full.
+/// so no rules evaluation is needed; the ghost (next to vanish) is the oldest piece once a FIFO window is full, or, under a
+/// per-player cap, the next placer's own oldest piece once they hold the cap.
 /// </summary>
 public static class ReplayFrames
 {
@@ -23,6 +24,7 @@ public static class ReplayFrames
         var board = new char[n];
         Array.Fill(board, '.');
         var order = new List<int>();
+        Color? lastPlacer = null;
         var frames = new List<ReplayFrame>(actions.Count + 1) { new(0, new string(board), null, null) };
         foreach (var a in actions)
         {
@@ -37,11 +39,23 @@ public static class ReplayFrames
                 board[cell] = a.Color == Color.O ? 'O' : 'X';
                 order.Add(cell);
                 placed = cell;
+                lastPlacer = a.Color;
             }
-            int? ghost = rules.Removal == RemovalKind.GlobalFifo && order.Count >= rules.Window && order.Count > 0 ? order[0] : null;
+            int? ghost = rules.Removal switch
+            {
+                RemovalKind.GlobalFifo => order.Count >= rules.Window && order.Count > 0 ? order[0] : null,
+                RemovalKind.PerPlayerCap when lastPlacer is Color lp => CapGhost(board, order, lp == Color.X ? 'O' : 'X', rules.Window),
+                _ => null,
+            };
             frames.Add(new ReplayFrame(a.Ply + 1, new string(board), ghost, placed));
         }
         return frames;
+    }
+
+    private static int? CapGhost(char[] board, List<int> order, char next, int window)
+    {
+        var mine = order.Where(c => board[c] == next).ToList();
+        return mine.Count >= window ? mine[0] : null;
     }
 
     /// <summary>Arena replay: shatters are not in the action log, so the arena engine re-derives them (think times drive red alert).</summary>

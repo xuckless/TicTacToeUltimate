@@ -51,7 +51,7 @@ switch (command)
     {
         if (args.Length < 2 || !RuleSet.TryParse(args[1], out var rules))
         {
-            stderr.WriteLine("Usage: solve <rulesId>   e.g. solve n3k3-fifo7-v1-w0-none");
+            stderr.WriteLine("Usage: solve <rulesId>   e.g. solve n3k3-cap3-v0-w1-none");
             return 2;
         }
         if (!Tablebase.CanBuild(rules))

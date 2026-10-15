@@ -24,8 +24,18 @@ public sealed record LocalGameOptions
     /// <summary>Pie (swap) opening rule.</summary>
     public bool Pie { get; init; }
 
-    /// <summary>Owner's launch rule (w0); <c>n3k3-fifo7-v1-w0-none</c> or <c>…-pie</c>.</summary>
-    public RuleSet Rules => Pie ? RuleSet.RankedDefault : RuleSet.Default;
+    /// <summary>Rules preset (Classic = launch rule).</summary>
+    public LocalRulePreset Preset { get; init; } = LocalRulePreset.Classic;
+
+    /// <summary>Classic: the launch rule <c>n3k3-cap3-v0-w1-none</c> (or <c>…-pie</c>). Legacy7: <c>n3k3-fifo7-v1-w0-none</c> (or <c>…-pie</c>).</summary>
+    public RuleSet Rules
+    {
+        get
+        {
+            var r = Preset == LocalRulePreset.Legacy7 ? RuleSet.LegacyFifo7Ghost : RuleSet.Default;
+            return r with { Opening = Pie ? OpeningRule.PieSwap : OpeningRule.None };
+        }
+    }
 
     /// <summary>The clock actually used (Daily makes no sense on one device).</summary>
     public TimeControl EffectiveTimeControl => TimeControl == TimeControl.Daily ? TimeControl.Unlimited : TimeControl;
@@ -44,6 +54,15 @@ public sealed record LocalGameOptions
         if (n.Length == 0) return fallback;
         return n.Length > MaxNameLength ? n[..MaxNameLength] : n;
     }
+}
+
+/// <summary>Pass-and-play rule presets.</summary>
+public enum LocalRulePreset
+{
+    /// <summary>Launch rule: 3 pieces each, your own oldest vanishes when you place a 4th, any visible line wins.</summary>
+    Classic = 0,
+    /// <summary>Superseded rule: 7 pieces on the board, the oldest vanishes and can't complete a line.</summary>
+    Legacy7 = 1,
 }
 
 /// <summary>How a local game ended.</summary>
@@ -126,8 +145,11 @@ public sealed class LocalGameController
     /// <summary>True while the game runs.</summary>
     public bool IsLive => Result is null;
 
-    /// <summary>The faded piece (vanishes next, can't count toward a win); null once ended.</summary>
-    public int? Ghost => IsLive ? Rules.NextToVanish(State) : null;
+    /// <summary>The mover's faded piece: vanishes when the mover places now; null once ended.</summary>
+    public int? Ghost => IsLive ? BoardHints.MoverVanish(State) : null;
+
+    /// <summary>The waiting side's oldest piece that vanishes on their next placement (per-player cap only); null otherwise.</summary>
+    public int? WaitingGhost => IsLive ? BoardHints.WaitingVanish(State) : null;
 
     /// <summary>Legal cells for the mover (empty unless placing).</summary>
     public ImmutableArray<int> LegalCells => IsLive ? Rules.LegalCells(State) : [];
