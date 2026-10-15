@@ -1,19 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#7442ef" />
     <base href="/" />
     <title>TTT Ultimate</title>
-    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/app.css" />
-    <link rel="icon" type="image/png" href="_content/TicTacToeUltimate.Shared/favicon.png" />
     <script>
-        try { var t = localStorage.getItem('ttt.theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) { }
+        // Theme bootstrap before first paint: ttt.theme = "dark" | "light"; absent = follow the system.
+        (function () {
+            try {
+                var t = localStorage.getItem('ttt.theme');
+                if (!t) t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) { }
+        })();
     </script>
+    <link rel="preload" href="_content/TicTacToeUltimate.Shared/fonts/LilitaOne-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="_content/TicTacToeUltimate.Shared/fonts/Nunito-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/css/tokens.css" />
+    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/css/components.css" />
+    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/css/app.css" />
+    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/css/motion.css" />
+    <link rel="icon" type="image/png" href="_content/TicTacToeUltimate.Shared/favicon.png" />
+    <style>
+        html, body { margin: 0; background: #120a22; }
+        #ttt-splash { position: fixed; inset: 0; display: grid; place-items: center; background: #7442ef; z-index: 9999;
+                      transition: opacity .25s ease; }
+        #ttt-splash .mark { font: 800 44px/1 system-ui, sans-serif; color: #fff; letter-spacing: .04em; }
+        #ttt-splash.gone { opacity: 0; pointer-events: none; }
+    </style>
     <HeadOutlet @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
 </head>
-<body style="background:#120a22">
+<body>
+    <div id="ttt-splash" aria-hidden="true"><div class="mark">X O X</div></div>
     <Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
-    <script src="_framework/blazor.web.js"></script>
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script>
+        Blazor.start().then(function () {
+            var s = document.getElementById('ttt-splash');
+            if (s) { s.classList.add('gone'); setTimeout(function () { s.remove(); }, 300); }
+        });
+    </script>
 </body>
 </html>

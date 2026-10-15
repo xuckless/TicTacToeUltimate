@@ -1,20 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>TTT Ultimate</title>
     <base href="/" />
-    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/app.css" />
-    <link rel="stylesheet" href="app.css" />
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('ttt.theme');
+                if (!t) t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) { }
+        })();
+    </script>
+    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/css/tokens.css" />
+    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/css/components.css" />
+    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/css/app.css" />
+    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/css/motion.css" />
     <link rel="icon" href="data:,">
     <style>
         html, body { background: #120a22; margin: 0; }
-        body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+        body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+               box-sizing: border-box; min-height: 100vh; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+        #app > .ttt-loading { min-height: 100vh; display: grid; place-items: center; color: #fff; font: 800 32px/1 system-ui, sans-serif; }
     </style>
 </head>
 <body>
-    <div id="app">Loading...</div>
+    <div id="app"><div class="ttt-loading">X O X</div></div>
     <script src="_framework/blazor.webview.js" autostart="false"></script>
 </body>
 </html>
