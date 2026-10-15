@@ -51,3 +51,4 @@ DerivedData/
 # Rebuild (WP0)
 **/TestResults/
 *.DotSettings.user
+.claude/worktrees/
