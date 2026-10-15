@@ -1,0 +1,9 @@
+@if (Emote is not null)
+{
+    <span class="emote-bubble" role="status">@Emote.Text</span>
+}
+
+@code {
+    /// <summary>Emote to show.</summary>
+    [Parameter] public EmoteView? Emote { get; set; }
+}

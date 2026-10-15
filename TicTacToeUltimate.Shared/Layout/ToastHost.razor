@@ -1,0 +1,17 @@
+@inject ToastService Toasts
+@implements IDisposable
+
+<div class="t-toasts" aria-live="polite">
+    @foreach (var t in Toasts.Items)
+    {
+        <Toast Message="t" OnDismiss="Toasts.Dismiss" />
+    }
+</div>
+
+@code {
+    /// <inheritdoc />
+    protected override void OnInitialized() => Toasts.Changed += OnChanged;
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+    /// <inheritdoc />
+    public void Dispose() => Toasts.Changed -= OnChanged;
+}

@@ -1,0 +1,18 @@
+<div class="replay-scrubber">
+    <IconButton Label="Previous move" Icon="prev" Disabled="@(Ply <= 0)" OnClick="() => Go(Ply - 1)" />
+    <input type="range" min="0" max="@Max" value="@Ply" aria-label="Move" @oninput="OnInput" />
+    <IconButton Label="Next move" Icon="next" Disabled="@(Ply >= Max)" OnClick="() => Go(Ply + 1)" />
+    <span class="t-num t-small">@Ply/@Max</span>
+</div>
+
+@code {
+    /// <summary>Current ply (0 = empty board).</summary>
+    [Parameter] public int Ply { get; set; }
+    /// <summary>Last ply.</summary>
+    [Parameter] public int Max { get; set; }
+    /// <summary>Ply changed.</summary>
+    [Parameter] public EventCallback<int> PlyChanged { get; set; }
+
+    private Task OnInput(ChangeEventArgs e) => int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? Go(v) : Task.CompletedTask;
+    private Task Go(int p) => PlyChanged.InvokeAsync(Math.Clamp(p, 0, Max));
+}

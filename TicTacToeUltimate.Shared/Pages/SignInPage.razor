@@ -1,0 +1,87 @@
+@page "/signin"
+@inherits StoreComponent
+@inject ISessionStore Session
+@inject NavigationManager Nav
+
+<PageTitle>Sign in · TTT Ultimate</PageTitle>
+<div class="t-col" style="padding:0;align-items:stretch">
+    <h1 class="t-title" style="text-align:center;color:var(--primary)">TTT Ultimate</h1>
+    <p class="t-muted" style="text-align:center;margin:0">Pieces vanish. Every game ends in a win.</p>
+
+    <Button Variant="primary" Block="true" OnClick="Guest" Disabled="_busy">Play as guest</Button>
+
+    @if (Session.State.Config?.SupabaseAuth == true)
+    {
+        <Card Title="Sign in">
+            <Button Variant="secondary" Block="true" Disabled="true">Continue with Apple (soon)</Button>
+            <Button Variant="secondary" Block="true" Disabled="true">Continue with Google (soon)</Button>
+            <Button Variant="secondary" Block="true" Disabled="true">Email link (soon)</Button>
+        </Card>
+    }
+
+    @if (Session.State.Config?.DevAuth != false)
+    {
+        <Card Title="Dev sign-in">
+            @if (_users.Count == 0) { <span class="t-small t-muted">@(_loading ? "Loading dev users…" : "No dev users.")</span> }
+            @foreach (var u in _users)
+            {
+                <button type="button" class="t-listrow" style="background:none;border:0;border-bottom:1px solid var(--line);width:100%;text-align:left;cursor:pointer;color:inherit;min-height:48px"
+                        @onclick="() => SignIn(u.UserId)" disabled="@_busy">
+                    <Avatar Name="@u.DisplayName" />
+                    <span class="who"><span class="name">@u.DisplayName</span> <BotBadge Kind="u.Kind" /><br /><span class="meta">@Ui.TierName(u.Tier)@(u.Rating is int r ? $" · {r}" : "")</span></span>
+                </button>
+            }
+            <TextField Label="Create dev user" Placeholder="username" Value="@_newName" ValueChanged="v => _newName = v" OnEnter="Create" MaxLength="16"
+                       Error="@(_newName.Length > 0 && !OnboardingPage.IsValidUsername(_newName) ? "3–16 chars: a–z, 0–9, _" : null)" />
+            <Button Variant="secondary" OnClick="Create" Disabled="@(_busy || !OnboardingPage.IsValidUsername(_newName))">Create and sign in</Button>
+        </Card>
+    }
+    @if (_error is not null) { <p class="t-alert" role="alert">@_error</p> }
+</div>
+
+@code {
+    private List<DevUserDto> _users = [];
+    private string _newName = "";
+    private bool _busy, _loading = true;
+    private string? _error;
+
+    [SupplyParameterFromQuery(Name = "returnUrl")] private string? ReturnUrl { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Session);
+        if (Session.State.Config?.DevAuth != false)
+        {
+            try { _users = (await Session.GetDevUsersAsync()).ToList(); }
+            catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { }
+        }
+        _loading = false;
+    }
+
+    /// <inheritdoc />
+    protected override void OnStoresChanged()
+    {
+        if (Session.State.Status == SessionStatus.SignedIn && !_busy) Done();
+    }
+
+    private Task Guest() => Run(Session.SignInGuestAsync);
+    private Task SignIn(Guid id) => Run(() => Session.SignInDevAsync(id));
+    private Task Create() => OnboardingPage.IsValidUsername(_newName) ? Run(() => Session.SignInDevNewUserAsync(_newName)) : Task.CompletedTask;
+
+    private async Task Run(Func<Task> action)
+    {
+        _busy = true; _error = null;
+        try { await action(); }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { _error = "Sign-in failed. Is the server running?"; }
+        finally { _busy = false; }
+        if (Session.State.Status == SessionStatus.SignedIn) Done();
+        else _error ??= Session.State.Error ?? "Sign-in failed.";
+    }
+
+    private void Done()
+    {
+        var target = ReturnUrl is { Length: > 1 } r && r.StartsWith('/') && !r.StartsWith("//", StringComparison.Ordinal) ? r.TrimStart('/') : "";
+        Nav.NavigateTo(target, replace: true);
+    }
+}

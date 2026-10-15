@@ -1,0 +1,26 @@
+<Sheet Open="Open" Title="Match" OnClose="OnClose">
+    <label class="t-toggle"><span>Sound effects</span><input type="checkbox" checked="@Settings.Sfx" @onchange="e => Update(s => s with { Sfx = (bool)e.Value! })" /></label>
+    <label class="t-toggle"><span>Haptics</span><input type="checkbox" checked="@Settings.Haptics" @onchange="e => Update(s => s with { Haptics = (bool)e.Value! })" /></label>
+    <label class="t-toggle"><span>Impact frames</span><input type="checkbox" checked="@Settings.ImpactFrames" @onchange="e => Update(s => s with { ImpactFrames = (bool)e.Value! })" /></label>
+    <label class="t-toggle"><span>Mute opponent emotes</span><input type="checkbox" checked="@Settings.MuteOpponentEmotes" @onchange="e => Update(s => s with { MuteOpponentEmotes = (bool)e.Value! })" /></label>
+    <Button Variant="secondary" Block="true" OnClick="OnLeave">@(Ended || Spectator ? "Leave" : "Back to home (game continues)")</Button>
+</Sheet>
+
+@code {
+    /// <summary>Visible.</summary>
+    [Parameter] public bool Open { get; set; }
+    /// <summary>Current settings.</summary>
+    [Parameter, EditorRequired] public SettingsState Settings { get; set; } = SettingsState.Default;
+    /// <summary>Settings change.</summary>
+    [Parameter] public EventCallback<Func<SettingsState, SettingsState>> OnSettings { get; set; }
+    /// <summary>Leave the match screen.</summary>
+    [Parameter] public EventCallback OnLeave { get; set; }
+    /// <summary>Close.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+    /// <summary>Game over.</summary>
+    [Parameter] public bool Ended { get; set; }
+    /// <summary>Spectating.</summary>
+    [Parameter] public bool Spectator { get; set; }
+
+    private Task Update(Func<SettingsState, SettingsState> f) => OnSettings.InvokeAsync(f);
+}

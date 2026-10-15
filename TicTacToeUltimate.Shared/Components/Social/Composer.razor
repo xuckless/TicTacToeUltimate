@@ -1,0 +1,21 @@
+<div class="composer">
+    <div style="flex:1"><TextField Label="Message" HideLabel="true" Placeholder="Message" Value="@_text" ValueChanged="v => _text = v" OnEnter="Send" MaxLength="500" /></div>
+    <IconButton Label="Send" Icon="send" OnClick="Send" Disabled="@(string.IsNullOrWhiteSpace(_text) || _busy)" />
+</div>
+
+@code {
+    private string _text = "";
+    private bool _busy;
+
+    /// <summary>Send; return false to keep the text.</summary>
+    [Parameter] public Func<string, Task<bool>> OnSend { get; set; } = _ => Task.FromResult(true);
+
+    private async Task Send()
+    {
+        var t = _text.Trim();
+        if (t.Length == 0 || _busy) return;
+        _busy = true;
+        try { if (await OnSend(t)) _text = ""; }
+        finally { _busy = false; }
+    }
+}

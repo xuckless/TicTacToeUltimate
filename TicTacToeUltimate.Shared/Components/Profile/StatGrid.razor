@@ -1,0 +1,18 @@
+<div class="stat-grid">
+    <div class="stat"><span class="t-label">Ranked</span><span class="num primary">@(Ranked?.Rating.ToString(CultureInfo.InvariantCulture) ?? "—")</span>
+        <span class="t-small" style="font-size:12px;color:@(Ranked?.WeekDelta >= 0 ? "var(--success)" : "var(--alert)")">@(Ranked is null ? "" : $"{Ui.Delta(Ranked.WeekDelta)} this week")</span></div>
+    <div class="stat"><span class="t-label">Win rate</span><span class="num">@Percent(Stats.WinRate)</span><span class="t-muted" style="font-size:12px">@Stats.GamesPlayed games played</span></div>
+    <div class="stat"><span class="t-label">Daily</span><span class="num">@(Daily?.Rating.ToString(CultureInfo.InvariantCulture) ?? "—")</span><span class="t-muted" style="font-size:12px">@Stats.DailyInProgress games in progress</span></div>
+    <div class="stat"><span class="t-label">Best streak</span><span class="num streak">@Stats.BestStreak</span><span class="t-muted" style="font-size:12px">Current @Stats.CurrentStreak days</span></div>
+</div>
+
+@code {
+    /// <summary>Stats.</summary>
+    [Parameter, EditorRequired] public ProfileStatsDto Stats { get; set; } = default!;
+    /// <summary>Visible ratings.</summary>
+    [Parameter] public IReadOnlyList<RatingDto> Ratings { get; set; } = [];
+
+    private RatingDto? Ranked => Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked);
+    private RatingDto? Daily => Ratings.FirstOrDefault(r => r.Pool == RatingPool.Daily);
+    private static string Percent(double v) => $"{Math.Round((v > 1 ? v : v * 100)):0}%";
+}

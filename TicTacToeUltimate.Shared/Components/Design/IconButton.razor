@@ -1,0 +1,18 @@
+<button type="button" class="t-iconbtn @(Round ? "t-iconbtn--round" : null) @Class" aria-label="@Label" title="@Label" disabled="@Disabled" @onclick="OnClick">
+    <Icon Name="@Icon" />
+</button>
+
+@code {
+    /// <summary>Accessible label (required: icon-only control).</summary>
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    /// <summary>Icon name.</summary>
+    [Parameter, EditorRequired] public string Icon { get; set; } = "";
+    /// <summary>Round borderless variant (header buttons).</summary>
+    [Parameter] public bool Round { get; set; }
+    /// <summary>Disabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+    /// <summary>Extra classes.</summary>
+    [Parameter] public string? Class { get; set; }
+    /// <summary>Click.</summary>
+    [Parameter] public EventCallback OnClick { get; set; }
+}

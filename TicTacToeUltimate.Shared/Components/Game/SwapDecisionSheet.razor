@@ -1,0 +1,14 @@
+<Sheet Open="Open" Title="Swap sides?" Dismissible="false">
+    <p>Your opponent opened. You can take their <PieceGlyph Color="Color.X" /> position, or keep playing <PieceGlyph Color="Color.O" />.</p>
+    <div class="swap-choices">
+        <Button Variant="primary" OnClick="() => OnDecide.InvokeAsync(true)">Swap</Button>
+        <Button Variant="secondary" OnClick="() => OnDecide.InvokeAsync(false)">Keep</Button>
+    </div>
+</Sheet>
+
+@code {
+    /// <summary>Visible.</summary>
+    [Parameter] public bool Open { get; set; }
+    /// <summary>true = swap.</summary>
+    [Parameter] public EventCallback<bool> OnDecide { get; set; }
+}

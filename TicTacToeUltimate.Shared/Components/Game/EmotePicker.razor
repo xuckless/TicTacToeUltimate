@@ -1,0 +1,27 @@
+<Sheet Open="Open" Title="Emotes" OnClose="OnClose">
+    <div class="emote-grid">
+        @foreach (var e in (Emotes ?? EmoteCatalog.All).Where(e => e.Kind == "emote"))
+        {
+            <button type="button" aria-label="@e.Id" @onclick="() => Pick(e.Id)">@e.Text</button>
+        }
+    </div>
+    <div class="emote-grid">
+        @foreach (var e in (Emotes ?? EmoteCatalog.All).Where(e => e.Kind == "phrase"))
+        {
+            <button type="button" @onclick="() => Pick(e.Id)">@e.Text</button>
+        }
+    </div>
+</Sheet>
+
+@code {
+    /// <summary>Visible.</summary>
+    [Parameter] public bool Open { get; set; }
+    /// <summary>Catalog (from config); defaults to <see cref="EmoteCatalog.All"/>.</summary>
+    [Parameter] public IReadOnlyList<EmoteDto>? Emotes { get; set; }
+    /// <summary>Emote chosen.</summary>
+    [Parameter] public EventCallback<string> OnPick { get; set; }
+    /// <summary>Close.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task Pick(string id) { await OnPick.InvokeAsync(id); await OnClose.InvokeAsync(); }
+}

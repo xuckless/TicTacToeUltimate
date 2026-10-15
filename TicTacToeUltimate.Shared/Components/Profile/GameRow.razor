@@ -1,0 +1,14 @@
+<a class="game-row" href="@($"replay/{Game.GameId}")">
+    <span class="res @ResClass">@ResLetter</span>
+    <span class="what">vs @Game.Opponent.DisplayName · @Ui.TimeControlName(Game.TimeControl)@(Game.Reason == EndReason.Timeout ? " · timeout" : "")</span>
+    <span class="t-num" style="color:@DeltaColor">@(Game.RatingDelta is int d ? Ui.Delta(d) : "—")</span>
+</a>
+
+@code {
+    /// <summary>Game.</summary>
+    [Parameter, EditorRequired] public GameSummaryDto Game { get; set; } = default!;
+
+    private string ResLetter => Game.Result switch { GameResultForUser.Win => "W", GameResultForUser.Loss => "L", GameResultForUser.Draw => "D", _ => "A" };
+    private string? ResClass => Game.Result switch { GameResultForUser.Win => "win", GameResultForUser.Loss => "loss", _ => null };
+    private string DeltaColor => Game.RatingDelta switch { > 0 => "var(--success)", < 0 => "var(--alert)", _ => "var(--ink-muted)" };
+}

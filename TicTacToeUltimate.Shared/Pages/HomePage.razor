@@ -1,0 +1,53 @@
+@page "/"
+@inherits StoreComponent
+@inject ISessionStore Session
+@inject IProgressStore Progress
+@inject ISocialStore Social
+@inject NavigationManager Nav
+@inject ToastService Toasts
+
+<PageTitle>TTT Ultimate</PageTitle>
+
+<header class="home-header">
+    <StreakPill Count="@(Progress.State.Progress?.Streak.Current ?? 0)" AtRisk="@(Progress.State.Progress?.Streak.AtRisk ?? false)" />
+    <h1 class="brand" style="margin:0">TTT Ultimate</h1>
+    <a class="t-iconbtn t-iconbtn--round" href="settings" aria-label="Settings"><Icon Name="settings" /></a>
+</header>
+
+<PlayHero Rating="RankedRating" Guest="IsGuest" Subtitle="@(IsGuest ? "Unrated · 30s per move" : "Placement games")" />
+<ModeGrid DailyYourTurn="Session.State.DailyYourTurn" Guest="IsGuest" />
+<QuestCard Progress="Progress.State.Progress" NowMs="NowMs" OnExtraQuest="ExtraQuest" />
+@if (!IsGuest)
+{
+    <FriendsOnlineRow Friends="Social.State.Friends" />
+}
+else
+{
+    <Card Title="Save your progress">
+        <p class="t-small t-muted" style="margin:0">Create an account for ranked play, friends and leaderboards. Your streak comes with you.</p>
+        <Button Variant="secondary" Href="signin">Create account</Button>
+    </Card>
+}
+<AdSlot />
+
+@code {
+    private bool IsGuest => Session.State.IsGuest;
+    private RatingDto? RankedRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked);
+    private static long NowMs => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Session, Progress, Social);
+        var tasks = new List<Task> { Progress.LoadAsync() };
+        if (!IsGuest) tasks.Add(Social.LoadAsync());
+        try { await Task.WhenAll(tasks); }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't load everything.", ToastKind.Error); }
+    }
+
+    private async Task ExtraQuest()
+    {
+        var r = await Progress.ClaimRewardAsync(RewardKind.ExtraQuest);
+        Toasts.Show(r.Granted ? "Bonus quest unlocked" : "No reward this time", r.Granted ? ToastKind.Success : ToastKind.Info);
+    }
+}

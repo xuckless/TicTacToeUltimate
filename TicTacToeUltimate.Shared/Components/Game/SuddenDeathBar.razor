@@ -1,0 +1,9 @@
+@if (Clock is { SuddenDeath: true, AllowanceMs: > 0, RemainingMs: not null })
+{
+    <ProgressBar Value="@((double)Clock.RemainingMs!.Value / Clock.AllowanceMs!.Value)" Alert="true" Thin="true" Label="Move window remaining" />
+}
+
+@code {
+    /// <summary>Live clock.</summary>
+    [Parameter] public ClockView? Clock { get; set; }
+}

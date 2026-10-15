@@ -1,0 +1,111 @@
+@page "/social"
+@inherits StoreComponent
+@inject ISessionStore Session
+@inject ISocialStore Social
+@inject NavigationManager Nav
+@inject ToastService Toasts
+
+<PageTitle>Social · TTT Ultimate</PageTitle>
+<h1 class="t-title">Social</h1>
+
+@if (Session.State.IsGuest)
+{
+    <Card Title="Friends need an account">
+        <p class="t-small t-muted" style="margin:0">Create an account to add friends, chat and challenge them.</p>
+        <Button Variant="primary" Href="signin">Create account</Button>
+    </Card>
+}
+else
+{
+    <PlayerSearch Search="Social.SearchAsync" OnAdd="Add" />
+
+    @foreach (var c in Social.State.IncomingChallenges.Where(c => c.Status == ChallengeStatus.Open))
+    {
+        <ChallengeCard Challenge="c" OnAccept="Accept" OnDecline="Decline" />
+    }
+
+    <div class="t-spread"><h2 class="t-heading">Friends</h2><span class="t-small t-muted">@OnlineCount online@(IncomingRequests.Count > 0 ? $" · {IncomingRequests.Count} request{(IncomingRequests.Count == 1 ? "" : "s")}" : "")</span></div>
+
+    @if (IncomingRequests.Count > 0)
+    {
+        <section class="t-card" style="padding:4px 16px" aria-label="Friend requests">
+            @foreach (var r in IncomingRequests) { <FriendRequestRow Request="r" OnRespond="Respond" /> }
+        </section>
+    }
+
+    <section class="t-col" style="padding:0;gap:0" aria-label="Friends">
+        @if (!Social.State.Loaded) { <p class="t-muted">Loading…</p> }
+        else if (Social.State.Friends.Length == 0) { <p class="t-muted t-small">No friends yet. Search above or send an invite link.</p> }
+        @foreach (var f in SortedFriends)
+        {
+            <FriendRow Friend="f" OnChallenge="Challenge" OnWatch="Watch" OnDaily="Daily" />
+        }
+    </section>
+
+    <InviteLinkButton CreateLink="CreateLink" />
+    <div class="t-row"><Button Variant="ghost" Href="leaderboards">Leaderboards</Button></div>
+}
+
+@code {
+    private int OnlineCount => Social.State.Friends.Count(f => f.Presence.Status != PresenceStatus.Offline);
+    private List<FriendRequestDto> IncomingRequests => Social.State.Requests.Where(r => r.Direction == FriendRequestDirection.Incoming).ToList();
+    private IEnumerable<FriendDto> SortedFriends => Social.State.Friends
+        .OrderBy(f => f.Presence.Status == PresenceStatus.Offline ? 1 : 0)
+        .ThenBy(f => f.Player.DisplayName, StringComparer.OrdinalIgnoreCase);
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Session, Social);
+        if (Session.State.IsGuest) return;
+        try { await Social.LoadAsync(); }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't load friends.", ToastKind.Error); }
+    }
+
+    private async Task Add(PlayerCardDto p) => Ack(await Social.SendRequestAsync(p.DisplayName), "Request sent");
+    private async Task Respond((FriendRequestDto Request, bool Accept) r) => Ack(await Social.RespondAsync(r.Request.RequestId, r.Accept), r.Accept ? "Friend added" : null);
+
+    private async Task Accept(ChallengeDto c)
+    {
+        var r = await Social.AcceptChallengeAsync(c.Code);
+        if (r.Accepted && r.MatchId is Guid id) Nav.NavigateTo($"match/{id}");
+        else Toasts.Show("That challenge is no longer available.", ToastKind.Error);
+    }
+
+    private Task Decline(ChallengeDto c) => Social.DeclineChallengeAsync(c.Code);
+
+    private async Task Challenge(FriendDto f) => await CreateFor(f, TimeControl.CasualX2);
+    private async Task Daily(FriendDto f) => await CreateFor(f, TimeControl.Daily);
+
+    private async Task CreateFor(FriendDto f, TimeControl tc)
+    {
+        try
+        {
+            await Social.CreateChallengeAsync(new CreateChallengeDto(tc, f.Player.UserId));
+            Toasts.Show($"Challenge sent to {f.Player.DisplayName}", ToastKind.Success);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't send the challenge.", ToastKind.Error); }
+    }
+
+    private void Watch(FriendDto f)
+    {
+        if (f.Presence.MatchId is Guid id) Nav.NavigateTo($"match/{id}");
+    }
+
+    private async Task<ChallengeDto?> CreateLink()
+    {
+        try { return await Social.CreateChallengeAsync(new CreateChallengeDto(TimeControl.CasualX2, null)); }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { return null; }
+    }
+
+    private void Ack(CommandAckDto ack, string? ok)
+    {
+        if (ack.Ok) { if (ok is not null) Toasts.Show(ok, ToastKind.Success); }
+        else Toasts.Show(ack.Error switch
+        {
+            ErrorCodes.Blocked => "You can't add this player.",
+            ErrorCodes.GuestNotAllowed => "Guests can't add friends.",
+            _ => "Something went wrong.",
+        }, ToastKind.Error);
+    }
+}

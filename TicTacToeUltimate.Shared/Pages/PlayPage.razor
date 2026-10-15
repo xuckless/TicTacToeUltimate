@@ -1,0 +1,120 @@
+@page "/play"
+@inherits StoreComponent
+@inject ISessionStore Session
+@inject IQueueStore Queue
+@inject ISocialStore Social
+@inject NavigationManager Nav
+@inject ToastService Toasts
+
+<PageTitle>Play · TTT Ultimate</PageTitle>
+<h1 class="t-title">Play</h1>
+
+<div class="t-col" style="padding:0">
+    @foreach (var m in Modes)
+    {
+        var locked = IsGuest && !m.Guests;
+        <button type="button" class="mode-btn" style="flex-direction:row;justify-content:space-between;padding:14px 16px" disabled="@locked"
+                @onclick="() => Enter(m.Tc)" aria-label="@($"{m.Name}{(locked ? ", account required" : "")}")">
+            <span style="display:flex;flex-direction:column;align-items:flex-start;gap:2px">
+                <span class="t-label">@m.Name</span><span class="sub">@m.Sub</span>
+            </span>
+            @if (locked) { <span class="t-chip">Account</span> }
+            else if (m.Tc == TimeControl.Ranked && RankedRating is not null) { <TierBadge Tier="RankedRating.Tier" /> }
+        </button>
+    }
+</div>
+
+<Card Title="Play a friend">
+    <p class="t-small t-muted" style="margin:0">Send a link. Friendly games are unrated and allow rematches.</p>
+    @if (IsGuest)
+    {
+        <Button Variant="secondary" Href="signin">Create an account to invite friends</Button>
+    }
+    else
+    {
+        <InviteLinkButton Text="Create invite link" CreateLink="CreateLink" />
+    }
+</Card>
+
+<Sheet Open="@(Queue.State.Phase is QueuePhase.Entering or QueuePhase.Searching or QueuePhase.Found)" Title="Finding a match" Dismissible="false">
+    <div class="t-col" style="padding:0;align-items:center;text-align:center">
+        <span class="t-label">@(Queue.State.TimeControl is TimeControl tc ? Ui.TimeControlName(tc) : "")</span>
+        @if (Queue.State.Phase == QueuePhase.Found && Queue.State.Found is { } f)
+        {
+            <span class="t-title">Match found!</span>
+            <span>vs @f.Opponent.DisplayName</span>
+        }
+        else
+        {
+            <span class="t-num" style="font:var(--type-clock)" role="timer">@Ui.Elapsed(Queue.State.Status?.WaitedMs ?? 0)</span>
+            <span class="t-small t-muted">
+                @if (Queue.State.Status is { } st)
+                {
+                    @(st.GuestPool ? "Guest pool" : $"Rating window ±{st.RatingWindow}")
+                }
+                else { <span>Joining queue…</span> }
+            </span>
+        }
+        @if (Queue.State.Error is not null) { <span class="t-alert t-small" role="alert">@Queue.State.Error</span> }
+        <Button Variant="secondary" Block="true" OnClick="Cancel" Disabled="@(Queue.State.Phase == QueuePhase.Found)">Cancel</Button>
+    </div>
+</Sheet>
+
+@code {
+    private sealed record ModeOption(TimeControl Tc, string Name, string Sub, bool Guests);
+
+    private static readonly ModeOption[] Modes =
+    [
+        new(TimeControl.Ranked, "Ranked", "15s per move · sudden death", false),
+        new(TimeControl.CasualX2, "Casual x2", "30s per move · unrated", true),
+        new(TimeControl.CasualX4, "Casual x4", "60s per move · unrated", true),
+        new(TimeControl.Unlimited, "Unlimited", "No clock", true),
+        new(TimeControl.Daily, "Daily", "24h per move", false),
+    ];
+
+    [SupplyParameterFromQuery(Name = "tc")] private string? Tc { get; set; }
+
+    private bool IsGuest => Session.State.IsGuest;
+    private RatingDto? RankedRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked);
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Session, Queue);
+        if (CheckFound()) return;
+        if (Queue.State.Phase == QueuePhase.Idle && Enum.TryParse<TimeControl>(Tc, true, out var tc))
+        {
+            if (tc == TimeControl.Daily) { Nav.NavigateTo("daily"); return; }
+            if (!(IsGuest && Modes.First(m => m.Tc == tc).Guests == false)) await Enter(tc);
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnStoresChanged() => CheckFound();
+
+    private bool CheckFound()
+    {
+        if (Queue.State is { Phase: QueuePhase.Found, Found: { } f })
+        {
+            Queue.Acknowledge();
+            Nav.NavigateTo($"match/{f.MatchId}");
+            return true;
+        }
+        return false;
+    }
+
+    private async Task Enter(TimeControl tc)
+    {
+        if (tc == TimeControl.Daily) { Nav.NavigateTo("daily"); return; }
+        try { await Queue.EnterAsync(tc); }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't join the queue.", ToastKind.Error); }
+    }
+
+    private Task Cancel() => Queue.LeaveAsync();
+
+    private async Task<ChallengeDto?> CreateLink()
+    {
+        try { return await Social.CreateChallengeAsync(new CreateChallengeDto(TimeControl.CasualX2, null)); }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { return null; }
+    }
+}

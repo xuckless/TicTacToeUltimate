@@ -1,0 +1,39 @@
+/* Motion (WP6): place 180ms, vanish 220ms, win line, clock pulse, impact frame, red alert. All off under reduced motion. */
+@keyframes ttt-place { 0% { transform: scale(.6); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes ttt-vanish { from { transform: scale(1); opacity: .35; } to { transform: scale(.4); opacity: 0; } }
+@keyframes ttt-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes ttt-pulse { 50% { transform: scale(1.06); } }
+@keyframes ttt-alert-breathe { 50% { filter: brightness(1.25); } }
+@keyframes ttt-flash { 0%, 6% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ttt-sil { 0%, 6% { opacity: 0; } 8%, 20% { opacity: .8; } 30%, 100% { opacity: 0; } }
+@keyframes ttt-slam { 0% { transform: scale(1.4) rotate(-4deg); opacity: 0; } 25% { transform: scale(1) rotate(-4deg); opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ttt-shake { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-6px, 3px); } 50% { transform: translate(6px, -3px); } 75% { transform: translate(-3px, -6px); } }
+@keyframes ttt-pop { from { transform: translateY(8px) scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.t-cell .glyph.placed { display: inline-block; animation: ttt-place 180ms ease-out; }
+.t-cell .glyph.vanishing { display: inline-block; animation: ttt-vanish 220ms ease-in forwards; }
+.t-winline line { stroke-dasharray: 1; stroke-dashoffset: 0; animation: ttt-draw 260ms ease-out; }
+.t-clock.sd { animation: ttt-pulse 1s ease-in-out infinite; }
+.match.sd { animation: ttt-alert-breathe 1.2s ease-in-out infinite; }
+.match.sd-2 { animation-duration: .8s; }
+.match.sd-3 { animation-duration: .55s; }
+.match.crit { animation-duration: .35s; }
+.match.crit .t-clock.sd { animation-duration: .5s; }
+.impact .flash { animation: ttt-flash 600ms ease-out forwards; }
+.impact .sil { animation: ttt-sil 900ms linear forwards; }
+.impact .text { animation: ttt-slam 1400ms cubic-bezier(.2, 1.6, .4, 1) forwards; }
+.shake { animation: ttt-shake 120ms linear 2; }
+.emote-bubble, .t-toast { animation: ttt-pop 160ms ease-out; }
+
+:root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after {
+  animation: none !important; transition: none !important;
+}
+:root[data-motion="reduce"] .impact .flash { opacity: .85; }
+:root[data-motion="reduce"] .impact .text { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) *, :root:not([data-motion="full"]) *::before, :root:not([data-motion="full"]) *::after {
+    animation: none !important; transition: none !important;
+  }
+  :root:not([data-motion="full"]) .impact .flash { opacity: .85; }
+  :root:not([data-motion="full"]) .impact .text { opacity: 1; }
+}

@@ -1,0 +1,27 @@
+@if (Open)
+{
+    <div class="t-scrim" @onclick="Close">
+        <div class="t-sheet" role="dialog" aria-modal="true" aria-label="@Title" @onclick:stopPropagation="true">
+            <header>
+                <h2 class="t-heading">@Title</h2>
+                @if (Dismissible) { <IconButton Label="Close" Icon="close" Round="true" OnClick="Close" /> }
+            </header>
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Visible.</summary>
+    [Parameter] public bool Open { get; set; }
+    /// <summary>Title.</summary>
+    [Parameter] public string Title { get; set; } = "";
+    /// <summary>Shows a close button and closes on scrim tap.</summary>
+    [Parameter] public bool Dismissible { get; set; } = true;
+    /// <summary>Close requested.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+    /// <summary>Content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private Task Close() => Dismissible ? OnClose.InvokeAsync() : Task.CompletedTask;
+}

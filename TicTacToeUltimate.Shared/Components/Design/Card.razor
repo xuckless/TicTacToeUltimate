@@ -1,0 +1,23 @@
+<section class="t-card @Class" aria-label="@Label">
+    @if (Title is not null || Aside is not null)
+    {
+        <div class="t-spread">
+            @if (Title is not null) { <h2 class="t-heading">@Title</h2> }
+            @Aside
+        </div>
+    }
+    @ChildContent
+</section>
+
+@code {
+    /// <summary>Optional heading.</summary>
+    [Parameter] public string? Title { get; set; }
+    /// <summary>Right side of the heading row.</summary>
+    [Parameter] public RenderFragment? Aside { get; set; }
+    /// <summary>aria-label when there is no title.</summary>
+    [Parameter] public string? Label { get; set; }
+    /// <summary>Extra classes.</summary>
+    [Parameter] public string? Class { get; set; }
+    /// <summary>Content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

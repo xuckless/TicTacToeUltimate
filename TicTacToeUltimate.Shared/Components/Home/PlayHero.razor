@@ -1,0 +1,44 @@
+<a class="play-hero" href="@Href">
+    <span class="txt">
+        <span class="t-label" style="opacity:.9">@Kicker</span>
+        <span class="big">@Title</span>
+        @if (Rating is not null)
+        {
+            <span class="tierline">
+                @if (Rating.Tier is not null)
+                {
+                    <span class="t-tier @Ui.TierClass(Rating.Tier.Tier)"><i aria-hidden="true"></i></span>
+                    <span>@Ui.TierName(Rating.Tier) · <span class="t-num">@Rating.Rating</span></span>
+                }
+                else
+                {
+                    <span class="t-num">@Rating.Rating</span>
+                }
+            </span>
+        }
+        else if (Subtitle is not null)
+        {
+            <span class="tierline">@Subtitle</span>
+        }
+    </span>
+    <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
+        <rect x="4" y="4" width="14" height="14" rx="4" fill="var(--piece-x)" /><rect x="21" y="4" width="14" height="14" rx="4" fill="#fff" opacity=".25" />
+        <rect x="38" y="4" width="14" height="14" rx="4" fill="var(--piece-o)" /><rect x="4" y="21" width="14" height="14" rx="4" fill="#fff" opacity=".25" />
+        <rect x="21" y="21" width="14" height="14" rx="4" fill="var(--piece-x)" /><rect x="38" y="21" width="14" height="14" rx="4" fill="#fff" opacity=".25" />
+        <rect x="4" y="38" width="14" height="14" rx="4" fill="var(--piece-o)" opacity=".45" /><rect x="21" y="38" width="14" height="14" rx="4" fill="#fff" opacity=".25" />
+        <rect x="38" y="38" width="14" height="14" rx="4" fill="var(--piece-x)" />
+    </svg>
+</a>
+
+@code {
+    /// <summary>Ranked rating (tier + number).</summary>
+    [Parameter] public RatingDto? Rating { get; set; }
+    /// <summary>Guest variant.</summary>
+    [Parameter] public bool Guest { get; set; }
+    /// <summary>Line under the title when no rating.</summary>
+    [Parameter] public string? Subtitle { get; set; }
+
+    private string Kicker => Guest ? "Casual · x2" : "Ranked · Sudden death";
+    private string Title => Guest ? "Play Casual" : "Play Ranked";
+    private string Href => Guest ? "play?tc=CasualX2" : "play?tc=Ranked";
+}

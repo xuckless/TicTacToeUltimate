@@ -1,0 +1,9 @@
+@if (Visible)
+{
+    <div class="threat-callout" role="alert">BLOCK IT!</div>
+}
+
+@code {
+    /// <summary>Show the callout.</summary>
+    [Parameter] public bool Visible { get; set; }
+}

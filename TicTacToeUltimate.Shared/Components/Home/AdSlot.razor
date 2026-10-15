@@ -1,0 +1,22 @@
+@inject IServiceProvider Services
+
+@if (Visible)
+{
+    <div class="ad-slot" role="complementary" aria-label="Advertisement">Banner ad · 320×50</div>
+}
+
+@code {
+    /// <summary>Cascaded false by <see cref="Layout.MatchLayout"/>: no ads during a match.</summary>
+    [CascadingParameter(Name = "AdsAllowed")] public bool? AdsAllowed { get; set; }
+
+    /// <summary>True when the banner renders.</summary>
+    public bool Visible
+    {
+        get
+        {
+            if (AdsAllowed == false) return false;
+            var ads = Services.GetService(typeof(IAdCoordinator)) as IAdCoordinator;
+            return ads?.BannersAllowed ?? true;
+        }
+    }
+}

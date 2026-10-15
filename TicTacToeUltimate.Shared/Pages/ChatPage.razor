@@ -1,0 +1,50 @@
+@page "/social/chat/{UserId:guid}"
+@inherits StoreComponent
+@inject ISessionStore Session
+@inject ISocialStore Social
+@inject ToastService Toasts
+
+<PageTitle>Chat · TTT Ultimate</PageTitle>
+<div class="t-row" style="flex-wrap:nowrap">
+    <a class="t-iconbtn t-iconbtn--round" href="social" aria-label="Back"><Icon Name="back" /></a>
+    <h1 class="t-heading">@(Friend?.Player.DisplayName ?? "Chat")</h1>
+</div>
+
+@if (Friend is null)
+{
+    <p class="t-muted">@(Social.State.Loaded ? "You can only chat with mutual friends." : "Loading…")</p>
+}
+else
+{
+    <MessageList Messages="Messages" MeId="@(Session.State.Me?.UserId ?? Guid.Empty)" />
+    <Composer OnSend="Send" />
+}
+
+@code {
+    /// <summary>Friend id.</summary>
+    [Parameter] public Guid UserId { get; set; }
+
+    private FriendDto? Friend => Social.State.Friends.FirstOrDefault(f => f.Player.UserId == UserId);
+    private IReadOnlyList<DirectMessageDto> Messages => Social.State.Threads.TryGetValue(UserId, out var t) ? t : [];
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Session, Social);
+        try
+        {
+            if (!Social.State.Loaded) await Social.LoadAsync();
+            if (Friend is null) return;
+            await Social.LoadThreadAsync(UserId);
+            await Social.MarkReadAsync(UserId);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't load messages.", ToastKind.Error); }
+    }
+
+    private async Task<bool> Send(string body)
+    {
+        var ack = await Social.SendMessageAsync(UserId, body);
+        if (!ack.Ok) Toasts.Show(ack.Error == ErrorCodes.NotFriends ? "You can only message mutual friends." : "Message not sent.", ToastKind.Error);
+        return ack.Ok;
+    }
+}

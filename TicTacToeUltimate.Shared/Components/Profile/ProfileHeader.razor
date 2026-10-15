@@ -1,0 +1,18 @@
+<div class="t-row" style="gap:14px;flex-wrap:nowrap">
+    <Avatar Name="@Card.DisplayName" AvatarId="@Card.AvatarId" Size="lg" />
+    <div class="t-col" style="padding:0;gap:4px;min-width:0">
+        <h1 style="margin:0;font:400 26px/1.1 var(--font-display)">@Card.DisplayName <BotBadge Kind="Card.Kind" /></h1>
+        <div class="t-row t-small t-muted" style="gap:8px">
+            <TierBadge Tier="Card.Tier" Provisional="Card.Provisional" />
+            @if (Card.Country is not null) { <span>·</span><CountryFlag Country="@Card.Country" /> }
+            @if (JoinedAt is DateTimeOffset j) { <span>· Joined @j.ToString("MMM yyyy", CultureInfo.InvariantCulture)</span> }
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>Player.</summary>
+    [Parameter, EditorRequired] public PlayerCardDto Card { get; set; } = default!;
+    /// <summary>Join date.</summary>
+    [Parameter] public DateTimeOffset? JoinedAt { get; set; }
+}

@@ -1,0 +1,17 @@
+<div class="t-bar @(Alert ? "t-bar--alert" : null) @(Thin ? "t-bar--thin" : null)" role="progressbar" aria-label="@Label"
+     aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Percent">
+    <span style="width:@(Percent.ToString(CultureInfo.InvariantCulture))%"></span>
+</div>
+
+@code {
+    /// <summary>0..1.</summary>
+    [Parameter] public double Value { get; set; }
+    /// <summary>Red bar (sudden death).</summary>
+    [Parameter] public bool Alert { get; set; }
+    /// <summary>8px variant.</summary>
+    [Parameter] public bool Thin { get; set; }
+    /// <summary>Accessible label.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    private int Percent => (int)Math.Round(Math.Clamp(double.IsNaN(Value) ? 0 : Value, 0, 1) * 100);
+}

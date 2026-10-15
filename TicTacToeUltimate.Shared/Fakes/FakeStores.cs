@@ -1,0 +1,200 @@
+using System.Collections.Immutable;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using TicTacToeUltimate.Client.Abstractions;
+using TicTacToeUltimate.Client.State;
+using TicTacToeUltimate.Contracts;
+using TicTacToeUltimate.Engine.Clocks;
+
+namespace TicTacToeUltimate.Shared.Fakes;
+
+/// <summary>Settable in-memory store base for bUnit tests and design previews.</summary>
+public abstract class FakeStore<T> : IStore<T> where T : class
+{
+    /// <summary>Creates the store.</summary>
+    protected FakeStore(T initial) => State = initial;
+    /// <inheritdoc />
+    public T State { get; private set; }
+    /// <inheritdoc />
+    public event Action? Changed;
+    /// <summary>Recorded intent calls ("PlaceAsync:4").</summary>
+    public List<string> Calls { get; } = [];
+    /// <summary>Replaces the state and raises Changed.</summary>
+    public void Set(T state) { State = state; Changed?.Invoke(); }
+}
+
+/// <summary>Fake <see cref="ISessionStore"/>.</summary>
+public sealed class FakeSessionStore() : FakeStore<SessionState>(MockupFixtures.SignedInSession), ISessionStore
+{
+    /// <inheritdoc />
+    public Task InitializeAsync() { Calls.Add("Initialize"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task<IReadOnlyList<DevUserDto>> GetDevUsersAsync() => Task.FromResult<IReadOnlyList<DevUserDto>>(MockupFixtures.DevUsers);
+    /// <inheritdoc />
+    public Task SignInDevAsync(Guid userId) { Calls.Add($"SignInDev:{userId}"); Set(MockupFixtures.SignedInSession); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task SignInDevNewUserAsync(string username) { Calls.Add($"SignInDevNew:{username}"); Set(MockupFixtures.SignedInSession); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task SignInGuestAsync() { Calls.Add("SignInGuest"); Set(MockupFixtures.GuestSession); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task SignOutAsync() { Calls.Add("SignOut"); Set(State with { Status = SessionStatus.SignedOut, Me = null }); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task<CommandAckDto> SetUsernameAsync(string username, bool acceptTos) { Calls.Add($"SetUsername:{username}"); return Task.FromResult(new CommandAckDto(acceptTos, acceptTos ? null : ErrorCodes.TosRequired)); }
+    /// <inheritdoc />
+    public Task<CommandAckDto> UpdateProfileAsync(UpdateProfileDto patch) { Calls.Add("UpdateProfile"); return Task.FromResult(new CommandAckDto(true, null)); }
+}
+
+/// <summary>Fake <see cref="IQueueStore"/>.</summary>
+public sealed class FakeQueueStore() : FakeStore<QueueState>(QueueState.Idle), IQueueStore
+{
+    /// <inheritdoc />
+    public Task EnterAsync(TimeControl timeControl)
+    {
+        Calls.Add($"Enter:{timeControl}");
+        Set(new QueueState(QueuePhase.Searching, timeControl, new QueueStatusDto(timeControl, 4000, 150, false), null, null));
+        return Task.CompletedTask;
+    }
+    /// <inheritdoc />
+    public Task LeaveAsync() { Calls.Add("Leave"); Set(QueueState.Idle); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public void Acknowledge() { Calls.Add("Acknowledge"); Set(QueueState.Idle); }
+}
+
+/// <summary>Fake <see cref="IMatchStore"/>; the clock is whatever <see cref="Clock"/> holds.</summary>
+public sealed class FakeMatchStore() : FakeStore<MatchesState>(MatchesState.Empty), IMatchStore
+{
+    /// <summary>Clock returned by <see cref="GetClock"/>.</summary>
+    public ClockView? Clock { get; set; }
+    /// <inheritdoc />
+    public event Action? ClockTick;
+    /// <summary>Adds or replaces a match view.</summary>
+    public void Put(MatchView view) => Set(new MatchesState(State.Matches.SetItem(view.MatchId, view)));
+    /// <summary>Raises <see cref="ClockTick"/>.</summary>
+    public void Tick() => ClockTick?.Invoke();
+    /// <inheritdoc />
+    public Task<MatchView?> OpenAsync(Guid matchId) { Calls.Add($"Open:{matchId}"); return Task.FromResult(State.Matches.GetValueOrDefault(matchId)); }
+    /// <inheritdoc />
+    public void Close(Guid matchId) => Calls.Add($"Close:{matchId}");
+    /// <inheritdoc />
+    public Task PlaceAsync(Guid matchId, int cell) { Calls.Add($"Place:{cell}"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task DecideSwapAsync(Guid matchId, bool swap) { Calls.Add($"Swap:{swap}"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task ResignAsync(Guid matchId) { Calls.Add("Resign"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task SendEmoteAsync(Guid matchId, string emoteId) { Calls.Add($"Emote:{emoteId}"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task OfferRematchAsync(Guid matchId) { Calls.Add("Rematch"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public ClockView? GetClock(Guid matchId) => Clock;
+}
+
+/// <summary>Fake <see cref="ISocialStore"/>.</summary>
+public sealed class FakeSocialStore() : FakeStore<SocialState>(MockupFixtures.Social), ISocialStore
+{
+    /// <inheritdoc />
+    public Task LoadAsync() { Calls.Add("Load"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task<IReadOnlyList<PlayerCardDto>> SearchAsync(string prefix)
+        => Task.FromResult<IReadOnlyList<PlayerCardDto>>(MockupFixtures.Friends.Select(f => f.Player).Where(p => p.DisplayName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList());
+    /// <inheritdoc />
+    public Task<CommandAckDto> SendRequestAsync(string username) { Calls.Add($"Request:{username}"); return Task.FromResult(new CommandAckDto(true, null)); }
+    /// <inheritdoc />
+    public Task<CommandAckDto> RespondAsync(Guid requestId, bool accept) { Calls.Add($"Respond:{accept}"); return Task.FromResult(new CommandAckDto(true, null)); }
+    /// <inheritdoc />
+    public Task RemoveFriendAsync(Guid userId) { Calls.Add("Remove"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task BlockAsync(Guid userId) { Calls.Add("Block"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task UnblockAsync(Guid userId) { Calls.Add("Unblock"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task LoadThreadAsync(Guid friendId, long? beforeId = null) { Calls.Add("LoadThread"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task<CommandAckDto> SendMessageAsync(Guid friendId, string body) { Calls.Add($"Send:{body}"); return Task.FromResult(new CommandAckDto(true, null)); }
+    /// <inheritdoc />
+    public Task MarkReadAsync(Guid friendId) => Task.CompletedTask;
+    /// <inheritdoc />
+    public Task<ChallengeDto> CreateChallengeAsync(CreateChallengeDto request) { Calls.Add($"Challenge:{request.TimeControl}"); return Task.FromResult(MockupFixtures.Challenge); }
+    /// <inheritdoc />
+    public Task<ChallengeDto?> GetChallengeAsync(string code) => Task.FromResult<ChallengeDto?>(MockupFixtures.Challenge with { Code = code });
+    /// <inheritdoc />
+    public Task<AcceptChallengeResultDto> AcceptChallengeAsync(string code) { Calls.Add($"Accept:{code}"); return Task.FromResult(new AcceptChallengeResultDto(true, null, MockupFixtures.MatchId)); }
+    /// <inheritdoc />
+    public Task DeclineChallengeAsync(string code) { Calls.Add($"Decline:{code}"); return Task.CompletedTask; }
+}
+
+/// <summary>Fake <see cref="IProgressStore"/>.</summary>
+public sealed class FakeProgressStore() : FakeStore<ProgressState>(new ProgressState(MockupFixtures.Progress, true)), IProgressStore
+{
+    /// <inheritdoc />
+    public Task LoadAsync() => Task.CompletedTask;
+    /// <inheritdoc />
+    public Task<RewardClaimResultDto> ClaimRewardAsync(RewardKind kind, Guid? gameId = null)
+    { Calls.Add($"Claim:{kind}"); return Task.FromResult(new RewardClaimResultDto(true, null, State.Progress)); }
+}
+
+/// <summary>Fake <see cref="IGameQueries"/> returning mockup fixtures.</summary>
+public sealed class FakeGameQueries : IGameQueries
+{
+    /// <inheritdoc />
+    public Task<ProfileDto?> GetProfileAsync(string username) => Task.FromResult<ProfileDto?>(MockupFixtures.Profile);
+    /// <inheritdoc />
+    public Task<IReadOnlyList<GameSummaryDto>> GetHistoryAsync(Guid userId, DateTimeOffset? before = null, int take = 20)
+        => Task.FromResult<IReadOnlyList<GameSummaryDto>>(before is null ? MockupFixtures.RecentGames : []);
+    /// <inheritdoc />
+    public Task<GameRecordDto?> GetGameAsync(Guid gameId) => Task.FromResult<GameRecordDto?>(null);
+    /// <inheritdoc />
+    public Task<(GameAnalysisDto? Analysis, string? Error)> GetAnalysisAsync(Guid gameId) => Task.FromResult<(GameAnalysisDto?, string?)>((null, ErrorCodes.AnalysisUnavailable));
+    /// <inheritdoc />
+    public Task<LeaderboardPageDto> GetLeaderboardAsync(RatingPool pool, LeaderboardScope scope, string? country, int page)
+        => Task.FromResult(new LeaderboardPageDto(pool, scope, country, page, 50, 3,
+            MockupFixtures.Friends.Select((f, i) => new LeaderboardRowDto(i + 1, f.Player, f.Player.Rating ?? 1200, 100)).ToArray(), null));
+    /// <inheritdoc />
+    public Task<IReadOnlyList<DailyGameDto>> GetDailyGamesAsync() => Task.FromResult<IReadOnlyList<DailyGameDto>>([]);
+    /// <inheritdoc />
+    public Task<IReadOnlyList<LiveMatchDto>> GetLiveFriendMatchesAsync() => Task.FromResult<IReadOnlyList<LiveMatchDto>>([]);
+}
+
+/// <summary>Fake <see cref="ISettingsStore"/>.</summary>
+public sealed class FakeSettingsStore() : FakeStore<SettingsState>(SettingsState.Default), ISettingsStore
+{
+    /// <inheritdoc />
+    public Task LoadAsync() => Task.CompletedTask;
+    /// <inheritdoc />
+    public Task UpdateAsync(Func<SettingsState, SettingsState> change) { Set(change(State)); return Task.CompletedTask; }
+}
+
+/// <summary>Fake <see cref="IAdCoordinator"/>.</summary>
+public sealed class FakeAdCoordinator : IAdCoordinator
+{
+    /// <summary>Whether a match route is active.</summary>
+    public bool MatchRouteActive { get; private set; }
+    /// <summary>Completed games reported.</summary>
+    public List<GameResultForUser> Completed { get; } = [];
+    /// <inheritdoc />
+    public bool BannersAllowed => !MatchRouteActive;
+    /// <inheritdoc />
+    public void SetMatchRouteActive(bool active) => MatchRouteActive = active;
+    /// <inheritdoc />
+    public Task OnGameCompletedAsync(GameResultForUser result) { Completed.Add(result); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task<RewardedAdResult> ShowRewardedAsync(RewardKind kind) => Task.FromResult(new RewardedAdResult(true, $"stub:{kind}:{Guid.Empty}"));
+}
+
+/// <summary>Registers every fake store (tests and design previews).</summary>
+public static class FakeServiceCollectionExtensions
+{
+    /// <summary>Registers fakes as singletons (both as their fake type and their interface).</summary>
+    public static IServiceCollection AddTttFakeStores(this IServiceCollection services)
+    {
+        services.TryAddSingleton<FakeSessionStore>(); services.TryAddSingleton<ISessionStore>(sp => sp.GetRequiredService<FakeSessionStore>());
+        services.TryAddSingleton<FakeQueueStore>(); services.TryAddSingleton<IQueueStore>(sp => sp.GetRequiredService<FakeQueueStore>());
+        services.TryAddSingleton<FakeMatchStore>(); services.TryAddSingleton<IMatchStore>(sp => sp.GetRequiredService<FakeMatchStore>());
+        services.TryAddSingleton<FakeSocialStore>(); services.TryAddSingleton<ISocialStore>(sp => sp.GetRequiredService<FakeSocialStore>());
+        services.TryAddSingleton<FakeProgressStore>(); services.TryAddSingleton<IProgressStore>(sp => sp.GetRequiredService<FakeProgressStore>());
+        services.TryAddSingleton<FakeSettingsStore>(); services.TryAddSingleton<ISettingsStore>(sp => sp.GetRequiredService<FakeSettingsStore>());
+        services.TryAddSingleton<FakeAdCoordinator>(); services.TryAddSingleton<IAdCoordinator>(sp => sp.GetRequiredService<FakeAdCoordinator>());
+        services.TryAddSingleton<IGameQueries, FakeGameQueries>();
+        return services;
+    }
+}

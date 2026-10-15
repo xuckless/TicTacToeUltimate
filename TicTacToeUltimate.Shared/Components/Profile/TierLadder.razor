@@ -1,0 +1,17 @@
+<Card>
+    <div class="t-spread"><span class="t-label">Tier progress</span>
+        @if (Tier is not null && Tier.Tier != Contracts.Tier.Master) { <span class="t-small t-muted">@Tier.PointsToNext to @Ui.NextTierName(Tier)</span> }
+    </div>
+    <div class="tier-ladder" role="img" aria-label="@($"Tier: {Ui.TierName(Tier)}")">
+        @foreach (var t in Enum.GetValues<Contracts.Tier>())
+        {
+            <span style="@(Tier is not null && t <= Tier.Tier ? $"background:var(--tier-{t.ToString().ToLowerInvariant()})" : null)"></span>
+        }
+    </div>
+    <div class="tier-ladder-labels"><span>BRZ</span><span>SLV</span><span>GLD</span><span>PLT</span><span>DIA</span><span>MST</span></div>
+</Card>
+
+@code {
+    /// <summary>Current tier.</summary>
+    [Parameter] public TierDto? Tier { get; set; }
+}

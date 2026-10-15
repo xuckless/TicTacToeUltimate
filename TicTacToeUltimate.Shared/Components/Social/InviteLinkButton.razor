@@ -1,0 +1,27 @@
+@inject IShareService Share
+@inject ToastService Toasts
+
+<Button Variant="dashed" Block="true" OnClick="Invite" Disabled="_busy">@Text</Button>
+
+@code {
+    private bool _busy;
+
+    /// <summary>Caption.</summary>
+    [Parameter] public string Text { get; set; } = "Invite a friend by link";
+    /// <summary>Creates the challenge link to share.</summary>
+    [Parameter, EditorRequired] public Func<Task<ChallengeDto?>> CreateLink { get; set; } = () => Task.FromResult<ChallengeDto?>(null);
+
+    private async Task Invite()
+    {
+        _busy = true;
+        try
+        {
+            var c = await CreateLink();
+            if (c is null || !Uri.TryCreate(c.Url, UriKind.Absolute, out var url)) { Toasts.Show("Couldn't create a link.", ToastKind.Error); return; }
+            var r = await Share.ShareLinkAsync("TTT Ultimate", $"Play me in TTT Ultimate! Code {c.Code}", url);
+            if (r == "copied") Toasts.Show("Link copied", ToastKind.Success);
+            else if (r == "failed") Toasts.Show($"Share this code: {c.Code}");
+        }
+        finally { _busy = false; }
+    }
+}

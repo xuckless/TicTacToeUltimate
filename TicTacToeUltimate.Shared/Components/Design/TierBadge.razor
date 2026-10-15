@@ -1,0 +1,13 @@
+@if (Tier is not null)
+{
+    <span class="t-tier @(Large ? "t-tier--lg" : null) @Ui.TierClass(Tier.Tier)"><i aria-hidden="true"></i>@Ui.TierName(Tier)@if (Provisional) {<span class="t-chip">Placement</span>}</span>
+}
+
+@code {
+    /// <summary>Tier.</summary>
+    [Parameter] public TierDto? Tier { get; set; }
+    /// <summary>Larger shield.</summary>
+    [Parameter] public bool Large { get; set; }
+    /// <summary>Shows the placement badge.</summary>
+    [Parameter] public bool Provisional { get; set; }
+}

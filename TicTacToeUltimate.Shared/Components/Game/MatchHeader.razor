@@ -1,0 +1,39 @@
+<div class="match-header">
+    @if (Clock?.SuddenDeath == true)
+    {
+        <Chip Alert="true">SUDDEN DEATH</Chip>
+    }
+    else
+    {
+        <span class="t-label">@Ui.ModeLabel(Mode, TimeControl)</span>
+    }
+    <span class="clockinfo">@Info</span>
+</div>
+
+@code {
+    /// <summary>Mode.</summary>
+    [Parameter] public MatchMode Mode { get; set; }
+    /// <summary>Time control.</summary>
+    [Parameter] public TimeControl TimeControl { get; set; }
+    /// <summary>Live clock view.</summary>
+    [Parameter] public ClockView? Clock { get; set; }
+    /// <summary>Spectator count.</summary>
+    [Parameter] public int Spectators { get; set; }
+
+    /// <summary>"Game 0:41 · move 15s" or "Game 1:31 · window 8s → 7s in 5s".</summary>
+    public string Info
+    {
+        get
+        {
+            var spect = Spectators > 0 ? $" · {Spectators} watching" : "";
+            if (Clock is null || Clock.AllowanceMs is null)
+                return TimeControl == TimeControl.Unlimited ? "No clock" + spect : spect.TrimStart(' ', '·');
+            var game = $"Game {Ui.Elapsed(Clock.GameElapsedMs)}";
+            if (TimeControl == TimeControl.Daily) return game + spect;
+            var now = Ui.Seconds(Clock.AllowanceMs.Value);
+            if (Clock.SuddenDeath && Clock.NextAllowanceMs is int next && Clock.NextStepInMs is int inMs && next != Clock.AllowanceMs)
+                return $"{game} · window {now}s → {Ui.Seconds(next)}s in {Math.Max(0, (int)Math.Ceiling(inMs / 1000.0))}s{spect}";
+            return Clock.SuddenDeath ? $"{game} · window {now}s{spect}" : $"{game} · move {now}s{spect}";
+        }
+    }
+}

@@ -1,0 +1,51 @@
+@inherits LayoutComponentBase
+@inject ISessionStore Session
+@implements IDisposable
+
+<div class="shell">
+    <aside class="t-side" aria-label="Sidebar">
+        <div class="brand">TTT Ultimate</div>
+        @foreach (var item in Primary)
+        {
+            <NavLink href="@item.Href" Match="@item.Match"><Icon Name="@item.Icon" />@item.Label</NavLink>
+        }
+        <hr style="border:0;border-top:1px solid var(--line);width:100%" />
+        @if (!Session.State.IsGuest)
+        {
+            <NavLink href="daily"><Icon Name="clock" />Daily@(Session.State.DailyYourTurn > 0 ? $" ({Session.State.DailyYourTurn})" : "")</NavLink>
+            <NavLink href="leaderboards"><Icon Name="trophy" />Leaderboards</NavLink>
+        }
+        <NavLink href="history"><Icon Name="history" />History</NavLink>
+        <NavLink href="settings"><Icon Name="settings" />Settings</NavLink>
+    </aside>
+    <div class="shell-main">
+        <ConnectionBanner Phase="Session.State.Connection" Attempt="Session.State.ReconnectAttempt" />
+        <CascadingValue Name="AdsAllowed" Value="true" IsFixed="true">
+            <main id="main" class="page">@Body</main>
+        </CascadingValue>
+    </div>
+    <nav class="t-nav" aria-label="Main">
+        @foreach (var item in Primary)
+        {
+            <NavLink href="@item.Href" Match="@item.Match"><Icon Name="@item.Icon" />@item.Label</NavLink>
+        }
+    </nav>
+</div>
+
+@code {
+    private sealed record NavItem(string Href, string Label, string Icon, NavLinkMatch Match);
+
+    private static readonly NavItem[] Primary =
+    [
+        new("", "Home", "home", NavLinkMatch.All),
+        new("play", "Play", "play", NavLinkMatch.Prefix),
+        new("social", "Social", "social", NavLinkMatch.Prefix),
+        new("profile", "Profile", "profile", NavLinkMatch.Prefix),
+    ];
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Session.Changed += OnChanged;
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+    /// <inheritdoc />
+    public void Dispose() => Session.Changed -= OnChanged;
+}

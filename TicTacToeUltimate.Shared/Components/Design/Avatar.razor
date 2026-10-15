@@ -1,0 +1,24 @@
+<div class="t-avatar @SizeClass @RingClass @Class" aria-hidden="true">@Glyph</div>
+
+@code {
+    /// <summary>Display name (initial is used).</summary>
+    [Parameter] public string? Name { get; set; }
+    /// <summary>Preset avatar id ("a1".."a8"); falls back to the initial.</summary>
+    [Parameter] public string? AvatarId { get; set; }
+    /// <summary>sm (44) | md (48) | lg (72).</summary>
+    [Parameter] public string Size { get; set; } = "sm";
+    /// <summary>Presence ring.</summary>
+    [Parameter] public PresenceStatus? Presence { get; set; }
+    /// <summary>Extra classes.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Preset avatar glyphs (cosmetics later).</summary>
+    public static readonly IReadOnlyDictionary<string, string> Presets = new Dictionary<string, string>
+    {
+        ["a1"] = "X", ["a2"] = "O", ["a3"] = "★", ["a4"] = "♦", ["a5"] = "♣", ["a6"] = "♠", ["a7"] = "♥", ["a8"] = "#",
+    };
+
+    private string Glyph => AvatarId is not null && Presets.TryGetValue(AvatarId, out var g) ? g : Ui.Initial(Name);
+    private string? SizeClass => Size switch { "lg" => "t-avatar--lg", "md" => "t-avatar--md", _ => null };
+    private string? RingClass => Presence switch { PresenceStatus.Online => "ring-online", PresenceStatus.InGame => "ring-ingame", _ => null };
+}

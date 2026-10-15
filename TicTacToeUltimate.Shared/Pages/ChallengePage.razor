@@ -1,0 +1,89 @@
+@page "/c/{Code}"
+@inherits StoreComponent
+@inject ISessionStore Session
+@inject ISocialStore Social
+@inject NavigationManager Nav
+
+<PageTitle>Challenge · TTT Ultimate</PageTitle>
+<h1 class="t-title">Challenge</h1>
+
+@if (_loading)
+{
+    <p class="t-muted">Loading challenge…</p>
+}
+else if (_challenge is null || _challenge.Status != ChallengeStatus.Open)
+{
+    <Card><p style="margin:0">@(_challenge is null ? "This challenge doesn't exist." : "This challenge is no longer open.")</p></Card>
+    <Button Variant="secondary" Href="">Home</Button>
+}
+else
+{
+    <Card>
+        <div class="t-listrow" style="border:0">
+            <Avatar Name="@_challenge.From.DisplayName" AvatarId="@_challenge.From.AvatarId" Size="md" />
+            <div class="who"><div class="name">@_challenge.From.DisplayName</div>
+                <div class="meta">@Ui.TimeControlName(_challenge.TimeControl) · unrated · <TierBadge Tier="_challenge.From.Tier" /></div></div>
+        </div>
+        <span class="t-small t-muted">Code @_challenge.Code</span>
+    </Card>
+    @if (_error is not null) { <p class="t-alert" role="alert">@_error</p> }
+    @if (Session.State.Status == SessionStatus.SignedIn)
+    {
+        <Button Variant="primary" Block="true" OnClick="Accept" Disabled="_busy">Accept challenge</Button>
+        <Button Variant="secondary" Block="true" OnClick="Decline" Disabled="_busy">Decline</Button>
+    }
+    else
+    {
+        <Button Variant="primary" Block="true" OnClick="PlayAsGuest" Disabled="_busy">Play as guest</Button>
+        <Button Variant="secondary" Block="true" Href="@($"signin?returnUrl={Uri.EscapeDataString($"/c/{Code}")}")">Sign in</Button>
+    }
+}
+
+@code {
+    private ChallengeDto? _challenge;
+    private bool _loading = true, _busy;
+    private string? _error;
+
+    /// <summary>Challenge code.</summary>
+    [Parameter] public string Code { get; set; } = "";
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Session);
+        try { _challenge = await Social.GetChallengeAsync(Code); }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { }
+        _loading = false;
+    }
+
+    private async Task PlayAsGuest()
+    {
+        _busy = true;
+        try { await Session.SignInGuestAsync(); await Accept(); }
+        finally { _busy = false; }
+    }
+
+    private async Task Accept()
+    {
+        _busy = true;
+        try
+        {
+            var r = await Social.AcceptChallengeAsync(Code);
+            if (r.Accepted && r.MatchId is Guid id) Nav.NavigateTo($"match/{id}");
+            else _error = r.Error switch
+            {
+                ErrorCodes.ChallengeTaken => "Someone else already accepted.",
+                ErrorCodes.ChallengeExpired => "This challenge expired.",
+                ErrorCodes.CannotChallengeSelf => "That's your own challenge. Share the link with a friend.",
+                _ => "Couldn't accept the challenge.",
+            };
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task Decline()
+    {
+        await Social.DeclineChallengeAsync(Code);
+        Nav.NavigateTo("");
+    }
+}

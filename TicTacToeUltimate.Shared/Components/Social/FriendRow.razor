@@ -1,0 +1,49 @@
+<div class="t-listrow" style="@(Friend.Presence.Status == PresenceStatus.Offline ? "opacity:.7" : null)">
+    <Avatar Name="@Friend.Player.DisplayName" AvatarId="@Friend.Player.AvatarId" />
+    <div class="who">
+        <div class="name"><a href="@($"u/{Friend.Player.DisplayName}")" style="color:inherit;text-decoration:none">@Friend.Player.DisplayName</a>
+            @if (Friend.UnreadMessages > 0) { <a class="t-chip" href="@($"social/chat/{Friend.Player.UserId}")" aria-label="@($"{Friend.UnreadMessages} unread messages")">@Friend.UnreadMessages</a> }
+        </div>
+        <div class="meta" style="@(Friend.Presence.Status == PresenceStatus.InGame ? "color:var(--piece-o)" : null)">
+            <PresenceDot Status="Friend.Presence.Status" /> @StatusText
+        </div>
+    </div>
+    @switch (Friend.Presence.Status)
+    {
+        case PresenceStatus.InGame when Friend.Presence.MatchId is not null:
+            <Button Variant="secondary" Small="true" OnClick="() => OnWatch.InvokeAsync(Friend)">Watch</Button>
+            break;
+        case PresenceStatus.Offline:
+            <Button Variant="secondary" Small="true" OnClick="() => OnDaily.InvokeAsync(Friend)">Daily</Button>
+            break;
+        default:
+            <Button Variant="secondary" Small="true" OnClick="() => OnChallenge.InvokeAsync(Friend)">Challenge</Button>
+            break;
+    }
+</div>
+
+@code {
+    /// <summary>Friend.</summary>
+    [Parameter, EditorRequired] public FriendDto Friend { get; set; } = default!;
+    /// <summary>Now (for "2h ago").</summary>
+    [Parameter] public DateTimeOffset Now { get; set; } = DateTimeOffset.UtcNow;
+    /// <summary>Challenge (online).</summary>
+    [Parameter] public EventCallback<FriendDto> OnChallenge { get; set; }
+    /// <summary>Spectate (in game).</summary>
+    [Parameter] public EventCallback<FriendDto> OnWatch { get; set; }
+    /// <summary>Daily challenge (offline).</summary>
+    [Parameter] public EventCallback<FriendDto> OnDaily { get; set; }
+
+    private string StatusText
+    {
+        get
+        {
+            var tier = Friend.Player.Tier is null ? "" : " · " + Ui.TierName(Friend.Player.Tier);
+            if (Friend.Presence.Status != PresenceStatus.Offline) return PresenceDot.Text(Friend.Presence.Status) + tier;
+            if (Friend.LastSeenAt is not DateTimeOffset seen) return "Offline";
+            var ago = Now - seen;
+            var s = ago.TotalMinutes < 60 ? $"{Math.Max(1, (int)ago.TotalMinutes)}m ago" : ago.TotalHours < 24 ? $"{(int)ago.TotalHours}h ago" : $"{(int)ago.TotalDays}d ago";
+            return $"Offline · {s}";
+        }
+    }
+}

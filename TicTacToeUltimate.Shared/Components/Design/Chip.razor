@@ -1,0 +1,10 @@
+<span class="t-chip @(Alert ? "t-chip--alert" : null) @Class">@ChildContent</span>
+
+@code {
+    /// <summary>Red sudden-death chip.</summary>
+    [Parameter] public bool Alert { get; set; }
+    /// <summary>Extra classes.</summary>
+    [Parameter] public string? Class { get; set; }
+    /// <summary>Content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

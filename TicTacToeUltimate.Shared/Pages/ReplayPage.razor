@@ -1,0 +1,85 @@
+@page "/replay/{Id:guid}"
+@inject IGameQueries Queries
+@inject IProgressStore Progress
+@inject ToastService Toasts
+
+<PageTitle>Replay · TTT Ultimate</PageTitle>
+<h1 class="t-title">Replay</h1>
+
+@if (_game is null)
+{
+    <p class="t-muted">@(_loading ? "Loading game…" : "Game not found.")</p>
+}
+else
+{
+    var frame = _frames[_ply];
+    var final = _ply == _frames.Count - 1;
+    <p class="t-small t-muted" style="margin:0">
+        @string.Join(" vs ", _game.Seats.Select(s => s.Player.DisplayName)) · @Ui.TimeControlName(_game.TimeControl) · @Ui.ReasonText(_game.Result.Reason)
+    </p>
+    <div style="display:grid;place-items:center">
+        <Board Size="_game.Rules.BoardSize" Cells="@frame.Board" Ghost="@(final ? null : frame.Ghost)" LastPlaced="frame.LastPlaced"
+               WinLine="@(final ? _game.Result.WinLine : null)" Winner="Winner" Interactive="false" />
+    </div>
+    <ReplayScrubber Ply="_ply" Max="_frames.Count - 1" PlyChanged="p => _ply = p" />
+    @if (_analysis is null)
+    {
+        <Card Title="Perfect-play review">
+            <p class="t-small t-muted" style="margin:0">@(_analysisError ?? "See which moves won and which were blunders.")</p>
+            <Button Variant="primary" OnClick="Unlock" Disabled="_busy">Watch ad to unlock</Button>
+        </Card>
+    }
+    <MoveList Actions="_game.Actions" Current="_ply" Analysis="_analysis?.Plies" OnSelect="p => _ply = p" Size="_game.Rules.BoardSize" />
+}
+
+@code {
+    private GameRecordDto? _game;
+    private IReadOnlyList<ReplayFrame> _frames = [];
+    private GameAnalysisDto? _analysis;
+    private string? _analysisError;
+    private int _ply;
+    private bool _loading = true, _busy;
+
+    /// <summary>Game id.</summary>
+    [Parameter] public Guid Id { get; set; }
+    [SupplyParameterFromQuery(Name = "analysis")] private int? AnalysisFlag { get; set; }
+
+    private Color? Winner => _game?.Result.Outcome switch { Outcome.XWins => Color.X, Outcome.OWins => Color.O, _ => null };
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try { _game = await Queries.GetGameAsync(Id); }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { }
+        _loading = false;
+        if (_game is null) return;
+        _frames = ReplayFrames.Build(_game.Rules, _game.Actions);
+        _ply = _frames.Count - 1;
+        if (AnalysisFlag == 1) await LoadAnalysis();
+    }
+
+    private async Task LoadAnalysis()
+    {
+        var (a, err) = await Queries.GetAnalysisAsync(Id);
+        _analysis = a;
+        _analysisError = err switch
+        {
+            null => null,
+            ErrorCodes.AnalysisWarming => "Analysis is warming up. Try again in a moment.",
+            ErrorCodes.RewardRequired => null,
+            _ => "Analysis isn't available for this game.",
+        };
+    }
+
+    private async Task Unlock()
+    {
+        _busy = true;
+        try
+        {
+            var r = await Progress.ClaimRewardAsync(RewardKind.Analysis, Id);
+            if (r.Granted) await LoadAnalysis();
+            else Toasts.Show("Watch the full ad to unlock", ToastKind.Error);
+        }
+        finally { _busy = false; }
+    }
+}

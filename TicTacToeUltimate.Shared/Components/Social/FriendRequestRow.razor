@@ -1,0 +1,18 @@
+<div class="t-listrow">
+    <Avatar Name="@Other.DisplayName" AvatarId="@Other.AvatarId" />
+    <div class="who"><div class="name">@Other.DisplayName</div><div class="meta">@(Request.Direction == FriendRequestDirection.Incoming ? "Wants to be friends" : "Request sent")</div></div>
+    @if (Request.Direction == FriendRequestDirection.Incoming)
+    {
+        <Button Variant="primary" Small="true" OnClick="() => OnRespond.InvokeAsync((Request, true))">Accept</Button>
+        <IconButton Label="Decline" Icon="close" Round="true" OnClick="() => OnRespond.InvokeAsync((Request, false))" />
+    }
+</div>
+
+@code {
+    /// <summary>Request.</summary>
+    [Parameter, EditorRequired] public FriendRequestDto Request { get; set; } = default!;
+    /// <summary>Accept/decline.</summary>
+    [Parameter] public EventCallback<(FriendRequestDto Request, bool Accept)> OnRespond { get; set; }
+
+    private PlayerCardDto Other => Request.Direction == FriendRequestDirection.Incoming ? Request.From : Request.To;
+}

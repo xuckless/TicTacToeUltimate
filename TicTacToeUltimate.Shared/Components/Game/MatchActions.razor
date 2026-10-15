@@ -1,0 +1,18 @@
+<div class="match-actions">
+    <IconButton Label="Emotes" Icon="emote" OnClick="OnEmote" Disabled="Disabled" />
+    <IconButton Label="Resign" Icon="flag" OnClick="OnResign" Disabled="@(Disabled || Ended)" />
+    <IconButton Label="More" Icon="more" OnClick="OnMenu" />
+</div>
+
+@code {
+    /// <summary>Emote picker.</summary>
+    [Parameter] public EventCallback OnEmote { get; set; }
+    /// <summary>Resign sheet.</summary>
+    [Parameter] public EventCallback OnResign { get; set; }
+    /// <summary>Menu sheet.</summary>
+    [Parameter] public EventCallback OnMenu { get; set; }
+    /// <summary>Spectators cannot emote or resign.</summary>
+    [Parameter] public bool Disabled { get; set; }
+    /// <summary>Game over.</summary>
+    [Parameter] public bool Ended { get; set; }
+}

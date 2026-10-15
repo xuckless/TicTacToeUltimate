@@ -1,0 +1,44 @@
+@implements IDisposable
+
+<div class="t-col" style="padding:0">
+    <TextField Label="Find players" HideLabel="true" Placeholder="Find players by username" Value="@_query" ValueChanged="OnQuery" MaxLength="16" />
+    @if (_results.Count > 0)
+    {
+        <section class="t-card" aria-label="Search results" style="padding:4px 16px">
+            @foreach (var p in _results)
+            {
+                <div class="t-listrow">
+                    <Avatar Name="@p.DisplayName" AvatarId="@p.AvatarId" />
+                    <div class="who"><div class="name">@p.DisplayName <BotBadge Kind="p.Kind" /></div><div class="meta">@Ui.TierName(p.Tier)</div></div>
+                    <Button Variant="secondary" Small="true" OnClick="() => OnAdd.InvokeAsync(p)">Add</Button>
+                </div>
+            }
+        </section>
+    }
+</div>
+
+@code {
+    private string _query = "";
+    private List<PlayerCardDto> _results = [];
+    private CancellationTokenSource? _debounce;
+
+    /// <summary>Search function (prefix).</summary>
+    [Parameter, EditorRequired] public Func<string, Task<IReadOnlyList<PlayerCardDto>>> Search { get; set; } = _ => Task.FromResult<IReadOnlyList<PlayerCardDto>>([]);
+    /// <summary>Add friend.</summary>
+    [Parameter] public EventCallback<PlayerCardDto> OnAdd { get; set; }
+
+    private async Task OnQuery(string q)
+    {
+        _query = q;
+        _debounce?.Cancel();
+        _debounce = new CancellationTokenSource();
+        var token = _debounce.Token;
+        if (q.Trim().Length < 2) { _results = []; return; }
+        try { await Task.Delay(250, token); } catch (TaskCanceledException) { return; }
+        var r = await Search(q.Trim().ToLowerInvariant());
+        if (!token.IsCancellationRequested) _results = r.ToList();
+    }
+
+    /// <inheritdoc />
+    public void Dispose() { _debounce?.Cancel(); _debounce?.Dispose(); }
+}

@@ -1,0 +1,18 @@
+<Sheet Open="Open" Title="Resign?" OnClose="OnClose">
+    <p class="t-muted">@(Rated ? "You will lose rating points." : "The game ends as a loss.")</p>
+    <Button Variant="danger" Block="true" OnClick="Confirm">Resign</Button>
+    <Button Variant="secondary" Block="true" OnClick="OnClose">Keep playing</Button>
+</Sheet>
+
+@code {
+    /// <summary>Visible.</summary>
+    [Parameter] public bool Open { get; set; }
+    /// <summary>Rated game.</summary>
+    [Parameter] public bool Rated { get; set; }
+    /// <summary>Confirmed.</summary>
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    /// <summary>Close.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task Confirm() { await OnClose.InvokeAsync(); await OnConfirm.InvokeAsync(); }
+}

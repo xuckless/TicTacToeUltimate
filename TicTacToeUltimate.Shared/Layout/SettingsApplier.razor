@@ -1,0 +1,33 @@
+@* Applies theme and motion preferences to the document (data-theme / data-motion). Renders nothing. *@
+@inject ISettingsStore Settings
+@inject TttJsModule Js
+@implements IDisposable
+
+@code {
+    private (ThemePreference, MotionPreference)? _applied;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Settings.Changed += OnChanged;
+        try { await Settings.LoadAsync(); } catch (InvalidOperationException) { /* defaults stay */ }
+        await ApplyAsync();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(ApplyAsync);
+
+    private async Task ApplyAsync()
+    {
+        var s = Settings.State;
+        if (_applied == (s.Theme, s.Motion)) return;
+        _applied = (s.Theme, s.Motion);
+        await Js.InvokeVoidAsync("setTheme", ThemeName(s.Theme));
+        await Js.InvokeAsync<bool>("setMotion", s.Motion.ToString().ToLowerInvariant());
+    }
+
+    /// <summary>JS theme name.</summary>
+    public static string ThemeName(ThemePreference t) => t switch { ThemePreference.Light => "light", ThemePreference.System => "system", _ => "dark" };
+
+    /// <inheritdoc />
+    public void Dispose() => Settings.Changed -= OnChanged;
+}
