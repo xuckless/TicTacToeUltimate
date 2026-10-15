@@ -1,24 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:shared="clr-namespace:TicTacToeUltimate.Shared;assembly=TicTacToeUltimate.Shared"
-    xmlns:admob="clr-namespace:Plugin.AdMob;assembly=Plugin.AdMob"
     x:Class="TicTacToeUltimate.MainPage"
-    BackgroundColor="{DynamicResource PageBackgroundColor}">
+    BackgroundColor="#120a22">
 
-    <Grid RowDefinitions="*,Auto">
-        <BlazorWebView Grid.Row="0" x:Name="BlazorWebView" HostPage="wwwroot/index.html">
-            <BlazorWebView.RootComponents>
-                <RootComponent Selector="#app" ComponentType="{x:Type shared:Routes}" />
-            </BlazorWebView.RootComponents>
-        </BlazorWebView>
-
-        <admob:BannerAd
-            Grid.Row="1"
-            AdUnitId="ca-app-pub-3940256099942544/6300978111"
-            HeightRequest="50"
-            HorizontalOptions="Fill"
-            VerticalOptions="End" />
-    </Grid>
+    <BlazorWebView x:Name="BlazorWebView" HostPage="wwwroot/index.html">
+        <BlazorWebView.RootComponents>
+            <RootComponent Selector="#app" ComponentType="{x:Type shared:Routes}" />
+        </BlazorWebView.RootComponents>
+    </BlazorWebView>
 </ContentPage>

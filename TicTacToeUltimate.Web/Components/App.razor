@@ -1,20 +1,19 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <base href="/"/>
-    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/bootstrap/bootstrap.min.css"/>
-    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/app.css"/>
-    <link rel="stylesheet" href="TicTacToeUltimate.Web.styles.css"/>
-    <link rel="icon" type="image/png" href="_content/TicTacToeUltimate.Shared/favicon.png"/>
-    <HeadOutlet @rendermode="InteractiveAuto"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <base href="/" />
+    <title>TTT Ultimate</title>
+    <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/app.css" />
+    <link rel="icon" type="image/png" href="_content/TicTacToeUltimate.Shared/favicon.png" />
+    <script>
+        try { var t = localStorage.getItem('ttt.theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) { }
+    </script>
+    <HeadOutlet @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
 </head>
-
-<body>
-<Routes @rendermode="InteractiveAuto"/>
-<script src="_framework/blazor.web.js"></script>
+<body style="background:#120a22">
+    <Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
+    <script src="_framework/blazor.web.js"></script>
 </body>
-
 </html>

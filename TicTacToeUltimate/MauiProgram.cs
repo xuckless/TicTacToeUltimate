@@ -1,12 +1,9 @@
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using TicTacToeUltimate.Shared.Services;
-using TicTacToeUltimate.Services;
-using Plugin.AdMob;
-using Plugin.AdMob.Configuration;
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Maui.Devices;
-using System.Net.Http;
+using TicTacToeUltimate.Client;
+using TicTacToeUltimate.Client.Abstractions;
+using TicTacToeUltimate.Contracts;
+using TicTacToeUltimate.Shared;
 
 namespace TicTacToeUltimate;
 
@@ -15,101 +12,56 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
-
-        builder
-            .UseMauiApp<App>()
-            .UseAdMob()
-            .ConfigureFonts(f => f.AddFont("OpenSans-Regular.ttf", "OpenSansRegular"));
-
-        builder.Services.AddSingleton<IFormFactor, FormFactor>();
+        builder.UseMauiApp<App>();
         builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
-        AdConfig.UseTestAdUnitIds = true;
 #endif
 
-        const string LAN_IP = "192.168.1.123";
-        string[] candidates;
-
-        if (DeviceInfo.Platform == DevicePlatform.MacCatalyst)
-            candidates = new[] { "https://localhost:7086", "http://localhost:5091" };
-        else if (DeviceInfo.Platform == DevicePlatform.iOS)
-            candidates = (DeviceInfo.DeviceType == DeviceType.Virtual)
-                ? new[] { "https://localhost:7086", "http://localhost:5091" }
-                : new[] { $"https://{LAN_IP}:7086", $"http://{LAN_IP}:5091" };
-        else if (DeviceInfo.Platform == DevicePlatform.Android)
-            candidates = new[] { "http://10.0.2.2:5091", "https://10.0.2.2:7086" };
-        else
-            candidates = new[] { "https://localhost:7086", "http://localhost:5091" };
-
-        var loggerFactory = LoggerFactory.Create(lb => lb.AddDebug().SetMinimumLevel(LogLevel.Information));
-        var logger = loggerFactory.CreateLogger("BackendProbe");
-
-        string backendBase = ProbeCandidates(candidates, logger);
-
-        builder.Services.AddHttpClient<ApiClient>(c => c.BaseAddress = new Uri(backendBase))
+        var options = new ClientOptions
+        {
+            BackendBaseUrl = new Uri(ReadBackendBaseUrl() ?? DefaultBackendUrl()),
+            WebBaseUrl = new Uri("http://localhost:5028"),
+            Platform = CurrentPlatform(),
 #if DEBUG
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
-            })
+            IsDevelopment = true,
 #endif
-        ;
+        };
 
-        // GameHub connection
-        builder.Services.AddSingleton(sp =>
-            new HubConnectionBuilder()
-                .WithUrl($"{backendBase}/hubs/game", o =>
-                {
-                    o.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.LongPolling;
-#if DEBUG
-                    o.HttpMessageHandlerFactory = _ => new HttpClientHandler
-                    {
-                        ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
-                    };
-#endif
-                })
-                .WithAutomaticReconnect()
-                .ConfigureLogging(lb => lb.SetMinimumLevel(LogLevel.Debug))
-                .Build());
-
-        builder.Services.AddScoped<GameClient>();
+        builder.Services.AddTttClient(options);
+        builder.Services.AddTttSharedUi();
+        // WP5: Replace(...) with Maui* platform services here.
 
         return builder.Build();
     }
 
-    private static string ProbeCandidates(string[] urls, ILogger logger)
+    private static string DefaultBackendUrl()
+        => DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5091" : "http://localhost:5091";
+
+    private static ClientPlatform CurrentPlatform()
     {
-        using var handler = new HttpClientHandler();
-#if DEBUG
-        handler.ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true;
-#endif
-        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(1500) };
+        if (DeviceInfo.Platform == DevicePlatform.Android) return ClientPlatform.Android;
+        if (DeviceInfo.Platform == DevicePlatform.MacCatalyst) return ClientPlatform.MacCatalyst;
+        return ClientPlatform.iOS;
+    }
 
-        foreach (var url in urls)
+    /// <summary>Reads Backend:BaseUrl from the embedded Resources/Raw/appsettings.json (empty = platform default).</summary>
+    private static string? ReadBackendBaseUrl()
+    {
+        try
         {
-            try
-            {
-                var resp = client.GetAsync($"{url}/ping").Result;
-                if (resp.IsSuccessStatusCode)
-                {
-                    var txt = client.GetStringAsync($"{url}/ping").Result.Trim();
-                    if (txt.Equals("pong", StringComparison.OrdinalIgnoreCase))
-                    {
-                        logger.LogInformation("Backend reachable: {Url}", url);
-                        return url;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogWarning("Probe failed for {Url}: {Msg}", url, ex.Message);
-            }
+            using var stream = typeof(MauiProgram).Assembly.GetManifestResourceStream("appsettings.json");
+            if (stream is null) return null;
+            using var doc = JsonDocument.Parse(stream);
+            if (doc.RootElement.TryGetProperty("Backend", out var b) && b.TryGetProperty("BaseUrl", out var u)
+                && u.GetString() is { Length: > 0 } url)
+                return url;
         }
-
-        logger.LogError("No backend found, using first candidate: {Url}", urls.First());
-        return urls.First();
+        catch (JsonException)
+        {
+        }
+        return null;
     }
 }

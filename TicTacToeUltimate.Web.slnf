@@ -1,0 +1,20 @@
+{
+  "solution": {
+    "path": "TicTacToeUltimate.sln",
+    "projects": [
+      "TicTacToeUltimate.Engine\\TicTacToeUltimate.Engine.csproj",
+      "TicTacToeUltimate.Contracts\\TicTacToeUltimate.Contracts.csproj",
+      "TicTacToeUltimate.Server\\TicTacToeUltimate.Server.csproj",
+      "TicTacToeUltimate.Client\\TicTacToeUltimate.Client.csproj",
+      "TicTacToeUltimate.Shared\\TicTacToeUltimate.Shared.csproj",
+      "TicTacToeUltimate.Web\\TicTacToeUltimate.Web.csproj",
+      "TicTacToeUltimate.Web.Client\\TicTacToeUltimate.Web.Client.csproj",
+      "tools\\TicTacToeUltimate.RulesTool\\TicTacToeUltimate.RulesTool.csproj",
+      "tests\\TicTacToeUltimate.Client.Tests\\TicTacToeUltimate.Client.Tests.csproj",
+      "tests\\TicTacToeUltimate.Engine.Tests\\TicTacToeUltimate.Engine.Tests.csproj",
+      "tests\\TicTacToeUltimate.Server.IntegrationTests\\TicTacToeUltimate.Server.IntegrationTests.csproj",
+      "tests\\TicTacToeUltimate.Server.Tests\\TicTacToeUltimate.Server.Tests.csproj",
+      "tests\\TicTacToeUltimate.Shared.Tests\\TicTacToeUltimate.Shared.Tests.csproj"
+    ]
+  }
+}

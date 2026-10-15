@@ -47,3 +47,7 @@ desktop.ini
 # Apple
 DerivedData/
 *.xcuserstate
+
+# Rebuild (WP0)
+**/TestResults/
+*.DotSettings.user

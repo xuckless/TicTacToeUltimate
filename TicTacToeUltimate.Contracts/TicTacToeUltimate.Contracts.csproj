@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>TicTacToeUltimate.Contracts</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TicTacToeUltimate.Engine\TicTacToeUltimate.Engine.csproj" />
+  </ItemGroup>
+</Project>

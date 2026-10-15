@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>TicTacToeUltimate.Server</RootNamespace>
+    <UserSecretsId>ttt-ultimate-server</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TicTacToeUltimate.Contracts\TicTacToeUltimate.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Npgsql" />
+    <PackageReference Include="Dapper" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="TicTacToeUltimate.Server.Tests" />
+    <InternalsVisibleTo Include="TicTacToeUltimate.Server.IntegrationTests" />
+  </ItemGroup>
+</Project>

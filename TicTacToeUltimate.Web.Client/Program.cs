@@ -1,22 +1,20 @@
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.AspNetCore.SignalR.Client;
-using TicTacToeUltimate.Shared.Services;
-using TicTacToeUltimate.Web.Client.Services;
+using TicTacToeUltimate.Client;
+using TicTacToeUltimate.Client.Abstractions;
+using TicTacToeUltimate.Contracts;
+using TicTacToeUltimate.Shared;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-// Shared/device services
-builder.Services.AddSingleton<IFormFactor, FormFactor>();
-
-// SignalR client (browser connects to same-origin /hubs/test)
-builder.Services.AddSingleton(sp =>
+var options = new ClientOptions
 {
-    var nav = sp.GetRequiredService<NavigationManager>();
-    return new HubConnectionBuilder()
-        .WithUrl(nav.ToAbsoluteUri("/hubs/test"))
-        .WithAutomaticReconnect()
-        .Build();
-});
+    BackendBaseUrl = new Uri(builder.Configuration["Backend:BaseUrl"] ?? "http://localhost:5091"),
+    WebBaseUrl = new Uri(builder.Configuration["Web:BaseUrl"] ?? builder.HostEnvironment.BaseAddress),
+    Platform = ClientPlatform.Web,
+    IsDevelopment = builder.HostEnvironment.IsDevelopment(),
+};
+
+builder.Services.AddTttClient(options);
+builder.Services.AddTttSharedUi();
 
 await builder.Build().RunAsync();
