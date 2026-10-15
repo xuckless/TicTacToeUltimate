@@ -1,0 +1,37 @@
+# Supabase CLI config (local stack). Unwired until the owner adds keys (D18).
+project_id = "tictactoe-ultimate"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+
+[db]
+port = 54322
+major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[auth]
+enabled = true
+site_url = "http://localhost:5028"
+additional_redirect_urls = ["http://localhost:5028", "https://localhost:7008"]
+jwt_expiry = 3600
+enable_signup = true
+enable_anonymous_sign_ins = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+
+[auth.external.google]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.apple]
+enabled = false
+client_id = ""
+secret = ""

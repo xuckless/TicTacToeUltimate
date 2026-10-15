@@ -1,0 +1,17 @@
+# One lowercase word per line. Matched as a substring after stripping '_' and digits (usernames) and masked in chat.
+# Kept in sync with ProfanityFilter.BuiltIn (used when this file is not copied to the output folder).
+fuck
+shit
+bitch
+cunt
+nigger
+nigga
+faggot
+asshole
+dickhead
+pussy
+whore
+slut
+retard
+nazi
+hitler
