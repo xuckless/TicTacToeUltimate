@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&amp;family=Lilita+One&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#a585ff}a:hover{color:#c7b3ff}
+.lbl{font-weight:800;font-size:13px;line-height:16px;letter-spacing:.06em;text-transform:uppercase}
+.card{background:#1c1233;border-radius:22px;padding:16px}
+.bar{height:10px;border-radius:999px;background:#291b4a;overflow:hidden}
+.bar span{display:block;height:100%;background:#7442ef;border-radius:999px}
+.mode{background:#1c1233;border:2px solid #8a74c9;border-radius:14px;box-shadow:0 4px 0 #0b0616;color:#f5f0ff;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:Nunito,system-ui,sans-serif}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 12px;color:#b9aadb;text-decoration:none;font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #120a22; color: #f5f0ff; font-family: Nunito, system-ui, sans-serif; font-weight: 600; display: flex; flex-direction: column">
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 8px">
+    <div style="display: flex; align-items: center; gap: 6px; background: #1c1233; border-radius: 999px; padding: 6px 12px; color: #ffc63d; font-family: 'Chakra Petch', monospace; font-weight: 700; font-size: 18px">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ffc63d" d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-6 1-9.5z"/></svg>12
+    </div>
+    <div style="font-family: 'Lilita One', sans-serif; font-size: 22px">TTT Ultimate</div>
+    <button aria-label="Settings" style="width: 44px; height: 44px; border-radius: 999px; border: 0; background: #1c1233; color: #b9aadb; display: grid; place-items: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>
+    </button>
+  </header>
+  <main style="flex: 1; display: flex; flex-direction: column; gap: 20px; padding: 8px 16px 16px; overflow: hidden">
+    <a href="Match.dc.html" style="display: flex; align-items: center; justify-content: space-between; background: #7442ef; color: #ffffff; text-decoration: none; border-radius: 22px; box-shadow: 0 4px 0 #4a22b0; padding: 20px">
+      <span style="display: flex; flex-direction: column; gap: 4px">
+        <span class="lbl" style="opacity: .9">Ranked · Sudden death</span>
+        <span style="font-family: 'Lilita One', sans-serif; font-size: 30px; line-height: 34px">Play Ranked</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 14px; height: 16px; background: #f4c542; clip-path: polygon(50% 0,100% 22%,100% 70%,50% 100%,0 70%,0 22%)"></span>Gold II · <span style="font-family: 'Chakra Petch', monospace">1540</span></span>
+      </span>
+      <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><rect x="4" y="4" width="14" height="14" rx="4" fill="#38d6ff"/><rect x="21" y="4" width="14" height="14" rx="4" fill="#ffffff" opacity=".25"/><rect x="38" y="4" width="14" height="14" rx="4" fill="#ff9f3a"/><rect x="4" y="21" width="14" height="14" rx="4" fill="#ffffff" opacity=".25"/><rect x="21" y="21" width="14" height="14" rx="4" fill="#38d6ff"/><rect x="38" y="21" width="14" height="14" rx="4" fill="#ffffff" opacity=".25"/><rect x="4" y="38" width="14" height="14" rx="4" fill="#ff9f3a" opacity=".45"/><rect x="21" y="38" width="14" height="14" rx="4" fill="#ffffff" opacity=".25"/><rect x="38" y="38" width="14" height="14" rx="4" fill="#38d6ff"/></svg>
+    </a>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+      <button class="mode"><span class="lbl">Casual</span><span style="font-size: 12px; color: #b9aadb">x2 · x4</span></button>
+      <button class="mode"><span class="lbl">Daily</span><span style="font-size: 12px; color: #b9aadb">3 your move</span></button>
+      <button class="mode"><span class="lbl">Unlimited</span><span style="font-size: 12px; color: #b9aadb">No clock</span></button>
+    </div>
+    <section class="card" style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 style="margin: 0; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 20px">Daily quests</h2><span style="font-size: 13px; color: #b9aadb">Resets in 6h</span></div>
+      <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Win 1 game</span><span style="color: #4fe08a">✓ 1/1</span></div>
+      <div class="bar"><span style="width: 100%"></span></div>
+      <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Win 3 games</span><span>2/3</span></div>
+      <div class="bar"><span style="width: 66%"></span></div>
+      <div style="display: flex; justify-content: space-between; font-size: 14px"><span>Win 5 games</span><span>2/5</span></div>
+      <div class="bar"><span style="width: 40%"></span></div>
+    </section>
+    <section class="card" style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 style="margin: 0; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 20px">Friends online</h2><a href="Social.dc.html" style="font-size: 14px">See all</a></div>
+      <div style="display: flex; gap: 14px">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px"><div style="width: 48px; height: 48px; border-radius: 999px; background: #291b4a; display: grid; place-items: center; font-family: 'Lilita One', sans-serif; font-size: 20px; outline: 3px solid #4fe08a; outline-offset: 2px">K</div>kestrel_99</div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px"><div style="width: 48px; height: 48px; border-radius: 999px; background: #291b4a; display: grid; place-items: center; font-family: 'Lilita One', sans-serif; font-size: 20px; outline: 3px solid #ff9f3a; outline-offset: 2px">M</div>mira.o</div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px"><div style="width: 48px; height: 48px; border-radius: 999px; background: #291b4a; display: grid; place-items: center; font-family: 'Lilita One', sans-serif; font-size: 20px; outline: 3px solid #4fe08a; outline-offset: 2px">J</div>jules_x</div>
+      </div>
+    </section>
+    <div style="height: 50px; border: 1px dashed #45327a; border-radius: 8px; display: grid; place-items: center; color: #b9aadb; font-size: 12px">Banner ad · 320×50</div>
+  </main>
+  <nav style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #1c1233; border-top: 1px solid #45327a; padding-bottom: 18px" aria-label="Main">
+    <a class="tab" href="Main.dc.html" aria-current="page" style="color: #a585ff"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</a>
+    <a class="tab" href="Match.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M9.5 4v16M14.5 4v16M4 9.5h16M4 14.5h16"/></svg>Play</a>
+    <a class="tab" href="Social.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.5 3.6 5.2"/></svg>Social</a>
+    <a class="tab" href="Profile.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.2 4-6.5 8-6.5s7 2.3 8 6.5"/></svg>Profile</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

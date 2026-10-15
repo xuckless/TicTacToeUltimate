@@ -1,0 +1,1136 @@
+=== psolve_sym W=8 mode=5 noreplay=1 rule=w1
+4x4 W=8 mode=5 noreplay=1 rule=w1 lines=19 threads=10 time=12.6s
+reachable nonterminal (raw): 571556225
+canonical states: 71444545, canonical draws 311130
+draws (raw): 2489040 (0.4355%)
+median forced distance over decisive: 13 ; % positions side-to-move wins in <=3 plies: 15.165%
+max distance: 87
+START: X wins in 29 plies
+ open  0 (r0 c0): X wins 58
+ open  1 (r0 c1): X wins 36
+ open  2 (r0 c2): X wins 36
+ open  3 (r0 c3): X wins 58
+ open  4 (r1 c0): X wins 36
+ open  5 (r1 c1): X wins 28
+ open  6 (r1 c2): X wins 28
+ open  7 (r1 c3): X wins 36
+ open  8 (r2 c0): X wins 36
+ open  9 (r2 c1): X wins 28
+ open 10 (r2 c2): X wins 28
+ open 11 (r2 c3): X wins 36
+ open 12 (r3 c0): X wins 58
+ open 13 (r3 c1): X wins 36
+ open 14 (r3 c2): X wins 36
+ open 15 (r3 c3): X wins 58
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:48642048,0 2:0,4750272 3:38033280,0 4:0,7558784 5:49390416,0 6:0,9649592 7:49982144,0 8:0,6681376 9:32349696,0 10:0,6004488 11:23161864,0 12:0,3470784 13:13227624,0 14:0,3575792 15:10654888,0 16:0,2958152 17:9854448,0 18:0,2645800 19:8013484,0 20:0,2624072 21:7994692,0 22:0,3488004 23:9822688,0 24:0,4957548 25:14120892,0 26:0,6096732 27:14232088,0 28:0,7706368 29:16424817,0 30:0,8641344 31:16518596,0 32:0,9606032 33:12170500,0 34:0,8085172 35:11220504,0 36:0,6707268 37:10398832,0 38:0,5627880 39:8379408,0 40:0,4494056 41:5696216,0 42:0,3688896 43:5107320,0 44:0,2784968 45:2714336,0 46:0,1907872 47:2031992,0 48:0,2053864 49:2147704,0 50:0,1372408 51:1719144,0 52:0,1970368 53:1990200,0 54:0,1186776 55:1037736,0 56:0,915688 57:1420116,0 58:0,2046100 59:1266592,0 60:0,886552 61:760272,0 62:0,447264 63:652472,0 64:0,907696 65:330936,0 66:0,241232 67:236904,0 68:0,254984 69:165352,0 70:0,119792 71:242408,0 72:0,359984 73:172232,0 74:0,61056 75:47744,0 76:0,30272 77:21304,0 78:0,25280 79:10328,0 80:0,15200 81:20912,0 82:0,23904 83:12792,0 84:0,28312 85:4576,0 86:0,3136 87:3568,0
+=== psolve_sym W=8 mode=5 noreplay=1 rule=w0
+4x4 W=8 mode=5 noreplay=1 rule=w0 lines=19 threads=10 time=13.4s
+reachable nonterminal (raw): 571556225
+canonical states: 71444545, canonical draws 311130
+draws (raw): 2489040 (0.4355%)
+median forced distance over decisive: 13 ; % positions side-to-move wins in <=3 plies: 15.165%
+max distance: 87
+START: X wins in 29 plies
+ open  0 (r0 c0): X wins 58
+ open  1 (r0 c1): X wins 36
+ open  2 (r0 c2): X wins 36
+ open  3 (r0 c3): X wins 58
+ open  4 (r1 c0): X wins 36
+ open  5 (r1 c1): X wins 28
+ open  6 (r1 c2): X wins 28
+ open  7 (r1 c3): X wins 36
+ open  8 (r2 c0): X wins 36
+ open  9 (r2 c1): X wins 28
+ open 10 (r2 c2): X wins 28
+ open 11 (r2 c3): X wins 36
+ open 12 (r3 c0): X wins 58
+ open 13 (r3 c1): X wins 36
+ open 14 (r3 c2): X wins 36
+ open 15 (r3 c3): X wins 58
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:48642048,0 2:0,4750272 3:38033280,0 4:0,7558784 5:49390416,0 6:0,9649592 7:49982144,0 8:0,6681376 9:32349696,0 10:0,6004488 11:23161864,0 12:0,3470784 13:13227624,0 14:0,3575792 15:10654888,0 16:0,2958152 17:9854448,0 18:0,2645800 19:8013484,0 20:0,2624072 21:7994692,0 22:0,3488004 23:9822688,0 24:0,4957548 25:14120892,0 26:0,6096732 27:14232088,0 28:0,7706368 29:16424817,0 30:0,8641344 31:16518596,0 32:0,9606032 33:12170500,0 34:0,8085172 35:11220504,0 36:0,6707268 37:10398832,0 38:0,5627880 39:8379408,0 40:0,4494056 41:5696216,0 42:0,3688896 43:5107320,0 44:0,2784968 45:2714336,0 46:0,1907872 47:2031992,0 48:0,2053864 49:2147704,0 50:0,1372408 51:1719144,0 52:0,1970368 53:1990200,0 54:0,1186776 55:1037736,0 56:0,915688 57:1420116,0 58:0,2046100 59:1266592,0 60:0,886552 61:760272,0 62:0,447264 63:652472,0 64:0,907696 65:330936,0 66:0,241232 67:236904,0 68:0,254984 69:165352,0 70:0,119792 71:242408,0 72:0,359984 73:172232,0 74:0,61056 75:47744,0 76:0,30272 77:21304,0 78:0,25280 79:10328,0 80:0,15200 81:20912,0 82:0,23904 83:12792,0 84:0,28312 85:4576,0 86:0,3136 87:3568,0
+=== psolve_sym W=8 mode=5 noreplay=1 rule=g
+4x4 W=8 mode=5 noreplay=1 rule=g lines=19 threads=10 time=4.7s
+reachable nonterminal (raw): 582913217
+canonical states: 72864169, canonical draws 72864169
+draws (raw): 582913217 (100.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 0.000%
+max distance: 1
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:0,0
+=== psolve_sym W=8 mode=5 noreplay=0 rule=w1
+4x4 W=8 mode=5 noreplay=0 rule=w1 lines=19 threads=10 time=5.5s
+reachable nonterminal (raw): 571556225
+canonical states: 71444545, canonical draws 65364289
+draws (raw): 522914177 (91.4895%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 8.510%
+max distance: 1
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:48642048,0
+=== psolve_sym W=8 mode=5 noreplay=0 rule=w0
+4x4 W=8 mode=5 noreplay=0 rule=w0 lines=19 threads=10 time=5.2s
+reachable nonterminal (raw): 571556225
+canonical states: 71444545, canonical draws 65364289
+draws (raw): 522914177 (91.4895%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 8.510%
+max distance: 1
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:48642048,0
+=== psolve_sym W=8 mode=5 noreplay=0 rule=g
+4x4 W=8 mode=5 noreplay=0 rule=g lines=19 threads=10 time=4.8s
+reachable nonterminal (raw): 582913217
+canonical states: 72864169, canonical draws 72864169
+draws (raw): 582913217 (100.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 0.000%
+max distance: 1
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:0,0
+=== psolve_sym W=9 mode=5 noreplay=1 rule=w1
+4x4 W=9 mode=5 noreplay=1 rule=w1 lines=19 threads=10 time=76.5s
+reachable nonterminal (raw): 4466053505
+canonical states: 558256705, canonical draws 235029994
+draws (raw): 1880239897 (42.1007%)
+median forced distance over decisive: 3 ; % positions side-to-move wins in <=3 plies: 31.751%
+max distance: 73
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:1143885312,0 2:0,97981056 3:274150512,0 4:0,78262944 5:237173856,0 6:0,50964944 7:160548864,0 8:0,37450680 9:107637520,0 10:0,30741280 11:85642632,0 12:0,25059168 13:50997076,0 14:0,12409264 15:28309784,0 16:0,10357656 17:21541368,0 18:0,8505080 19:18661840,0 20:0,6195088 21:15423884,0 22:0,5375680 23:11704104,0 24:0,3900488 25:10728448,0 26:0,2864048 27:6191008,0 28:0,3054408 29:5486104,0 30:0,2342976 31:6596016,0 32:0,1970272 33:4947216,0 34:0,1340896 35:3429688,0 36:0,1617488 37:2455312,0 38:0,762872 39:930264,0 40:0,399496 41:803872,0 42:0,330816 43:848088,0 44:0,353632 45:649648,0 46:0,357504 47:408552,0 48:0,229408 49:556304,0 50:0,251400 51:441952,0 52:0,196016 53:759000,0 54:0,363096 55:512536,0 56:0,85416 57:45776,0 58:0,39280 59:140376,0 60:0,51968 61:118848,0 62:0,50248 63:205248,0 64:0,2496 65:6152,0 66:0,1312 67:680,0 68:0,2240 69:4224,0 70:0,128 71:64,0 72:0,88 73:648,0
+=== psolve_sym W=9 mode=5 noreplay=1 rule=w0
+4x4 W=9 mode=5 noreplay=1 rule=w0 lines=19 threads=10 time=72.1s
+reachable nonterminal (raw): 4636862849
+canonical states: 579607873, canonical draws 301606946
+draws (raw): 2412855509 (52.0364%)
+median forced distance over decisive: 7 ; % positions side-to-move wins in <=3 plies: 13.536%
+max distance: 53
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:347558400,0 2:0,38251008 3:280103136,0 4:0,51703232 5:308363088,0 6:0,69216000 7:376979536,0 8:0,73408224 9:147369584,0 10:0,41007744 11:150308784,0 12:0,24719600 13:100402360,0 14:0,20728552 15:66980168,0 16:0,11674952 17:38197312,0 18:0,6314704 19:17382312,0 20:0,2638016 21:7583432,0 22:0,2047312 23:7649776,0 24:0,2256352 25:5913032,0 26:0,1274168 27:4841184,0 28:0,561056 29:2007936,0 30:0,1904672 31:3428232,0 32:0,728128 33:2374204,0 34:0,389856 35:1719264,0 36:0,510600 37:3112696,0 38:0,26152 39:93936,0 40:0,259072 41:424448,0 42:0,247416 43:749848,0 44:0,79096 45:363120,0 46:0,14664 47:75712,0 48:0,8040 49:15432,0 50:0,21160 51:9624,0 52:0,3600 53:7408,0
+=== psolve_sym W=9 mode=5 noreplay=1 rule=g
+4x4 W=9 mode=5 noreplay=1 rule=g lines=19 threads=10 time=188.0s
+reachable nonterminal (raw): 4636862849
+canonical states: 579607873, canonical draws 301606946
+draws (raw): 2412855509 (52.0364%)
+median forced distance over decisive: 7 ; % positions side-to-move wins in <=3 plies: 13.536%
+max distance: 53
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:347558400,0 2:0,38251008 3:280103136,0 4:0,51703232 5:308363088,0 6:0,69216000 7:376979536,0 8:0,73408224 9:147369584,0 10:0,41007744 11:150308784,0 12:0,24719600 13:100402360,0 14:0,20728552 15:66980168,0 16:0,11674952 17:38197312,0 18:0,6314704 19:17382312,0 20:0,2638016 21:7583432,0 22:0,2047312 23:7649776,0 24:0,2256352 25:5913032,0 26:0,1274168 27:4841184,0 28:0,561056 29:2007936,0 30:0,1904672 31:3428232,0 32:0,728128 33:2374204,0 34:0,389856 35:1719264,0 36:0,510600 37:3112696,0 38:0,26152 39:93936,0 40:0,259072 41:424448,0 42:0,247416 43:749848,0 44:0,79096 45:363120,0 46:0,14664 47:75712,0 48:0,8040 49:15432,0 50:0,21160 51:9624,0 52:0,3600 53:7408,0
+=== psolve_sym W=9 mode=5 noreplay=0 rule=w1
+4x4 W=9 mode=5 noreplay=0 rule=w1 lines=19 threads=10 time=180.6s
+reachable nonterminal (raw): 4466053505
+canonical states: 558256705, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 3 ; % positions side-to-move wins in <=3 plies: 46.752%
+max distance: 36
+START: X wins in 13 plies
+ open  0 (r0 c0): X loses 13
+ open  1 (r0 c1): X loses 9
+ open  2 (r0 c2): X loses 9
+ open  3 (r0 c3): X loses 13
+ open  4 (r1 c0): X loses 9
+ open  5 (r1 c1): X wins 12
+ open  6 (r1 c2): X wins 12
+ open  7 (r1 c3): X loses 9
+ open  8 (r2 c0): X loses 9
+ open  9 (r2 c1): X wins 12
+ open 10 (r2 c2): X wins 12
+ open 11 (r2 c3): X loses 9
+ open 12 (r3 c0): X loses 13
+ open 13 (r3 c1): X loses 9
+ open 14 (r3 c2): X loses 9
+ open 15 (r3 c3): X loses 13
+PIE: openings X-win 4, X-loss 12, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:1265900544,0 2:0,229902336 3:822060144,0 4:0,278920656 5:662256896,0 6:0,233351240 7:352936528,0 8:0,155443924 9:177213152,0 10:0,100776196 11:64268848,0 12:0,38922240 13:29433613,0 14:0,20594508 15:11985776,0 16:0,8436808 17:5356640,0 18:0,3467656 19:1422536,0 20:0,1488608 21:726872,0 22:0,453744 23:224456,0 24:0,252192 25:109480,0 26:0,39256 27:5560,0 28:0,2696 29:4312,0 30:0,4680 31:12880,0 32:0,41112 33:22824,0 34:0,12512 35:1688,0 36:0,392
+=== psolve_sym W=9 mode=5 noreplay=0 rule=w0
+4x4 W=9 mode=5 noreplay=0 rule=w0 lines=19 threads=10 time=167.1s
+reachable nonterminal (raw): 4636862849
+canonical states: 579607873, canonical draws 2537962
+draws (raw): 20303696 (0.4379%)
+median forced distance over decisive: 13 ; % positions side-to-move wins in <=3 plies: 15.070%
+max distance: 87
+START: X wins in 29 plies
+ open  0 (r0 c0): X wins 58
+ open  1 (r0 c1): X wins 36
+ open  2 (r0 c2): X wins 36
+ open  3 (r0 c3): X wins 58
+ open  4 (r1 c0): X wins 36
+ open  5 (r1 c1): X wins 28
+ open  6 (r1 c2): X wins 28
+ open  7 (r1 c3): X wins 36
+ open  8 (r2 c0): X wins 36
+ open  9 (r2 c1): X wins 28
+ open 10 (r2 c2): X wins 28
+ open 11 (r2 c3): X wins 36
+ open 12 (r3 c0): X wins 58
+ open 13 (r3 c1): X wins 36
+ open 14 (r3 c2): X wins 36
+ open 15 (r3 c3): X wins 58
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:390260736,0 2:0,42752448 3:308492160,0 4:0,63166080 5:398214224,0 6:0,78140152 7:402148928,0 8:0,54023200 9:260534272,0 10:0,48445320 11:187255304,0 12:0,28122176 13:107068264,0 14:0,28968816 15:86450920,0 16:0,24001096 17:79819760,0 18:0,21473576 19:64996140,0 20:0,21253896 21:64864708,0 22:0,28350468 23:79880224,0 24:0,40155564 25:114685180,0 26:0,49589468 27:115910424,0 28:0,62622080 29:133783281,0 30:0,70221184 31:134785860,0 32:0,78027088 33:99660100,0 34:0,65725940 35:91547224,0 36:0,54636932 37:84647472,0 38:0,45955560 39:68250512,0 40:0,36887464 41:46562136,0 42:0,30142016 43:41540728,0 44:0,22770184 45:22127264,0 46:0,15615264 47:16569272,0 48:0,16788840 49:17560632,0 50:0,11219512 51:13994472,0 52:0,16008640 53:16169080,0 54:0,9707608 55:8489192,0 56:0,7440488 57:11525012,0 58:0,16604308 59:10309280,0 60:0,7273816 61:6200272,0 62:0,3666848 63:5303672,0 64:0,7350832 65:2737528,0 66:0,1958096 67:1949288,0 68:0,2062024 69:1346152,0 70:0,989040 71:1959016,0 72:0,2909488 73:1410120,0 74:0,508480 75:389504,0 76:0,246592 77:173432,0 78:0,206528 79:86168,0 80:0,123360 81:170032,0 82:0,195680 83:104248,0 84:0,227544 85:38368,0 86:0,25664 87:29232,0
+=== psolve_sym W=9 mode=5 noreplay=0 rule=g
+4x4 W=9 mode=5 noreplay=0 rule=g lines=19 threads=10 time=151.4s
+reachable nonterminal (raw): 4636862849
+canonical states: 579607873, canonical draws 2537962
+draws (raw): 20303696 (0.4379%)
+median forced distance over decisive: 13 ; % positions side-to-move wins in <=3 plies: 15.070%
+max distance: 87
+START: X wins in 29 plies
+ open  0 (r0 c0): X wins 58
+ open  1 (r0 c1): X wins 36
+ open  2 (r0 c2): X wins 36
+ open  3 (r0 c3): X wins 58
+ open  4 (r1 c0): X wins 36
+ open  5 (r1 c1): X wins 28
+ open  6 (r1 c2): X wins 28
+ open  7 (r1 c3): X wins 36
+ open  8 (r2 c0): X wins 36
+ open  9 (r2 c1): X wins 28
+ open 10 (r2 c2): X wins 28
+ open 11 (r2 c3): X wins 36
+ open 12 (r3 c0): X wins 58
+ open 13 (r3 c1): X wins 36
+ open 14 (r3 c2): X wins 36
+ open 15 (r3 c3): X wins 58
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:390260736,0 2:0,42752448 3:308492160,0 4:0,63166080 5:398214224,0 6:0,78140152 7:402148928,0 8:0,54023200 9:260534272,0 10:0,48445320 11:187255304,0 12:0,28122176 13:107068264,0 14:0,28968816 15:86450920,0 16:0,24001096 17:79819760,0 18:0,21473576 19:64996140,0 20:0,21253896 21:64864708,0 22:0,28350468 23:79880224,0 24:0,40155564 25:114685180,0 26:0,49589468 27:115910424,0 28:0,62622080 29:133783281,0 30:0,70221184 31:134785860,0 32:0,78027088 33:99660100,0 34:0,65725940 35:91547224,0 36:0,54636932 37:84647472,0 38:0,45955560 39:68250512,0 40:0,36887464 41:46562136,0 42:0,30142016 43:41540728,0 44:0,22770184 45:22127264,0 46:0,15615264 47:16569272,0 48:0,16788840 49:17560632,0 50:0,11219512 51:13994472,0 52:0,16008640 53:16169080,0 54:0,9707608 55:8489192,0 56:0,7440488 57:11525012,0 58:0,16604308 59:10309280,0 60:0,7273816 61:6200272,0 62:0,3666848 63:5303672,0 64:0,7350832 65:2737528,0 66:0,1958096 67:1949288,0 68:0,2062024 69:1346152,0 70:0,989040 71:1959016,0 72:0,2909488 73:1410120,0 74:0,508480 75:389504,0 76:0,246592 77:173432,0 78:0,206528 79:86168,0 80:0,123360 81:170032,0 82:0,195680 83:104248,0 84:0,227544 85:38368,0 86:0,25664 87:29232,0
+=== psolve_sym W=8 mode=3 noreplay=1 rule=w1
+4x4 W=8 mode=3 noreplay=1 rule=w1 lines=24 threads=10 time=10.5s
+reachable nonterminal (raw): 412293233
+canonical states: 51536671, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 81.419%
+max distance: 14
+START: X wins in 5 plies
+ open  0 (r0 c0): X wins 10
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X wins 10
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X wins 10
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X wins 10
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:296223888,0 2:0,43620344 3:39462148,0 4:0,19213980 5:8161145,0 6:0,3337936 7:1420008,0 8:0,464080 9:199964,0 10:0,127964 11:40552,0 12:0,8288 13:10960,0 14:0,1976
+=== psolve_sym W=8 mode=3 noreplay=1 rule=w0
+4x4 W=8 mode=3 noreplay=1 rule=w0 lines=24 threads=10 time=6.7s
+reachable nonterminal (raw): 412293233
+canonical states: 51536671, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 81.419%
+max distance: 14
+START: X wins in 5 plies
+ open  0 (r0 c0): X wins 10
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X wins 10
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X wins 10
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X wins 10
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:296223888,0 2:0,43620344 3:39462148,0 4:0,19213980 5:8161145,0 6:0,3337936 7:1420008,0 8:0,464080 9:199964,0 10:0,127964 11:40552,0 12:0,8288 13:10960,0 14:0,1976
+=== psolve_sym W=8 mode=3 noreplay=1 rule=g
+4x4 W=8 mode=3 noreplay=1 rule=g lines=24 threads=10 time=9.4s
+reachable nonterminal (raw): 534008369
+canonical states: 66751063, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 3 ; % positions side-to-move wins in <=3 plies: 54.354%
+max distance: 32
+START: X wins in 5 plies
+ open  0 (r0 c0): X loses 13
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X loses 13
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X loses 13
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X loses 13
+PIE: openings X-win 12, X-loss 4, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:175562304,0 2:0,24618536 3:114692692,0 4:0,40810596 5:88710869,0 6:0,31204272 7:29703040,0 8:0,9152292 9:6638744,0 10:0,4374856 11:2340448,0 12:0,2297704 13:2068064,0 14:0,630072 15:354912,0 16:0,358944 17:112064,0 18:0,41840 19:16712,0 20:0,5384 21:27520,0 22:0,61760 23:18064,0 24:0,69576 25:109240,0 26:0,12504 27:12632,0 28:0,896 29:1448,0 30:0,216 31:160,0 32:0,8
+=== psolve_sym W=8 mode=3 noreplay=0 rule=w1
+4x4 W=8 mode=3 noreplay=0 rule=w1 lines=24 threads=10 time=7.1s
+reachable nonterminal (raw): 412293233
+canonical states: 51536671, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 80.383%
+max distance: 15
+START: X wins in 5 plies
+ open  0 (r0 c0): X wins 10
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X wins 10
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X wins 10
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X wins 10
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:296223888,0 2:0,38676536 3:35188564,0 4:0,20559708 5:11809513,0 6:0,5320128 7:2527392,0 8:0,958184 9:450708,0 10:0,345228 11:170968,0 12:0,33352 13:27128,0 14:0,400 15:1536,0
+=== psolve_sym W=8 mode=3 noreplay=0 rule=w0
+4x4 W=8 mode=3 noreplay=0 rule=w0 lines=24 threads=10 time=7.2s
+reachable nonterminal (raw): 412293233
+canonical states: 51536671, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 80.383%
+max distance: 15
+START: X wins in 5 plies
+ open  0 (r0 c0): X wins 10
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X wins 10
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X wins 10
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X wins 10
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:296223888,0 2:0,38676536 3:35188564,0 4:0,20559708 5:11809513,0 6:0,5320128 7:2527392,0 8:0,958184 9:450708,0 10:0,345228 11:170968,0 12:0,33352 13:27128,0 14:0,400 15:1536,0
+=== psolve_sym W=8 mode=3 noreplay=0 rule=g
+4x4 W=8 mode=3 noreplay=0 rule=g lines=24 threads=10 time=9.0s
+reachable nonterminal (raw): 534008369
+canonical states: 66751063, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 3 ; % positions side-to-move wins in <=3 plies: 58.612%
+max distance: 15
+START: X wins in 5 plies
+ open  0 (r0 c0): X loses 11
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X loses 11
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X loses 11
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X loses 11
+PIE: openings X-win 12, X-loss 4, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:192791328,0 2:0,27373576 3:120202068,0 4:0,44765316 5:84288417,0 6:0,27661556 7:18755648,0 8:0,7001488 9:4024768,0 10:0,3589268 11:2725728,0 12:0,446216 13:251568,0 14:0,111648 15:19776,0
+=== psolve_sym W=9 mode=3 noreplay=1 rule=w1
+4x4 W=9 mode=3 noreplay=1 rule=w1 lines=24 threads=10 time=74.9s
+reachable nonterminal (raw): 2575622513
+canonical states: 321952831, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 91.995%
+max distance: 18
+START: X wins in 5 plies
+ open  0 (r0 c0): X wins 10
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X wins 10
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X wins 10
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X wins 10
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:2315401104,0 2:0,161904536 3:54034276,0 4:0,28050988 5:9483401,0 6:0,3882320 7:1666512,0 8:0,666928 9:303716,0 10:0,117412 11:49000,0 12:0,39704 13:15088,0 14:0,5696 15:1504,0 16:0,312 17:8,0 18:0,8
+=== psolve_sym W=9 mode=3 noreplay=1 rule=w0
+4x4 W=9 mode=3 noreplay=1 rule=w0 lines=24 threads=10 time=63.7s
+reachable nonterminal (raw): 3295878257
+canonical states: 411984799, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 77.682%
+max distance: 29
+START: X wins in 5 plies
+ open  0 (r0 c0): X wins 10
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X wins 10
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X wins 10
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X wins 10
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:2192724624,0 2:0,364516856 3:367592404,0 4:0,187349228 5:95400873,0 6:0,43375856 7:22083920,0 8:0,9927960 9:5967124,0 10:0,2874756 11:1129656,0 12:0,970128 13:619744,0 14:0,227320 15:250448,0 16:0,48768 17:39000,0 18:0,24936 19:20544,0 20:0,43488 21:133168,0 22:0,230592 23:171104,0 24:0,140632 25:5776,0 26:0,3776 27:2880,0 28:0,2488 29:208,0
+=== psolve_sym W=9 mode=3 noreplay=1 rule=g
+4x4 W=9 mode=3 noreplay=1 rule=g lines=24 threads=10 time=80.2s
+reachable nonterminal (raw): 3295878257
+canonical states: 411984799, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 77.682%
+max distance: 29
+START: X wins in 5 plies
+ open  0 (r0 c0): X wins 10
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X wins 10
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X wins 10
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X wins 10
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:2192724624,0 2:0,364516856 3:367592404,0 4:0,187349228 5:95400873,0 6:0,43375856 7:22083920,0 8:0,9927960 9:5967124,0 10:0,2874756 11:1129656,0 12:0,970128 13:619744,0 14:0,227320 15:250448,0 16:0,48768 17:39000,0 18:0,24936 19:20544,0 20:0,43488 21:133168,0 22:0,230592 23:171104,0 24:0,140632 25:5776,0 26:0,3776 27:2880,0 28:0,2488 29:208,0
+=== psolve_sym W=9 mode=3 noreplay=0 rule=w1
+4x4 W=9 mode=3 noreplay=0 rule=w1 lines=24 threads=10 time=64.9s
+reachable nonterminal (raw): 2575622513
+canonical states: 321952831, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 94.085%
+max distance: 11
+START: X wins in 5 plies
+ open  0 (r0 c0): X wins 10
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X wins 10
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X wins 10
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X wins 10
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:2388274320,0 2:0,134438552 3:34994164,0 4:0,13350940 5:3207849,0 6:0,963968 7:270672,0 8:0,86928 9:26412,0 10:0,7916 11:792,0
+=== psolve_sym W=9 mode=3 noreplay=0 rule=w0
+4x4 W=9 mode=3 noreplay=0 rule=w0 lines=24 threads=10 time=54.7s
+reachable nonterminal (raw): 3295878257
+canonical states: 411984799, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 81.109%
+max distance: 14
+START: X wins in 5 plies
+ open  0 (r0 c0): X wins 10
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X wins 10
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X wins 10
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X wins 10
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:2354308752,0 2:0,357725816 3:318946948,0 4:0,154015900 5:65836921,0 6:0,26764176 7:11417448,0 8:0,3725840 9:1609564,0 10:0,1031516 11:324456,0 12:0,67296 13:87824,0 14:0,15800
+=== psolve_sym W=9 mode=3 noreplay=0 rule=g
+4x4 W=9 mode=3 noreplay=0 rule=g lines=24 threads=10 time=55.2s
+reachable nonterminal (raw): 3295878257
+canonical states: 411984799, canonical draws 0
+draws (raw): 0 (0.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 81.109%
+max distance: 14
+START: X wins in 5 plies
+ open  0 (r0 c0): X wins 10
+ open  1 (r0 c1): X wins 6
+ open  2 (r0 c2): X wins 6
+ open  3 (r0 c3): X wins 10
+ open  4 (r1 c0): X wins 6
+ open  5 (r1 c1): X wins 4
+ open  6 (r1 c2): X wins 4
+ open  7 (r1 c3): X wins 6
+ open  8 (r2 c0): X wins 6
+ open  9 (r2 c1): X wins 4
+ open 10 (r2 c2): X wins 4
+ open 11 (r2 c3): X wins 6
+ open 12 (r3 c0): X wins 10
+ open 13 (r3 c1): X wins 6
+ open 14 (r3 c2): X wins 6
+ open 15 (r3 c3): X wins 10
+PIE: openings X-win 16, X-loss 0, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:2354308752,0 2:0,357725816 3:318946948,0 4:0,154015900 5:65836921,0 6:0,26764176 7:11417448,0 8:0,3725840 9:1609564,0 10:0,1031516 11:324456,0 12:0,67296 13:87824,0 14:0,15800
+=== psolve_sym W=8 mode=4 noreplay=1 rule=w1
+4x4 W=8 mode=4 noreplay=1 rule=w1 lines=10 threads=10 time=5.3s
+reachable nonterminal (raw): 576908993
+canonical states: 72113641, canonical draws 61067945
+draws (raw): 488543425 (84.6829%)
+median forced distance over decisive: 3 ; % positions side-to-move wins in <=3 plies: 8.708%
+max distance: 9
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:25842816,0 2:0,2710656 3:24395904,0 4:0,2146176 5:18144000,0 6:0,1679040 7:13423040,0 8:0,2912 9:21024,0
+=== psolve_sym W=8 mode=4 noreplay=1 rule=w0
+4x4 W=8 mode=4 noreplay=1 rule=w0 lines=10 threads=10 time=5.2s
+reachable nonterminal (raw): 576908993
+canonical states: 72113641, canonical draws 61067945
+draws (raw): 488543425 (84.6829%)
+median forced distance over decisive: 3 ; % positions side-to-move wins in <=3 plies: 8.708%
+max distance: 9
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:25842816,0 2:0,2710656 3:24395904,0 4:0,2146176 5:18144000,0 6:0,1679040 7:13423040,0 8:0,2912 9:21024,0
+=== psolve_sym W=8 mode=4 noreplay=1 rule=g
+4x4 W=8 mode=4 noreplay=1 rule=g lines=10 threads=10 time=3.9s
+reachable nonterminal (raw): 582913217
+canonical states: 72864169, canonical draws 72864169
+draws (raw): 582913217 (100.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 0.000%
+max distance: 1
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:0,0
+=== psolve_sym W=8 mode=4 noreplay=0 rule=w1
+4x4 W=8 mode=4 noreplay=0 rule=w1 lines=10 threads=10 time=4.2s
+reachable nonterminal (raw): 576908993
+canonical states: 72113641, canonical draws 68883289
+draws (raw): 551066177 (95.5205%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 4.480%
+max distance: 1
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:25842816,0
+=== psolve_sym W=8 mode=4 noreplay=0 rule=w0
+4x4 W=8 mode=4 noreplay=0 rule=w0 lines=10 threads=10 time=4.3s
+reachable nonterminal (raw): 576908993
+canonical states: 72113641, canonical draws 68883289
+draws (raw): 551066177 (95.5205%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 4.480%
+max distance: 1
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:25842816,0
+=== psolve_sym W=8 mode=4 noreplay=0 rule=g
+4x4 W=8 mode=4 noreplay=0 rule=g lines=10 threads=10 time=4.3s
+reachable nonterminal (raw): 582913217
+canonical states: 72864169, canonical draws 72864169
+draws (raw): 582913217 (100.0000%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 0.000%
+max distance: 1
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:0,0
+=== psolve_sym W=9 mode=4 noreplay=1 rule=w1
+4x4 W=9 mode=4 noreplay=1 rule=w1 lines=10 threads=10 time=43.9s
+reachable nonterminal (raw): 4591997633
+canonical states: 573999721, canonical draws 484523737
+draws (raw): 3876189761 (84.4118%)
+median forced distance over decisive: 1 ; % positions side-to-move wins in <=3 plies: 15.588%
+max distance: 1
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:715807872,0
+=== psolve_sym W=9 mode=4 noreplay=1 rule=w0
+4x4 W=9 mode=4 noreplay=1 rule=w0 lines=10 threads=10 time=40.8s
+reachable nonterminal (raw): 4682756801
+canonical states: 585344617, canonical draws 507192793
+draws (raw): 4057542209 (86.6486%)
+median forced distance over decisive: 3 ; % positions side-to-move wins in <=3 plies: 7.677%
+max distance: 8
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:184671360,0 2:0,21851136 3:174809088,0 4:0,18496512 5:147972096,0 6:0,8432640 7:67461120,0 8:0,1520640
+=== psolve_sym W=9 mode=4 noreplay=1 rule=g
+4x4 W=9 mode=4 noreplay=1 rule=g lines=10 threads=10 time=68.4s
+reachable nonterminal (raw): 4682756801
+canonical states: 585344617, canonical draws 507192793
+draws (raw): 4057542209 (86.6486%)
+median forced distance over decisive: 3 ; % positions side-to-move wins in <=3 plies: 7.677%
+max distance: 8
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:184671360,0 2:0,21851136 3:174809088,0 4:0,18496512 5:147972096,0 6:0,8432640 7:67461120,0 8:0,1520640
+=== psolve_sym W=9 mode=4 noreplay=0 rule=w1
+4x4 W=9 mode=4 noreplay=0 rule=w1 lines=10 threads=10 time=86.0s
+reachable nonterminal (raw): 4591997633
+canonical states: 573999721, canonical draws 27363672
+draws (raw): 218909360 (4.7672%)
+median forced distance over decisive: 8 ; % positions side-to-move wins in <=3 plies: 27.560%
+max distance: 70
+START: O wins in 44 plies
+ open  0 (r0 c0): X loses 43
+ open  1 (r0 c1): X loses 41
+ open  2 (r0 c2): X loses 41
+ open  3 (r0 c3): X loses 43
+ open  4 (r1 c0): X loses 41
+ open  5 (r1 c1): X loses 43
+ open  6 (r1 c2): X loses 43
+ open  7 (r1 c3): X loses 41
+ open  8 (r2 c0): X loses 41
+ open  9 (r2 c1): X loses 43
+ open 10 (r2 c2): X loses 43
+ open 11 (r2 c3): X loses 41
+ open 12 (r3 c0): X loses 43
+ open 13 (r3 c1): X loses 41
+ open 14 (r3 c2): X loses 41
+ open 15 (r3 c3): X loses 43
+PIE: openings X-win 0, X-loss 16, draw 0 -> O (chooser) wins under pie
+hist(level:win,loss): 1:803912832,0 2:0,79667712 3:461664000,0 4:0,81981312 5:343402624,0 6:0,76829376 7:266667040,0 8:0,76465024 9:265349408,0 10:0,75100576 11:141598704,0 12:0,49657152 13:145539776,0 14:0,46116864 15:130170880,0 16:0,46167648 17:100532384,0 18:0,35212576 19:74325168,0 20:0,36629632 21:74609824,0 22:0,35677856 23:71395136,0 24:0,48213312 25:76013504,0 26:0,39378208 27:61825328,0 28:0,42898336 29:61085504,0 30:0,52890272 31:77315648,0 32:0,42856528 33:46938592,0 34:0,36907904 35:47298800,0 36:0,36309488 37:37823808,0 38:0,24611744 39:27258352,0 40:0,23747904 41:17169672,0 42:0,11644376 43:9870056,0 44:0,7152641 45:6187312,0 46:0,3146048 47:2633568,0 48:0,1908608 49:990048,0 50:0,670848 51:734624,0 52:0,695456 53:1005248,0 54:0,1976288 55:981920,0 56:0,118336 57:97152,0 58:0,215392 59:383936,0 60:0,374560 61:971200,0 62:0,697088 63:570728,0 64:0,372896 65:188128,0 66:0,216672 67:47712,0 68:0,17152 69:3296,0 70:0,576
+=== psolve_sym W=9 mode=4 noreplay=0 rule=w0
+4x4 W=9 mode=4 noreplay=0 rule=w0 lines=10 threads=10 time=40.4s
+reachable nonterminal (raw): 4682756801
+canonical states: 585344617, canonical draws 495533001
+draws (raw): 3964263873 (84.6566%)
+median forced distance over decisive: 3 ; % positions side-to-move wins in <=3 plies: 8.654%
+max distance: 9
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:207361152,0 2:0,24395904 3:197877888,0 4:0,19315584 5:147168000,0 6:0,14116032 7:108061120,0 8:0,26208 9:171040,0
+=== psolve_sym W=9 mode=4 noreplay=0 rule=g
+4x4 W=9 mode=4 noreplay=0 rule=g lines=10 threads=10 time=40.9s
+reachable nonterminal (raw): 4682756801
+canonical states: 585344617, canonical draws 495533001
+draws (raw): 3964263873 (84.6566%)
+median forced distance over decisive: 3 ; % positions side-to-move wins in <=3 plies: 8.654%
+max distance: 9
+START: draw
+ open  0 (r0 c0): draw
+ open  1 (r0 c1): draw
+ open  2 (r0 c2): draw
+ open  3 (r0 c3): draw
+ open  4 (r1 c0): draw
+ open  5 (r1 c1): draw
+ open  6 (r1 c2): draw
+ open  7 (r1 c3): draw
+ open  8 (r2 c0): draw
+ open  9 (r2 c1): draw
+ open 10 (r2 c2): draw
+ open 11 (r2 c3): draw
+ open 12 (r3 c0): draw
+ open 13 (r3 c1): draw
+ open 14 (r3 c2): draw
+ open 15 (r3 c3): draw
+PIE: openings X-win 0, X-loss 0, draw 16 -> pie game is a DRAW (X picks a drawn opening)
+hist(level:win,loss): 1:207361152,0 2:0,24395904 3:197877888,0 4:0,19315584 5:147168000,0 6:0,14116032 7:108061120,0 8:0,26208 9:171040,0
+### W=7 (psolve_sym needs W>=8, so these come from check-4x4/vi.c: vi 7 MODE NOREPLAY 4 RULE; for odd W, g == w0)
+=== vi W=7 mode=5 noreplay=0 rule=w1
+W=7 mode=5 noreplay=0 rule=w1
+reachable nonterminal raw 63392897 (terminal 601920)
+draws 367544 (0.5798%)  median 7  <=3 18.9682%  maxdist 37
+START: X wins in 31
+ open  0: draw 0
+ open  1: X loses 31
+ open  2: X loses 31
+ open  3: draw 0
+ open  4: X loses 31
+ open  5: X wins 30
+ open  6: X wins 30
+ open  7: X loses 31
+ open  8: X loses 31
+ open  9: X wins 30
+ open 10: X wins 30
+ open 11: X loses 31
+ open 12: draw 0
+ open 13: X loses 31
+ open 14: X loses 31
+ open 15: draw 0
+hist: 1:6538176 2:624096 3:5486304 4:1132480 5:7969864 6:1875224 7:10985628 8:520576 9:2295152 10:296440 11:1389360 12:467936 13:1715880 14:554272 15:1972208 16:366464 17:1129832 18:490760 19:985960 20:397824 21:797432 22:595800 23:1966644 24:654460 25:1224296 26:1222056 27:2003244 28:1424760 29:1244208 30:1783576 31:1100057 32:931296 33:297048 34:392424 35:101632 36:67080 37:24904
+=== vi W=7 mode=5 noreplay=0 rule=w0
+W=7 mode=5 noreplay=0 rule=w0
+reachable nonterminal raw 63994817 (terminal 0)
+draws 63994817 (100.0000%)  median 0  <=3 0.0000%  maxdist 0
+START: draw 0
+ open  0: draw 0
+ open  1: draw 0
+ open  2: draw 0
+ open  3: draw 0
+ open  4: draw 0
+ open  5: draw 0
+ open  6: draw 0
+ open  7: draw 0
+ open  8: draw 0
+ open  9: draw 0
+ open 10: draw 0
+ open 11: draw 0
+ open 12: draw 0
+ open 13: draw 0
+ open 14: draw 0
+ open 15: draw 0
+hist:
+=== vi W=7 mode=5 noreplay=1 rule=w1
+W=7 mode=5 noreplay=1 rule=w1
+reachable nonterminal raw 63392897 (terminal 601920)
+draws 57453185 (90.6303%)  median 1  <=3 9.3697%  maxdist 1
+START: draw 0
+ open  0: draw 0
+ open  1: draw 0
+ open  2: draw 0
+ open  3: draw 0
+ open  4: draw 0
+ open  5: draw 0
+ open  6: draw 0
+ open  7: draw 0
+ open  8: draw 0
+ open  9: draw 0
+ open 10: draw 0
+ open 11: draw 0
+ open 12: draw 0
+ open 13: draw 0
+ open 14: draw 0
+ open 15: draw 0
+hist: 1:5939712
+=== vi W=7 mode=5 noreplay=1 rule=w0
+W=7 mode=5 noreplay=1 rule=w0
+reachable nonterminal raw 63994817 (terminal 0)
+draws 63994817 (100.0000%)  median 0  <=3 0.0000%  maxdist 0
+START: draw 0
+ open  0: draw 0
+ open  1: draw 0
+ open  2: draw 0
+ open  3: draw 0
+ open  4: draw 0
+ open  5: draw 0
+ open  6: draw 0
+ open  7: draw 0
+ open  8: draw 0
+ open  9: draw 0
+ open 10: draw 0
+ open 11: draw 0
+ open 12: draw 0
+ open 13: draw 0
+ open 14: draw 0
+ open 15: draw 0
+hist:
+=== vi W=7 mode=3 noreplay=0 rule=w1
+W=7 mode=3 noreplay=0 rule=w1
+reachable nonterminal raw 51845105 (terminal 7062768)
+draws 0 (0.0000%)  median 1  <=3 85.6174%  maxdist 10
+START: X wins in 5
+ open  0: X wins 10
+ open  1: X wins 6
+ open  2: X wins 6
+ open  3: X wins 10
+ open  4: X wins 6
+ open  5: X wins 4
+ open  6: X wins 4
+ open  7: X wins 6
+ open  8: X wins 6
+ open  9: X wins 4
+ open 10: X wins 4
+ open 11: X wins 6
+ open 12: X wins 10
+ open 13: X wins 6
+ open 14: X wins 6
+ open 15: X wins 10
+hist: 1:40911744 2:4647320 3:3476676 4:1727892 5:677617 6:272040 7:97440 8:27688 9:6172 10:516
+=== vi W=7 mode=3 noreplay=0 rule=w0
+W=7 mode=3 noreplay=0 rule=w0
+reachable nonterminal raw 56330225 (terminal 2577648)
+draws 0 (0.0000%)  median 3  <=3 62.1927%  maxdist 14
+START: X wins in 5
+ open  0: X loses 9
+ open  1: X wins 6
+ open  2: X wins 6
+ open  3: X loses 9
+ open  4: X wins 6
+ open  5: X wins 4
+ open  6: X wins 4
+ open  7: X wins 6
+ open  8: X wins 6
+ open  9: X wins 4
+ open 10: X wins 4
+ open 11: X wins 6
+ open 12: X loses 9
+ open 13: X wins 6
+ open 14: X wins 6
+ open 15: X loses 9
+hist: 1:22346464 2:3016152 3:12686836 4:4990244 5:8444969 6:2729032 7:1045464 8:675584 9:228728 10:80712 11:69120 12:6304 13:9768 14:848
+### Independent cross-check with check-4x4/vi.c (raw counts must equal psolve_sym's)
+=== vi W=8 mode=5 noreplay=1 rule=w1
+W=8 mode=5 noreplay=1 rule=w1
+reachable nonterminal raw 571556225 (terminal 5939712)
+draws 2489040 (0.4355%)  median 13  <=3 15.1648%  maxdist 87
+START: X wins in 29
+ open  0: X wins 58
+ open  1: X wins 36
+ open  2: X wins 36
+ open  3: X wins 58
+ open  4: X wins 36
+ open  5: X wins 28
+ open  6: X wins 28
+ open  7: X wins 36
+ open  8: X wins 36
+ open  9: X wins 28
+ open 10: X wins 28
+ open 11: X wins 36
+ open 12: X wins 58
+ open 13: X wins 36
+ open 14: X wins 36
+ open 15: X wins 58
+hist: 1:48642048 2:4750272 3:38033280 4:7558784 5:49390416 6:9649592 7:49982144 8:6681376 9:32349696 10:6004488 11:23161864 12:3470784 13:13227624 14:3575792 15:10654888 16:2958152 17:9854448 18:2645800 19:8013484 20:2624072 21:7994692 22:3488004 23:9822688 24:4957548 25:14120892 26:6096732 27:14232088 28:7706368 29:16424817 30:8641344 31:16518596 32:9606032 33:12170500 34:8085172 35:11220504 36:6707268 37:10398832 38:5627880 39:8379408 40:4494056 41:5696216 42:3688896 43:5107320 44:2784968 45:2714336 46:1907872 47:2031992 48:2053864 49:2147704 50:1372408 51:1719144 52:1970368 53:1990200 54:1186776 55:1037736 56:915688 57:1420116 58:2046100 59:1266592 60:886552 61:760272 62:447264 63:652472 64:907696 65:330936 66:241232 67:236904 68:254984 69:165352 70:119792 71:242408 72:359984 73:172232 74:61056 75:47744 76:30272 77:21304 78:25280 79:10328 80:15200 81:20912 82:23904 83:12792 84:28312 85:4576 86:3136 87:3568
+=== vi W=8 mode=5 noreplay=1 rule=w0
+W=8 mode=5 noreplay=1 rule=w0
+reachable nonterminal raw 571556225 (terminal 5939712)
+draws 2489040 (0.4355%)  median 13  <=3 15.1648%  maxdist 87
+START: X wins in 29
+ open  0: X wins 58
+ open  1: X wins 36
+ open  2: X wins 36
+ open  3: X wins 58
+ open  4: X wins 36
+ open  5: X wins 28
+ open  6: X wins 28
+ open  7: X wins 36
+ open  8: X wins 36
+ open  9: X wins 28
+ open 10: X wins 28
+ open 11: X wins 36
+ open 12: X wins 58
+ open 13: X wins 36
+ open 14: X wins 36
+ open 15: X wins 58
+hist: 1:48642048 2:4750272 3:38033280 4:7558784 5:49390416 6:9649592 7:49982144 8:6681376 9:32349696 10:6004488 11:23161864 12:3470784 13:13227624 14:3575792 15:10654888 16:2958152 17:9854448 18:2645800 19:8013484 20:2624072 21:7994692 22:3488004 23:9822688 24:4957548 25:14120892 26:6096732 27:14232088 28:7706368 29:16424817 30:8641344 31:16518596 32:9606032 33:12170500 34:8085172 35:11220504 36:6707268 37:10398832 38:5627880 39:8379408 40:4494056 41:5696216 42:3688896 43:5107320 44:2784968 45:2714336 46:1907872 47:2031992 48:2053864 49:2147704 50:1372408 51:1719144 52:1970368 53:1990200 54:1186776 55:1037736 56:915688 57:1420116 58:2046100 59:1266592 60:886552 61:760272 62:447264 63:652472 64:907696 65:330936 66:241232 67:236904 68:254984 69:165352 70:119792 71:242408 72:359984 73:172232 74:61056 75:47744 76:30272 77:21304 78:25280 79:10328 80:15200 81:20912 82:23904 83:12792 84:28312 85:4576 86:3136 87:3568
+=== vi W=8 mode=5 noreplay=1 rule=g
+W=8 mode=5 noreplay=1 rule=g
+reachable nonterminal raw 582913217 (terminal 0)
+draws 582913217 (100.0000%)  median 0  <=3 0.0000%  maxdist 0
+START: draw 0
+ open  0: draw 0
+ open  1: draw 0
+ open  2: draw 0
+ open  3: draw 0
+ open  4: draw 0
+ open  5: draw 0
+ open  6: draw 0
+ open  7: draw 0
+ open  8: draw 0
+ open  9: draw 0
+ open 10: draw 0
+ open 11: draw 0
+ open 12: draw 0
+ open 13: draw 0
+ open 14: draw 0
+ open 15: draw 0
+hist:

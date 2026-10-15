@@ -1,0 +1,45 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TTT Ultimate</title>
+<style>
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-sans);overflow:hidden}
+  .cover{position:relative;height:288px;overflow:hidden}
+  .art{position:absolute;top:0;left:480px;width:480px;height:288px}
+  .art svg{display:block}
+  .brand{fill:var(--primary-fill)} .shade{fill:var(--primary-shade)} .px{fill:var(--piece-x)} .po{fill:var(--piece-o)} .al{fill:var(--alert-fill)} .cell{fill:var(--surface-raised)}
+  .tile{rx:var(--radius-md)} .slab{rx:var(--radius-lg)}
+  .words{position:absolute;left:24px;bottom:24px;max-width:440px}
+  .name{margin:0;font:400 88px/.95 var(--font-display);color:var(--ink)}
+  .tag{margin:8px 0 0 4px;font-size:14px;line-height:20px;color:var(--ink-muted)}
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks   primary-fill slab 216x312 bled off top and bottom, primary-shade ledge under it, piece-x and piece-o tiles 96x96, one alert-fill tile 96x40
+  arrangement  one tall purple slab with a 3x3 board of tiles cut into it; satellites to the right
+  pattern  geometric tiles cut by radius-md, two of them the X and O piece colors and one faded (the vanishing piece): the board is the brand's literal motif
+  scales   tile 56 with gap 8 (space-2), slab radius-lg, tiles radius-md
+-->
+<rect class="shade slab" x="40" y="-20" width="216" height="316"/>
+<rect class="brand slab" x="40" y="-24" width="216" height="312"/>
+<g transform="translate(60,52)">
+<rect class="cell tile" x="0" y="0" width="56" height="56"/><rect class="px tile" x="64" y="0" width="56" height="56"/><rect class="cell tile" x="128" y="0" width="56" height="56"/>
+<rect class="po tile" x="0" y="64" width="56" height="56" opacity=".35"/><rect class="px tile" x="64" y="64" width="56" height="56"/><rect class="cell tile" x="128" y="64" width="56" height="56"/>
+<rect class="cell tile" x="0" y="128" width="56" height="56"/><rect class="px tile" x="64" y="128" width="56" height="56"/><rect class="po tile" x="128" y="128" width="56" height="56"/>
+</g>
+<rect class="po tile" x="288" y="40" width="96" height="96"/>
+<rect class="px tile" x="392" y="96" width="96" height="96"/>
+<rect class="al tile" x="288" y="200" width="96" height="40"/>
+</svg>
+</div>
+<div class="words"><h1 class="name">TTT Ultimate</h1><p class="tag">Pieces vanish. Clocks shrink. Someone always wins.</p></div>
+</div>
+</body>
+</html>

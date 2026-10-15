@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Match — sudden death</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&amp;family=Lilita+One&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#a585ff}a:hover{color:#c7b3ff}
+.cell{background:#291b4a;border:0;border-radius:14px;box-shadow:0 4px 0 #0b0616;display:grid;place-items:center;font-family:'Lilita One',sans-serif;font-size:64px;line-height:1;color:#f5f0ff;min-height:44px}
+.x{color:#38d6ff}.o{color:#ff9f3a}
+.fade{opacity:.35;outline:2px dashed currentColor;outline-offset:-8px}
+.threat{outline:3px solid #ff5470;outline-offset:-4px}
+.pc{display:flex;align-items:center;gap:12px;background:#1c1233;border-radius:22px;padding:12px}
+.av{width:44px;height:44px;border-radius:999px;background:#291b4a;display:grid;place-items:center;font-family:'Lilita One',sans-serif;font-size:20px}
+.clk{font-family:'Chakra Petch',monospace;font-weight:700;font-size:28px;line-height:1;font-variant-numeric:tabular-nums;padding:8px 14px;border-radius:999px}
+@keyframes pulse{50%{transform:scale(1.07)}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #120a22; color: #f5f0ff; font-family: Nunito, system-ui, sans-serif; font-weight: 600; display: flex; flex-direction: column; gap: 16px; padding: 20px 16px 28px; box-shadow: inset 0 0 0 4px #d92d50, inset 0 0 90px #5c0f22">
+  <div style="display: flex; justify-content: space-between; align-items: center">
+    <span style="background: #d92d50; color: #ffffff; font-weight: 800; font-size: 13px; letter-spacing: .06em; padding: 6px 10px; border-radius: 8px; transform: skewX(-10deg)">SUDDEN DEATH</span>
+    <span style="font-family: 'Chakra Petch', monospace; font-size: 13px; color: #ff5470">Game 1:31 · window 8s → 7s in 5s</span>
+  </div>
+  <div class="pc">
+    <div class="av">K</div>
+    <div style="flex: 1; min-width: 0"><div style="font-weight: 800; font-size: 15px">kestrel_99 <span style="color: #ff9f3a">O</span></div><div style="font-size: 13px; color: #b9aadb">Gold I · 1562</div></div>
+    <div class="clk" style="border: 3px solid #ff9f3a; opacity: .55">0:08</div>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px">
+    <div style="font-family: 'Lilita One', sans-serif; font-size: 28px; color: #ff5470; letter-spacing: .02em">BLOCK IT!</div>
+    <div style="position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; background: #1c1233; border-radius: 22px; padding: 14px; width: 340px; height: 340px; box-sizing: border-box; box-shadow: 0 0 0 2px #d92d50">
+      <button class="cell o fade" aria-label="O, vanishes next">O</button>
+      <button class="cell x" aria-label="X">X</button>
+      <button class="cell threat" aria-label="Empty cell, O threatens here"></button>
+      <button class="cell x" aria-label="X">X</button>
+      <button class="cell o" aria-label="O">O</button>
+      <button class="cell o" aria-label="O">O</button>
+      <button class="cell o" aria-label="O">O</button>
+      <button class="cell" aria-label="Empty cell"></button>
+      <button class="cell x" aria-label="X">X</button>
+    </div>
+  </div>
+  <div class="pc" style="outline: 2px solid #d92d50">
+    <div class="av">A</div>
+    <div style="flex: 1; min-width: 0"><div style="font-weight: 800; font-size: 15px">You <span style="color: #38d6ff">X</span></div><div style="font-size: 13px; color: #ff5470; font-weight: 800; letter-spacing: .06em">YOUR MOVE · 8s WINDOW</div></div>
+    <div class="clk pulse" style="background: #d92d50; color: #ffffff; box-shadow: 0 0 24px #d92d50; animation: pulse 1s ease-in-out infinite">0:03</div>
+  </div>
+  <div style="height: 8px; border-radius: 999px; background: #291b4a; overflow: hidden"><div style="width: 37%; height: 100%; background: #d92d50; border-radius: 999px"></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

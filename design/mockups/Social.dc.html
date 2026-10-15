@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Social</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&amp;family=Lilita+One&amp;family=Nunito:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#a585ff}a:hover{color:#c7b3ff}
+.row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #45327a}
+.av{width:44px;height:44px;border-radius:999px;background:#291b4a;display:grid;place-items:center;font-family:'Lilita One',sans-serif;font-size:20px;flex:none}
+.sm{font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-radius:12px;padding:10px 12px;border:0;min-height:44px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 12px;color:#b9aadb;text-decoration:none;font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.dot{width:10px;height:10px;border-radius:999px;display:inline-block}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #120a22; color: #f5f0ff; font-family: Nunito, system-ui, sans-serif; font-weight: 600; display: flex; flex-direction: column">
+  <main style="flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 20px 16px; overflow: hidden">
+    <h1 style="margin: 0; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 30px">Social</h1>
+    <label for="find" style="position: absolute; left: -9999px">Find players</label>
+    <input id="find" placeholder="Find players by username" style="background: #291b4a; border: 2px solid #8a74c9; border-radius: 14px; padding: 12px 14px; color: #f5f0ff; font: 600 16px Nunito, sans-serif">
+    <section style="background: #1c1233; border-radius: 22px; padding: 4px 16px">
+      <div class="row" style="border-bottom: 0">
+        <div class="av">R</div>
+        <div style="flex: 1; min-width: 0"><div style="font-weight: 800">rook_raider</div><div style="font-size: 13px; color: #b9aadb">Challenges you · Casual x2</div></div>
+        <button class="sm" style="background: #7442ef; color: #ffffff; box-shadow: 0 4px 0 #4a22b0">Accept</button>
+      </div>
+    </section>
+    <div style="display: flex; justify-content: space-between; align-items: baseline"><h2 style="margin: 0; font-family: 'Lilita One', sans-serif; font-weight: 400; font-size: 20px">Friends</h2><span style="font-size: 13px; color: #b9aadb">3 online · 1 request</span></div>
+    <section style="display: flex; flex-direction: column">
+      <div class="row">
+        <div class="av">K</div>
+        <div style="flex: 1; min-width: 0"><div style="font-weight: 800">kestrel_99</div><div style="font-size: 13px; color: #b9aadb"><span class="dot" style="background: #4fe08a"></span> Online · Gold I</div></div>
+        <button class="sm" style="background: #1c1233; color: #f5f0ff; border: 2px solid #8a74c9">Challenge</button>
+        <button aria-label="Chat with kestrel_99" class="sm" style="background: transparent; color: #a585ff"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
+      </div>
+      <div class="row">
+        <div class="av">M</div>
+        <div style="flex: 1; min-width: 0"><div style="font-weight: 800">mira.o</div><div style="font-size: 13px; color: #ff9f3a"><span class="dot" style="background: #ff9f3a"></span> In a game · Diamond III</div></div>
+        <button class="sm" style="background: #1c1233; color: #f5f0ff; border: 2px solid #8a74c9">Watch</button>
+        <button aria-label="Chat with mira.o" class="sm" style="background: transparent; color: #a585ff"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
+      </div>
+      <div class="row">
+        <div class="av">J</div>
+        <div style="flex: 1; min-width: 0"><div style="font-weight: 800">jules_x</div><div style="font-size: 13px; color: #b9aadb"><span class="dot" style="background: #4fe08a"></span> Online · Silver I</div></div>
+        <button class="sm" style="background: #1c1233; color: #f5f0ff; border: 2px solid #8a74c9">Challenge</button>
+        <button aria-label="Chat with jules_x" class="sm" style="background: transparent; color: #a585ff"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
+      </div>
+      <div class="row" style="opacity: .7">
+        <div class="av">T</div>
+        <div style="flex: 1; min-width: 0"><div style="font-weight: 800">tic_tac_tess</div><div style="font-size: 13px; color: #b9aadb"><span class="dot" style="background: #45327a"></span> Offline · 2h ago</div></div>
+        <button class="sm" style="background: #1c1233; color: #f5f0ff; border: 2px solid #8a74c9">Daily</button>
+      </div>
+    </section>
+    <a href="#" style="display: block; text-align: center; text-decoration: none; background: #1c1233; color: #f5f0ff; border: 2px dashed #8a74c9; border-radius: 14px; padding: 14px; font-weight: 800; font-size: 13px; letter-spacing: .06em">INVITE A FRIEND BY LINK</a>
+  </main>
+  <nav style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #1c1233; border-top: 1px solid #45327a; padding-bottom: 18px" aria-label="Main">
+    <a class="tab" href="Main.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</a>
+    <a class="tab" href="Match.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M9.5 4v16M14.5 4v16M4 9.5h16M4 14.5h16"/></svg>Play</a>
+    <a class="tab" href="Social.dc.html" aria-current="page" style="color: #a585ff"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.5 3.6 5.2"/></svg>Social</a>
+    <a class="tab" href="Profile.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.2 4-6.5 8-6.5s7 2.3 8 6.5"/></svg>Profile</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
