@@ -52,6 +52,8 @@ public sealed class LocalPlayPageTests : IDisposable
         var g = Session.Start(new LocalGameOptions());
         var cut = _ctx.Render<LocalMatchPage>();
         foreach (var c in new[] { 0, 3, 1, 4, 2 }) cut.FindAll(".t-cell")[c].Click();
+        // The overlay appears after the impact frame finishes, so the headline never shows twice.
+        cut.WaitForElement("[data-testid='local-over']", TimeSpan.FromSeconds(3));
         Assert.Contains("Player 1 wins!", cut.Find("[data-testid='local-over']").TextContent, StringComparison.Ordinal);
         Assert.Contains("1 – 0", cut.Find("[data-testid='local-score']").TextContent, StringComparison.Ordinal);
         cut.Find("[data-testid='local-rematch']").Click();

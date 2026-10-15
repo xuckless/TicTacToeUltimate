@@ -255,17 +255,24 @@ else
                 break;
             case LocalEventKind.Ended:
                 var r = g.Result!;
-                _showOverlay = true;
                 _resign = false;
                 if (r.WinnerSeat is int w)
                 {
                     Sfx(SoundCue.Win); Haptic(HapticCue.Win);
+                    _ = RevealOverlayLater(Settings.State.ImpactFrames ? 1400 : 0);
                     Impact("win", $"{g.NameOf(w).ToUpperInvariant()} WINS!", r.WinnerColor == Color.O ? "piece-o" : "piece-x");
                     _announce = $"{g.NameOf(w)} wins. {ReasonText(r)}.";
                 }
-                else _announce = "Draw";
+                else { _announce = "Draw"; _showOverlay = true; }
                 break;
         }
+    }
+
+    private async Task RevealOverlayLater(int ms)
+    {
+        if (ms > 0) await Task.Delay(ms);
+        _showOverlay = true;
+        await InvokeAsync(StateHasChanged);
     }
 
     private void Impact(string kind, string text, string token)

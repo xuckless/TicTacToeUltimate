@@ -160,25 +160,36 @@ else
         if (_view.Result is not null && !_resultHandled)
         {
             _resultHandled = true;
-            _showOverlay = true;
+            var slammed = false;
             if (_sawLive && !_view.IsSpectator)
             {
                 var r = MyResult;
-                if (r == GameResultForUser.Win) Impact("win", "VICTORY!", Winner == Color.O ? "piece-o" : "piece-x");
-                else if (r == GameResultForUser.Loss) Impact("loss", "DEFEAT", "alert-fill");
+                if (r == GameResultForUser.Win) slammed = Impact("win", "VICTORY!", Winner == Color.O ? "piece-o" : "piece-x");
+                else if (r == GameResultForUser.Loss) slammed = Impact("loss", "DEFEAT", "alert-fill");
                 _navCts = new CancellationTokenSource();
                 _ = NavigateToResultLater(_navCts.Token);
             }
+            // The impact frame already slams the headline; show the result overlay only after it, so the title never appears twice.
+            if (slammed) _ = RevealOverlayLater(_impactDuration);
+            else _showOverlay = true;
         }
 
         if (_view.RematchMatchId is Guid next && next != Id) Nav.NavigateTo($"match/{next}");
     }
 
-    private void Impact(string kind, string text, string token, int durationMs = 1400)
+    private bool Impact(string kind, string text, string token, int durationMs = 1400)
     {
-        if (!Settings.State.ImpactFrames) return;
+        if (!Settings.State.ImpactFrames) return false;
         _impactKind = kind; _impactText = text; _impactToken = token; _impactDuration = durationMs;
         _impactTrigger++;
+        return true;
+    }
+
+    private async Task RevealOverlayLater(int ms)
+    {
+        await Task.Delay(ms);
+        _showOverlay = true;
+        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>Arena cues: shatter impact frame + hit-stop, rare crit, combo break, red alert, overtime. Old hits are not replayed on open.</summary>
