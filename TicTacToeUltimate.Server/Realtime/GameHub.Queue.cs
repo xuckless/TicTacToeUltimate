@@ -21,7 +21,7 @@ public sealed partial class GameHub
         var opts = services.GetRequiredService<TttOptions>();
         var mode = MatchModes.Options(opts, tc);
         if (me.IsBot) return Reject(ErrorCodes.Validation);
-        if (me.IsGuest && (!mode.GuestsAllowed || tc is TimeControl.Ranked or TimeControl.Daily)) return Reject(ErrorCodes.GuestNotAllowed);
+        if (me.IsGuest && (!mode.GuestsAllowed || MatchModes.IsRankedLike(tc))) return Reject(ErrorCodes.GuestNotAllowed);
         var users = services.GetService<IUserRepository>();
         var rec = users is null ? null : await users.GetAsync(me.UserId, ct);
         if (!me.IsGuest && users is not null && rec?.Username is null) return Reject(ErrorCodes.UsernameRequired);

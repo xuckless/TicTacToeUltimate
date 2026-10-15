@@ -1,6 +1,7 @@
 using System.Threading.Channels;
 using TicTacToeUltimate.Contracts;
 using TicTacToeUltimate.Engine;
+using TicTacToeUltimate.Engine.Arena;
 using TicTacToeUltimate.Engine.Clocks;
 using TicTacToeUltimate.Server.Abstractions;
 using TicTacToeUltimate.Server.Abstractions.Persistence;
@@ -29,6 +30,9 @@ internal sealed class MatchActor
     private readonly PlayerCardDto[] _cards;
 
     private RulesSnapshot _state;
+    private readonly ArenaRules? _arenaRules;
+    private ArenaState? _arena;
+    private int? _overtimeFirstSeat;
     private readonly List<StoredAction> _actions = [];
     private readonly List<ActionDto> _actionDtos = [];
     private long _seq;
@@ -85,6 +89,12 @@ internal sealed class MatchActor
         _baseWallMs = rt.NowMs;
         _budget[0] = _budget[1] = Math.Max(0, rt.Options.Clock.LagBudgetMs);
         _state = rt.Rules.Initial(setup.Rules);
+        if (MatchModes.ArenaFor(rt.Options, setup.TimeControl) is { } arena)
+        {
+            _arenaRules = arena with { Board = setup.Rules with { Opening = OpeningRule.None } };
+            _arena = ArenaEngine.Initial(_arenaRules);
+            _state = MapArena(_arena);
+        }
     }
 
     /// <summary>New match: first turn starts now.</summary>
@@ -351,13 +361,13 @@ internal sealed class MatchActor
             Reply(c.Reply, Ack(ErrorCodes.Timeout));
             return;
         }
-        var step = _rt.Rules.Apply(_state, c.Action);
-        if (!step.Ok) { Reply(c.Reply, Ack(ErrorCodes.FromMoveError(step.Error))); return; }
         var rawThink = (int)Math.Clamp(now - _turnStartMs, 0, int.MaxValue);
         var credit = _credit;
         var think = Math.Max(0, rawThink - credit);
+        var step = Step(c.Action, think, out var arenaStep);
+        if (!step.Ok) { Reply(c.Reply, Ack(ErrorCodes.FromMoveError(step.Error))); return; }
         _budget[seat.Value] = Math.Max(0, _budget[seat.Value] - credit);
-        Commit(seat.Value, c.Action, step, think, auto: false, now);
+        Commit(seat.Value, c.Action, step, think, auto: false, now, arenaStep);
         var ack = new MoveAckDto(true, null, _seq, _state.Ply);
         _acks[c.ActionId] = ack;
         Reply(c.Reply, ack);
@@ -498,11 +508,12 @@ internal sealed class MatchActor
     {
         var seat = SeatOfColor(_state.ToMove);
         if (_state.Ply == 0) { End(Outcome.None, null, EndReason.Aborted, [], "timeout", now); return; }
-        if (Tc is TimeControl.CasualX2 or TimeControl.CasualX4)
+        // Casual (incl. Casual Arena): auto-move. Ranked / Daily / Arena Ranked Ladder: loss.
+        if (Tc is TimeControl.CasualX2 or TimeControl.CasualX4 or TimeControl.ArenaCasual)
         {
             var action = AutoAction(Setup.Seed, _state);
-            var step = _rt.Rules.Apply(_state, action);
-            if (step.Ok) { Commit(seat, action, step, _allowanceMs ?? 0, auto: true, now); return; }
+            var step = Step(action, _allowanceMs ?? 0, out var arenaStep);
+            if (step.Ok) { Commit(seat, action, step, _allowanceMs ?? 0, auto: true, now, arenaStep); return; }
             _log.LogError("Match {MatchId}: auto action {Action} rejected ({Error})", Id, action, step.Error);
         }
         EndWithWinner(1 - seat, EndReason.Timeout, now);
@@ -516,17 +527,51 @@ internal sealed class MatchActor
         return GameAction.Place(state.LegalCells[rng.NextInt(state.LegalCells.Length)]);
     }
 
-    private void Commit(int seat, GameAction action, RulesStep step, int thinkMs, bool auto, long now)
+    /// <summary>Applies an action through the classic rules seam, or the arena scoring layer for Arena modes.</summary>
+    private RulesStep Step(GameAction action, int thinkMs, out ArenaStep? arenaStep)
+    {
+        arenaStep = null;
+        if (_arena is null) return _rt.Rules.Apply(_state, action);
+        if (action.Kind != ActionKind.Place) return new RulesStep(_state, MoveError.WrongActionKind, null);
+        var s = ArenaEngine.Apply(_arena, action.Cell, thinkMs);
+        if (!s.Ok) return new RulesStep(_state, s.Error, null);
+        arenaStep = s;
+        return new RulesStep(MapArena(s.State), MoveError.None, s.VanishedCell);
+    }
+
+    private static RulesSnapshot MapArena(ArenaState a) => new(
+        a.Rules.Board, ArenaEngine.Board(a), a.Ply, a.Ply, a.IsOver ? GamePhase.Ended : GamePhase.AwaitingPlacement, a.ToMove,
+        !a.IsOver ? Outcome.None : a.Winner switch { Color.X => Outcome.XWins, Color.O => Outcome.OWins, _ => Outcome.Draw },
+        [], false, ArenaEngine.NextToVanish(a), [.. ArenaEngine.LegalCells(a)], a);
+
+    private ArenaStateDto? ArenaDto()
+    {
+        if (_arena is not { } a) return null;
+        int[] BySeat(Func<Color, int> f) => [f(ColorOfSeat(0)), f(ColorOfSeat(1))];
+        var hit = a.LastHit is { } h
+            ? new ArenaHitDto(a.Ply - 1, SeatOfColor(h.Attacker), h.Lines, [.. h.Shattered], h.Damage, h.Combo, h.Crit, h.RedAlert, h.BrokenStreak, h.Overtime)
+            : null;
+        var overtime = a.Phase == ArenaPhase.Overtime || a.End == ArenaEnd.Overtime;
+        return new ArenaStateDto(BySeat(a.Hp), BySeat(a.Streak), BySeat(a.LinesOf), BySeat(c => ArenaEngine.NextLineDamage(a, c)),
+            a.ElapsedMs, a.RedAlert, overtime, overtime ? _overtimeFirstSeat : null, hit);
+    }
+
+    private void Commit(int seat, GameAction action, RulesStep step, int thinkMs, bool auto, long now, ArenaStep? arenaStep = null)
     {
         var prev = _state;
         _state = step.State;
+        if (arenaStep is { } astep)
+        {
+            _arena = astep.State;
+            if (_arena.Phase == ArenaPhase.Overtime && _overtimeFirstSeat is null) _overtimeFirstSeat = SeatOfColor(_arena.ToMove);
+        }
         _gameElapsedMs += thinkMs;
         var stored = new StoredAction(prev.Ply, seat, action, thinkMs, auto, step.VanishedCell, Wall(now));
         _actions.Add(stored);
         var dto = ToDto(stored, prev.ToMove);
         _actionDtos.Add(dto);
         if (IsDaily) _pendingPersist.Add(stored);
-        Emit(new ActionApplied(dto, _state.Board, _state.NextToVanish, _state.Swapped, Seats()), now);
+        Emit(new ActionApplied(dto, _state.Board, _state.NextToVanish, _state.Swapped, Seats(), ArenaDto()), now);
         if (_state.Phase == GamePhase.Ended) EndFromOutcome(now);
         else StartTurn(now);
     }
@@ -537,6 +582,18 @@ internal sealed class MatchActor
 
     private void EndFromOutcome(long now)
     {
+        if (_arena is { IsOver: true } a)
+        {
+            var reason = a.End switch
+            {
+                ArenaEnd.Knockout => EndReason.Knockout, ArenaEnd.Decision => EndReason.Decision,
+                ArenaEnd.Overtime => EndReason.Overtime, _ => EndReason.Draw,
+            };
+            int[] line = reason is EndReason.Knockout or EndReason.Overtime && a.LastHit is { } h ? [.. h.Shattered] : [];
+            if (a.Winner is { } w) End(w == Color.X ? Outcome.XWins : Outcome.OWins, SeatOfColor(w), reason, line, null, now);
+            else End(Outcome.Draw, null, EndReason.Draw, [], null, now);
+            return;
+        }
         switch (_state.Outcome)
         {
             case Outcome.XWins: End(Outcome.XWins, SeatOfColor(Color.X), EndReason.Line, _state.WinLine, null, now); break;
@@ -614,7 +671,7 @@ internal sealed class MatchActor
         return new MatchSnapshotDto(Id, _seq, Setup.Mode, Tc, Setup.Rated, RuleSetDto.From(Setup.Rules), Seats(), _state.Swapped,
             _actionDtos.ToArray(), _state.Board, _state.Ply, live ? _state.Phase : GamePhase.Ended, _state.ToMove, ToMoveSeat,
             live ? _state.LegalCells : [], live ? _state.NextToVanish : null, Clock(), _result, yourSeat, SpectatorCount,
-            RematchAllowed(now), now);
+            RematchAllowed(now), now, _arenaRules is null ? null : ArenaRulesDto.From(_arenaRules), ArenaDto());
     }
 
     private void UpdateInfo() => Info = new LiveMatchInfo(Setup, _cards, _state.Ply, SpectatorCount, _result is not null,

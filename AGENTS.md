@@ -102,6 +102,13 @@ Cosmetic packs: deferred.
     - **Ruleset B** is saved for a separate future **"Competitive mode"**: a skill-heavy queue whose exact format is still to be defined (tournaments? top tiers?).
     - **The player who conceded the last line starts overtime.**
     - **Build Arena right after the current PvP rebuild merges and passes its tests.**
+  - **IMPLEMENTED (2026-10-15):**
+    - Engine: `TicTacToeUltimate.Engine.Arena` (`ArenaRules`, `ArenaEngine`, `ArenaState`) is a pure scoring layer; classic `Rules` is untouched. Named rulesets `arena-c` (Casual Arena + Arena Ranked Ladder) and `arena-b` (stored for Competitive, not in the UI). Ghost rule on. Round clock = sum of credited think times; red alert, KO-before-time-out, equal turns and conceder-starts-overtime are all in the engine.
+    - Vectors: `spec/arena/vectors.json` (RulesTool `gen`), cross-checked against `tools/arena-sim` (222 cases, 0 mismatches). Tests: `ArenaTests` mirror `test_arena.py`.
+    - Server: new time controls `ArenaCasual` (unrated, guests ok, timeout = auto-move) and `ArenaRanked` (own visible Glicko pool `ArenaRanked`, timeout = loss), both 5 s per move, never bots, no analysis. New end reasons `Knockout`, `Decision`, `Overtime`. Config `Ttt:Modes:Arena*:Arena = "arena-c"`. Migration `20261015000006_arena.sql` adds the pools.
+    - Contracts (additive): `ArenaRulesDto`, `ArenaStateDto`, `ArenaHitDto`; `MatchSnapshotDto.ArenaRules/Arena`, `ActionApplied.Arena`, `ModeConfigDto.Arena`.
+    - UI: health bars with 25-HP ticks and a red-alert ghost segment, shatter burst + hit-stop, crit impact, combo meter (armed / broken), red-alert ×2 phase, overtime "next line wins" banner with the first mover; Arena card on Home, two Arena modes on Play, Arena leaderboard tab.
+
 
 ### Ranked fairness / anti-abuse
 - **Rematch only in non-competitive matches.** Ranked rematches would allow win trading.

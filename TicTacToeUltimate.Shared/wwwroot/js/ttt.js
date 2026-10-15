@@ -75,6 +75,10 @@ const cues = {
   QuestDone: t => { tone(t, { type: 'triangle', f0: 988, dur: 0.1, vol: 0.3 }); tone(t + 0.1, { type: 'triangle', f0: 1319, dur: 0.2, vol: 0.3 }); },
   Emote: t => tone(t, { type: 'sine', f0: 660, f1: 990, dur: 0.12, vol: 0.25 }),
   Error: t => tone(t, { type: 'square', f0: 180, dur: 0.18, vol: 0.25 }),
+  Shatter: t => { noise(t, { dur: 0.35, vol: 0.45, from: 9000, to: 300 }); tone(t, { f0: 110, f1: 40, dur: 0.25, vol: 0.7 }); },
+  Crit: t => { noise(t, { dur: 0.6, vol: 0.55, from: 12000, to: 200 }); tone(t, { type: 'sawtooth', f0: 880, f1: 110, dur: 0.5, vol: 0.35 }); tone(t + 0.12, { f0: 70, f1: 30, dur: 0.5, vol: 0.8 }); },
+  ComboBreak: t => { tone(t, { type: 'square', f0: 600, f1: 150, dur: 0.25, vol: 0.25 }); noise(t + 0.05, { dur: 0.15, vol: 0.2, from: 3000, to: 500 }); },
+  RedAlert: t => [0, 0.3, 0.6].forEach(d => tone(t + d, { type: 'sawtooth', f0: 740, f1: 520, dur: 0.24, vol: 0.25 })),
   MatchFound: t => { tone(t, { type: 'triangle', f0: 660, dur: 0.12, vol: 0.3 }); tone(t + 0.12, { type: 'triangle', f0: 990, dur: 0.25, vol: 0.3 }); },
 };
 

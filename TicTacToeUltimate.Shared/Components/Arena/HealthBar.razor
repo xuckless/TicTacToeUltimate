@@ -1,0 +1,51 @@
+@* Arena health bar: segment ticks every 25 HP ("lines left"), a flashing ghost segment previewing the next hit, and the combo meter. *@
+<div class="arena-hp @PieceClass @(Hit ? $"hit hit-{HitKey % 2}" : null) @(Ko ? "ko" : null)" data-testid="health-@Piece">
+    <div class="arena-hp-row">
+        <span class="t-label arena-hp-name">@Label</span>
+        <span class="t-num arena-hp-num" aria-hidden="true">@Math.Max(0, Hp)<small>/@Max</small></span>
+    </div>
+    <div class="arena-hp-track" role="meter" aria-valuemin="0" aria-valuemax="@Max" aria-valuenow="@Math.Max(0, Hp)"
+         aria-label="@($"{Label} health {Math.Max(0, Hp)} of {Max}")">
+        <div class="arena-hp-fill" style="width:@Pct(Math.Max(0, Hp))%"></div>
+        @if (Preview > 0 && Hp > 0)
+        {
+            var g = Math.Min(Preview, Hp);
+            <div class="arena-hp-ghost" style="left:@Pct(Hp - g)%;width:@Pct(g)%" title="@($"Next hit −{Preview}")"></div>
+        }
+        @foreach (var t in Ticks)
+        {
+            <span class="arena-hp-tick" style="left:@Pct(t)%"></span>
+        }
+    </div>
+    <ComboMeter Streak="Streak" Steps="Steps" Broken="ComboBroken" />
+</div>
+
+@code {
+    /// <summary>Current HP (may be negative after a KO).</summary>
+    [Parameter] public int Hp { get; set; }
+    /// <summary>Starting HP.</summary>
+    [Parameter] public int Max { get; set; } = 125;
+    /// <summary>Tick spacing (base line damage).</summary>
+    [Parameter] public int TickEvery { get; set; } = 25;
+    /// <summary>Owner's piece colour.</summary>
+    [Parameter] public Color Piece { get; set; }
+    /// <summary>Name shown above the bar.</summary>
+    [Parameter] public string Label { get; set; } = "";
+    /// <summary>Damage the opponent's next line would deal (ghost segment); 0 hides it.</summary>
+    [Parameter] public int Preview { get; set; }
+    /// <summary>Owner's unanswered combo streak.</summary>
+    [Parameter] public int Streak { get; set; }
+    /// <summary>Combo ramp length (meter pips).</summary>
+    [Parameter] public int Steps { get; set; } = 3;
+    /// <summary>The owner's combo was just broken by an opponent line.</summary>
+    [Parameter] public bool ComboBroken { get; set; }
+    /// <summary>Just took a hit (shake + flash).</summary>
+    [Parameter] public bool Hit { get; set; }
+    /// <summary>Increments per hit so the shake replays.</summary>
+    [Parameter] public int HitKey { get; set; }
+
+    private bool Ko => Hp <= 0;
+    private string PieceClass => Piece == Color.X ? "x" : "o";
+    private IEnumerable<int> Ticks => TickEvery <= 0 ? [] : Enumerable.Range(1, Math.Max(0, (Max - 1) / TickEvery)).Select(i => i * TickEvery);
+    private string Pct(int v) => (Max <= 0 ? 0 : Math.Clamp(v * 100.0 / Max, 0, 100)).ToString("0.##", CultureInfo.InvariantCulture);
+}

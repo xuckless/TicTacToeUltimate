@@ -56,7 +56,7 @@ public sealed class RatingService(IOptions<TttOptions> options, TierCalculator t
     public async Task<RatingDto[]> VisibleAsync(Guid userId, DateTimeOffset now, CancellationToken ct)
     {
         var list = new List<RatingDto>();
-        foreach (var pool in new[] { RatingPool.Ranked, RatingPool.Daily })
+        foreach (var pool in RatingPools.Visible)
             list.Add(await ToDtoAsync(await ratings.GetAsync(userId, pool, ct), now, ct));
         return list.ToArray();
     }

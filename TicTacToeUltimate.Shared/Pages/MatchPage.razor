@@ -23,19 +23,37 @@ else
         <ConnectionBanner Phase="Session.State.Connection" Attempt="Session.State.ReconnectAttempt" Resyncing="_view.Resyncing" />
         <MatchHeader Mode="snap.Mode" TimeControl="snap.TimeControl" Clock="_clock" Spectators="snap.SpectatorCount" />
         <h1 class="sr-only">Match vs @(opp?.Player.DisplayName ?? "opponent")</h1>
+        @if (IsArena && !Ended)
+        {
+            <ArenaBanner RemainingMs="RoundLeft" RedAlert="ArenaRed" Multiplier="ArenaRulesDto!.RedAlertMultiplier" RedAlertMs="ArenaRulesDto.RedAlertMs"
+                         Overtime="@(ArenaDto?.Overtime ?? false)" FirstMover="OvertimeFirstName" />
+        }
 
         <PlayerCard Seat="opp" Piece="@(opp?.Color ?? Color.O)" Active="@IsActive(opp)" SuddenDeath="sd" Urgency="UrgencyFor(opp)"
                     ClockMs="ClockFor(opp)" ShowClock="HasClock" LongClock="IsDaily" Ended="Ended" Emote="@EmoteFor(opp)" />
+        @if (IsArena && opp is not null) { <HealthBar @key="@($"hp{opp.Seat}")" Hp="HpOf(opp.Seat)" Max="ArenaRulesDto!.Hp" TickEvery="TickEvery" Piece="opp.Color" Label="@opp.Player.DisplayName"
+                                                      Preview="PreviewOn(opp.Seat)" Streak="StreakOf(opp.Seat)" Steps="ArenaRulesDto.Ramp.Length"
+                                                      ComboBroken="@(_brokenSeat == opp.Seat)" Hit="@(HitOn(opp.Seat))" HitKey="_hitKey" /> }
 
         <div class="match-board">
             <ThreatCallout Visible="@(_view.ThreatCells.Length > 0 && CanMove)" />
-            <Board Size="snap.Rules.BoardSize" Cells="@snap.Board" Ghost="Ghost" WinLine="snap.Result?.WinLine ?? _view.Result?.WinLine"
+            <div class="arena-board-wrap @HitStopClass">
+            <Board Size="snap.Rules.BoardSize" Cells="@snap.Board" Ghost="Ghost" WinLine="@(IsArena ? null : snap.Result?.WinLine ?? _view.Result?.WinLine)"
                    Winner="Winner" Threats="_view.ThreatCells" Legal="snap.LegalCells" Interactive="CanMove"
-                   Pending="_view.PendingCell" PendingColor="me?.Color" LastPlaced="LastPlaced" SuddenDeath="sd" OnCellSelected="Place" />
+                   Pending="_view.PendingCell" PendingColor="me?.Color" LastPlaced="LastPlaced" SuddenDeath="@(sd || ArenaRed)" OnCellSelected="Place" />
+            @if (IsArena && _hit is { } hit)
+            {
+                <ShatterBurst Size="snap.Rules.BoardSize" Cells="hit.Shattered" Piece="ColorOfSeat(hit.Seat)" Damage="hit.Damage" Crit="hit.Crit"
+                              RedAlert="hit.RedAlert" Ply="hit.Ply" />
+            }
+            </div>
             <div class="match-hint">@HintText</div>
             @if (_view.LastError is not null) { <div class="t-alert t-small" role="alert">@ErrorText(_view.LastError)</div> }
         </div>
 
+        @if (IsArena && me is not null) { <HealthBar @key="@($"hp{me.Seat}")" Hp="HpOf(me.Seat)" Max="ArenaRulesDto!.Hp" TickEvery="TickEvery" Piece="me.Color" Label="@(_view.IsSpectator ? me.Player.DisplayName : "You")"
+                                                     Preview="PreviewOn(me.Seat)" Streak="StreakOf(me.Seat)" Steps="ArenaRulesDto.Ramp.Length"
+                                                     ComboBroken="@(_brokenSeat == me.Seat)" Hit="@(HitOn(me.Seat))" HitKey="_hitKey" /> }
         <PlayerCard Seat="me" IsMe="@(!_view.IsSpectator)" Piece="@(me?.Color ?? Color.X)" Active="@IsActive(me)" SuddenDeath="sd" Urgency="UrgencyFor(me)"
                     ClockMs="ClockFor(me)" ShowClock="HasClock" LongClock="IsDaily" Ended="Ended" Emote="@EmoteFor(me)"
                     WindowSeconds="@(_clock?.AllowanceMs is int a ? Ui.Seconds(a) : null)" />
@@ -63,7 +81,7 @@ else
         </div>
     }
 
-    <ImpactFrame Kind="@_impactKind" Text="@_impactText" Token="@_impactToken" Trigger="_impactTrigger" />
+    <ImpactFrame Kind="@_impactKind" Text="@_impactText" Token="@_impactToken" Trigger="_impactTrigger" DurationMs="_impactDuration" />
 }
 
 @code {
@@ -75,6 +93,12 @@ else
     private bool _resultHandled, _sawLive;
     private int _impactTrigger;
     private string _impactKind = "win", _impactText = "", _impactToken = "alert-fill";
+    private int _impactDuration = 1400;
+    // Arena: last animated hit, hit-stop replay counter, combo-break target, phase cues already shown.
+    private bool _arenaInit, _redSeen, _otSeen;
+    private int _lastHitPly = -1, _hitKey;
+    private int? _brokenSeat;
+    private ArenaHitDto? _hit;
     private CancellationTokenSource? _navCts;
 
     /// <summary>Match id.</summary>
@@ -119,6 +143,7 @@ else
         var sd = InSuddenDeath;
         if (_prevSd == false && sd && !Ended) Impact("suddendeath", "SUDDEN DEATH", "alert-fill");
         _prevSd = sd;
+        DeriveArena();
 
         if (_view.Result is not null && !_resultHandled)
         {
@@ -137,12 +162,69 @@ else
         if (_view.RematchMatchId is Guid next && next != Id) Nav.NavigateTo($"match/{next}");
     }
 
-    private void Impact(string kind, string text, string token)
+    private void Impact(string kind, string text, string token, int durationMs = 1400)
     {
         if (!Settings.State.ImpactFrames) return;
-        _impactKind = kind; _impactText = text; _impactToken = token;
+        _impactKind = kind; _impactText = text; _impactToken = token; _impactDuration = durationMs;
         _impactTrigger++;
     }
+
+    /// <summary>Arena cues: shatter impact frame + hit-stop, rare crit, combo break, red alert, overtime. Old hits are not replayed on open.</summary>
+    private void DeriveArena()
+    {
+        if (!IsArena) return;
+        var a = ArenaDto;
+        var h = a?.LastHit;
+        if (!_arenaInit)
+        {
+            _arenaInit = true;
+            _lastHitPly = h?.Ply ?? -1;
+            _redSeen = ArenaRed;
+            _otSeen = a?.Overtime ?? false;
+            return;
+        }
+        if (h is not null && h.Ply != _lastHitPly)
+        {
+            _lastHitPly = h.Ply;
+            _hit = h;
+            _hitKey++;
+            _brokenSeat = h.BrokenStreak > 0 ? 1 - h.Seat : null;
+            var token = ColorOfSeat(h.Seat) == Color.O ? "piece-o" : "piece-x";
+            if (h.Crit) Impact("crit", $"CRITICAL! −{h.Damage}", token, 1600);
+            else Impact("shatter", $"−{h.Damage}{(h.RedAlert ? " ×2" : "")}", token, 650);
+        }
+        else if (_brokenSeat is not null && h is null) _brokenSeat = null;
+        if (ArenaRed && !_redSeen) { _redSeen = true; Impact("redalert", "RED ALERT ×2", "alert-fill"); }
+        if (a?.Overtime == true && !_otSeen && !Ended) { _otSeen = true; Impact("suddendeath", "OVERTIME", "alert-fill"); }
+    }
+
+    // ---- arena view ----
+    private ArenaRulesDto? ArenaRulesDto => _view?.Snapshot.ArenaRules;
+    private ArenaStateDto? ArenaDto => _view?.Snapshot.Arena;
+    private bool IsArena => ArenaRulesDto is not null;
+    private int TickEvery => ArenaRulesDto is { Ramp.Length: > 0 } r ? r.Ramp[0] : 25;
+    private int ArenaElapsed => _clock?.GameElapsedMs ?? ArenaDto?.ElapsedMs ?? 0;
+    private bool ArenaRed => IsArena && !Ended && ArenaDto?.Overtime != true && ArenaRulesDto!.RedAlertMultiplier > 1
+                             && ArenaElapsed >= ArenaRulesDto.RoundMs - ArenaRulesDto.RedAlertMs;
+    private int RoundLeft => ArenaRulesDto is { } r ? Math.Max(0, r.RoundMs - ArenaElapsed) : 0;
+    private int HpOf(int seat) => ArenaDto?.Hp.ElementAtOrDefault(seat) ?? ArenaRulesDto?.Hp ?? 0;
+    private int StreakOf(int seat) => ArenaDto?.Streak.ElementAtOrDefault(seat) ?? 0;
+    private Color ColorOfSeat(int seat) => _view?.Snapshot.Seats.FirstOrDefault(s => s.Seat == seat)?.Color ?? (seat == 0 ? Color.X : Color.O);
+    private bool HitOn(int seat) => _hit is { } h && h.Seat != seat && _hitKey > 0 && h.Ply == _lastHitPly;
+    private string HitStopClass => _hitKey == 0 ? "" : $"hs-{_hitKey % 2}{(_hit?.Crit == true ? " hs-crit" : "")}";
+
+    /// <summary>Red-alert ghost segment on the victim's bar: the attacker's next line damage, doubled.</summary>
+    private int PreviewOn(int seat)
+    {
+        if (!ArenaRed || ArenaDto is not { } a || ArenaRulesDto is not { } r) return 0;
+        var raw = a.NextLineDamage.ElementAtOrDefault(1 - seat);
+        var baseDmg = a.RedAlert ? raw / Math.Max(1, r.RedAlertMultiplier) : raw;
+        return baseDmg * r.RedAlertMultiplier;
+    }
+
+    private string? OvertimeFirstName => ArenaDto?.OvertimeFirstSeat is int s
+        ? (s == MySeatNo && _view?.IsSpectator == false ? "You" : _view?.Snapshot.Seats.FirstOrDefault(x => x.Seat == s)?.Player.DisplayName)
+        : null;
 
     private async Task NavigateToResultLater(CancellationToken ct)
     {
@@ -193,6 +275,12 @@ else
     {
         get
         {
+            if (IsArena && !Ended)
+            {
+                if (ArenaDto?.Overtime == true) return "sd sd-2 arena-ot";
+                if (ArenaRed) return $"sd sd-1 arena-red{(_view?.IsMyTurn == true && _clock?.Urgency == ClockUrgency.Critical ? " crit" : "")}";
+                return "arena";
+            }
             if (!InSuddenDeath) return "";
             var allowance = _clock?.AllowanceMs ?? 15000;
             var level = allowance >= 8000 ? 1 : allowance >= 5000 ? 2 : 3;
@@ -241,6 +329,8 @@ else
         {
             var a = _view?.Snapshot.Actions.LastOrDefault();
             if (a is null) return "";
+            if (IsArena && ArenaDto?.LastHit is { } h && h.Ply == a.Ply)
+                return $"{(h.Seat == MySeatNo && !_view!.IsSpectator ? "You" : "Opponent")} shattered {h.Lines} line{(h.Lines > 1 ? "s" : "")} for {h.Damage} damage{(h.Crit ? ", critical hit" : "")}";
             var n = _view!.Snapshot.Rules.BoardSize;
             var who = a.Seat == MySeatNo && !_view.IsSpectator ? "You" : "Opponent";
             return a.Kind switch

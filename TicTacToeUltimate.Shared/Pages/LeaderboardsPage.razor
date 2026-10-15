@@ -9,6 +9,7 @@
 <div class="t-seg" role="group" aria-label="Pool">
     <button type="button" aria-pressed="@(_pool == RatingPool.Ranked ? "true" : "false")" @onclick="() => SetPool(RatingPool.Ranked)">Ranked</button>
     <button type="button" aria-pressed="@(_pool == RatingPool.Daily ? "true" : "false")" @onclick="() => SetPool(RatingPool.Daily)">Daily</button>
+    <button type="button" aria-pressed="@(_pool == RatingPool.ArenaRanked ? "true" : "false")" @onclick="() => SetPool(RatingPool.ArenaRanked)">Arena</button>
 </div>
 
 @if (Session.State.IsGuest)

@@ -60,7 +60,7 @@ public sealed partial class GameHub
         var ratings = new List<RatingDto>();
         if (me.Kind == AccountKind.Account && services.GetService<IRatingRepository>() is { } repo)
         {
-            foreach (var pool in new[] { RatingPool.Ranked, RatingPool.Daily })
+            foreach (var pool in RatingPools.Visible)
             {
                 var r = await repo.GetAsync(me.UserId, pool, ct);
                 ratings.Add(new RatingDto(pool, (int)Math.Round(r.Rating), (int)Math.Round(r.Rd), r.Games, r.Games < 10, null, 0));

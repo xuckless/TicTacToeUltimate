@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using TicTacToeUltimate.Engine;
 using TicTacToeUltimate.Engine.Analysis;
+using TicTacToeUltimate.Engine.Arena;
 using TicTacToeUltimate.Engine.Clocks;
 
 namespace TicTacToeUltimate.RulesTool;
@@ -47,6 +48,7 @@ public static class Generator
             log?.WriteLine($"  {id}: {sw.ElapsedMilliseconds} ms");
         }
         files["spec/clock/schedule.json"] = Schedule();
+        files["spec/arena/vectors.json"] = ArenaVectors();
         return files;
     }
 
@@ -238,6 +240,103 @@ public static class Generator
         }
         sb.Append("]\n");
         return sb.ToString();
+    }
+
+    // ---------------------------------------------------------------- arena
+
+    /// <summary>Arena playouts per named ruleset.</summary>
+    public const int ArenaPlayoutCount = 100;
+
+    /// <summary>Hand cases: (name, cells, think ms per move). Rule cases from tools/arena-sim plus ruleset C clock cases.</summary>
+    public static readonly (string Name, string Cells, int ThinkMs)[] ArenaCases =
+    [
+        ("shatter", "0,4,1,8,2", 1000),
+        ("queue-not-full-after-shatter", "0,4,1,8,2,3", 1000),
+        ("ghost-blocks-o", "4,0,8,2,6,3,5,1", 1000),
+        ("ghost-blocks-x", "4,0,8,2,6,3,5,1,7", 1000),
+        ("red-alert-boundary-before", "0,4,1,8,2", 17000),
+        ("red-alert-boundary-at", "0,4,1,8,2", 18000),
+        ("timeout-waits-for-o", "0,4,8,2,6", 25000),
+        ("timeout-level-overtime", "0,4,8,2,6,3", 25000),
+        ("timeout-decision", "0,3,1,4,2,8", 20000),
+        ("overtime-conceder-first", "0,3,1,4,8,5,2,7", 15000),
+        ("overtime-next-line-wins", "0,3,1,4,8,5,2,7,3,0,4,1,5", 15000),
+        ("illegal-occupied", "4,4", 1000),
+    ];
+
+    /// <summary>Deterministic arena playout: random legal cells, think 1500..4499 ms.</summary>
+    public static (List<(int Cell, int ThinkMs)> Moves, ArenaState Final) ArenaPlayout(ArenaRules rules, ulong seed)
+    {
+        var rng = new SplitMix64(seed);
+        var s = ArenaEngine.Initial(rules);
+        var moves = new List<(int, int)>();
+        while (!s.IsOver && moves.Count < 120)
+        {
+            var legal = ArenaEngine.LegalCells(s);
+            var cell = legal[rng.NextInt(legal.Length)];
+            var think = 1500 + rng.NextInt(3000);
+            moves.Add((cell, think));
+            s = ArenaEngine.Apply(s, cell, think).State;
+        }
+        return (moves, s);
+    }
+
+    private static string ArenaVectors()
+    {
+        var sb = new StringBuilder("{\n  \"schema\": 1,\n  \"rulesets\": [\n");
+        var named = ArenaRules.Named;
+        for (int n = 0; n < named.Count; n++)
+        {
+            var r = named[n];
+            sb.Append("    {\"id\": ").Append(Str(r.Id)).Append(", \"board\": ").Append(Str(r.Board.Id))
+              .Append(", \"hp\": ").Append(Int(r.Hp)).Append(", \"ramp\": ").Append(IntArray(r.Ramp))
+              .Append(", \"critBonus\": ").Append(Int(r.CritBonus)).Append(", \"combo\": ").Append(Str(r.Combo.ToString()))
+              .Append(", \"redAlertMultiplier\": ").Append(Int(r.RedAlertMultiplier)).Append(", \"roundMs\": ").Append(Int(r.RoundMs))
+              .Append(", \"redAlertMs\": ").Append(Int(r.RedAlertMs)).Append(", \"moveMs\": ").Append(Int(r.MoveMs))
+              .Append(", \"overtimeStarter\": ").Append(Str(r.OvertimeStarter.ToString())).Append(",\n     \"cases\": [\n");
+            for (int i = 0; i < ArenaCases.Length; i++)
+            {
+                var (name, cells, think) = ArenaCases[i];
+                var moves = Notation.Parse(cells).Select(a => (a.Cell, think)).ToList();
+                sb.Append("      ").Append(ArenaCaseJson(r, name, moves)).Append(i < ArenaCases.Length - 1 ? ",\n" : "\n");
+            }
+            sb.Append("     ],\n     \"playouts\": [\n");
+            for (int i = 0; i < ArenaPlayoutCount; i++)
+            {
+                var (moves, _) = ArenaPlayout(r, PlayoutSeedBase + (ulong)i);
+                sb.Append("      ").Append(ArenaCaseJson(r, "seed-" + (PlayoutSeedBase + (ulong)i).ToString(CultureInfo.InvariantCulture), moves))
+                  .Append(i < ArenaPlayoutCount - 1 ? ",\n" : "\n");
+            }
+            sb.Append("     ]}").Append(n < named.Count - 1 ? ",\n" : "\n");
+        }
+        sb.Append("  ]\n}\n");
+        return sb.ToString();
+    }
+
+    private static string ArenaCaseJson(ArenaRules r, string name, List<(int Cell, int ThinkMs)> moves)
+    {
+        var cells = string.Join(",", moves.Select(m => Int(m.Cell)));
+        var thinks = IntArray(moves.Select(m => m.ThinkMs));
+        var head = $"{{\"name\": {Str(name)}, \"cells\": {Str(cells)}, \"thinkMs\": {thinks}, ";
+        var s = ArenaEngine.Initial(r);
+        int damageX = 0, damageO = 0, hits = 0, crits = 0;
+        for (int i = 0; i < moves.Count; i++)
+        {
+            var step = ArenaEngine.Apply(s, moves[i].Cell, moves[i].ThinkMs);
+            if (!step.Ok) return head + $"\"error\": {{\"atIndex\": {Int(i)}, \"code\": {Str(step.Error.ToString())}}}}}";
+            if (step.Hit is { } h)
+            {
+                hits++;
+                if (h.Crit) crits++;
+                if (h.Attacker == Color.X) damageX += h.Damage; else damageO += h.Damage;
+            }
+            s = step.State;
+        }
+        return head + $"\"expect\": {{\"board\": {Str(ArenaEngine.Board(s))}, \"queue\": {IntArray(s.Pieces.Select(p => p.Cell))}, " +
+            $"\"hp\": [{Int(s.HpX)},{Int(s.HpO)}], \"streak\": [{Int(s.StreakX)},{Int(s.StreakO)}], \"lines\": [{Int(s.LinesX)},{Int(s.LinesO)}], " +
+            $"\"damage\": [{Int(damageX)},{Int(damageO)}], \"hits\": {Int(hits)}, \"crits\": {Int(crits)}, \"elapsedMs\": {Int(s.ElapsedMs)}, " +
+            $"\"phase\": {Str(s.Phase.ToString())}, \"end\": {Str(s.End.ToString())}, \"winner\": {(s.Winner is { } w ? Str(w.ToString()) : "null")}, " +
+            $"\"toMove\": {Str(s.ToMove.ToString())}, \"legal\": {IntArray(ArenaEngine.LegalCells(s))}, \"nextToVanish\": {NullableInt(ArenaEngine.NextToVanish(s))}}}}}";
     }
 
     private static string Int(int v) => v.ToString(CultureInfo.InvariantCulture);

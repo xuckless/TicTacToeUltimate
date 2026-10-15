@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.SignalR;
 using TicTacToeUltimate.Contracts;
 using TicTacToeUltimate.Engine;
+using TicTacToeUltimate.Engine.Arena;
 using TicTacToeUltimate.Engine.Clocks;
 using TicTacToeUltimate.Server.Abstractions;
 using TicTacToeUltimate.Server.Abstractions.Persistence;
@@ -146,6 +147,8 @@ public static class MatchModes
         TimeControl.Ranked => MatchMode.Ranked,
         TimeControl.CasualX2 or TimeControl.CasualX4 => MatchMode.Casual,
         TimeControl.Unlimited => MatchMode.Unlimited,
+        TimeControl.ArenaCasual => MatchMode.Arena,
+        TimeControl.ArenaRanked => MatchMode.ArenaRanked,
         _ => MatchMode.Daily,
     };
 
@@ -154,15 +157,30 @@ public static class MatchModes
     {
         if (o.Modes.TryGetValue(tc.ToString(), out var m)) return m;
         var pie = tc is TimeControl.Ranked or TimeControl.Daily;
+        if (MoveClock.IsArena(tc))
+            return new ModeOptions { Rules = RuleSet.Default.Id, Rated = tc == TimeControl.ArenaRanked, GuestsAllowed = tc == TimeControl.ArenaCasual, Arena = ArenaRules.RulesetC.Id };
         return new ModeOptions { Rules = pie ? RuleSet.RankedDefault.Id : RuleSet.Default.Id, Rated = pie, GuestsAllowed = !pie };
     }
+
+    /// <summary>Arena (health) scoring for a time control; null for classic modes. Board rules come from <see cref="RulesFor"/>.</summary>
+    public static ArenaRules? ArenaFor(TttOptions o, TimeControl tc)
+    {
+        if (!MoveClock.IsArena(tc)) return null;
+        var named = ArenaRules.TryParse(Options(o, tc).Arena, out var a) ? a : ArenaRules.RulesetC;
+        var board = RulesFor(o, tc);
+        board = board with { Opening = OpeningRule.None };
+        return named with { Board = board };
+    }
+
+    /// <summary>True for ranked-like queues (no guests, no bots unless enabled, no rematch).</summary>
+    public static bool IsRankedLike(TimeControl tc) => tc is TimeControl.Ranked or TimeControl.Daily or TimeControl.ArenaRanked;
 
     /// <summary>Ruleset for a queue time control.</summary>
     public static RuleSet RulesFor(TttOptions o, TimeControl tc)
         => RuleIds.Parse(Options(o, tc).Rules, tc is TimeControl.Ranked or TimeControl.Daily ? RuleSet.RankedDefault : RuleSet.Default);
 
     /// <summary>True for casual-like controls where guests may fall back into the account pool.</summary>
-    public static bool IsCasualLike(TimeControl tc) => tc is TimeControl.CasualX2 or TimeControl.CasualX4 or TimeControl.Unlimited;
+    public static bool IsCasualLike(TimeControl tc) => tc is TimeControl.CasualX2 or TimeControl.CasualX4 or TimeControl.Unlimited or TimeControl.ArenaCasual;
 
     /// <summary>8 random bytes.</summary>
     public static ulong NewSeed() => BitConverter.ToUInt64(RandomNumberGenerator.GetBytes(8));

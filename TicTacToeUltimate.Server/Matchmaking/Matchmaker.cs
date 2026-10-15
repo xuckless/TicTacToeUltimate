@@ -94,7 +94,8 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
 
         foreach (var e in _entries.Where(e => now - e.EnqueuedAtMs >= o.BotFallbackSeconds * 1000L).ToArray())
         {
-            if (e.TimeControl == TimeControl.Daily || (e.TimeControl == TimeControl.Ranked && !options.Bots.Ranked)) continue;
+            // Bots speak classic rules only: never offered for Arena queues.
+            if (e.TimeControl == TimeControl.Daily || MoveClock.IsArena(e.TimeControl) || (e.TimeControl == TimeControl.Ranked && !options.Bots.Ranked)) continue;
             if (!bots.TryReserve(e.TimeControl, e.Rating, out var bot)) continue;
             _entries.Remove(e);
             await CreateBotMatchAsync(e, bot, ct).ConfigureAwait(false);

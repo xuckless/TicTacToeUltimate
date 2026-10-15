@@ -53,7 +53,8 @@ else
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { }
         _loading = false;
         if (_game is null) return;
-        _frames = ReplayFrames.Build(_game.Rules, _game.Actions);
+        var arena = TicTacToeUltimate.Engine.Clocks.MoveClock.IsArena(_game.TimeControl) ? TicTacToeUltimate.Engine.Arena.ArenaRules.RulesetC with { Board = _game.Rules.ToEngine() } : null;
+        _frames = ReplayFrames.Build(_game.Rules, _game.Actions, arena);
         _ply = _frames.Count - 1;
         if (AnalysisFlag == 1) await LoadAnalysis();
     }

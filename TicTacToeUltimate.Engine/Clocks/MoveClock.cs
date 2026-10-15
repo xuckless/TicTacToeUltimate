@@ -1,12 +1,18 @@
 namespace TicTacToeUltimate.Engine.Clocks;
 
-public enum TimeControl : byte { Ranked = 0, CasualX2 = 1, CasualX4 = 2, Unlimited = 3, Daily = 4 }
+public enum TimeControl : byte { Ranked = 0, CasualX2 = 1, CasualX4 = 2, Unlimited = 3, Daily = 4, ArenaCasual = 5, ArenaRanked = 6 }
 
 /// <summary>Pure move-clock schedule (integer tick arithmetic only).</summary>
 public static class MoveClock
 {
     /// <summary>Daily allowance per move.</summary>
     public static readonly TimeSpan DailyPerMove = TimeSpan.FromHours(24);
+
+    /// <summary>Arena per-move limit (flat, no sudden-death schedule; the 2:00 round is handled by the arena engine).</summary>
+    public static readonly TimeSpan ArenaPerMove = TimeSpan.FromSeconds(5);
+
+    /// <summary>True for the Arena (health) time controls.</summary>
+    public static bool IsArena(TimeControl tc) => tc is TimeControl.ArenaCasual or TimeControl.ArenaRanked;
 
     private const long Sec = TimeSpan.TicksPerSecond;
 
@@ -25,6 +31,7 @@ public static class MoveClock
     {
         if (tc == TimeControl.Unlimited) return null;
         if (tc == TimeControl.Daily) return DailyPerMove;
+        if (IsArena(tc)) return ArenaPerMove;
         long s = Scale(tc);
         if (s == 0) return null;
         long e = Math.Max(0, gameElapsed.Ticks);

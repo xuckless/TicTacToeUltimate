@@ -16,6 +16,7 @@
 
 <PlayHero Rating="RankedRating" Guest="IsGuest" Subtitle="@(IsGuest ? "Unrated · 30s per move" : "Placement games")" />
 <ModeGrid DailyYourTurn="Session.State.DailyYourTurn" Guest="IsGuest" />
+<ArenaCard Guest="IsGuest" Rating="@(Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.ArenaRanked))" />
 <QuestCard Progress="Progress.State.Progress" NowMs="NowMs" OnExtraQuest="ExtraQuest" />
 @if (!IsGuest)
 {

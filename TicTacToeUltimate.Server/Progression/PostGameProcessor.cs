@@ -95,7 +95,8 @@ public sealed class PostGameProcessor(
                     progressBySeat[seat] = await progress.ApplyGameAsync(seats[seat].UserId, m.Result.WinnerSeat == seat, m.EndedAt, ct);
 
         // 6. analysis
-        var analysisReady = !aborted && tablebases.GetStatus(s.Rules) == TablebaseStatus.Ready;
+        // Arena games are not classic games: the tablebase cannot judge them.
+        var analysisReady = !aborted && !TicTacToeUltimate.Engine.Clocks.MoveClock.IsArena(s.TimeControl) && tablebases.GetStatus(s.Rules) == TablebaseStatus.Ready;
         int[]? blunders = null;
         if (analysisReady)
         {
@@ -104,7 +105,7 @@ public sealed class PostGameProcessor(
         }
 
         // 7. summaries
-        var rematch = s.Mode is MatchMode.Casual or MatchMode.Unlimited or MatchMode.Challenge && !s.Rated;
+        var rematch = s.Mode is MatchMode.Casual or MatchMode.Unlimited or MatchMode.Challenge or MatchMode.Arena && !s.Rated;
         for (var seat = 0; seat < 2; seat++)
         {
             if (!IsHuman(seats[seat])) continue;

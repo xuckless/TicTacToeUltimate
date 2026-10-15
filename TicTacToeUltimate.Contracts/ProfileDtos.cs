@@ -34,6 +34,6 @@ public sealed record ProgressDto(StreakDto Streak, QuestDto[] Quests, DateOnly D
 
 public sealed record TierBandDto(Tier Tier, int MinRating, int DivisionWidth);
 public sealed record AdConfigDto(int InterstitialEveryGames, bool SkipAfterTwoLosses);
-public sealed record ModeConfigDto(TimeControl TimeControl, MatchMode Mode, RuleSetDto Rules, bool Rated, bool GuestsAllowed);
+public sealed record ModeConfigDto(TimeControl TimeControl, MatchMode Mode, RuleSetDto Rules, bool Rated, bool GuestsAllowed, ArenaRulesDto? Arena = null);
 public sealed record AppConfigDto(int ProtocolVersion, bool DevAuth, bool SupabaseAuth, string? SupabaseUrl, string? SupabaseAnonKey,
     ModeConfigDto[] Modes, EmoteDto[] Emotes, TierBandDto[] Tiers, int LeaderboardMinGames, AdConfigDto Ads, string WebBaseUrl);

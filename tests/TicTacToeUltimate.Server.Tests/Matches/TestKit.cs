@@ -116,6 +116,7 @@ public sealed class RefClock : IClockSchedule
     {
         if (tc == TimeControl.Unlimited) return null;
         if (tc == TimeControl.Daily) return MoveClock.DailyPerMove;
+        if (MoveClock.IsArena(tc)) return MoveClock.ArenaPerMove;
         var s = Scale(tc);
         if (e < TimeSpan.FromSeconds(60 * s)) return TimeSpan.FromSeconds(15 * s);
         var k = (long)((e - TimeSpan.FromSeconds(60 * s)).TotalMilliseconds / (12_000L * s));

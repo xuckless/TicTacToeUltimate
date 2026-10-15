@@ -72,6 +72,8 @@ public sealed class JsHaptics(TttJsModule js) : IHaptics
         HapticCue.Loss => [120],
         HapticCue.Promotion => [30, 40, 30, 40, 90],
         HapticCue.Error => [60, 30, 60],
+        HapticCue.Shatter => [25, 20, 40],
+        HapticCue.Crit => [40, 30, 40, 30, 120],
         _ => [10],
     };
 

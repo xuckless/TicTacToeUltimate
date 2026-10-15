@@ -20,6 +20,8 @@
             </span>
             @if (locked) { <span class="t-chip">Account</span> }
             else if (m.Tc == TimeControl.Ranked && RankedRating is not null) { <TierBadge Tier="RankedRating.Tier" /> }
+            else if (m.Tc == TimeControl.ArenaRanked && ArenaRating is not null) { <TierBadge Tier="ArenaRating.Tier" /> }
+            else if (MoveClock.IsArena(m.Tc)) { <span class="t-chip arena-chip">Arena</span> }
         </button>
     }
 </div>
@@ -70,12 +72,15 @@
         new(TimeControl.CasualX4, "Casual x4", "60s per move · unrated", true),
         new(TimeControl.Unlimited, "Unlimited", "No clock", true),
         new(TimeControl.Daily, "Daily", "24h per move", false),
+        new(TimeControl.ArenaCasual, "Casual Arena", "Health bars · 2:00 round · 5s per move · unrated", true),
+        new(TimeControl.ArenaRanked, "Arena Ranked Ladder", "Health bars · own rating · timeout loses", false),
     ];
 
     [SupplyParameterFromQuery(Name = "tc")] private string? Tc { get; set; }
 
     private bool IsGuest => Session.State.IsGuest;
     private RatingDto? RankedRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked);
+    private RatingDto? ArenaRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.ArenaRanked);
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()

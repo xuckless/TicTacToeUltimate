@@ -24,6 +24,30 @@
 .impact .text { animation: ttt-slam 1400ms cubic-bezier(.2, 1.6, .4, 1) forwards; }
 .shake { animation: ttt-shake 120ms linear 2; }
 .emote-bubble, .t-toast { animation: ttt-pop 160ms ease-out; }
+/* Arena: hit-stop (freeze, then jolt), shards, damage pop, crit, combo break. hs-0/hs-1 alternate so each hit replays. */
+@keyframes ttt-hitstop-a { 0% { transform: scale(1.04); filter: brightness(1.6) saturate(1.4); } 18% { transform: scale(1.04); filter: brightness(1.6); } 30% { transform: translate(-7px, 3px); } 45% { transform: translate(6px, -4px); } 60% { transform: translate(-3px, 2px); } 100% { transform: none; filter: none; } }
+@keyframes ttt-hitstop-b { 0% { transform: scale(1.04); filter: brightness(1.6) saturate(1.4); } 18% { transform: scale(1.04); filter: brightness(1.6); } 30% { transform: translate(-7px, 3px); } 45% { transform: translate(6px, -4px); } 60% { transform: translate(-3px, 2px); } 100% { transform: none; filter: none; } }
+@keyframes ttt-shard { 0%, 15% { opacity: 1; transform: rotate(var(--a)) translateX(0) scale(1); } 100% { opacity: 0; transform: rotate(var(--a)) translateX(90px) scale(.3); } }
+@keyframes ttt-dmg { 0%, 12% { opacity: 0; transform: translate(-50%, -30%) scale(1.6); } 25% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -110%); } }
+@keyframes ttt-hp-hit { 0%, 100% { transform: none; } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } }
+@keyframes ttt-hp-hit-b { 0%, 100% { transform: none; } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } }
+@keyframes ttt-combo-break { 0% { transform: scale(1.3); } 30% { transform: translateX(-4px) rotate(-3deg); } 60% { transform: translateX(4px) rotate(3deg); } 100% { transform: none; } }
+@keyframes ttt-ghost-flash { 50% { opacity: .25; } }
+.arena-board-wrap.hs-1 { animation: ttt-hitstop-b 420ms ease-out; }
+.arena-board-wrap.hs-0 { animation: ttt-hitstop-a 420ms ease-out; }
+.arena-board-wrap.hs-crit { animation-duration: 800ms; }
+.arena-shatter .burst i { animation: ttt-shard 520ms cubic-bezier(.1, .8, .3, 1) 70ms forwards; }
+.arena-shatter.crit .burst i { animation-duration: 900ms; }
+.arena-shatter .dmg { animation: ttt-dmg 900ms ease-out 70ms forwards; }
+.arena-hp.hit-0 .arena-hp-track { animation: ttt-hp-hit 360ms ease-out; }
+.arena-hp.hit-1 .arena-hp-track { animation: ttt-hp-hit-b 360ms ease-out; }
+.arena-combo.broken { animation: ttt-combo-break 420ms ease-out; }
+.arena-hp-ghost { animation: ttt-ghost-flash .7s ease-in-out infinite; }
+.match.arena-red { animation: ttt-alert-breathe 1s ease-in-out infinite; }
+.impact[data-kind="crit"] .text { font-size: 64px; color: var(--streak); }
+.impact[data-kind="crit"] { animation: ttt-shake 90ms linear 5; }
+.impact[data-kind="shatter"] .flash { animation-duration: 260ms; opacity: .6; }
+.impact[data-kind="shatter"] .sil { display: none; }
 
 :root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after {
   animation: none !important; transition: none !important;

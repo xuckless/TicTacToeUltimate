@@ -1,0 +1,19 @@
+@* Unanswered combo: armed across your blank turns, visibly breaks when the opponent scores. *@
+<div class="arena-combo @(Streak > 0 ? "armed" : null) @(Broken ? "broken" : null)" aria-live="polite">
+    @for (var i = 1; i <= Steps; i++)
+    {
+        <span class="pip @(i <= Streak ? "on" : null)" aria-hidden="true"></span>
+    }
+    <span class="arena-combo-text">@Text</span>
+</div>
+
+@code {
+    /// <summary>Current streak.</summary>
+    [Parameter] public int Streak { get; set; }
+    /// <summary>Ramp steps.</summary>
+    [Parameter] public int Steps { get; set; } = 3;
+    /// <summary>Just broken.</summary>
+    [Parameter] public bool Broken { get; set; }
+
+    private string Text => Broken && Streak == 0 ? "COMBO BROKEN" : Streak <= 0 ? "Combo" : $"COMBO ×{Streak} · armed";
+}

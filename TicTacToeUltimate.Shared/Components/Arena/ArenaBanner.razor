@@ -1,0 +1,33 @@
+@* Round clock, red-alert ×2 phase and the overtime "next line wins" banner. *@
+@if (Overtime)
+{
+    <div class="arena-banner ot" role="status" data-testid="arena-overtime">
+        <span class="t-label">Overtime</span>
+        <span class="big">NEXT LINE WINS</span>
+        @if (FirstMover is not null) { <span class="sub">@(FirstMover == "You" ? "You move first" : $"{FirstMover} moves first")</span> }
+    </div>
+}
+else
+{
+    <div class="arena-banner @(RedAlert ? "red" : null)" role="timer" aria-label="@($"Round {Ui.Elapsed(RemainingMs)} left")" data-testid="arena-round">
+        <span class="t-label">@(RedAlert ? "Red alert" : "Round")</span>
+        <span class="t-num big">@Ui.Elapsed(RemainingMs)</span>
+        @if (RedAlert) { <span class="x2" aria-label="double damage">×@Multiplier DMG</span> }
+        else if (Multiplier > 1) { <span class="sub">×@Multiplier damage in the last @Ui.Seconds(RedAlertMs)s</span> }
+    </div>
+}
+
+@code {
+    /// <summary>Round time left (ms).</summary>
+    [Parameter] public int RemainingMs { get; set; }
+    /// <summary>In the red-alert window.</summary>
+    [Parameter] public bool RedAlert { get; set; }
+    /// <summary>Red-alert damage multiplier.</summary>
+    [Parameter] public int Multiplier { get; set; } = 2;
+    /// <summary>Red-alert window length (ms).</summary>
+    [Parameter] public int RedAlertMs { get; set; } = 30_000;
+    /// <summary>Sudden-death overtime.</summary>
+    [Parameter] public bool Overtime { get; set; }
+    /// <summary>Name of who moves first in overtime ("You", "Rook").</summary>
+    [Parameter] public string? FirstMover { get; set; }
+}

@@ -326,7 +326,7 @@ public sealed class MatchStore : StoreBase<MatchesState>, IMatchStore, IDisposab
                 snap = snap with
                 {
                     Actions = [.. snap.Actions, a.Action], Board = a.Board, NextToVanish = a.NextToVanish, Swapped = a.Swapped,
-                    Seats = a.Seats, Ply = a.Action.Ply + 1, ToMoveSeat = null, LegalCells = [],
+                    Seats = a.Seats, Arena = a.Arena ?? snap.Arena, Ply = a.Action.Ply + 1, ToMoveSeat = null, LegalCells = [],
                     Clock = snap.Clock is null ? null : snap.Clock with { TurnStartedAtMs = null, DeadlineAtMs = null },
                 };
                 if (a.Action.Kind == ActionKind.Place)
@@ -338,6 +338,7 @@ public sealed class MatchStore : StoreBase<MatchesState>, IMatchStore, IDisposab
                     }
                     if (a.Action.VanishedCell is not null) effects.Add(() => { Sfx(SoundCue.Vanish); Haptic(HapticCue.Vanish); });
                 }
+                if (a.Arena is { } arena) AddArenaEffects(v.Snapshot.Arena, arena, a.Action.Ply, effects);
                 v = v with { Snapshot = snap, PendingCell = mine ? null : v.PendingCell };
                 break;
             }
@@ -403,6 +404,19 @@ public sealed class MatchStore : StoreBase<MatchesState>, IMatchStore, IDisposab
         return v;
     }
 
+    /// <summary>Arena cues: shatter / crit / combo break on a new hit; alarm when red alert starts.</summary>
+    private void AddArenaEffects(ArenaStateDto? before, ArenaStateDto after, int ply, List<Action> effects)
+    {
+        if (after.LastHit is { } hit && hit.Ply == ply)
+        {
+            if (hit.Crit) effects.Add(() => { Sfx(SoundCue.Crit); Haptic(HapticCue.Crit); });
+            else effects.Add(() => { Sfx(SoundCue.Shatter); Haptic(HapticCue.Shatter); });
+            if (hit.BrokenStreak > 0) effects.Add(() => Sfx(SoundCue.ComboBreak));
+        }
+        if (after.RedAlert && before is { RedAlert: false }) effects.Add(() => Sfx(SoundCue.RedAlert));
+        if (after.Overtime && before is { Overtime: false }) effects.Add(() => Sfx(SoundCue.SuddenDeath));
+    }
+
     // ---------------------------------------------------------------- derivation
 
     private static MatchView FromSnapshot(MatchSnapshotDto snap, MatchView? prev) => new(
@@ -416,7 +430,7 @@ public sealed class MatchStore : StoreBase<MatchesState>, IMatchStore, IDisposab
         var snap = v.Snapshot;
         var myTurn = v.MySeat is { } my && snap.ToMoveSeat == my && snap.Phase != GamePhase.Ended && v.Result is null && snap.Result is null;
         var threats = ImmutableArray<int>.Empty;
-        if (myTurn && engine is not null && _settings.State.ThreatHints && snap.Mode is not (MatchMode.Ranked or MatchMode.Daily)
+        if (myTurn && engine is not null && _settings.State.ThreatHints && snap.Mode is not (MatchMode.Ranked or MatchMode.Daily or MatchMode.ArenaRanked)
             && snap.Phase == GamePhase.AwaitingPlacement)
         {
             try { threats = Rules.ImmediateWins(engine, Other(MyColor(v))); }
@@ -427,6 +441,8 @@ public sealed class MatchStore : StoreBase<MatchesState>, IMatchStore, IDisposab
 
     private static GameState? TryReplay(MatchSnapshotDto snap)
     {
+        // Arena matches are scored by the arena layer (shatters): the classic engine would diverge, so use server legal cells.
+        if (snap.ArenaRules is not null) return null;
         try
         {
             var actions = snap.Actions.Select(a => a.Kind switch

@@ -1,0 +1,37 @@
+@* Shatter impact on the board: shards fly out of each shattered cell. Keyed by ply so it replays per hit. *@
+@if (Cells is { Count: > 0 })
+{
+    <div class="arena-shatter @(Crit ? "crit" : null)" aria-hidden="true" @key="Ply">
+        @foreach (var c in Cells)
+        {
+            var left = ((c % Size) + 0.5) * 100.0 / Size;
+            var top = ((c / Size) + 0.5) * 100.0 / Size;
+            <span class="burst @(Piece == Color.X ? "x" : "o")" style="left:@F(left)%;top:@F(top)%">
+                @for (var i = 0; i < 8; i++)
+                {
+                    <i style="--a:@(i * 45)deg"></i>
+                }
+            </span>
+        }
+        <span class="dmg @(RedAlert ? "red" : null)">−@Damage@(RedAlert ? " ×2" : "")</span>
+    </div>
+}
+
+@code {
+    /// <summary>Board size.</summary>
+    [Parameter] public int Size { get; set; } = 3;
+    /// <summary>Shattered cells.</summary>
+    [Parameter] public IReadOnlyList<int>? Cells { get; set; }
+    /// <summary>Attacker colour.</summary>
+    [Parameter] public Color Piece { get; set; }
+    /// <summary>Damage dealt.</summary>
+    [Parameter] public int Damage { get; set; }
+    /// <summary>Crit (bigger effect).</summary>
+    [Parameter] public bool Crit { get; set; }
+    /// <summary>Red alert hit.</summary>
+    [Parameter] public bool RedAlert { get; set; }
+    /// <summary>Ply of the hit (replay key).</summary>
+    [Parameter] public int Ply { get; set; }
+
+    private static string F(double v) => v.ToString("0.##", CultureInfo.InvariantCulture);
+}

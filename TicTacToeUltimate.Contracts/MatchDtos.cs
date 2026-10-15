@@ -27,7 +27,8 @@ public sealed record MatchSnapshotDto(
     Guid MatchId, long Seq, MatchMode Mode, TimeControl TimeControl, bool Rated, RuleSetDto Rules,
     SeatDto[] Seats, bool Swapped, ActionDto[] Actions, string Board, int Ply, GamePhase Phase,
     Color ToMove, int? ToMoveSeat, int[] LegalCells, int? NextToVanish, ClockDto? Clock, MatchResultDto? Result,
-    int? YourSeat /* null = spectator */, int SpectatorCount, bool RematchAllowed, long ServerNowMs);
+    int? YourSeat /* null = spectator */, int SpectatorCount, bool RematchAllowed, long ServerNowMs,
+    ArenaRulesDto? ArenaRules = null /* Arena (health) modes only */, ArenaStateDto? Arena = null);
 
 public sealed record MatchEventEnvelope(Guid MatchId, long Seq, long ServerTimeMs, MatchEvent Event);
 
@@ -41,7 +42,7 @@ public sealed record MatchEventEnvelope(Guid MatchId, long Seq, long ServerTimeM
 [JsonDerivedType(typeof(RematchStarted), "rematch")]
 [JsonDerivedType(typeof(SpectatorCountChanged), "spec")]
 public abstract record MatchEvent;
-public sealed record ActionApplied(ActionDto Action, string Board, int? NextToVanish, bool Swapped, SeatDto[] Seats) : MatchEvent;
+public sealed record ActionApplied(ActionDto Action, string Board, int? NextToVanish, bool Swapped, SeatDto[] Seats, ArenaStateDto? Arena = null) : MatchEvent;
 public sealed record TurnStarted(int Ply, Color ToMove, int ToMoveSeat, GamePhase Phase, ClockDto? Clock, int[] LegalCells) : MatchEvent;
 public sealed record MatchEnded(MatchResultDto Result) : MatchEvent;
 public sealed record SeatConnectionChanged(int Seat, bool Connected, int? RttMs) : MatchEvent;

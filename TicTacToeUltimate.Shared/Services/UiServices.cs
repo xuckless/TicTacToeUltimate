@@ -132,6 +132,8 @@ public static class Ui
         Engine.Clocks.TimeControl.CasualX2 => "Casual x2",
         Engine.Clocks.TimeControl.CasualX4 => "Casual x4",
         Engine.Clocks.TimeControl.Unlimited => "Unlimited",
+        Engine.Clocks.TimeControl.ArenaCasual => "Casual Arena",
+        Engine.Clocks.TimeControl.ArenaRanked => "Arena Ranked Ladder",
         _ => "Daily",
     };
 
@@ -139,6 +141,8 @@ public static class Ui
     public static string ModeLabel(MatchMode mode, Engine.Clocks.TimeControl tc) => mode switch
     {
         MatchMode.Ranked => "Ranked · Sudden death",
+        MatchMode.Arena => "Arena · Casual",
+        MatchMode.ArenaRanked => "Arena · Ranked Ladder",
         MatchMode.Challenge => "Challenge · " + TimeControlName(tc),
         _ => TimeControlName(tc),
     };
@@ -157,6 +161,9 @@ public static class Ui
         EndReason.Resign => "By resignation",
         EndReason.Abandoned => "Opponent left",
         EndReason.Draw => "Draw",
+        EndReason.Knockout => "Knockout",
+        EndReason.Decision => "On health at time",
+        EndReason.Overtime => "Overtime line",
         _ => "Aborted",
     };
 }

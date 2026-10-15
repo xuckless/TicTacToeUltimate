@@ -1,5 +1,6 @@
 using TicTacToeUltimate.Contracts;
 using TicTacToeUltimate.Engine;
+using TicTacToeUltimate.Engine.Arena;
 
 namespace TicTacToeUltimate.Shared.Services;
 
@@ -13,10 +14,11 @@ public sealed record ReplayFrame(int Ply, string Board, int? Ghost, int? LastPla
 public static class ReplayFrames
 {
     /// <summary>Frames for plies 0..Actions.Length.</summary>
-    public static IReadOnlyList<ReplayFrame> Build(RuleSetDto rules, IReadOnlyList<ActionDto> actions)
+    public static IReadOnlyList<ReplayFrame> Build(RuleSetDto rules, IReadOnlyList<ActionDto> actions, ArenaRules? arena = null)
     {
         ArgumentNullException.ThrowIfNull(rules);
         ArgumentNullException.ThrowIfNull(actions);
+        if (arena is not null) return BuildArena(arena, actions);
         var n = rules.BoardSize * rules.BoardSize;
         var board = new char[n];
         Array.Fill(board, '.');
@@ -38,6 +40,22 @@ public static class ReplayFrames
             }
             int? ghost = rules.Removal == RemovalKind.GlobalFifo && order.Count >= rules.Window && order.Count > 0 ? order[0] : null;
             frames.Add(new ReplayFrame(a.Ply + 1, new string(board), ghost, placed));
+        }
+        return frames;
+    }
+
+    /// <summary>Arena replay: shatters are not in the action log, so the arena engine re-derives them (think times drive red alert).</summary>
+    private static List<ReplayFrame> BuildArena(ArenaRules arena, IReadOnlyList<ActionDto> actions)
+    {
+        var s = ArenaEngine.Initial(arena);
+        var frames = new List<ReplayFrame> { new(0, ArenaEngine.Board(s), null, null) };
+        foreach (var a in actions)
+        {
+            if (a.Kind != ActionKind.Place || a.Cell is not int cell) continue;
+            var step = ArenaEngine.Apply(s, cell, a.ThinkMs);
+            if (!step.Ok) break;
+            s = step.State;
+            frames.Add(new ReplayFrame(a.Ply + 1, ArenaEngine.Board(s), ArenaEngine.NextToVanish(s), cell));
         }
         return frames;
     }

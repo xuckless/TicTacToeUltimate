@@ -10,9 +10,9 @@ public interface IKeyValueStore            // non-secret prefs; web: localStorag
     ValueTask RemoveAsync(string key);
 }
 public interface ISecureStore : IKeyValueStore { }   // tokens; web: sessionStorage with localStorage fallback (§8.6), MAUI: SecureStorage
-public enum HapticCue { Tap, Place, OpponentPlace, Vanish, Tick, Warning, Win, Loss, Promotion, Error }
+public enum HapticCue { Tap, Place, OpponentPlace, Vanish, Tick, Warning, Win, Loss, Promotion, Error, Shatter, Crit }
 public interface IHaptics { bool IsSupported { get; } void Play(HapticCue cue); }
-public enum SoundCue { Tap, PlaceX, PlaceO, Vanish, Tick, Warning, SuddenDeath, Win, Loss, Promotion, QuestDone, Emote, Error, MatchFound }
+public enum SoundCue { Tap, PlaceX, PlaceO, Vanish, Tick, Warning, SuddenDeath, Win, Loss, Promotion, QuestDone, Emote, Error, MatchFound, Shatter, Crit, ComboBreak, RedAlert }
 public interface ISoundService
 {
     ValueTask InitAsync();

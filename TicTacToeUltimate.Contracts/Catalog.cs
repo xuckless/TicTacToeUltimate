@@ -4,9 +4,9 @@ using TicTacToeUltimate.Engine.Analysis;
 
 namespace TicTacToeUltimate.Contracts;
 
-public enum MatchMode { Ranked, Casual, Unlimited, Daily, Challenge }
-public enum EndReason { Line, Timeout, Resign, Abandoned, Draw, Aborted }
-public enum RatingPool { Ranked, CasualX2, CasualX4, Unlimited, Daily }
+public enum MatchMode { Ranked, Casual, Unlimited, Daily, Challenge, Arena, ArenaRanked }
+public enum EndReason { Line, Timeout, Resign, Abandoned, Draw, Aborted, Knockout, Decision, Overtime }
+public enum RatingPool { Ranked, CasualX2, CasualX4, Unlimited, Daily, ArenaCasual, ArenaRanked }
 public enum Tier { Bronze, Silver, Gold, Platinum, Diamond, Master }
 public enum PresenceStatus { Offline, Online, InGame }
 public enum AccountKind { Guest, Account, Bot }
@@ -30,9 +30,12 @@ public static class RatingPools
     {
         TimeControl.Ranked => RatingPool.Ranked, TimeControl.CasualX2 => RatingPool.CasualX2,
         TimeControl.CasualX4 => RatingPool.CasualX4, TimeControl.Unlimited => RatingPool.Unlimited,
+        TimeControl.ArenaCasual => RatingPool.ArenaCasual, TimeControl.ArenaRanked => RatingPool.ArenaRanked,
         _ => RatingPool.Daily,
     };
-    public static bool IsVisible(RatingPool p) => p is RatingPool.Ranked or RatingPool.Daily;
+    public static bool IsVisible(RatingPool p) => p is RatingPool.Ranked or RatingPool.Daily or RatingPool.ArenaRanked;
+    /// <summary>Visible pools in display order (Me / profile ratings).</summary>
+    public static readonly RatingPool[] Visible = [RatingPool.Ranked, RatingPool.Daily, RatingPool.ArenaRanked];
 }
 
 public static class ErrorCodes

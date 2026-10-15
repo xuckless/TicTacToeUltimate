@@ -68,7 +68,7 @@ public class AuthTests
         Assert.Equal(g1.Me.UserId, up.Value!.UserId);
         Assert.Equal(AccountKind.Account, up.Value.Kind);
         Assert.Equal(name, up.Value.Username);
-        Assert.Equal(2, up.Value.Ratings.Length);
+        Assert.Equal(RatingPools.Visible.Length, up.Value.Ratings.Length);   // Ranked, Daily, Arena Ranked Ladder
     }
 
     [Theory]

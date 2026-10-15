@@ -33,9 +33,12 @@ public static class PlatformEndpoints
             var m = o.Modes.TryGetValue(tc.ToString(), out var x) ? x : new ModeOptions();
             var mode = tc switch
             {
-                TimeControl.Ranked => MatchMode.Ranked, TimeControl.Unlimited => MatchMode.Unlimited, TimeControl.Daily => MatchMode.Daily, _ => MatchMode.Casual,
+                TimeControl.Ranked => MatchMode.Ranked, TimeControl.Unlimited => MatchMode.Unlimited, TimeControl.Daily => MatchMode.Daily,
+                TimeControl.ArenaCasual => MatchMode.Arena, TimeControl.ArenaRanked => MatchMode.ArenaRanked, _ => MatchMode.Casual,
             };
-            return new ModeConfigDto(tc, mode, RuleSetDto.From(RuleIds.ParseOrDefault(m.Rules)), m.Rated, m.GuestsAllowed);
+            var arena = MatchModes.ArenaFor(o, tc);
+            return new ModeConfigDto(tc, mode, RuleSetDto.From(RuleIds.ParseOrDefault(m.Rules)), m.Rated, m.GuestsAllowed,
+                arena is null ? null : ArenaRulesDto.From(arena));
         }).ToArray();
         var s = o.Auth.Supabase;
         return new AppConfigDto(ProtocolInfo.Version, o.Auth.Dev.Enabled, s.Enabled, s.Enabled ? s.Url : null, s.Enabled ? s.AnonKey : null, modes,
@@ -133,6 +136,7 @@ public static class PlatformEndpoints
             var g = await games.GetAsync(id, ct);
             if (g is null) return ApiErrors.Problem(404, ErrorCodes.MatchNotFound);
             if (!await ledger.HasGrantAsync(http.Me().UserId, RewardKind.Analysis, id, ct)) return ApiErrors.Problem(403, ErrorCodes.RewardRequired);
+            if (MoveClock.IsArena(g.Setup.TimeControl)) return ApiErrors.Problem(404, ErrorCodes.AnalysisUnavailable);
             switch (cache.GetStatus(g.Setup.Rules))
             {
                 case TablebaseStatus.Warming: return ApiErrors.Problem(503, ErrorCodes.AnalysisWarming);
