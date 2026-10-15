@@ -26,6 +26,7 @@ body { min-height: 100dvh; }
   padding: 12px 8px; min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; text-decoration: none; transition: transform 80ms, box-shadow 80ms; }
 .mode-btn:active { transform: translateY(4px); box-shadow: none; }
 .mode-btn .sub { font-size: 12px; color: var(--ink-muted); }
+.mode-btn .mode-ico { width: 28px; height: 28px; color: var(--primary); margin-bottom: 2px; }
 .friends-row { display: flex; gap: 14px; overflow-x: auto; }
 .friends-row a { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; color: var(--ink); text-decoration: none; min-width: 56px; padding: 4px; }
 .ad-slot { height: 50px; border: 1px dashed var(--line); border-radius: var(--radius-sm); display: grid; place-items: center; color: var(--ink-muted); font-size: 12px; }

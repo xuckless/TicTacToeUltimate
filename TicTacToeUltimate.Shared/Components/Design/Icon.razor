@@ -1,32 +1,148 @@
-@* Line icons from the design system (24x24, stroke currentColor). *@
+@* Chunky duotone icons (24x24). Strokes use currentColor; ".d" shapes are the soft duotone fill (currentColor at low opacity);
+   ".x"/".o" pick up the piece colours. Keep strokes round and 2.4px so the set matches Fredoka and Luckiest Guy. *@
 <svg class="t-icon @Class" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     @switch (Name)
     {
-        case "home": <path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" /> break;
-        case "play": <path d="M4 4h16v16H4z" /><path d="M9.5 4v16M14.5 4v16M4 9.5h16M4 14.5h16" /> break;
-        case "social": <circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.5 3.6 5.2" /> break;
-        case "profile": <circle cx="12" cy="8" r="4" /><path d="M4 21c1-4.2 4-6.5 8-6.5s7 2.3 8 6.5" /> break;
-        case "settings": <circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" /> break;
-        case "emote": <circle cx="12" cy="12" r="9" /><path d="M8.5 14.5c1 1.3 2.1 2 3.5 2s2.5-.7 3.5-2M9 9.5h.01M15 9.5h.01" /> break;
-        case "flag": <path d="M5 21V4M5 4h11l-2 4 2 4H5" /> break;
-        case "more": <path d="M5 12h.01M12 12h.01M19 12h.01" /> break;
-        case "close": <path d="M6 6l12 12M18 6L6 18" /> break;
-        case "back": <path d="M15 5l-7 7 7 7" /> break;
-        case "share": <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 3v12M7 8l5-5 5 5" /> break;
-        case "trophy": <path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4a3 3 0 0 0 4 4M16 6h4a3 3 0 0 1-4 4M12 13v4M8 21h8M9 17h6" /> break;
-        case "clock": <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /> break;
-        case "history": <path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2" /> break;
-        case "send": <path d="M4 12l16-8-6 16-2-7z" /> break;
-        case "eye": <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /> break;
-        case "prev": <path d="M15 5l-7 7 7 7" /> break;
+        // Navigation
+        case "home":
+            <path class="d" d="M4 11.2 12 5l8 6.2V19a2 2 0 0 1-2 2h-3.5v-5.5h-5V21H6a2 2 0 0 1-2-2z" />
+            <path d="M3 11 12 4l9 7M5 10v9a2 2 0 0 0 2 2h3v-5.5h4V21h3a2 2 0 0 0 2-2v-9" /> break;
+        case "play":
+            <rect class="d" x="3.5" y="3.5" width="17" height="17" rx="4" />
+            <rect x="3.5" y="3.5" width="17" height="17" rx="4" />
+            <path class="x" d="m6.8 6.8 3.4 3.4m0-3.4-3.4 3.4" /><circle class="o" cx="15.5" cy="15.5" r="2" /> break;
+        case "social":
+            <circle class="d" cx="9" cy="8.5" r="3.6" /><path class="d" d="M3 20c.6-3.6 3-5.6 6-5.6s5.4 2 6 5.6z" />
+            <circle cx="9" cy="8.5" r="3.6" /><path d="M3 20c.6-3.6 3-5.6 6-5.6s5.4 2 6 5.6M15.5 5a3.4 3.4 0 0 1 0 6.8M17.5 14.6c2 .6 3.2 2.6 3.5 5.4" /> break;
+        case "profile":
+            <circle class="d" cx="12" cy="8" r="4.2" /><path class="d" d="M4 21c.9-4.4 4-6.8 8-6.8s7.1 2.4 8 6.8z" />
+            <circle cx="12" cy="8" r="4.2" /><path d="M4 21c.9-4.4 4-6.8 8-6.8s7.1 2.4 8 6.8" /> break;
+        case "settings":
+            <path class="d" d="M12 3.5 14 5l2.4-.3 1 2.2 2.1 1.2-.3 2.4L20.5 12 19 14l.3 2.4-2.2 1-1.2 2.1-2.4-.3L12 20.5 10 19l-2.4.3-1-2.2-2.1-1.2.3-2.4L3.5 12 5 10l-.3-2.4 2.2-1 1.2-2.1 2.4.3z" />
+            <path d="M12 3.5 14 5l2.4-.3 1 2.2 2.1 1.2-.3 2.4L20.5 12 19 14l.3 2.4-2.2 1-1.2 2.1-2.4-.3L12 20.5 10 19l-2.4.3-1-2.2-2.1-1.2.3-2.4L3.5 12 5 10l-.3-2.4 2.2-1 1.2-2.1 2.4.3z" />
+            <circle cx="12" cy="12" r="2.8" /> break;
+        case "back": case "prev": <path d="M15 5l-7 7 7 7" /> break;
         case "next": <path d="M9 5l7 7-7 7" /> break;
-        case "passplay": <rect x="6" y="2.5" width="12" height="19" rx="2" /><path d="M9.5 8l5 5M14.5 8l-5 5M10.5 18.5h3" /> break;
-        default: <circle cx="12" cy="12" r="2" /> break;
+        case "close": <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" /> break;
+        case "more": <circle class="s" cx="5.5" cy="12" r="1.8" /><circle class="s" cx="12" cy="12" r="1.8" /><circle class="s" cx="18.5" cy="12" r="1.8" /> break;
+        case "plus": <path d="M12 5v14M5 12h14" /> break;
+        case "check": <path d="m5 12.5 4.5 4.5L19 7.5" /> break;
+        case "search": <circle class="d" cx="10.5" cy="10.5" r="6" /><circle cx="10.5" cy="10.5" r="6" /><path d="m15 15 5 5" /> break;
+        case "info": <circle class="d" cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="9" /><path d="M12 11v5.5" /><circle class="s" cx="12" cy="7.6" r="1.3" /> break;
+        case "lock": <rect class="d" x="5" y="10.5" width="14" height="10" rx="3" /><rect x="5" y="10.5" width="14" height="10" rx="3" /><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" /> break;
+        case "logout": <path class="d" d="M4 5a2 2 0 0 1 2-2h6v18H6a2 2 0 0 1-2-2z" /><path d="M12 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6M15.5 8l4 4-4 4M19.5 12H9.5" /> break;
+
+        // Modes
+        case "ranked":
+            <path class="d" d="M12 2.8 19.5 6v6c0 4.6-3.2 8-7.5 9.2C7.7 20 4.5 16.6 4.5 12V6z" />
+            <path d="M12 2.8 19.5 6v6c0 4.6-3.2 8-7.5 9.2C7.7 20 4.5 16.6 4.5 12V6z" />
+            <path class="x" d="m9.2 9.2 5.6 5.6m0-5.6-5.6 5.6" /> break;
+        case "casual":
+            <rect class="d" x="3.5" y="5.5" width="17" height="13" rx="4" />
+            <rect x="3.5" y="5.5" width="17" height="13" rx="4" />
+            <circle class="s" cx="8.5" cy="10" r="1.3" /><circle class="s" cx="15.5" cy="14" r="1.3" /><circle class="s" cx="12" cy="12" r="1.3" /> break;
+        case "daily": case "clock":
+            <circle class="d" cx="12" cy="12.5" r="8.5" /><circle cx="12" cy="12.5" r="8.5" /><path d="M12 8v4.5l3 2M9 2.5h6" /> break;
+        case "calendar":
+            <rect class="d" x="3.5" y="5" width="17" height="15.5" rx="3.5" /><rect x="3.5" y="5" width="17" height="15.5" rx="3.5" />
+            <path d="M3.5 10h17M8 3v4M16 3v4" /><circle class="o" cx="15" cy="15" r="1.8" /> break;
+        case "unlimited":
+            <path class="d" d="M6.5 8.5c-2 0-3.5 1.6-3.5 3.5s1.5 3.5 3.5 3.5c3.7 0 7.3-7 11-7 2 0 3.5 1.6 3.5 3.5s-1.5 3.5-3.5 3.5c-3.7 0-7.3-7-11-7z" />
+            <path d="M6.5 8.5c-2 0-3.5 1.6-3.5 3.5s1.5 3.5 3.5 3.5c3.7 0 7.3-7 11-7 2 0 3.5 1.6 3.5 3.5s-1.5 3.5-3.5 3.5c-3.7 0-7.3-7-11-7z" /> break;
+        case "arena": case "heart":
+            <path class="d" d="M12 20.5S3.5 15.4 3.5 9.2A4.4 4.4 0 0 1 12 7a4.4 4.4 0 0 1 8.5 2.2c0 6.2-8.5 11.3-8.5 11.3z" />
+            <path d="M12 20.5S3.5 15.4 3.5 9.2A4.4 4.4 0 0 1 12 7a4.4 4.4 0 0 1 8.5 2.2c0 6.2-8.5 11.3-8.5 11.3z" />
+            <path d="m10.5 9.5-1.5 3h3l-1.5 3" /> break;
+        case "passplay":
+            <rect class="d" x="6" y="2.5" width="12" height="19" rx="3" /><rect x="6" y="2.5" width="12" height="19" rx="3" />
+            <path class="x" d="m9.5 7.5 2 2m0-2-2 2" /><circle class="o" cx="13.8" cy="13" r="1.4" /><path d="M10.5 18.3h3" /> break;
+        case "challenge": case "swords":
+            <path d="M4.5 4.5 15 15M19.5 4.5 9 15M12.5 17.5l5-5M6.5 12.5l5 5M15.5 16.5l3.5 3.5M8.5 16.5 5 20" /> break;
+        case "link":
+            <path d="M10 14a4.2 4.2 0 0 0 6 0l3-3a4.2 4.2 0 0 0-6-6l-1 1M14 10a4.2 4.2 0 0 0-6 0l-3 3a4.2 4.2 0 0 0 6 6l1-1" /> break;
+        case "share":
+            <path class="d" d="M5 12h14v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" /><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7M12 3v12M7.5 7.5 12 3l4.5 4.5" /> break;
+
+        // Progress & rewards
+        case "trophy": case "leaderboard":
+            <path class="d" d="M7.5 3.5h9v5.5a4.5 4.5 0 0 1-9 0z" />
+            <path d="M7.5 3.5h9v5.5a4.5 4.5 0 0 1-9 0zM7.5 5.5H4.5a3 3 0 0 0 3.5 4M16.5 5.5h3a3 3 0 0 1-3.5 4M12 13.5v3.5M8 21h8M9.5 17h5" /> break;
+        case "streak": case "flame":
+            <path class="d" d="M12 21.5a6.5 6.5 0 0 1-6.5-6.5c0-3.6 2.6-5.3 3.5-8.5 1.9 1.3 2.6 3 2.6 4.8 1.2-.9 1.6-2.4 1.5-4.2 3 1.8 5.4 4.8 5.4 7.9a6.5 6.5 0 0 1-6.5 6.5z" />
+            <path d="M12 21.5a6.5 6.5 0 0 1-6.5-6.5c0-3.6 2.6-5.3 3.5-8.5 1.9 1.3 2.6 3 2.6 4.8 1.2-.9 1.6-2.4 1.5-4.2 3 1.8 5.4 4.8 5.4 7.9a6.5 6.5 0 0 1-6.5 6.5z" />
+            <path d="M12 21.5c-1.7 0-3-1.3-3-3 0-1.8 1.6-2.6 2.2-4.2 1.7 1 2.5 2 2.8 3.4" /> break;
+        case "quest": case "target":
+            <circle class="d" cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle class="s" cx="12" cy="12" r="1.6" /> break;
+        case "chest": case "reward":
+            <path class="d" d="M3.5 10h17v8.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z" />
+            <path d="M3.5 10V8a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v2M3.5 10h17v8.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2zM3.5 10h17" />
+            <rect class="s" x="10.3" y="8.6" width="3.4" height="4.2" rx="1" /> break;
+        case "star":
+            <path class="d" d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z" />
+            <path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z" /> break;
+        case "crown":
+            <path class="d" d="M3.5 8.5 8 12l4-6.5 4 6.5 4.5-3.5-1.5 10h-14z" />
+            <path d="M3.5 8.5 8 12l4-6.5 4 6.5 4.5-3.5-1.5 10h-14zM5 21h14" /> break;
+        case "gift":
+            <rect class="d" x="4" y="9" width="16" height="11.5" rx="2" /><rect x="4" y="9" width="16" height="11.5" rx="2" />
+            <path d="M3 9h18M12 9v11.5M12 9c-1-3.5-5.5-4.5-5.5-1.6C6.5 9 12 9 12 9zm0 0c1-3.5 5.5-4.5 5.5-1.6C17.5 9 12 9 12 9z" /> break;
+        case "ad": case "tv":
+            <rect class="d" x="3" y="5.5" width="18" height="12.5" rx="3" /><rect x="3" y="5.5" width="18" height="12.5" rx="3" />
+            <path d="M9 21h6M10.5 9.3v5.4l4.2-2.7z" /> break;
+        case "history":
+            <path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5M3.5 3.5v5h5M12 7.5v4.5l3 2" /> break;
+        case "chart":
+            <rect class="d" x="4" y="13" width="4" height="7" rx="1.5" /><rect class="d" x="10" y="8" width="4" height="12" rx="1.5" /><rect class="d" x="16" y="4" width="4" height="16" rx="1.5" />
+            <rect x="4" y="13" width="4" height="7" rx="1.5" /><rect x="10" y="8" width="4" height="12" rx="1.5" /><rect x="16" y="4" width="4" height="16" rx="1.5" /> break;
+
+        // Match
+        case "emote":
+            <circle class="d" cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="9" />
+            <path d="M8.3 14.2c1 1.5 2.2 2.2 3.7 2.2s2.7-.7 3.7-2.2" /><circle class="s" cx="9" cy="9.8" r="1.3" /><circle class="s" cx="15" cy="9.8" r="1.3" /> break;
+        case "chat":
+            <path class="d" d="M4 6a2.5 2.5 0 0 1 2.5-2.5h11A2.5 2.5 0 0 1 20 6v8a2.5 2.5 0 0 1-2.5 2.5H10L5.5 20.5v-4H6.5A2.5 2.5 0 0 1 4 14z" />
+            <path d="M4 6a2.5 2.5 0 0 1 2.5-2.5h11A2.5 2.5 0 0 1 20 6v8a2.5 2.5 0 0 1-2.5 2.5H10L5.5 20.5v-4H6.5A2.5 2.5 0 0 1 4 14z" /> break;
+        case "send": <path class="d" d="M4 11.5 20 4l-5.5 16-3-6.5z" /><path d="M4 11.5 20 4l-5.5 16-3-6.5zM11.5 13.5 20 4" /> break;
+        case "flag": case "resign":
+            <path class="d" d="M5.5 4h11l-2 4 2 4h-11z" /><path d="M5.5 21V4h11l-2 4 2 4h-11" /> break;
+        case "eye": case "spectate":
+            <path class="d" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" />
+            <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" /><circle cx="12" cy="12" r="3" /> break;
+        case "rematch": case "refresh":
+            <path d="M20 11a8 8 0 0 0-14.3-4.5L4 8.5M4 3.5v5h5M4 13a8 8 0 0 0 14.3 4.5l1.7-2M20 20.5v-5h-5" /> break;
+        case "bolt": case "suddendeath":
+            <path class="d" d="M13.5 2.5 5 13.5h6l-1 8 8.5-11h-6z" /><path d="M13.5 2.5 5 13.5h6l-1 8 8.5-11h-6z" /> break;
+        case "bot":
+            <rect class="d" x="4.5" y="8" width="15" height="11.5" rx="3.5" /><rect x="4.5" y="8" width="15" height="11.5" rx="3.5" />
+            <path d="M12 4.5V8M9.5 16h5" /><circle class="s" cx="12" cy="4" r="1.3" /><circle class="s" cx="9.3" cy="12.5" r="1.4" /><circle class="s" cx="14.7" cy="12.5" r="1.4" /> break;
+
+        // Settings
+        case "sound":
+            <path class="d" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" /><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" /> break;
+        case "mute":
+            <path class="d" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" /><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM16 9.5l5 5M21 9.5l-5 5" /> break;
+        case "music":
+            <circle class="d" cx="7" cy="17.5" r="3" /><circle class="d" cx="17" cy="15.5" r="3" />
+            <circle cx="7" cy="17.5" r="3" /><circle cx="17" cy="15.5" r="3" /><path d="M10 17.5V5.5l10-2v12" /> break;
+        case "haptics": case "vibrate":
+            <rect class="d" x="7.5" y="3.5" width="9" height="17" rx="2.5" /><rect x="7.5" y="3.5" width="9" height="17" rx="2.5" />
+            <path d="M4 8.5v7M20 8.5v7M1.8 10.5v3M22.2 10.5v3" /> break;
+        case "theme": case "moon":
+            <path class="d" d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" /><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" /> break;
+        case "sun":
+            <circle class="d" cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="4.5" />
+            <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" /> break;
+        case "bell":
+            <path class="d" d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z" /><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15zM10 21h4" /> break;
+        case "guided": case "bulb":
+            <path class="d" d="M8.5 15.5a6 6 0 1 1 7 0V18h-7z" /><path d="M8.5 15.5a6 6 0 1 1 7 0V18h-7zM9.5 21h5M12 9.5v3" /> break;
+
+        default: <circle class="s" cx="12" cy="12" r="2.5" /> break;
     }
 </svg>
 
 @code {
-    /// <summary>Icon name.</summary>
+    /// <summary>Icon name (see the switch above for the set).</summary>
     [Parameter, EditorRequired] public string Name { get; set; } = "";
     /// <summary>Extra classes.</summary>
     [Parameter] public string? Class { get; set; }

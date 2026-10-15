@@ -37,7 +37,12 @@ a { color: var(--primary); }
   box-shadow: var(--ledge-neutral); color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0; transition: transform 80ms, box-shadow 80ms; }
 .t-iconbtn:active { transform: translateY(4px); box-shadow: none; }
 .t-iconbtn--round { border-radius: var(--radius-pill); border: 0; box-shadow: none; width: 44px; height: 44px; color: var(--ink-muted); }
-.t-icon { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.t-icon { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; flex: none; overflow: visible; }
+.t-icon .d { fill: currentColor; fill-opacity: .24; stroke: none; }
+.t-icon .s { fill: currentColor; stroke: none; }
+.t-icon .x { stroke: var(--piece-x); stroke-width: 2.6; }
+.t-icon .o { stroke: var(--piece-o); stroke-width: 2.4; fill: none; }
+[aria-current] > .t-icon .d, .active > .t-icon .d { fill-opacity: .4; }
 
 /* Card, chip, bar */
 .t-card { background: var(--surface); border-radius: var(--radius-lg); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }

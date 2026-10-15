@@ -6,14 +6,14 @@
         <span class="sub">Lines shatter and deal damage · 125 HP · 2:00 rounds · ×2 red alert</span>
     </div>
     <div class="arena-card-actions">
-        <a class="mode-btn" href="play?tc=ArenaCasual"><span class="t-label">Casual Arena</span><span class="sub">5s per move · unrated</span></a>
+        <a class="mode-btn" href="play?tc=ArenaCasual"><Icon Name="arena" Class="mode-ico" /><span class="t-label">Casual Arena</span><span class="sub">5s per move · unrated</span></a>
         @if (Guest)
         {
-            <a class="mode-btn" href="signin" aria-label="Arena Ranked Ladder (account required)"><span class="t-label">Ranked Ladder</span><span class="sub">Account only</span></a>
+            <a class="mode-btn" href="signin" aria-label="Arena Ranked Ladder (account required)"><Icon Name="ranked" Class="mode-ico" /><span class="t-label">Ranked Ladder</span><span class="sub">Account only</span></a>
         }
         else
         {
-            <a class="mode-btn" href="play?tc=ArenaRanked"><span class="t-label">Ranked Ladder</span><span class="sub">@(Rating is { } r ? $"Arena {r.Rating}" : "Own rating")</span></a>
+            <a class="mode-btn" href="play?tc=ArenaRanked"><Icon Name="ranked" Class="mode-ico" /><span class="t-label">Ranked Ladder</span><span class="sub">@(Rating is { } r ? $"Arena {r.Rating}" : "Own rating")</span></a>
         }
     </div>
 </div>

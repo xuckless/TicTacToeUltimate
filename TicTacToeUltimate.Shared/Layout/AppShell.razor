@@ -12,7 +12,7 @@
         <hr style="border:0;border-top:1px solid var(--line);width:100%" />
         @if (!Session.State.IsGuest)
         {
-            <NavLink href="daily"><Icon Name="clock" />Daily@(Session.State.DailyYourTurn > 0 ? $" ({Session.State.DailyYourTurn})" : "")</NavLink>
+            <NavLink href="daily"><Icon Name="calendar" />Daily@(Session.State.DailyYourTurn > 0 ? $" ({Session.State.DailyYourTurn})" : "")</NavLink>
             <NavLink href="leaderboards"><Icon Name="trophy" />Leaderboards</NavLink>
         }
         <NavLink href="local"><Icon Name="passplay" />Pass &amp; Play</NavLink>
