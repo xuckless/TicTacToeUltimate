@@ -2,22 +2,55 @@ namespace TicTacToeUltimate.Engine.Clocks;
 
 public enum TimeControl : byte { Ranked = 0, CasualX2 = 1, CasualX4 = 2, Unlimited = 3, Daily = 4 }
 
-/// <summary>Pure move-clock schedule (WP1).</summary>
+/// <summary>Pure move-clock schedule (integer tick arithmetic only).</summary>
 public static class MoveClock
 {
     /// <summary>Daily allowance per move.</summary>
     public static readonly TimeSpan DailyPerMove = TimeSpan.FromHours(24);
 
+    private const long Sec = TimeSpan.TicksPerSecond;
+
     /// <summary>1 for Ranked, 2 for CasualX2, 4 for CasualX4, 0 otherwise.</summary>
-    public static int Scale(TimeControl tc) => throw new NotImplementedException();
+    public static int Scale(TimeControl tc) => tc switch
+    {
+        TimeControl.Ranked => 1,
+        TimeControl.CasualX2 => 2,
+        TimeControl.CasualX4 => 4,
+        _ => 0,
+    };
 
     /// <summary>Allowance for a turn that STARTS at gameElapsed. null for Unlimited; DailyPerMove for Daily.
     /// Sudden-death (s = Scale): e &lt; 60s·s -> 15s·s; else max(2s·s, 10s·s - floor((e-60s·s)/(12s·s))·1s·s).</summary>
-    public static TimeSpan? Allowance(TimeControl tc, TimeSpan gameElapsed) => throw new NotImplementedException();
+    public static TimeSpan? Allowance(TimeControl tc, TimeSpan gameElapsed)
+    {
+        if (tc == TimeControl.Unlimited) return null;
+        if (tc == TimeControl.Daily) return DailyPerMove;
+        long s = Scale(tc);
+        if (s == 0) return null;
+        long e = Math.Max(0, gameElapsed.Ticks);
+        if (e < 60 * Sec * s) return TimeSpan.FromTicks(15 * Sec * s);
+        long steps = (e - 60 * Sec * s) / (12 * Sec * s);
+        long secs = Math.Max(2, 10 - steps);
+        return TimeSpan.FromTicks(secs * Sec * s);
+    }
 
     /// <summary>True for scaled sudden-death controls once gameElapsed &gt;= 60s·s.</summary>
-    public static bool IsSuddenDeath(TimeControl tc, TimeSpan gameElapsed) => throw new NotImplementedException();
+    public static bool IsSuddenDeath(TimeControl tc, TimeSpan gameElapsed)
+    {
+        long s = Scale(tc);
+        return s > 0 && gameElapsed.Ticks >= 60 * Sec * s;
+    }
 
     /// <summary>Next point (in game-elapsed time) where the allowance changes, and the new allowance; null if none (floor reached, Unlimited, Daily).</summary>
-    public static (TimeSpan AtGameElapsed, TimeSpan Allowance)? NextStep(TimeControl tc, TimeSpan gameElapsed) => throw new NotImplementedException();
+    public static (TimeSpan AtGameElapsed, TimeSpan Allowance)? NextStep(TimeControl tc, TimeSpan gameElapsed)
+    {
+        long s = Scale(tc);
+        if (s == 0) return null;
+        long e = Math.Max(0, gameElapsed.Ticks);
+        if (e < 60 * Sec * s) return (TimeSpan.FromTicks(60 * Sec * s), TimeSpan.FromTicks(10 * Sec * s));
+        long steps = (e - 60 * Sec * s) / (12 * Sec * s);
+        long current = 10 - steps;
+        if (current <= 2) return null;
+        return (TimeSpan.FromTicks(60 * Sec * s + (steps + 1) * 12 * Sec * s), TimeSpan.FromTicks((current - 1) * Sec * s));
+    }
 }
