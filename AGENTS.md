@@ -260,3 +260,20 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
 - Logic: `TicTacToeUltimate.Client/Local/LocalGameController.cs` (pure engine + local `MoveClock`; host calls `Tick()` at 10 Hz). `LocalPlaySession` singleton shares it between pages.
 - Rules: Classic `n3k3-cap3-v0-w1-none` (launch rule), or "Legacy 7-piece" `n3k3-fifo7-v1-w0-none`; optional pie (`…-pie`). Clocks: Unlimited (no timeout), Casual x2/x4 (timeout = random legal move, or keep sides in the pie decision), Sudden death = Ranked schedule (timeout = loss). Leaving the board pauses the clock.
 - Rematch swaps who opens as X; session score kept in memory. No rating, streak, quest or ads.
+
+### UI/UX overhaul decisions (owner playtest, 2026-10-15)
+- **Threat hints ("BLOCK IT!")** are OFF by default. They come back only through a **Guided mode** toggle in Settings, which applies only in Casual, Unlimited, Challenge and Offline Pass & Play. **Never in Ranked, Daily or Arena**; the server enforces this.
+- **Fonts:**
+  - **Luckiest Guy** for big headline items: Play, VICTORY/DEFEAT, SUDDEN DEATH, KO, the "Tic Tac Toe Ultimate" logo text. The letters bounce up and down rather than sitting on a straight baseline.
+  - **Fredoka** for all normal text and UI.
+  - Chakra Petch stays for clocks.
+- **Scaling:** for now, a **fixed phone-width game column** (about 420px, fixed px sizes). On desktop the column is centered, with a slim icon sidebar and the wallpaper filling the rest. The board snaps to fixed sizes by viewport height, and there is no vw/vh-driven sizing.
+  - PLAN ITEM (later): a responsive desktop layout with the board beside panels (moves, chat, players), like chess.com.
+- **Icons:** a custom chunky duotone SVG set (about 30 icons): thick rounded strokes, a purple fill plus a highlight, and X/O motifs.
+- **Mascot + illustrated quest cards:** the mascot "Ghosty" (a purple blob in the shape of the vanishing piece) has expressions and appears on quests, streaks, empty states and results. Quests get illustrated badges, a reward chest, and chunky segmented progress bars that bounce when filled.
+- **Ambience:**
+  - Menus: slow falling dark-purple X/O wallpaper with depth layers.
+  - Match: the wallpaper is dimmed and slowed.
+  - **Sudden death:** a pulsing red glow around the whole viewport edge (web and mobile). The falling pieces turn red and speed up as the window shrinks.
+  - Everything respects reduced motion.
+- **Bug:** the VICTORY/DEFEAT text appears twice in the impact frame. Fix it.
