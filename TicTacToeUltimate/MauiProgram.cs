@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using TicTacToeUltimate.Shared.Services;
 using TicTacToeUltimate.Services;
@@ -57,23 +57,6 @@ public static class MauiProgram
             })
 #endif
         ;
-
-        // TestHub connection
-        builder.Services.AddSingleton(sp =>
-            new HubConnectionBuilder()
-                .WithUrl($"{backendBase}/hubs/test", o =>
-                {
-                    o.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.LongPolling;
-#if DEBUG
-                    o.HttpMessageHandlerFactory = _ => new HttpClientHandler
-                    {
-                        ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
-                    };
-#endif
-                })
-                .WithAutomaticReconnect()
-                .ConfigureLogging(lb => lb.SetMinimumLevel(LogLevel.Debug))
-                .Build());
 
         // GameHub connection
         builder.Services.AddSingleton(sp =>

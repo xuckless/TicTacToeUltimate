@@ -12,7 +12,7 @@ public class RedisStore(IConnectionMultiplexer mux)
     public async Task<GameState> GetOrCreateAsync(string gameId, IGameEngine engine)
     {
         var v = await _db.StringGetAsync(Key(gameId));
-        if (v.HasValue) return JsonSerializer.Deserialize<GameState>(v!)!;
+        if (v.HasValue) return JsonSerializer.Deserialize<GameState>((string)v!)!;
         var s = engine.StartNewGame();
         await SaveAsync(gameId, s);
         return s;

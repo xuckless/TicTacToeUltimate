@@ -1,6 +1,5 @@
 using System.Text;
 using AspNet.Security.OAuth.Apple;
-using BackendWebAPI.Config;
 using BackendWebAPI.Data;
 using BackendWebAPI.GameEngine;
 using BackendWebAPI.Models;
@@ -20,8 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Configuration setup - loads additional JSON files for auth and payment settings
 builder.Configuration
-    .AddJsonFile("appsettings.Auth.json", optional: true)
-    .AddJsonFile("appsettings.Stripe.json", optional: true);
+    .AddJsonFile("appsettings.Auth.json", optional: true);
 
 // Postgres + EF Core - configures Entity Framework with PostgreSQL database
 builder.Services.AddDbContext<AppDbContext>(opt =>
@@ -31,12 +29,6 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(builder.Configuration.GetValue<string>("Redis")));
 builder.Services.AddSingleton<BackendWebAPI.Services.RedisStore>();
-
-// Stripe - configures Stripe payment processing with API key
-builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
-var stripe = builder.Configuration.GetSection("Stripe").Get<StripeSettings>();
-if (!string.IsNullOrWhiteSpace(stripe?.SecretKey))
-    Stripe.StripeConfiguration.ApiKey = stripe.SecretKey;
 
 // Authentication - configures JWT Bearer tokens with Google and Apple OAuth providers
 builder.Services.AddAuthentication(o =>
@@ -122,12 +114,6 @@ app.MapControllers();
 // Minimal API endpoints and SignalR hubs
 app.MapGet("/ping", () => "pong"); // Health check endpoint
 app.MapHub<GameHub>("/hubs/game"); // Game logic SignalR hub
-app.MapHub<TestHub>("/hubs/test"); // Testing SignalR hub
 
 app.Run();
 
-/// <summary>
-/// Represents a request to create a payment with the specified amount.
-/// </summary>
-/// <param name="Amount">The payment amount in decimal format.</param>
-public record CreatePaymentRequest(decimal Amount);

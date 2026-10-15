@@ -21,13 +21,6 @@ builder.Services.AddHttpClient<ApiClient>(c => c.BaseAddress = new Uri(backendBa
 // Add connection to game engine client
 builder.Services.AddScoped<GameClient>();
 
-// TestHub connection
-builder.Services.AddSingleton(sp =>
-    new HubConnectionBuilder()
-        .WithUrl($"{backendBase}/hubs/test")
-        .WithAutomaticReconnect()
-        .Build());
-
 // GameHub connection
 builder.Services.AddSingleton(sp =>
     new HubConnectionBuilder()
