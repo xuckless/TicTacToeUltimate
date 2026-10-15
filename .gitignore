@@ -1,124 +1,49 @@
-# Database
-.data/
-
-
 # Build output
 bin/
 obj/
+*.apk
+*.aab
+*.ipa
+*.app/
 
-# Rider / IntelliJ
+# IDE
 .idea/
+.vs/
+.vscode/
 *.sln.iml
-
-# User-specific
 *.user
-*.swp
 *.suo
 *.userosscache
 *.userprefs
+*.sln.docstates
+*.dotSettings.user
 
-# Logs
-*.log
-
-# Local secrets
+# Local data / secrets
+.data/
+secrets.json
+*.p12
+*.key
+*.keystore
 BackendWebAPI/appsettings.Auth.json
 BackendWebAPI/appsettings.Stripe.json
+**/appsettings.Local.json
+.env
+.env.*
+supabase/.temp/
 
-# macOS
-.DS_Store
+# Node (tooling only)
+node_modules/
 
-# Windows
-Thumbs.db
-desktop.ini
-
-# MAUI specific (optional, but keeps it clean)
-*.apk
-*.aab
-*.keystore
-
-# VS Code (if anyone opens it)
-.vscode/
-
-.idea/
-WebApplication1/
-
-
-# Build outputs
-bin/
-obj/
-*/bin/
-*/obj/
-
-# .NET Core
-*.rptproj
-*.dotSettings.user
-*.UserSettings.xml
-
-# Visual Studio / Rider / IDE stuff
-.vs/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-.idea/
-*.sublime*
-.vscode/
-
-# NuGet
-*.nupkg
-# The packages folder can be ignored because of PackageReference
-# packages/
-
-# Others
+# Logs / temp
 *.log
 *.tmp
 *.temp
-*.cache
 
-# MAUI / Xamarin
-platforms/
-Properties/launchSettings.json
-MauiLayouts/
-*.plist
-obj/**/android/assets/*
-
-# Blazor / Web
-wwwroot/bin/
-wwwroot/obj/
-wwwroot/**/*.g.*
-wwwroot/**/*.bundle.*
-wwwroot/**/*.map
-
-# Tools
-*.vsix
-*.dbmdl
-*.backup
-*.userprefs
-
-# Mac / macOS
+# OS
 .DS_Store
-*.DS_Store
+Thumbs.db
+desktop.ini
 
-# Apple Simulator / Derived Data
+# Apple
 DerivedData/
-*.xcassets
 *.xcuserstate
-
-# Certificates, secrets etc.
-*.p12
-*.key
-secrets.json
-
-# Lock file
-packages.lock.json
-
-# Rider caches
-.idea/
-.idea_modules/
-.idea/*.iml
-.idea/workspace.xml
-.idea/tasks.xml
-
-# Rider build outputs
-*.dotCover
-## Rider plugin configs
