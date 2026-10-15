@@ -1,14 +1,27 @@
-﻿namespace TicTacToeUltimate;
+﻿using TicTacToeUltimate.Services;
+
+namespace TicTacToeUltimate;
 
 public partial class App : Application
 {
-    public App()
+    private readonly MauiLifecycle _lifecycle;
+
+    public App(MauiLifecycle lifecycle)
     {
+        _lifecycle = lifecycle;
         InitializeComponent();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(new MainPage()) { Title = "TicTacToeUltimate" };
+        var window = new Window(new MainPage()) { Title = "TTT Ultimate" };
+        _lifecycle.Attach(window);
+        return window;
+    }
+
+    protected override void OnAppLinkRequestReceived(Uri uri)
+    {
+        base.OnAppLinkRequestReceived(uri);
+        MauiDeepLinkSource.Current?.Publish(uri.ToString());
     }
 }

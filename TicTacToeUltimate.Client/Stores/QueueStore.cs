@@ -1,0 +1,53 @@
+using TicTacToeUltimate.Client.Abstractions;
+using TicTacToeUltimate.Client.Services;
+using TicTacToeUltimate.Client.State;
+using TicTacToeUltimate.Engine.Clocks;
+
+namespace TicTacToeUltimate.Client.Stores;
+
+/// <summary>Matchmaking queue state.</summary>
+public sealed class QueueStore : StoreBase<QueueState>, IQueueStore
+{
+    private readonly IRealtimeTransport _rt;
+
+    /// <summary>Creates the store.</summary>
+    public QueueStore(IRealtimeTransport rt, ISoundService sound, IHaptics haptics) : base(QueueState.Idle)
+    {
+        _rt = rt;
+        rt.QueueStatusReceived += status => Update(s => s.Phase is QueuePhase.Searching or QueuePhase.Entering
+            ? s with { Phase = QueuePhase.Searching, Status = status } : s);
+        rt.MatchFoundReceived += found =>
+        {
+            Update(s => s with { Phase = QueuePhase.Found, Found = found, Error = null });
+            sound.Play(SoundCue.MatchFound);
+            haptics.Play(HapticCue.Promotion);
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task EnterAsync(TimeControl timeControl)
+    {
+        Update(_ => new QueueState(QueuePhase.Entering, timeControl, null, null, null));
+        try
+        {
+            var ticket = await _rt.EnterQueue(new Contracts.QueueRequestDto(timeControl));
+            Update(s => s.Phase == QueuePhase.Found ? s : ticket.Accepted
+                ? s with { Phase = QueuePhase.Searching }
+                : QueueState.Idle with { TimeControl = timeControl, Error = ticket.Error });
+        }
+        catch (Exception ex)
+        {
+            Update(_ => QueueState.Idle with { TimeControl = timeControl, Error = ErrorText.Code(ex) });
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task LeaveAsync()
+    {
+        Update(s => s.Phase == QueuePhase.Found ? s : QueueState.Idle);
+        try { await _rt.LeaveQueue(); } catch (Exception) { /* offline: server drops the ticket on disconnect */ }
+    }
+
+    /// <inheritdoc />
+    public void Acknowledge() => Update(_ => QueueState.Idle);
+}

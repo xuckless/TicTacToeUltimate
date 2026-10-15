@@ -3,6 +3,9 @@ using Microsoft.Extensions.Logging;
 using TicTacToeUltimate.Client;
 using TicTacToeUltimate.Client.Abstractions;
 using TicTacToeUltimate.Contracts;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using TicTacToeUltimate.Client.Services;
+using TicTacToeUltimate.Services;
 using TicTacToeUltimate.Shared;
 
 namespace TicTacToeUltimate;
@@ -32,7 +35,20 @@ public static class MauiProgram
 
         builder.Services.AddTttClient(options);
         builder.Services.AddTttSharedUi();
-        // WP5: Replace(...) with Maui* platform services here.
+        // Host overrides: the last registration wins over the Shared JS defaults.
+        var s = builder.Services;
+        s.AddSingleton<MauiLifecycle>();
+        s.AddSingleton<MauiDeepLinkSource>();
+        s.Replace(ServiceDescriptor.Singleton<ISecureStore, MauiSecureStore>());
+        s.Replace(ServiceDescriptor.Singleton<IKeyValueStore, MauiKeyValueStore>());
+        s.Replace(ServiceDescriptor.Singleton<IHaptics, MauiHaptics>());
+        s.Replace(ServiceDescriptor.Singleton<IPlatformInfo, MauiPlatformInfo>());
+        s.Replace(ServiceDescriptor.Singleton<IAppLifecycle>(sp => sp.GetRequiredService<MauiLifecycle>()));
+        s.Replace(ServiceDescriptor.Singleton<IDeepLinkSource>(sp => sp.GetRequiredService<MauiDeepLinkSource>()));
+        s.Replace(ServiceDescriptor.Singleton<IShareService, MauiShareService>());
+        s.Replace(ServiceDescriptor.Singleton<IPushService, StubPushService>());
+        s.Replace(ServiceDescriptor.Singleton<IAdProvider, StubAdProvider>());
+        s.AddTttClientFallbacks();
 
         return builder.Build();
     }
@@ -40,7 +56,7 @@ public static class MauiProgram
     private static string DefaultBackendUrl()
         => DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5091" : "http://localhost:5091";
 
-    private static ClientPlatform CurrentPlatform()
+    internal static ClientPlatform CurrentPlatform()
     {
         if (DeviceInfo.Platform == DevicePlatform.Android) return ClientPlatform.Android;
         if (DeviceInfo.Platform == DevicePlatform.MacCatalyst) return ClientPlatform.MacCatalyst;
