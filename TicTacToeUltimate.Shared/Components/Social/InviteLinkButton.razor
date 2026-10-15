@@ -16,7 +16,17 @@
         _busy = true;
         try
         {
-            var c = await CreateLink();
+            ChallengeDto? c;
+            try { c = await CreateLink(); }
+            catch (Exception ex)
+            {
+                // Server errors arrive as HubException with an ErrorCodes value in the message.
+                var m = ex.Message;
+                Toasts.Show(m.Contains(ErrorCodes.UsernameRequired) ? "Pick a username first (Profile) to create invite links."
+                    : m.Contains(ErrorCodes.GuestNotAllowed) ? "Sign in to challenge a friend directly."
+                    : "Couldn't create a link. Check your connection and try again.", ToastKind.Error);
+                return;
+            }
             if (c is null || !Uri.TryCreate(c.Url, UriKind.Absolute, out var url)) { Toasts.Show("Couldn't create a link.", ToastKind.Error); return; }
             var r = await Share.ShareLinkAsync("TTT Ultimate", $"Play me in TTT Ultimate! Code {c.Code}", url);
             if (r == "copied") Toasts.Show("Link copied", ToastKind.Success);

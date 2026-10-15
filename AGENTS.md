@@ -109,7 +109,6 @@ Cosmetic packs: deferred.
     - Contracts (additive): `ArenaRulesDto`, `ArenaStateDto`, `ArenaHitDto`; `MatchSnapshotDto.ArenaRules/Arena`, `ActionApplied.Arena`, `ModeConfigDto.Arena`.
     - UI: health bars with 25-HP ticks and a red-alert ghost segment, shatter burst + hit-stop, crit impact, combo meter (armed / broken), red-alert ×2 phase, overtime "next line wins" banner with the first mover; Arena card on Home, two Arena modes on Play, Arena leaderboard tab.
 
-
 ### Ranked fairness / anti-abuse
 - **Rematch only in non-competitive matches.** Ranked rematches would allow win trading.
 - **Ping fairness:**
@@ -240,3 +239,15 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
 - **Final ruleset** (grid size, window, removal rule) plus the pie rule. The variant study is pending. A rule change needs a re-solve plus a regenerated tablebase.
 - Tier band boundaries (e.g. Bronze <1000, Silver <1200, Gold <1400, Platinum <1600, Diamond <1800, Master 1800+?).
 - Friend chat moderation retention period.
+
+### Branding & follow-ups (owner, 2026-10-15)
+- **Logos** (Claude Design system, Logos group; source in `design/system/assets/Logos`, generator `tools/logo/gen.py`):
+  - The mark is a 2×2 mini-board: solid cyan X and orange O on one diagonal, faded ghost pieces on the other, on a purple rounded square with a 3D ledge.
+  - Files: `ttt-app-icon.svg` (app icon/splash), `favicon.svg` (≤48px), and wordmarks "TIC TAC TOE / ULTIMATE" (dark, light, stacked; Lilita One outlined).
+  - TODO (integration): use them as the MAUI AppIcon/Splash, the web favicon and apple-touch icon, and the sidebar header mark.
+- **LATER:** make the web UI less bulky on desktop. Denser sidebar, smaller type and padding at ≥900px, a less chunky Home hero and cards. Mobile keeps the chunky style. (The owner's screenshot of the 2026-10-15 web build showed it as too bulky.)
+- **Offline PvP (pass & play)** on one device, no server: in progress on branch `rebuild/offline-pvp`.
+- **Bug reported by the owner:** challenge-link creation doesn't work in the web build. Verify end to end after the integration fix.
+- **Challenge links (fix, 2026-10-15):** the web "Invite by link" silently failed. A guest or username-less user got a HubException (`guest_not_allowed` / `username_required`) that the UI never caught.
+  - **Decision:** guests may create and accept OPEN (untargeted) casual invite links, which are unrated and fit "guests = casual PvP". Friend-targeted and Daily challenges still require an account.
+  - `InviteLinkButton` now shows specific error toasts.

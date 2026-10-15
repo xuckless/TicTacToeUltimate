@@ -36,9 +36,12 @@ public sealed class ChallengeService(
     /// <inheritdoc />
     public async Task<ChallengeDto> CreateAsync(TttUser creator, CreateChallengeDto request, CancellationToken ct)
     {
-        if (creator.Kind != AccountKind.Account) throw new MatchAccessException(ErrorCodes.GuestNotAllowed);
+        // Guests may create open (untargeted) casual invite links; friend-targeted and Daily challenges need an account.
+        var isGuest = creator.Kind != AccountKind.Account;
+        if (isGuest && (request.ToUserId is not null || request.TimeControl == TimeControl.Daily))
+            throw new MatchAccessException(ErrorCodes.GuestNotAllowed);
         if (!Allowed.Contains(request.TimeControl)) throw new MatchAccessException(ErrorCodes.Validation);
-        if (users is not null && (await users.GetAsync(creator.UserId, ct).ConfigureAwait(false))?.Username is null)
+        if (!isGuest && users is not null && (await users.GetAsync(creator.UserId, ct).ConfigureAwait(false))?.Username is null)
             throw new MatchAccessException(ErrorCodes.UsernameRequired);
         if (request.ToUserId is { } target)
         {

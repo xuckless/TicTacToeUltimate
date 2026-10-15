@@ -128,8 +128,9 @@ public class ChallengeServiceTests
     public async Task RulesForCreatorAndAcceptor()
     {
         var r = new Rig();
+        // AGENTS.md 2026-10-15: guests may create OPEN casual links; friend-targeted and Daily challenges need an account.
         await Assert.ThrowsAsync<MatchAccessException>(() => r.Service.CreateAsync(new TttUser(Guid.NewGuid(), AccountKind.Guest, "g"),
-            new CreateChallengeDto(TimeControl.CasualX2, null), default));
+            new CreateChallengeDto(TimeControl.CasualX2, Guid.NewGuid()), default));
         var ranked = await Assert.ThrowsAsync<MatchAccessException>(() => r.Service.CreateAsync(Creator, new CreateChallengeDto(TimeControl.Ranked, null), default));
         Assert.Equal(ErrorCodes.Validation, ranked.Code);
         var c = await r.Service.CreateAsync(Creator, new CreateChallengeDto(TimeControl.CasualX4, null), default);

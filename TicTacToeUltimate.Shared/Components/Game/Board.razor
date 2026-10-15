@@ -1,7 +1,7 @@
 @inject TttJsModule Js
 
 <div class="t-board @(Mini ? "t-board--mini" : null) @(SuddenDeath ? "sd" : null)" @ref="_el" role="grid" aria-label="@(Mini ? "Board preview" : "Game board")"
-     aria-hidden="@(Mini ? "true" : null)" style="grid-template-columns:repeat(@Size, minmax(0, 1fr))">
+     aria-hidden="@(Mini ? "true" : null)" style="grid-template-columns:repeat(@Size, minmax(0, 1fr));grid-template-rows:repeat(@Size, minmax(0, 1fr))">
     @for (var i = 0; i < Size * Size; i++)
     {
         var cell = i;

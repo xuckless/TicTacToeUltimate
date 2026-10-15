@@ -79,7 +79,8 @@ a { color: var(--primary); }
 .t-board--mini { width: 64px; padding: 4px; gap: 2px; border-radius: var(--radius-sm); background: var(--surface-raised); }
 .t-board--mini .t-cell { font-size: 14px; border-radius: 4px; box-shadow: none; min-width: 0; min-height: 0; background: var(--surface); cursor: default; }
 .t-cell { position: relative; background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--ledge-neutral); display: grid; place-items: center;
-  font: 400 clamp(28px, 13vw, 72px)/1 var(--font-display); border: 0; color: var(--ink); cursor: pointer; min-width: 44px; min-height: 44px; padding: 0; }
+  font: 400 clamp(28px, 13vw, 72px)/1 var(--font-display); border: 0; color: var(--ink); cursor: pointer; min-width: 44px; min-height: 44px; padding: 0;
+  overflow: hidden; contain: size; } /* fixed track size: glyphs must never resize rows */
 .t-cell:disabled { cursor: default; }
 .t-cell.x { color: var(--piece-x); } .t-cell.o { color: var(--piece-o); }
 .t-cell.fading { opacity: .35; outline: 2px dashed currentColor; outline-offset: -8px; }
