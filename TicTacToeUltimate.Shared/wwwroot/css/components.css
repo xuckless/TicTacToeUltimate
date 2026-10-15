@@ -51,7 +51,7 @@ a { color: var(--primary); }
 
 /* Avatar, presence, tier, streak, flag, bot */
 .t-avatar { width: 44px; height: 44px; border-radius: var(--radius-pill); background: var(--surface-raised); display: grid; place-items: center;
-  font: 400 20px/1 var(--font-display); flex: none; color: var(--ink); }
+  font: 700 20px/1 var(--font-display); flex: none; color: var(--ink); }
 .t-avatar--lg { width: 72px; height: 72px; font-size: 34px; background: var(--primary-fill); color: var(--on-primary); box-shadow: var(--ledge-primary); }
 .t-avatar--md { width: 48px; height: 48px; }
 .t-avatar.ring-online { outline: 3px solid var(--success); outline-offset: 2px; }
@@ -70,7 +70,7 @@ a { color: var(--primary); }
 .t-bot { font: var(--type-label); font-size: 10px; background: var(--surface-raised); color: var(--ink-muted); border-radius: var(--radius-sm); padding: 1px 5px; }
 
 /* Piece glyphs */
-.t-piece { font-family: var(--font-display); font-weight: 400; }
+.t-piece { font-family: var(--font-headline); font-weight: 400; }
 .t-piece.x { color: var(--piece-x); } .t-piece.o { color: var(--piece-o); }
 
 /* Board */
@@ -79,7 +79,7 @@ a { color: var(--primary); }
 .t-board--mini { width: 64px; padding: 4px; gap: 2px; border-radius: var(--radius-sm); background: var(--surface-raised); }
 .t-board--mini .t-cell { font-size: 14px; border-radius: 4px; box-shadow: none; min-width: 0; min-height: 0; background: var(--surface); cursor: default; }
 .t-cell { position: relative; background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--ledge-neutral); display: grid; place-items: center;
-  font: 400 clamp(28px, 13vw, 72px)/1 var(--font-display); border: 0; color: var(--ink); cursor: pointer; min-width: 44px; min-height: 44px; padding: 0;
+  font: 400 clamp(28px, 13vw, 72px)/1 var(--font-headline); border: 0; color: var(--ink); cursor: pointer; min-width: 44px; min-height: 44px; padding: 0;
   overflow: hidden; contain: size; } /* fixed track size: glyphs must never resize rows */
 .t-cell:disabled { cursor: default; }
 .t-cell.x { color: var(--piece-x); } .t-cell.o { color: var(--piece-o); }
@@ -123,7 +123,7 @@ a { color: var(--primary); }
 .t-nav a .t-icon { width: 24px; height: 24px; }
 .t-nav a[aria-current], .t-nav a.active { color: var(--primary); }
 .t-side { display: flex; flex-direction: column; gap: var(--space-1); background: var(--surface); border-right: 1px solid var(--line); padding: var(--space-4); }
-.t-side .brand { font: 400 22px/1 var(--font-display); padding: var(--space-2) var(--space-3) var(--space-6); }
+.t-side .brand { font: 400 22px/1 var(--font-headline); padding: var(--space-2) var(--space-3) var(--space-6); }
 .t-side a { display: flex; align-items: center; gap: var(--space-3); min-height: 48px; padding: 0 var(--space-3); border-radius: var(--radius-md); color: var(--ink-muted);
   text-decoration: none; font: var(--type-label); letter-spacing: var(--label-tracking); text-transform: uppercase; }
 .t-side a:hover { background: var(--surface-raised); }
@@ -134,7 +134,7 @@ a { color: var(--primary); }
 .t-result.x { background: var(--piece-x); } .t-result.o { background: var(--piece-o); }
 .t-result.loss { background: var(--surface-raised); color: var(--ink); }
 .t-result.draw { background: var(--surface-raised); color: var(--ink); }
-.t-result h1 { margin: 0; font: 400 56px/56px var(--font-display); transform: rotate(-4deg); }
+.t-result h1 { margin: 0; font: 400 56px/56px var(--font-headline); transform: rotate(-4deg); }
 .t-delta { font: 700 18px/22px var(--font-numeric); font-variant-numeric: tabular-nums; }
 .t-delta .up { color: var(--success); } .t-delta .down { color: var(--alert); }
 
@@ -189,9 +189,9 @@ a { color: var(--primary); }
 .arena-banner .big { font: 700 24px/1 var(--font-numeric); }
 .arena-banner .sub { font-size: 12px; color: var(--ink-muted); }
 .arena-banner.red { background: var(--alert-fill); border-color: var(--alert-fill); color: var(--on-primary); box-shadow: var(--glow-alert); }
-.arena-banner .x2 { font: 400 20px/1 var(--font-display); background: #000; color: var(--streak); padding: 2px 8px; border-radius: var(--radius-sm); }
+.arena-banner .x2 { font: 400 20px/1 var(--font-headline); background: #000; color: var(--streak); padding: 2px 8px; border-radius: var(--radius-sm); }
 .arena-banner.ot { flex-direction: column; gap: 2px; background: var(--alert-fill); border-color: var(--alert-fill); color: var(--on-primary); box-shadow: var(--glow-alert); }
-.arena-banner.ot .big { font: 400 28px/1 var(--font-display); letter-spacing: .02em; }
+.arena-banner.ot .big { font: 400 28px/1 var(--font-headline); letter-spacing: .02em; }
 .arena-banner.ot .sub { color: var(--on-primary); opacity: .9; }
 .arena-board-wrap { position: relative; width: 100%; display: flex; justify-content: center; }
 .arena-shatter { position: absolute; inset: 0; pointer-events: none; margin: 0 auto; aspect-ratio: 1; max-width: 100%; }
@@ -203,8 +203,19 @@ a { color: var(--primary); }
 .arena-shatter .dmg.red { color: var(--alert); }
 .arena-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--primary-shade), var(--alert-fill)); color: var(--on-primary); box-shadow: var(--ledge-primary); }
 .arena-card-head { display: flex; flex-direction: column; gap: 2px; }
-.arena-card-head .big { font: var(--type-title); }
+.arena-card-head .big { font: 400 30px/1.05 var(--font-headline); }
 .arena-card-head .sub { font: var(--type-body-sm); opacity: .9; }
 .arena-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .arena-chip { background: var(--alert-fill); color: var(--on-primary); }
 .match.arena-red { box-shadow: inset 0 0 0 4px var(--alert-fill), inset 0 0 120px #6a0f26; }
+
+/* BounceText: Luckiest Guy headlines with letters stepping up and down. */
+.t-bounce { display: inline-block; font-family: var(--font-headline); font-weight: 400; white-space: pre; }
+.t-bounce > span { display: inline-block; transform: translateY(var(--dy, 0)) rotate(var(--rot, 0deg)); }
+.t-bounce > span:nth-child(3n+1) { --dy: -0.07em; --rot: -4deg; }
+.t-bounce > span:nth-child(3n+2) { --dy: 0.05em; --rot: 3deg; }
+.t-bounce > span:nth-child(3n) { --dy: -0.02em; --rot: -1deg; }
+.t-bounce.wiggle > span { animation: ttt-letter-bob 1.8s ease-in-out infinite; animation-delay: calc(var(--i) * -0.12s); }
+@keyframes ttt-letter-bob { 50% { transform: translateY(calc(var(--dy, 0) - 0.06em)) rotate(var(--rot, 0deg)); } }
+@media (prefers-reduced-motion: reduce) { .t-bounce.wiggle > span { animation: none; } }
+:root[data-motion="reduce"] .t-bounce.wiggle > span { animation: none; }

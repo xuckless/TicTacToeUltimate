@@ -1,0 +1,14 @@
+@* Headline text whose letters sit at alternating heights and tilts (Luckiest Guy "bouncy" style).
+   Screen readers get the plain string; the per-letter spans are decorative. *@
+<span class="t-bounce @Class" role="text" aria-label="@Text">@for (var i = 0; i < Text.Length; i++)
+{
+    var c = Text[i];
+    <span aria-hidden="true" class="@(c == ' ' ? "sp" : null)" style="--i:@i">@c</span>
+}</span>
+
+@code {
+    /// <summary>The headline string.</summary>
+    [Parameter, EditorRequired] public string Text { get; set; } = "";
+    /// <summary>Extra CSS classes (e.g. "wiggle" for an idle bob).</summary>
+    [Parameter] public string? Class { get; set; }
+}

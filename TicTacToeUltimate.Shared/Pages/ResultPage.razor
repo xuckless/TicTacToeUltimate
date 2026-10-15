@@ -26,7 +26,7 @@ else
         <div class="t-result @BannerClass" data-testid="result-banner">
             <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
                 <span class="t-label">@Ui.ReasonText(r.Reason)</span>
-                <h1>@Title</h1>
+                <h1><BounceText Text="@Title" /></h1>
                 <span class="result-sub">vs @(opp?.Player.DisplayName ?? "opponent") · @Ui.Elapsed(_view.Snapshot.Clock?.GameElapsedMsAtTurnStart ?? 0) · @_view.Snapshot.Ply moves</span>
             </div>
         </div>

@@ -86,7 +86,7 @@ else
         <div class="match-over" role="dialog" aria-modal="true" aria-label="Game over">
             <div class="t-card">
                 <span class="t-label">@Ui.ReasonText(_view.Result!.Reason)</span>
-                <span class="t-hero">@ResultTitle</span>
+                <span class="t-hero"><BounceText Text="@ResultTitle" /></span>
                 @if (_view.IsSpectator) { <Button Variant="secondary" OnClick="Leave">Leave</Button> }
                 else { <Button OnClick="GoToResult">Continue</Button> }
             </div>

@@ -4,7 +4,7 @@
 
 <div class="shell">
     <aside class="t-side" aria-label="Sidebar">
-        <div class="brand">TTT Ultimate</div>
+        <div class="brand"><BounceText Text="TTT Ultimate" /></div>
         @foreach (var item in Primary)
         {
             <NavLink href="@item.Href" Match="@item.Match"><Icon Name="@item.Icon" />@item.Label</NavLink>

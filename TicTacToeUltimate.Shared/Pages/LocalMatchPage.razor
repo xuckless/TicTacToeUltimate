@@ -101,7 +101,7 @@ else
         <div class="match-over" role="dialog" aria-modal="true" aria-label="Game over" data-testid="local-over">
             <div class="t-card" style="align-items:center;text-align:center">
                 <span class="t-label">@ReasonText(r)</span>
-                <span class="t-hero">@(r.WinnerSeat is int w ? $"{g.NameOf(w)} wins!" : "Draw")</span>
+                <span class="t-hero"><BounceText Text="@(r.WinnerSeat is int w ? $"{g.NameOf(w)} wins!" : "Draw")" /></span>
                 <span class="t-num">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)@(g.Draws > 0 ? $" · {g.Draws} drawn" : "")</span>
                 <Button OnClick="Rematch" data-testid="local-rematch">Rematch · swap colours</Button>
                 <Button Variant="secondary" OnClick="() => _showOverlay = false">View board</Button>
