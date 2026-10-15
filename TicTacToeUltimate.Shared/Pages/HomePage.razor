@@ -16,6 +16,9 @@
 
 <PlayHero Rating="RankedRating" Guest="IsGuest" Subtitle="@(IsGuest ? "Unrated · 30s per move" : "Placement games")" />
 <ModeGrid DailyYourTurn="Session.State.DailyYourTurn" Guest="IsGuest" />
+<a class="mode-btn local-entry" href="local" data-testid="home-passplay">
+    <span class="t-label">Pass &amp; Play</span><span class="sub">2 players · 1 device · works offline</span>
+</a>
 <QuestCard Progress="Progress.State.Progress" NowMs="NowMs" OnExtraQuest="ExtraQuest" />
 @if (!IsGuest)
 {

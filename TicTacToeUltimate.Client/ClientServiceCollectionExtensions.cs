@@ -44,6 +44,7 @@ public static class ClientServiceCollectionExtensions
         services.AddSingleton<AdCoordinator>();
         services.AddSingleton<IAdCoordinator>(sp => sp.GetRequiredService<AdCoordinator>());
         services.TryAddSingleton<IAdProvider, StubAdProvider>();
+        services.AddSingleton<Local.LocalPlaySession>();
         return services;
     }
 

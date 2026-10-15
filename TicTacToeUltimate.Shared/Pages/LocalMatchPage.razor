@@ -1,0 +1,330 @@
+@page "/local/play"
+@layout MatchLayout
+@using TicTacToeUltimate.Client.Local
+@implements IDisposable
+@inject LocalPlaySession Local
+@inject ISettingsStore Settings
+@inject ISoundService Sound
+@inject IHaptics Haptics
+@inject NavigationManager Nav
+
+<PageTitle>@(_g is { IsLive: true } ? $"{_g.State.ToMove}'s turn · " : "")Pass &amp; Play · TTT Ultimate</PageTitle>
+
+@if (_g is null)
+{
+    <div class="splash" role="status">Starting…</div>
+}
+else
+{
+    var g = _g;
+    var clock = g.ClockView;
+    var sd = g.SuddenDeath;
+    <div class="match @AlertClass" data-testid="local-match">
+        <div class="match-header">
+            <span>Pass &amp; Play · @Ui.TimeControlName(g.TimeControl)@(g.Options.Pie ? " · Pie" : "")</span>
+            <span class="t-num" data-testid="local-score" aria-label="Session score">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)</span>
+        </div>
+        <h1 class="sr-only">Pass and play: @g.NameOf(0) vs @g.NameOf(1)</h1>
+
+        @PlayerRow(1, clock, sd)
+
+        <div class="match-board">
+            <div class="local-banner @(g.State.ToMove == Color.X ? "x" : "o") @(g.IsLive ? null : "ended")" role="status" data-testid="local-banner">
+                @BannerText
+            </div>
+            <Board Size="g.State.Rules.BoardSize" Cells="@g.Board" Ghost="g.Ghost" WinLine="g.Result?.WinLine" Winner="g.Result?.WinnerColor"
+                   Legal="g.LegalCells" Interactive="CanPlace" LastPlaced="g.LastPlaced" SuddenDeath="sd" OnCellSelected="Place" />
+            <div class="match-hint">@HintText</div>
+        </div>
+
+        @PlayerRow(0, clock, sd)
+
+        @if (sd && g.IsLive) { <SuddenDeathBar Clock="clock" /> }
+        <div class="match-actions">
+            @if (g.IsLive)
+            {
+                @if (g.HasClock)
+                {
+                    <Button Variant="secondary" Small="true" OnClick="TogglePause">@(g.Paused ? "Resume" : "Pause")</Button>
+                }
+                <Button Variant="ghost" Small="true" OnClick="() => _resign = true">Resign</Button>
+            }
+            <Button Variant="ghost" Small="true" OnClick="Leave">Leave</Button>
+        </div>
+        <div class="sr-only" aria-live="polite">@_announce</div>
+    </div>
+
+    @if (g.Paused && g.IsLive)
+    {
+        <div class="match-over" role="dialog" aria-modal="true" aria-label="Paused">
+            <div class="t-card">
+                <span class="t-hero">Paused</span>
+                <span>@g.NameOf(g.ToMoveSeat) (@g.State.ToMove) is next</span>
+                <Button OnClick="TogglePause">Resume</Button>
+            </div>
+        </div>
+    }
+
+    <Sheet Open="@(g.AwaitingSwap && !g.Paused)" Title="@($"{g.NameOf(g.ToMoveSeat)}: swap sides?")" Dismissible="false">
+        <p>@g.NameOf(1 - g.ToMoveSeat) opened. Take their <PieceGlyph Color="Color.X" /> position, or keep playing <PieceGlyph Color="Color.O" />.</p>
+        <div class="swap-choices">
+            <Button Variant="primary" OnClick="() => Decide(true)">Swap</Button>
+            <Button Variant="secondary" OnClick="() => Decide(false)">Keep</Button>
+        </div>
+    </Sheet>
+
+    <Sheet Open="_resign" Title="@($"Resign as {g.NameOf(g.ToMoveSeat)}?")" OnClose="() => _resign = false">
+        <p>@g.NameOf(1 - g.ToMoveSeat) wins this game.</p>
+        <div class="swap-choices">
+            <Button Variant="danger" OnClick="Resign">Resign</Button>
+            <Button Variant="secondary" OnClick="() => _resign = false">Cancel</Button>
+        </div>
+    </Sheet>
+
+    @if (g.Result is { } r && _showOverlay)
+    {
+        <div class="match-over" role="dialog" aria-modal="true" aria-label="Game over" data-testid="local-over">
+            <div class="t-card" style="align-items:center;text-align:center">
+                <span class="t-label">@ReasonText(r)</span>
+                <span class="t-hero">@(r.WinnerSeat is int w ? $"{g.NameOf(w)} wins!" : "Draw")</span>
+                <span class="t-num">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)@(g.Draws > 0 ? $" · {g.Draws} drawn" : "")</span>
+                <Button OnClick="Rematch" data-testid="local-rematch">Rematch · swap colours</Button>
+                <Button Variant="secondary" OnClick="() => _showOverlay = false">View board</Button>
+                <Button Variant="ghost" Href="local">New setup</Button>
+            </div>
+        </div>
+    }
+    else if (g.Result is not null)
+    {
+        <div class="match-actions"><Button OnClick="Rematch">Rematch · swap colours</Button></div>
+    }
+
+    <ImpactFrame Kind="@_impactKind" Text="@_impactText" Token="@_impactToken" Trigger="_impactTrigger" />
+}
+
+@code {
+    private LocalGameController? _g;
+    private bool _resign, _showOverlay;
+    private string _announce = "";
+    private int _impactTrigger, _lastWarnSecond;
+    private string _impactKind = "win", _impactText = "", _impactToken = "alert-fill";
+    private CancellationTokenSource? _cts;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _g = Local.Current;
+        if (_g is null) { Nav.NavigateTo("local", replace: true); return; }
+        _g.Event += OnEvent;
+        _g.Changed += OnChanged;
+        _showOverlay = _g.Result is not null;
+        if (_g.HasClock)
+        {
+            _cts = new CancellationTokenSource();
+            _ = TickLoop(_cts.Token);
+        }
+    }
+
+    private RenderFragment PlayerRow(int seat, ClockView? clock, bool sd) => __builder =>
+    {
+        var g = _g!;
+        var piece = g.ColorOf(seat);
+        var active = g.IsLive && g.ToMoveSeat == seat;
+        var cls = !active ? null : sd ? "active-sd" : piece == Color.X ? "active-x" : "active-o";
+        <div class="t-player @cls" aria-label="@($"{g.NameOf(seat)}, {piece}")" data-testid="@($"local-seat-{seat}")">
+            <Avatar Name="@g.NameOf(seat)" />
+            <div class="who">
+                <div class="name">@g.NameOf(seat) <PieceGlyph Color="piece" /></div>
+                <div class="meta @(active ? (sd ? "sd" : "yourmove") : null)">@(active ? (sd && clock?.AllowanceMs is int a ? $"YOUR MOVE · {Ui.Seconds(a)}s WINDOW" : "Your move") : $"{g.Score[seat]} won")</div>
+            </div>
+            @if (g.HasClock)
+            {
+                <PlayerClock RemainingMs="@(active ? clock?.RemainingMs : clock?.AllowanceMs)" Piece="piece" Active="active" SuddenDeath="sd"
+                             Urgency="@(active ? g.Urgency : ClockUrgency.Idle)" />
+            }
+        </div>
+    };
+
+    private bool CanPlace => _g is { IsLive: true, Paused: false } g && g.State.Phase == GamePhase.AwaitingPlacement;
+
+    private string BannerText
+    {
+        get
+        {
+            var g = _g!;
+            if (g.Result is { } r) return r.WinnerSeat is int w ? $"{g.NameOf(w)} wins" : "Draw";
+            var who = g.NameOf(g.ToMoveSeat);
+            if (g.AwaitingSwap) return $"{who} decides: swap or keep — pass the device";
+            return $"{g.State.ToMove}'s turn ({who}) — pass the device";
+        }
+    }
+
+    private string? HintText
+    {
+        get
+        {
+            var g = _g!;
+            if (!g.IsLive || g.Ghost is not int c) return null;
+            var color = g.State.At(c);
+            return color is null ? null : $"Faded {color} vanishes on the next move";
+        }
+    }
+
+    private string AlertClass
+    {
+        get
+        {
+            if (_g is not { IsLive: true, SuddenDeath: true } g) return "";
+            var allowance = g.Allowance?.TotalMilliseconds ?? 15000;
+            var level = allowance >= 8000 ? 1 : allowance >= 5000 ? 2 : 3;
+            return $"sd sd-{level}{(g.Urgency == ClockUrgency.Critical ? " crit" : "")}";
+        }
+    }
+
+    private static string ReasonText(LocalGameResult r) => r.Reason switch
+    {
+        LocalEndReason.Line => "Three in a row",
+        LocalEndReason.Timeout => "Out of time",
+        LocalEndReason.Resign => "Resigned",
+        _ => "No legal moves",
+    };
+
+    private async Task TickLoop(CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(ct))
+            {
+                await InvokeAsync(() =>
+                {
+                    if (_g is null) return;
+                    _g.Tick();
+                    WarnTick();
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private void WarnTick()
+    {
+        if (_g is not { IsLive: true, Paused: false, Remaining: { } rem }) { _lastWarnSecond = 0; return; }
+        var ms = (int)rem.TotalMilliseconds;
+        if (ms is <= 0 or > 5000) { _lastWarnSecond = 0; return; }
+        var sec = (ms + 999) / 1000;
+        if (sec == _lastWarnSecond) return;
+        _lastWarnSecond = sec;
+        Sfx(sec == 5 ? SoundCue.Warning : SoundCue.Tick);
+        Haptic(sec == 5 ? HapticCue.Warning : HapticCue.Tick);
+    }
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void OnEvent(LocalGameEvent e)
+    {
+        var g = _g!;
+        switch (e.Kind)
+        {
+            case LocalEventKind.Placed:
+                Sfx(e.Color == Color.X ? SoundCue.PlaceX : SoundCue.PlaceO);
+                Haptic(HapticCue.Place);
+                if (e.VanishedCell is not null) { Sfx(SoundCue.Vanish); Haptic(HapticCue.Vanish); }
+                var n = g.State.Rules.BoardSize;
+                _announce = $"{g.NameOf(e.Seat)} placed {e.Color} at row {e.Cell / n + 1}, column {e.Cell % n + 1}";
+                break;
+            case LocalEventKind.Swapped:
+                _announce = $"{g.NameOf(e.Seat)} swapped sides";
+                break;
+            case LocalEventKind.KeptSides:
+                _announce = $"{g.NameOf(e.Seat)} kept sides";
+                break;
+            case LocalEventKind.AutoMoved:
+                Sfx(SoundCue.Warning);
+                _announce = $"{g.NameOf(e.Seat)} ran out of time: random move played";
+                break;
+            case LocalEventKind.SuddenDeath:
+                Sfx(SoundCue.SuddenDeath);
+                Impact("suddendeath", "SUDDEN DEATH", "alert-fill");
+                break;
+            case LocalEventKind.Ended:
+                var r = g.Result!;
+                _showOverlay = true;
+                _resign = false;
+                if (r.WinnerSeat is int w)
+                {
+                    Sfx(SoundCue.Win); Haptic(HapticCue.Win);
+                    Impact("win", $"{g.NameOf(w).ToUpperInvariant()} WINS!", r.WinnerColor == Color.O ? "piece-o" : "piece-x");
+                    _announce = $"{g.NameOf(w)} wins. {ReasonText(r)}.";
+                }
+                else _announce = "Draw";
+                break;
+        }
+    }
+
+    private void Impact(string kind, string text, string token)
+    {
+        if (!Settings.State.ImpactFrames) return;
+        _impactKind = kind; _impactText = text; _impactToken = token;
+        _impactTrigger++;
+    }
+
+    private void Sfx(SoundCue cue)
+    {
+        if (!Settings.State.Sfx) return;
+        try { Sound.Play(cue); } catch (Exception) { /* audio optional */ }
+    }
+
+    private void Haptic(HapticCue cue)
+    {
+        if (!Settings.State.Haptics) return;
+        try { Haptics.Play(cue); } catch (Exception) { /* haptics optional */ }
+    }
+
+    // ---- intents ----
+    private void Place(int cell)
+    {
+        if (!CanPlace) return;
+        if (_g!.Place(cell) != MoveError.None) { Sfx(SoundCue.Error); Haptic(HapticCue.Error); }
+    }
+
+    private void Decide(bool swap) => _g?.DecideSwap(swap);
+
+    private void Resign()
+    {
+        _resign = false;
+        _g?.Resign();
+    }
+
+    private void TogglePause()
+    {
+        if (_g is null) return;
+        if (_g.Paused) _g.Resume(); else _g.Pause();
+    }
+
+    private void Rematch()
+    {
+        _showOverlay = false;
+        _g?.Rematch();
+    }
+
+    private void Leave()
+    {
+        _g?.Pause();
+        Nav.NavigateTo("");
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        if (_g is not null)
+        {
+            _g.Event -= OnEvent;
+            _g.Changed -= OnChanged;
+            _g.Pause();   // leaving the board never burns anyone's clock
+        }
+    }
+}

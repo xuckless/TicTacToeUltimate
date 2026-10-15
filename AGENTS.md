@@ -233,3 +233,9 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
 - **Final ruleset** (grid size, window, removal rule) plus the pie rule. The variant study is pending. A rule change needs a re-solve plus a regenerated tablebase.
 - Tier band boundaries (e.g. Bronze <1000, Silver <1200, Gold <1400, Platinum <1600, Diamond <1800, Master 1800+?).
 - Friend chat moderation retention period.
+
+### Offline Pass & Play (2026-10-15)
+- Routes `/local` (setup) and `/local/play` (board, MatchLayout so no ads). `AuthGate` lets `local*` routes through with no session/server; its "Can't reach the server" splash links to Pass & Play.
+- Logic: `TicTacToeUltimate.Client/Local/LocalGameController.cs` (pure engine + local `MoveClock`; host calls `Tick()` at 10 Hz). `LocalPlaySession` singleton shares it between pages.
+- Rules: Classic `n3k3-fifo7-v1-w0-none`, optional pie (`…-pie`). Clocks: Unlimited (no timeout), Casual x2/x4 (timeout = random legal move, or keep sides in the pie decision), Sudden death = Ranked schedule (timeout = loss). Leaving the board pauses the clock.
+- Rematch swaps who opens as X; session score kept in memory. No rating, streak, quest or ads.
