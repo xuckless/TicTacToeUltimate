@@ -34,7 +34,7 @@
 </Card>
 
 <Card Title="Gameplay">
-    <label class="t-toggle"><span>Threat hints (casual only)</span><input type="checkbox" checked="@S.ThreatHints" @onchange="e => Update(s => s with { ThreatHints = On(e) })" /></label>
+    <label class="t-toggle"><span>Guided mode<br /><small class="t-muted">Highlights cells you must block. Casual, Unlimited, challenges and Pass &amp; Play only. Never in Ranked, Daily or Arena.</small></span><input type="checkbox" checked="@S.ThreatHints" @onchange="e => Update(s => s with { ThreatHints = On(e) })" /></label>
     <label class="t-toggle"><span>Mute opponent emotes</span><input type="checkbox" checked="@S.MuteOpponentEmotes" @onchange="e => Update(s => s with { MuteOpponentEmotes = On(e) })" /></label>
 </Card>
 

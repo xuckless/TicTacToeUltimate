@@ -51,7 +51,7 @@ public sealed class SettingsStore(IKeyValueStore kv, ISoundService sound) : Stor
     public static string Serialize(SettingsState s) => new JsonObject
     {
         ["theme"] = s.Theme.ToString(), ["sfx"] = s.Sfx, ["music"] = s.Music, ["haptics"] = s.Haptics,
-        ["impactFrames"] = s.ImpactFrames, ["motion"] = s.Motion.ToString(), ["threatHints"] = s.ThreatHints,
+        ["impactFrames"] = s.ImpactFrames, ["motion"] = s.Motion.ToString(), ["guidedMode"] = s.ThreatHints,
         ["muteOpponentEmotes"] = s.MuteOpponentEmotes, ["sfxVolume"] = s.SfxVolume, ["musicVolume"] = s.MusicVolume,
     }.ToJsonString();
 
@@ -67,7 +67,7 @@ public sealed class SettingsStore(IKeyValueStore kv, ISoundService sound) : Stor
                 Enum.TryParse<ThemePreference>(Str(o, "theme"), out var theme) ? theme : d.Theme,
                 Bool(o, "sfx", d.Sfx), Bool(o, "music", d.Music), Bool(o, "haptics", d.Haptics), Bool(o, "impactFrames", d.ImpactFrames),
                 Enum.TryParse<MotionPreference>(Str(o, "motion"), out var motion) ? motion : d.Motion,
-                Bool(o, "threatHints", d.ThreatHints), Bool(o, "muteOpponentEmotes", d.MuteOpponentEmotes),
+                Bool(o, "guidedMode", d.ThreatHints), Bool(o, "muteOpponentEmotes", d.MuteOpponentEmotes),
                 Volume(o, "sfxVolume", d.SfxVolume), Volume(o, "musicVolume", d.MusicVolume));
         }
         catch (Exception e) when (e is JsonException or InvalidOperationException or FormatException)

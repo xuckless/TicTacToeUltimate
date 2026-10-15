@@ -32,8 +32,10 @@ else
             <div class="local-banner @(g.State.ToMove == Color.X ? "x" : "o") @(g.IsLive ? null : "ended")" role="status" data-testid="local-banner">
                 @BannerText
             </div>
+            @{ var guided = Settings.State.ThreatHints && g.IsLive ? BoardHints.Threats(g.State, g.State.ToMove) : default; }
+            <ThreatCallout Visible="@(!guided.IsDefaultOrEmpty)" />
             <Board Size="g.State.Rules.BoardSize" Cells="@g.Board" Ghost="g.Ghost" Aging="g.WaitingGhost" WinLine="g.Result?.WinLine" Winner="g.Result?.WinnerColor"
-                   Legal="g.LegalCells" Interactive="CanPlace" LastPlaced="g.LastPlaced" SuddenDeath="sd" OnCellSelected="Place" OnBlockedSelected="Blocked" />
+                   Threats="@(guided.IsDefaultOrEmpty ? null : guided)" Legal="g.LegalCells" Interactive="CanPlace" LastPlaced="g.LastPlaced" SuddenDeath="sd" OnCellSelected="Place" OnBlockedSelected="Blocked" />
             <div class="match-hint" data-testid="local-hint">
                 @if (_blocked is not null)
                 {

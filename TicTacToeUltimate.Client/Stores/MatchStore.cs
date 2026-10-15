@@ -431,7 +431,8 @@ public sealed class MatchStore : StoreBase<MatchesState>, IMatchStore, IDisposab
         var snap = v.Snapshot;
         var myTurn = v.MySeat is { } my && snap.ToMoveSeat == my && snap.Phase != GamePhase.Ended && v.Result is null && snap.Result is null;
         var threats = ImmutableArray<int>.Empty;
-        if (myTurn && engine is not null && _settings.State.ThreatHints && snap.Mode is not (MatchMode.Ranked or MatchMode.Daily or MatchMode.ArenaRanked)
+        // Guided mode: learning aid for casual play only. Never in Ranked, Daily or any Arena match.
+        if (myTurn && engine is not null && _settings.State.ThreatHints && snap.Mode is MatchMode.Casual or MatchMode.Unlimited or MatchMode.Challenge && snap.Arena is null
             && snap.Phase == GamePhase.AwaitingPlacement)
         {
             try { threats = BoardHints.Threats(engine, MyColor(v)); }

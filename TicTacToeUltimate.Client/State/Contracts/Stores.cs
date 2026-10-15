@@ -119,7 +119,7 @@ public enum ThemePreference { System, Dark, Light }
 public enum MotionPreference { System, Reduced, Full }
 public sealed record SettingsState(ThemePreference Theme, bool Sfx, bool Music, bool Haptics, bool ImpactFrames,
     MotionPreference Motion, bool ThreatHints, bool MuteOpponentEmotes, double SfxVolume, double MusicVolume)
-{ public static SettingsState Default { get; } = new(ThemePreference.Dark, true, false, true, true, MotionPreference.System, true, false, 0.8, 0.5); }
+{ public static SettingsState Default { get; } = new(ThemePreference.Dark, true, false, true, true, MotionPreference.System, false, false, 0.8, 0.5); }
 public interface ISettingsStore : IStore<SettingsState>
 {
     Task LoadAsync();
