@@ -1,0 +1,9 @@
+@if (Kind == AccountKind.Bot)
+{
+    <span class="t-bot">BOT</span>
+}
+
+@code {
+    /// <summary>Account kind; renders only for bots.</summary>
+    [Parameter] public AccountKind Kind { get; set; }
+}

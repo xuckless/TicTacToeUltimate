@@ -1,0 +1,8 @@
+<Board Mini="true" Size="Size" Cells="@Cells" />
+
+@code {
+    /// <summary>Board size.</summary>
+    [Parameter] public int Size { get; set; } = 3;
+    /// <summary>N² chars.</summary>
+    [Parameter] public string? Cells { get; set; }
+}

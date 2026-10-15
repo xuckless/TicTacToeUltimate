@@ -1,0 +1,42 @@
+<Card Title="Daily quests" Class="t-quest">
+    <Aside><span class="t-small t-muted">@ResetsText</span></Aside>
+    <ChildContent>
+        @if (Progress is null)
+        {
+            <span class="t-muted t-small">Loading quests…</span>
+        }
+        else
+        {
+            @foreach (var q in Progress.Quests)
+            {
+                <div class="q"><span>@q.Title</span>
+                    @if (q.Completed) { <span class="done">✓ @q.Progress/@q.Target</span> } else { <span>@q.Progress/@q.Target</span> }
+                </div>
+                <ProgressBar Value="@(q.Target == 0 ? 0 : (double)q.Progress / q.Target)" Label="@q.Title" />
+            }
+            @if (Progress.ExtraQuestAvailable && OnExtraQuest.HasDelegate)
+            {
+                <Button Variant="ghost" Small="true" OnClick="OnExtraQuest">Watch ad for a bonus quest</Button>
+            }
+        }
+    </ChildContent>
+</Card>
+
+@code {
+    /// <summary>Progress.</summary>
+    [Parameter] public ProgressDto? Progress { get; set; }
+    /// <summary>Current server time in ms (for "Resets in 6h").</summary>
+    [Parameter] public long NowMs { get; set; }
+    /// <summary>Rewarded extra quest.</summary>
+    [Parameter] public EventCallback OnExtraQuest { get; set; }
+
+    private string ResetsText
+    {
+        get
+        {
+            if (Progress is null || NowMs <= 0) return "";
+            var left = TimeSpan.FromMilliseconds(Math.Max(0, Progress.ResetsAtMs - NowMs));
+            return left.TotalHours >= 1 ? $"Resets in {(int)left.TotalHours}h" : $"Resets in {Math.Max(1, (int)left.TotalMinutes)}m";
+        }
+    }
+}

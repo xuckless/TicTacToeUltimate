@@ -1,0 +1,17 @@
+<svg class="t-winline @(Winner == Color.X ? "x" : "o")" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"
+     style="inset:var(--space-3);width:calc(100% - 2 * var(--space-3));height:calc(100% - 2 * var(--space-3))" data-testid="winline">
+    <line x1="@F(X(Cells[0]))" y1="@F(Y(Cells[0]))" x2="@F(X(Cells[^1]))" y2="@F(Y(Cells[^1]))" pathLength="1" stroke-width="3" vector-effect="non-scaling-stroke" />
+</svg>
+
+@code {
+    /// <summary>Board size.</summary>
+    [Parameter] public int Size { get; set; } = 3;
+    /// <summary>Cells in line order (at least 2).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<int> Cells { get; set; } = [];
+    /// <summary>Winner colour.</summary>
+    [Parameter] public Color Winner { get; set; }
+
+    private double X(int cell) => (cell % Size + 0.5) * 100.0 / Size;
+    private double Y(int cell) => (cell / Size + 0.5) * 100.0 / Size;
+    private static string F(double v) => v.ToString("0.##", CultureInfo.InvariantCulture);
+}

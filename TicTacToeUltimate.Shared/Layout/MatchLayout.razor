@@ -1,0 +1,17 @@
+@inherits LayoutComponentBase
+@inject IServiceProvider Services
+@implements IDisposable
+
+<CascadingValue Name="AdsAllowed" Value="false" IsFixed="true">
+    @Body
+</CascadingValue>
+
+@code {
+    private IAdCoordinator? Ads => Services.GetService(typeof(IAdCoordinator)) as IAdCoordinator;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Ads?.SetMatchRouteActive(true);
+
+    /// <inheritdoc />
+    public void Dispose() => Ads?.SetMatchRouteActive(false);
+}

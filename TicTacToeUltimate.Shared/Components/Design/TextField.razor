@@ -1,0 +1,35 @@
+<div class="t-field">
+    <label for="@_id" class="@(HideLabel ? "sr-only" : "t-label")">@Label</label>
+    <input id="@_id" class="t-input" type="@Type" placeholder="@Placeholder" value="@Value" maxlength="@MaxLength" autocomplete="off"
+           aria-invalid="@(Error is null ? "false" : "true")" aria-describedby="@(_id)-msg"
+           @oninput="OnInput" @onkeydown="OnKey" />
+    @if (Error is not null) { <span id="@(_id)-msg" class="err" role="alert">@Error</span> }
+    else if (Hint is not null) { <span id="@(_id)-msg" class="hint">@Hint</span> }
+</div>
+
+@code {
+    private readonly string _id = "f" + Guid.NewGuid().ToString("N")[..8];
+    /// <summary>Label.</summary>
+    [Parameter] public string Label { get; set; } = "";
+    /// <summary>Visually hide the label.</summary>
+    [Parameter] public bool HideLabel { get; set; }
+    /// <summary>Value.</summary>
+    [Parameter] public string? Value { get; set; }
+    /// <summary>Raised on every input.</summary>
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    /// <summary>Raised on Enter.</summary>
+    [Parameter] public EventCallback OnEnter { get; set; }
+    /// <summary>Placeholder.</summary>
+    [Parameter] public string? Placeholder { get; set; }
+    /// <summary>Input type.</summary>
+    [Parameter] public string Type { get; set; } = "text";
+    /// <summary>Hint.</summary>
+    [Parameter] public string? Hint { get; set; }
+    /// <summary>Validation error.</summary>
+    [Parameter] public string? Error { get; set; }
+    /// <summary>Max length.</summary>
+    [Parameter] public int MaxLength { get; set; } = 500;
+
+    private Task OnInput(ChangeEventArgs e) { Value = e.Value?.ToString(); return ValueChanged.InvokeAsync(Value ?? ""); }
+    private Task OnKey(KeyboardEventArgs e) => e.Key == "Enter" ? OnEnter.InvokeAsync() : Task.CompletedTask;
+}

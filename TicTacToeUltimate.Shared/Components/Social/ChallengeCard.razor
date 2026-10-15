@@ -1,0 +1,20 @@
+<section class="t-card" style="padding:4px 16px" aria-label="Challenge">
+    <div class="t-listrow">
+        <Avatar Name="@Challenge.From.DisplayName" AvatarId="@Challenge.From.AvatarId" />
+        <div class="who"><div class="name">@Challenge.From.DisplayName</div><div class="meta">Challenges you · @Ui.TimeControlName(Challenge.TimeControl)</div></div>
+        <Button Variant="primary" Small="true" OnClick="() => OnAccept.InvokeAsync(Challenge)">Accept</Button>
+        @if (OnDecline.HasDelegate)
+        {
+            <IconButton Label="Decline" Icon="close" Round="true" OnClick="() => OnDecline.InvokeAsync(Challenge)" />
+        }
+    </div>
+</section>
+
+@code {
+    /// <summary>Challenge.</summary>
+    [Parameter, EditorRequired] public ChallengeDto Challenge { get; set; } = default!;
+    /// <summary>Accept.</summary>
+    [Parameter] public EventCallback<ChallengeDto> OnAccept { get; set; }
+    /// <summary>Decline.</summary>
+    [Parameter] public EventCallback<ChallengeDto> OnDecline { get; set; }
+}

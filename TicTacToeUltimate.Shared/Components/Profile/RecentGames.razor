@@ -1,0 +1,18 @@
+<section class="t-col" style="padding:0;gap:0">
+    <div class="t-spread" style="padding-bottom:4px"><h2 class="t-heading">Recent games</h2>@if (ShowHistoryLink) { <a href="history" class="t-small">History</a> }</div>
+    @if (Games.Count == 0)
+    {
+        <p class="t-muted t-small">No games yet.</p>
+    }
+    @foreach (var g in Games)
+    {
+        <GameRow Game="g" />
+    }
+</section>
+
+@code {
+    /// <summary>Games newest first.</summary>
+    [Parameter] public IReadOnlyList<GameSummaryDto> Games { get; set; } = [];
+    /// <summary>Link to /history.</summary>
+    [Parameter] public bool ShowHistoryLink { get; set; } = true;
+}

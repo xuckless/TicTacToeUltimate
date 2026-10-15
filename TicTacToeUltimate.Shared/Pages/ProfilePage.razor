@@ -1,0 +1,111 @@
+@page "/profile"
+@page "/u/{Username}"
+@inherits StoreComponent
+@inject ISessionStore Session
+@inject IGameQueries Queries
+@inject ISocialStore Social
+@inject NavigationManager Nav
+@inject ToastService Toasts
+
+<PageTitle>@(_profile?.Card.DisplayName ?? "Profile") · TTT Ultimate</PageTitle>
+
+@if (_profile is null)
+{
+    @if (IsSelf && Session.State.Me is { } me)
+    {
+        <ProfileHeader Card="SelfCard(me)" />
+        <p class="t-muted">@(_loading ? "Loading profile…" : me.Kind == AccountKind.Guest ? "Guest profiles are private. Create an account to get a public profile." : "Profile unavailable.")</p>
+        @if (me.Kind == AccountKind.Guest) { <Button Href="signin">Create account</Button> }
+    }
+    else
+    {
+        <p class="t-muted">@(_loading ? "Loading profile…" : "Player not found.")</p>
+    }
+}
+else
+{
+    var ranked = _profile.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked);
+    <ProfileHeader Card="_profile.Card" JoinedAt="_profile.JoinedAt" />
+    @if (!IsSelf)
+    {
+        <div class="t-row">
+            @switch (_profile.FriendStatus)
+            {
+                case FriendStatus.None: <Button Variant="primary" Small="true" OnClick="AddFriend">Add friend</Button> break;
+                case FriendStatus.RequestSent: <Button Variant="secondary" Small="true" Disabled="true">Request sent</Button> break;
+                case FriendStatus.RequestReceived: <Button Variant="primary" Small="true" Href="social">Respond to request</Button> break;
+                case FriendStatus.Friends:
+                    <Button Variant="primary" Small="true" OnClick="ChallengeFriend">Challenge</Button>
+                    <Button Variant="secondary" Small="true" Href="@($"social/chat/{_profile.Card.UserId}")">Message</Button>
+                    break;
+            }
+            @if (_profile.FriendStatus == FriendStatus.Blocked)
+            {
+                <Button Variant="secondary" Small="true" OnClick="Unblock">Unblock</Button>
+            }
+            else
+            {
+                <Button Variant="ghost" Small="true" OnClick="Block">Block</Button>
+            }
+        </div>
+    }
+    <StatGrid Stats="_profile.Stats" Ratings="_profile.Ratings" />
+    <TierLadder Tier="ranked?.Tier" />
+    <RecentGames Games="_profile.RecentGames" ShowHistoryLink="IsSelf" />
+    @if (IsSelf) { <div class="t-row"><Button Variant="secondary" Href="settings">Settings</Button><Button Variant="ghost" Href="leaderboards">Leaderboards</Button></div> }
+}
+
+@code {
+    private ProfileDto? _profile;
+    private bool _loading = true;
+
+    /// <summary>Other player's username (null = me).</summary>
+    [Parameter] public string? Username { get; set; }
+
+    private bool IsSelf => Username is null || string.Equals(Username, Session.State.Me?.Username ?? Session.State.Me?.DisplayName, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Subscribe(Session);
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _profile = null;
+        var name = Username ?? Session.State.Me?.Username;
+        if (name is not null)
+        {
+            try { _profile = await Queries.GetProfileAsync(name); }
+            catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { }
+        }
+        _loading = false;
+    }
+
+    private static PlayerCardDto SelfCard(MeDto me) => new(me.UserId, me.DisplayName, me.AvatarId, me.Country, me.Kind,
+        me.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked)?.Tier, me.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked)?.Rating, false);
+
+    private async Task AddFriend()
+    {
+        var ack = await Social.SendRequestAsync(_profile!.Card.DisplayName);
+        Toasts.Show(ack.Ok ? "Request sent" : "Couldn't send the request.", ack.Ok ? ToastKind.Success : ToastKind.Error);
+        if (ack.Ok) _profile = _profile with { FriendStatus = FriendStatus.RequestSent };
+    }
+
+    private async Task ChallengeFriend()
+    {
+        await Social.CreateChallengeAsync(new CreateChallengeDto(TimeControl.CasualX2, _profile!.Card.UserId));
+        Toasts.Show("Challenge sent", ToastKind.Success);
+    }
+
+    private async Task Block()
+    {
+        await Social.BlockAsync(_profile!.Card.UserId);
+        _profile = _profile with { FriendStatus = FriendStatus.Blocked };
+    }
+
+    private async Task Unblock()
+    {
+        await Social.UnblockAsync(_profile!.Card.UserId);
+        _profile = _profile with { FriendStatus = FriendStatus.None };
+    }
+}

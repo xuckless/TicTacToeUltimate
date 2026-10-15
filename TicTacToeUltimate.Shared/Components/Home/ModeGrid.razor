@@ -1,0 +1,19 @@
+<div class="mode-grid">
+    <a class="mode-btn" href="play?tc=CasualX2"><span class="t-label">Casual</span><span class="sub">x2 · x4</span></a>
+    @if (Guest)
+    {
+        <a class="mode-btn" href="signin" aria-label="Daily (account required)"><span class="t-label">Daily</span><span class="sub">Account only</span></a>
+    }
+    else
+    {
+        <a class="mode-btn" href="daily"><span class="t-label">Daily</span><span class="sub">@(DailyYourTurn > 0 ? $"{DailyYourTurn} your move" : "24h per move")</span></a>
+    }
+    <a class="mode-btn" href="play?tc=Unlimited"><span class="t-label">Unlimited</span><span class="sub">No clock</span></a>
+</div>
+
+@code {
+    /// <summary>Daily games waiting on you.</summary>
+    [Parameter] public int DailyYourTurn { get; set; }
+    /// <summary>Guests cannot play Daily.</summary>
+    [Parameter] public bool Guest { get; set; }
+}

@@ -1,0 +1,220 @@
+@page "/result/{Id:guid}"
+@inherits StoreComponent
+@inject IMatchStore Matches
+@inject IProgressStore Progress
+@inject IQueueStore Queue
+@inject ISettingsStore Settings
+@inject IServiceProvider Services
+@inject NavigationManager Nav
+@inject ToastService Toasts
+
+<PageTitle>Result · TTT Ultimate</PageTitle>
+
+@if (_view?.Result is null)
+{
+    <div class="t-col" style="align-items:center">
+        <p class="t-muted">@(_loading ? "Loading result…" : "Result not available.")</p>
+        <Button Href="">Home</Button>
+    </div>
+}
+else
+{
+    var r = _view.Result;
+    var s = _view.Summary;
+    var opp = _view.Snapshot.Seats.FirstOrDefault(x => x.Seat != (_view.MySeat ?? 0));
+    <div class="result-page">
+        <div class="t-result @BannerClass" data-testid="result-banner">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <span class="t-label">@Ui.ReasonText(r.Reason)</span>
+                <h1>@Title</h1>
+                <span class="result-sub">vs @(opp?.Player.DisplayName ?? "opponent") · @Ui.Elapsed(_view.Snapshot.Clock?.GameElapsedMsAtTurnStart ?? 0) · @_view.Snapshot.Ply moves</span>
+            </div>
+        </div>
+
+        @if (s?.Rating is { } rc)
+        {
+            <Card>
+                <div class="t-spread" style="align-items:center">
+                    @if (s.Tier is not null) { <TierBadge Tier="s.Tier.After" Large="true" Provisional="rc.Provisional" /> }
+                    <span class="t-delta" aria-label="@($"Rating {rc.Before} to {rc.After}, {Ui.Delta(rc.Delta)}")">
+                        <span aria-hidden="true">@rc.Before → @_shownRating <span class="@(rc.Delta >= 0 ? "up" : "down")">@Ui.Delta(rc.Delta)</span></span>
+                    </span>
+                </div>
+                @if (s.Tier is not null)
+                {
+                    <ProgressBar Value="s.Tier.After.Progress" Label="Tier progress" />
+                    <div class="t-spread t-small t-muted">
+                        <span>@(s.Tier.After.Tier == Tier.Master ? "Master" : $"{s.Tier.After.PointsToNext} to {Ui.NextTierName(s.Tier.After)}")</span>
+                        <span>Win streak @s.WinStreak</span>
+                    </div>
+                }
+            </Card>
+        }
+
+        @if (s?.AnalysisAvailable == true)
+        {
+            <Card Class="analysis-teaser" Label="Perfect-play review">
+                <div class="analysis-teaser">
+                    <MiniBoard Size="_view.Snapshot.Rules.BoardSize" Cells="@_view.Snapshot.Board" />
+                    <div class="t-col" style="padding:0;gap:4px;flex:1;min-width:0">
+                        <span style="font-weight:800">Perfect-play review</span>
+                        <span class="t-small t-muted">See every winning and losing move.@(s.YourBlunders is int b ? $" {b} blunder{(b == 1 ? "" : "s")} found." : "")</span>
+                        <Button Variant="ghost" Small="true" OnClick="UnlockAnalysis" Disabled="_busy" Style="justify-content:flex-start;padding-left:0">Watch ad to unlock</Button>
+                    </div>
+                </div>
+            </Card>
+        }
+
+        @foreach (var q in CompletedQuests)
+        {
+            <div class="t-card" style="flex-direction:row;justify-content:space-between;padding:12px 16px"><span class="t-small t-success">✓ @q.Title</span></div>
+        }
+
+        <div class="result-actions">
+            <Button Variant="primary" Block="true" OnClick="NewMatch">New @Ui.TimeControlName(_view.Snapshot.TimeControl).ToLowerInvariant() match</Button>
+            @if (RematchAllowed)
+            {
+                <Button Variant="secondary" Block="true" OnClick="Rematch" Disabled="_view.RematchOfferedByMe" data-testid="rematch">
+                    @(_view.RematchOfferedByMe ? "Rematch offered…" : _view.RematchOfferedByOpponent ? "Accept rematch" : "Rematch")
+                </Button>
+            }
+            <Button Variant="secondary" Block="true" OnClick="Home">Home</Button>
+            @if (_view.Snapshot.Rated) { <div class="t-small t-muted" style="text-align:center">No rematch in ranked games</div> }
+        </div>
+    </div>
+    <ImpactFrame Kind="promotion" Text="PROMOTED!" Token="@($"tier-{s?.Tier?.After.Tier.ToString().ToLowerInvariant()}")" Trigger="_promoTrigger" />
+}
+
+@code {
+    private MatchView? _view;
+    private bool _loading = true, _busy, _completedReported;
+    private int _shownRating, _promoTrigger;
+    private CancellationTokenSource _cts = new();
+
+    /// <summary>Match id.</summary>
+    [Parameter] public Guid Id { get; set; }
+
+    /// <summary>Rematch only when the match is not rated (and the server allows it).</summary>
+    private bool RematchAllowed => _view is not null && !_view.Snapshot.Rated && !_view.IsSpectator
+                                   && (_view.Summary?.RematchAllowed ?? _view.Snapshot.RematchAllowed);
+
+    private GameResultForUser YourResult => _view?.Summary?.YourResult ?? (_view?.Result switch
+    {
+        null => GameResultForUser.Aborted,
+        { Reason: EndReason.Aborted } => GameResultForUser.Aborted,
+        { WinnerSeat: null } => GameResultForUser.Draw,
+        var r when r.WinnerSeat == (_view!.MySeat ?? 0) => GameResultForUser.Win,
+        _ => GameResultForUser.Loss,
+    });
+
+    private string Title => YourResult switch
+    {
+        GameResultForUser.Win => "VICTORY!", GameResultForUser.Loss => "DEFEAT", GameResultForUser.Draw => "DRAW", _ => "ABORTED",
+    };
+
+    private string BannerClass
+    {
+        get
+        {
+            if (YourResult is GameResultForUser.Draw or GameResultForUser.Aborted) return "draw";
+            if (YourResult == GameResultForUser.Loss) return "loss";
+            var me = _view!.Snapshot.Seats.FirstOrDefault(x => x.Seat == (_view.MySeat ?? 0));
+            return me?.Color == Color.O ? "o" : "x";
+        }
+    }
+
+    private IEnumerable<QuestDto> CompletedQuests => _view?.Summary?.Progress?.Quests.Where(q => q.Completed) ?? [];
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Matches);
+        _view = Matches.State.Matches.GetValueOrDefault(Id);
+        if (_view is null)
+        {
+            try { _view = await Matches.OpenAsync(Id); }
+            catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { }
+        }
+        _loading = false;
+        StartCountUp();
+    }
+
+    /// <inheritdoc />
+    protected override void OnStoresChanged()
+    {
+        var hadSummary = _view?.Summary is not null;
+        _view = Matches.State.Matches.GetValueOrDefault(Id) ?? _view;
+        if (!hadSummary && _view?.Summary is not null) StartCountUp();
+        if (_view?.RematchMatchId is Guid next) _ = Leave($"match/{next}");
+    }
+
+    private void StartCountUp()
+    {
+        if (_view?.Summary?.Rating is not { } rc) return;
+        _shownRating = rc.Before;
+        if (_view.Summary.Tier?.Promoted == true && Settings.State.ImpactFrames) _promoTrigger++;
+        _ = CountUp(rc.Before, rc.After, _cts.Token);
+    }
+
+    private async Task CountUp(int from, int to, CancellationToken ct)
+    {
+        const int steps = 20;
+        for (var i = 1; i <= steps; i++)
+        {
+            try { await Task.Delay(40, ct); } catch (TaskCanceledException) { return; }
+            _shownRating = from + (to - from) * i / steps;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task UnlockAnalysis()
+    {
+        _busy = true;
+        try
+        {
+            var r = await Progress.ClaimRewardAsync(RewardKind.Analysis, Id);
+            if (r.Granted) await Leave($"replay/{Id}?analysis=1");
+            else Toasts.Show(r.Error is null ? "Watch the full ad to unlock" : "Couldn't unlock analysis", ToastKind.Error);
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task NewMatch()
+    {
+        var tc = _view!.Snapshot.TimeControl;
+        await Leave(tc == TimeControl.Daily ? "daily" : $"play?tc={tc}");
+    }
+
+    private Task Rematch() => Matches.OfferRematchAsync(Id);
+    private Task Home() => Leave("");
+
+    private async Task Leave(string href)
+    {
+        await ReportCompletedAsync();
+        Nav.NavigateTo(href);
+    }
+
+    private async Task ReportCompletedAsync()
+    {
+        if (_completedReported || _view?.Result is null || _view.IsSpectator) return;
+        _completedReported = true;
+        if (Services.GetService(typeof(IAdCoordinator)) is IAdCoordinator ads)
+        {
+            try { await ads.OnGameCompletedAsync(YourResult); }
+            catch (Exception ex) when (ex is InvalidOperationException or TaskCanceledException) { }
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+            if (!_completedReported) _ = ReportCompletedAsync();
+            Matches.Close(Id);
+        }
+        base.Dispose(disposing);
+    }
+}

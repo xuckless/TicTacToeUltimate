@@ -1,0 +1,10 @@
+<div class="t-toast @Message.Kind.ToString().ToLowerInvariant()" role="@(Message.Kind == ToastKind.Error ? "alert" : "status")" @onclick="() => OnDismiss.InvokeAsync(Message.Id)">
+    @Message.Text
+</div>
+
+@code {
+    /// <summary>Toast.</summary>
+    [Parameter, EditorRequired] public ToastMessage Message { get; set; } = default!;
+    /// <summary>Dismiss.</summary>
+    [Parameter] public EventCallback<Guid> OnDismiss { get; set; }
+}

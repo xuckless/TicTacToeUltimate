@@ -1,4 +1,32 @@
-@* WP0 placeholder root component; WP6 owns it afterwards (Router + AuthGate + NotFound). *@
-<main class="ttt-rebuilding" style="min-height:100vh;display:grid;place-items:center;background:#120a22;color:#fff;font-family:system-ui,sans-serif">
-    <h1>Rebuilding…</h1>
-</main>
+@* Root component for both hosts: Router + AuthGate + NotFound, plus app-wide hosts (theme, ads, toasts). *@
+@inject TttJsModule Js
+@inject IJSRuntime JSRuntime
+@inject ISoundService Sound
+
+<SettingsApplier />
+<AuthGate>
+    <Router AppAssembly="typeof(Routes).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="routeData" DefaultLayout="typeof(AppShell)" />
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="typeof(AppShell)">
+                <NotFoundPage />
+            </LayoutView>
+        </NotFound>
+    </Router>
+</AuthGate>
+<AdOverlayHost />
+<ToastHost />
+
+@code {
+    /// <inheritdoc />
+    protected override void OnInitialized() => Js.Attach(JSRuntime);
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await Sound.InitAsync();
+    }
+}

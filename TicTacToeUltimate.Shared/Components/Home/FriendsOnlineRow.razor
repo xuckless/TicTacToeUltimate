@@ -1,0 +1,28 @@
+<Card Title="Friends online">
+    <Aside><a href="social" class="t-small">See all</a></Aside>
+    <ChildContent>
+        @if (Online.Count == 0)
+        {
+            <span class="t-muted t-small">No friends online right now.</span>
+        }
+        else
+        {
+            <div class="friends-row">
+                @foreach (var f in Online)
+                {
+                    <a href="@($"u/{f.Player.DisplayName}")" aria-label="@($"{f.Player.DisplayName}, {PresenceDot.Text(f.Presence.Status)}")">
+                        <Avatar Name="@f.Player.DisplayName" AvatarId="@f.Player.AvatarId" Size="md" Presence="f.Presence.Status" />
+                        @f.Player.DisplayName
+                    </a>
+                }
+            </div>
+        }
+    </ChildContent>
+</Card>
+
+@code {
+    /// <summary>All friends; only Online and InGame are shown.</summary>
+    [Parameter] public IReadOnlyList<FriendDto> Friends { get; set; } = [];
+
+    private List<FriendDto> Online => Friends.Where(f => f.Presence.Status != PresenceStatus.Offline).ToList();
+}

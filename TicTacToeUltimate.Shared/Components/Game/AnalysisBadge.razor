@@ -1,0 +1,18 @@
+@if (Analysis is not null)
+{
+    var (css, text) = Classify(Analysis.Class);
+    <span class="badge @css">@text</span>
+}
+
+@code {
+    /// <summary>Per-ply analysis.</summary>
+    [Parameter] public PlyAnalysisDto? Analysis { get; set; }
+
+    /// <summary>Badge class/text for a move class.</summary>
+    public static (string Css, string Text) Classify(Engine.Analysis.MoveClass c) => c switch
+    {
+        Engine.Analysis.MoveClass.Blunder => ("blunder", "Blunder!"),
+        Engine.Analysis.MoveClass.Best => ("win", "Best"),
+        _ => ("draw", "Good"),
+    };
+}

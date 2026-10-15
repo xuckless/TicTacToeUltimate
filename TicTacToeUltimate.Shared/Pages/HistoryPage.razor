@@ -1,0 +1,37 @@
+@page "/history"
+@inject ISessionStore Session
+@inject IGameQueries Queries
+
+<PageTitle>History · TTT Ultimate</PageTitle>
+<h1 class="t-title">History</h1>
+
+<section class="t-col" style="padding:0;gap:0">
+    @foreach (var g in _games) { <GameRow Game="g" /> }
+    @if (!_loading && _games.Count == 0) { <p class="t-muted">No games yet.</p> }
+</section>
+@if (_more)
+{
+    <Button Variant="secondary" OnClick="LoadMore" Disabled="_loading">Load more</Button>
+}
+
+@code {
+    private readonly List<GameSummaryDto> _games = [];
+    private bool _loading = true, _more;
+
+    /// <inheritdoc />
+    protected override Task OnInitializedAsync() => LoadMore();
+
+    private async Task LoadMore()
+    {
+        if (Session.State.Me is not { } me) { _loading = false; return; }
+        _loading = true;
+        try
+        {
+            var page = await Queries.GetHistoryAsync(me.UserId, _games.Count > 0 ? _games[^1].EndedAt : null, 20);
+            _games.AddRange(page);
+            _more = page.Count == 20;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { _more = false; }
+        _loading = false;
+    }
+}

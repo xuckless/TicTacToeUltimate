@@ -1,0 +1,50 @@
+@implements IDisposable
+
+@if (_visible)
+{
+    <div class="impact shake" style="--impact-color:@ColorVar" role="presentation" data-kind="@Kind">
+        <div class="flash"></div>
+        <div class="sil"></div>
+        <div class="text" aria-hidden="true">@Text</div>
+    </div>
+}
+
+@code {
+    private bool _visible;
+    private int _shownKey;
+    private CancellationTokenSource? _cts;
+
+    /// <summary>win | loss | suddendeath | promotion.</summary>
+    [Parameter] public string Kind { get; set; } = "win";
+    /// <summary>Slam text ("VICTORY!").</summary>
+    [Parameter] public string Text { get; set; } = "";
+    /// <summary>Flash colour token (e.g. "piece-x", "alert-fill", "tier-gold").</summary>
+    [Parameter] public string Token { get; set; } = "alert-fill";
+    /// <summary>Change this to replay the frame; 0 = hidden.</summary>
+    [Parameter] public int Trigger { get; set; }
+    /// <summary>Duration in ms.</summary>
+    [Parameter] public int DurationMs { get; set; } = 1400;
+
+    private string ColorVar => $"var(--{Token})";
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Trigger == 0 || Trigger == _shownKey) return;
+        _shownKey = Trigger;
+        _visible = true;
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        _ = HideLater(_cts.Token);
+    }
+
+    private async Task HideLater(CancellationToken ct)
+    {
+        try { await Task.Delay(DurationMs, ct); } catch (TaskCanceledException) { return; }
+        _visible = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc />
+    public void Dispose() { _cts?.Cancel(); _cts?.Dispose(); }
+}

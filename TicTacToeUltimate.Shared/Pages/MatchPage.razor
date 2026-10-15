@@ -1,0 +1,289 @@
+@page "/match/{Id:guid}"
+@layout MatchLayout
+@inherits StoreComponent
+@inject IMatchStore Matches
+@inject ISessionStore Session
+@inject ISettingsStore Settings
+@inject NavigationManager Nav
+
+<PageTitle>@(_view?.IsMyTurn == true && _view.Result is null ? "Your move · " : "")TTT Ultimate</PageTitle>
+
+@if (_view is null)
+{
+    <div class="splash" role="status">@(_error ?? "Loading match…")</div>
+    @if (_error is not null) { <div style="display:grid;place-items:center"><Button Href="">Home</Button></div> }
+}
+else
+{
+    var snap = _view.Snapshot;
+    var me = MySeatDto;
+    var opp = OppSeatDto;
+    var sd = InSuddenDeath;
+    <div class="match @AlertClass" data-testid="match">
+        <ConnectionBanner Phase="Session.State.Connection" Attempt="Session.State.ReconnectAttempt" Resyncing="_view.Resyncing" />
+        <MatchHeader Mode="snap.Mode" TimeControl="snap.TimeControl" Clock="_clock" Spectators="snap.SpectatorCount" />
+        <h1 class="sr-only">Match vs @(opp?.Player.DisplayName ?? "opponent")</h1>
+
+        <PlayerCard Seat="opp" Piece="@(opp?.Color ?? Color.O)" Active="@IsActive(opp)" SuddenDeath="sd" Urgency="UrgencyFor(opp)"
+                    ClockMs="ClockFor(opp)" ShowClock="HasClock" LongClock="IsDaily" Ended="Ended" Emote="@EmoteFor(opp)" />
+
+        <div class="match-board">
+            <ThreatCallout Visible="@(_view.ThreatCells.Length > 0 && CanMove)" />
+            <Board Size="snap.Rules.BoardSize" Cells="@snap.Board" Ghost="Ghost" WinLine="snap.Result?.WinLine ?? _view.Result?.WinLine"
+                   Winner="Winner" Threats="_view.ThreatCells" Legal="snap.LegalCells" Interactive="CanMove"
+                   Pending="_view.PendingCell" PendingColor="me?.Color" LastPlaced="LastPlaced" SuddenDeath="sd" OnCellSelected="Place" />
+            <div class="match-hint">@HintText</div>
+            @if (_view.LastError is not null) { <div class="t-alert t-small" role="alert">@ErrorText(_view.LastError)</div> }
+        </div>
+
+        <PlayerCard Seat="me" IsMe="@(!_view.IsSpectator)" Piece="@(me?.Color ?? Color.X)" Active="@IsActive(me)" SuddenDeath="sd" Urgency="UrgencyFor(me)"
+                    ClockMs="ClockFor(me)" ShowClock="HasClock" LongClock="IsDaily" Ended="Ended" Emote="@EmoteFor(me)"
+                    WindowSeconds="@(_clock?.AllowanceMs is int a ? Ui.Seconds(a) : null)" />
+
+        @if (sd && !Ended) { <SuddenDeathBar Clock="_clock" /> }
+        <MatchActions Disabled="_view.IsSpectator" Ended="Ended" OnEmote="() => _emotes = true" OnResign="() => _resign = true" OnMenu="() => _menu = true" />
+        <div class="sr-only" aria-live="polite">@Announcement</div>
+    </div>
+
+    <SwapDecisionSheet Open="SwapOpen" OnDecide="Decide" />
+    <EmotePicker Open="_emotes" Emotes="Session.State.Config?.Emotes" OnPick="Emote" OnClose="() => _emotes = false" />
+    <ResignSheet Open="_resign" Rated="snap.Rated" OnConfirm="Resign" OnClose="() => _resign = false" />
+    <MatchMenuSheet Open="_menu" Settings="Settings.State" OnSettings="UpdateSettings" OnLeave="Leave" OnClose="() => _menu = false"
+                    Ended="Ended" Spectator="_view.IsSpectator" />
+
+    @if (Ended && _showOverlay)
+    {
+        <div class="match-over" role="dialog" aria-modal="true" aria-label="Game over">
+            <div class="t-card">
+                <span class="t-label">@Ui.ReasonText(_view.Result!.Reason)</span>
+                <span class="t-hero">@ResultTitle</span>
+                @if (_view.IsSpectator) { <Button Variant="secondary" OnClick="Leave">Leave</Button> }
+                else { <Button OnClick="GoToResult">Continue</Button> }
+            </div>
+        </div>
+    }
+
+    <ImpactFrame Kind="@_impactKind" Text="@_impactText" Token="@_impactToken" Trigger="_impactTrigger" />
+}
+
+@code {
+    private MatchView? _view;
+    private ClockView? _clock;
+    private string? _error;
+    private bool _emotes, _resign, _menu, _showOverlay;
+    private bool? _prevSd;
+    private bool _resultHandled, _sawLive;
+    private int _impactTrigger;
+    private string _impactKind = "win", _impactText = "", _impactToken = "alert-fill";
+    private CancellationTokenSource? _navCts;
+
+    /// <summary>Match id.</summary>
+    [Parameter] public Guid Id { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Matches, Session, Settings);
+        Matches.ClockTick += OnTick;
+        _view = Matches.State.Matches.GetValueOrDefault(Id);
+        if (_view is null)
+        {
+            try { _view = await Matches.OpenAsync(Id); }
+            catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { _error = "Couldn't open this match."; }
+            _view ??= Matches.State.Matches.GetValueOrDefault(Id);
+            if (_view is null) _error ??= "Match not found.";
+        }
+        _sawLive = _view is { Result: null };
+        Derive();
+    }
+
+    /// <inheritdoc />
+    protected override void OnStoresChanged()
+    {
+        _view = Matches.State.Matches.GetValueOrDefault(Id) ?? _view;
+        if (_view is { Result: null }) _sawLive = true;
+        Derive();
+    }
+
+    private void OnTick() => _ = InvokeAsync(() =>
+    {
+        if (IsDisposed) return;
+        Derive();
+        StateHasChanged();
+    });
+
+    private void Derive()
+    {
+        if (_view is null) return;
+        _clock = Matches.GetClock(Id);
+        var sd = InSuddenDeath;
+        if (_prevSd == false && sd && !Ended) Impact("suddendeath", "SUDDEN DEATH", "alert-fill");
+        _prevSd = sd;
+
+        if (_view.Result is not null && !_resultHandled)
+        {
+            _resultHandled = true;
+            _showOverlay = true;
+            if (_sawLive && !_view.IsSpectator)
+            {
+                var r = MyResult;
+                if (r == GameResultForUser.Win) Impact("win", "VICTORY!", Winner == Color.O ? "piece-o" : "piece-x");
+                else if (r == GameResultForUser.Loss) Impact("loss", "DEFEAT", "alert-fill");
+                _navCts = new CancellationTokenSource();
+                _ = NavigateToResultLater(_navCts.Token);
+            }
+        }
+
+        if (_view.RematchMatchId is Guid next && next != Id) Nav.NavigateTo($"match/{next}");
+    }
+
+    private void Impact(string kind, string text, string token)
+    {
+        if (!Settings.State.ImpactFrames) return;
+        _impactKind = kind; _impactText = text; _impactToken = token;
+        _impactTrigger++;
+    }
+
+    private async Task NavigateToResultLater(CancellationToken ct)
+    {
+        try { await Task.Delay(2600, ct); } catch (TaskCanceledException) { return; }
+        await InvokeAsync(GoToResult);
+    }
+
+    private void GoToResult()
+    {
+        _navCts?.Cancel();
+        if (!IsDisposed) Nav.NavigateTo($"result/{Id}");
+    }
+
+    // ---- derived view ----
+    private int MySeatNo => _view?.MySeat ?? 0;
+    private SeatDto? MySeatDto => _view?.Snapshot.Seats.FirstOrDefault(s => s.Seat == MySeatNo);
+    private SeatDto? OppSeatDto => _view?.Snapshot.Seats.FirstOrDefault(s => s.Seat != MySeatNo);
+    private bool Ended => _view?.Result is not null || _view?.Snapshot.Phase == GamePhase.Ended;
+    private bool HasClock => _view?.Snapshot.TimeControl != TimeControl.Unlimited;
+    private bool IsDaily => _view?.Snapshot.TimeControl == TimeControl.Daily;
+    private bool InSuddenDeath => !Ended && (_clock?.SuddenDeath ?? _view?.Snapshot.Clock?.SuddenDeath ?? false);
+    private int? ToMoveSeat => _clock?.ToMoveSeat ?? _view?.Snapshot.ToMoveSeat;
+
+    /// <summary>The faded piece: the next to vanish, only while the game runs.</summary>
+    private int? Ghost => Ended ? null : _view?.Snapshot.NextToVanish;
+
+    private Color? Winner => (_view?.Result ?? _view?.Snapshot.Result)?.Outcome switch
+    {
+        Outcome.XWins => Color.X,
+        Outcome.OWins => Color.O,
+        _ => null,
+    };
+
+    /// <summary>Board input is enabled only on my turn, in the placement phase, with nothing pending.</summary>
+    private bool CanMove => _view is { IsMyTurn: true, IsSpectator: false, Result: null, PendingCell: null }
+                            && _view.Snapshot.Phase == GamePhase.AwaitingPlacement;
+
+    private bool SwapOpen => _view is { IsMyTurn: true, IsSpectator: false, Result: null }
+                             && _view.Snapshot.Phase == GamePhase.AwaitingSwapDecision;
+
+    private bool IsActive(SeatDto? s) => s is not null && !Ended && ToMoveSeat == s.Seat;
+    private ClockUrgency UrgencyFor(SeatDto? s) => IsActive(s) ? _clock?.Urgency ?? ClockUrgency.Normal : ClockUrgency.Idle;
+    private int? ClockFor(SeatDto? s) => _clock is null ? null : IsActive(s) ? _clock.RemainingMs : _clock.AllowanceMs;
+
+    private int? LastPlaced => _view?.Snapshot.Actions.LastOrDefault(a => a.Kind == ActionKind.Place)?.Cell;
+
+    private string AlertClass
+    {
+        get
+        {
+            if (!InSuddenDeath) return "";
+            var allowance = _clock?.AllowanceMs ?? 15000;
+            var level = allowance >= 8000 ? 1 : allowance >= 5000 ? 2 : 3;
+            var crit = _view?.IsMyTurn == true && _clock?.Urgency == ClockUrgency.Critical;
+            return $"sd sd-{level}{(crit ? " crit" : "")}";
+        }
+    }
+
+    private string? HintText
+    {
+        get
+        {
+            if (_view is null || Ended || Ghost is not int g) return null;
+            var c = _view.Snapshot.Board.Length > g ? _view.Snapshot.Board[g] : '.';
+            if (c == '.') return null;
+            return _view.IsMyTurn ? $"Faded {c} vanishes when you place" : $"Faded {c} vanishes on their move";
+        }
+    }
+
+    private GameResultForUser MyResult
+    {
+        get
+        {
+            if (_view?.Summary is { } s) return s.YourResult;
+            var r = _view?.Result;
+            if (r is null || r.Reason == EndReason.Aborted) return GameResultForUser.Aborted;
+            if (r.Outcome == Outcome.Draw || r.WinnerSeat is null) return GameResultForUser.Draw;
+            return r.WinnerSeat == MySeatNo ? GameResultForUser.Win : GameResultForUser.Loss;
+        }
+    }
+
+    private string ResultTitle => _view!.IsSpectator
+        ? Winner is Color w ? $"{w} wins" : "Draw"
+        : MyResult switch { GameResultForUser.Win => "VICTORY!", GameResultForUser.Loss => "DEFEAT", GameResultForUser.Draw => "DRAW", _ => "ABORTED" };
+
+    private string? EmoteFor(SeatDto? s)
+    {
+        if (s is null || _view is null) return null;
+        if (s.Seat != MySeatNo && Settings.State.MuteOpponentEmotes) return null;
+        return _view.RecentEmotes.LastOrDefault(e => e.Seat == s.Seat)?.Text;
+    }
+
+    private string Announcement
+    {
+        get
+        {
+            var a = _view?.Snapshot.Actions.LastOrDefault();
+            if (a is null) return "";
+            var n = _view!.Snapshot.Rules.BoardSize;
+            var who = a.Seat == MySeatNo && !_view.IsSpectator ? "You" : "Opponent";
+            return a.Kind switch
+            {
+                ActionKind.Swap => $"{who} swapped sides",
+                ActionKind.KeepSides => $"{who} kept sides",
+                _ => $"{who} placed {a.Color} at row {a.Cell / n + 1}, column {a.Cell % n + 1}{(a.VanishedCell is int v ? $"; piece at row {v / n + 1}, column {v % n + 1} vanished" : "")}",
+            };
+        }
+    }
+
+    private static string ErrorText(string code) => code switch
+    {
+        ErrorCodes.NotYourTurn => "Not your turn",
+        ErrorCodes.CellJustVacated => "That cell just emptied. Pick another.",
+        ErrorCodes.Occupied => "That cell is taken",
+        ErrorCodes.StalePly => "Board updated. Try again.",
+        _ => "Move rejected",
+    };
+
+    // ---- intents ----
+    private Task Place(int cell) => CanMove ? Matches.PlaceAsync(Id, cell) : Task.CompletedTask;
+    private Task Decide(bool swap) => Matches.DecideSwapAsync(Id, swap);
+    private Task Resign() => Matches.ResignAsync(Id);
+    private Task Emote(string id) => Matches.SendEmoteAsync(Id, id);
+    private Task UpdateSettings(Func<SettingsState, SettingsState> f) => Settings.UpdateAsync(f);
+
+    private void Leave()
+    {
+        _menu = false;
+        Nav.NavigateTo("");
+    }
+
+    /// <inheritdoc />
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            Matches.ClockTick -= OnTick;
+            _navCts?.Cancel();
+            _navCts?.Dispose();
+            if (_view is { Result: null } || _view?.IsSpectator == true) Matches.Close(Id);
+        }
+        base.Dispose(disposing);
+    }
+}

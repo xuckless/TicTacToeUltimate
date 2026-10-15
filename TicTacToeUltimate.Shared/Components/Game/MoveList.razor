@@ -1,0 +1,31 @@
+<div class="move-list" aria-label="Moves">
+    @for (var i = 0; i < Actions.Count; i++)
+    {
+        var ply = i + 1;
+        var a = Actions[i];
+        <button type="button" aria-current="@(ply == Current ? "step" : null)" @onclick="() => OnSelect.InvokeAsync(ply)">
+            @ply. @Describe(a)
+            <AnalysisBadge Analysis="@Analysis?.FirstOrDefault(p => p.Ply == a.Ply)" />
+        </button>
+    }
+</div>
+
+@code {
+    /// <summary>Actions.</summary>
+    [Parameter] public IReadOnlyList<ActionDto> Actions { get; set; } = [];
+    /// <summary>Selected ply.</summary>
+    [Parameter] public int Current { get; set; }
+    /// <summary>Unlocked analysis.</summary>
+    [Parameter] public IReadOnlyList<PlyAnalysisDto>? Analysis { get; set; }
+    /// <summary>Selected.</summary>
+    [Parameter] public EventCallback<int> OnSelect { get; set; }
+    /// <summary>Board size for coordinates.</summary>
+    [Parameter] public int Size { get; set; } = 3;
+
+    private string Describe(ActionDto a) => a.Kind switch
+    {
+        ActionKind.Swap => "swap",
+        ActionKind.KeepSides => "keep",
+        _ => $"{a.Color} {(char)('a' + a.Cell!.Value % Size)}{a.Cell!.Value / Size + 1}{(a.Auto ? " (auto)" : "")}",
+    };
+}

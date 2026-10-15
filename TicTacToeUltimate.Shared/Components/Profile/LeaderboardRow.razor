@@ -1,0 +1,16 @@
+<div class="lb-row @(IsMe ? "me" : null)">
+    <span class="rank">#@Row.Rank</span>
+    <Avatar Name="@Row.Player.DisplayName" AvatarId="@Row.Player.AvatarId" />
+    <div style="flex:1;min-width:0">
+        <a href="@($"u/{Row.Player.DisplayName}")" style="color:inherit;text-decoration:none;font-weight:800">@Row.Player.DisplayName</a> <BotBadge Kind="Row.Player.Kind" />
+        <div><TierBadge Tier="Row.Player.Tier" /> <CountryFlag Country="@Row.Player.Country" /></div>
+    </div>
+    <span class="t-num" style="font:var(--type-rating);color:var(--primary)">@Row.Rating</span>
+</div>
+
+@code {
+    /// <summary>Row.</summary>
+    [Parameter, EditorRequired] public LeaderboardRowDto Row { get; set; } = default!;
+    /// <summary>Highlight.</summary>
+    [Parameter] public bool IsMe { get; set; }
+}

@@ -1,0 +1,100 @@
+@inject TttJsModule Js
+
+<div class="t-board @(Mini ? "t-board--mini" : null) @(SuddenDeath ? "sd" : null)" @ref="_el" role="grid" aria-label="@(Mini ? "Board preview" : "Game board")"
+     aria-hidden="@(Mini ? "true" : null)" style="grid-template-columns:repeat(@Size, minmax(0, 1fr))">
+    @for (var i = 0; i < Size * Size; i++)
+    {
+        var cell = i;
+        var piece = PieceAt(cell);
+        var ghost = piece is not null && Ghost == cell && !Mini;
+        var threat = piece is null && Threats?.Contains(cell) == true;
+        var pending = Pending == cell && piece is null;
+        var shown = pending ? PendingColor : piece;
+        var win = EffectiveWinLine.Contains(cell);
+        var enabled = Interactive && piece is null && !pending && (Legal is null || Legal.Contains(cell));
+        <button type="button" role="gridcell" data-cell="@cell"
+                class="t-cell @PieceClass(shown) @(ghost ? "fading" : null) @(threat ? "threat" : null) @(pending ? "pending" : null) @(win ? "win" : null)"
+                disabled="@(!enabled)" tabindex="@(Mini ? "-1" : null)"
+                aria-label="@CellLabel(cell, piece, ghost, threat, win)"
+                @onclick="() => Select(cell, enabled)" @onkeydown="e => OnKey(e, cell)">
+            @if (shown is not null)
+            {
+                <span class="glyph @(LastPlaced == cell || pending ? "placed" : null)" aria-hidden="true">@(shown == Color.X ? "X" : "O")</span>
+            }
+        </button>
+    }
+    @if (EffectiveWinLine.Count >= 2 && !Mini)
+    {
+        <WinLine Size="Size" Cells="EffectiveWinLine" Winner="Winner ?? PieceAt(EffectiveWinLine[0]) ?? Color.X" />
+    }
+</div>
+
+@code {
+    private ElementReference _el;
+
+    /// <summary>Board size N.</summary>
+    [Parameter] public int Size { get; set; } = 3;
+    /// <summary>N² chars row-major: 'X', 'O' or '.'.</summary>
+    [Parameter] public string? Cells { get; set; }
+    /// <summary>Cell whose piece vanishes next (drawn faded). Pass null once the game ended.</summary>
+    [Parameter] public int? Ghost { get; set; }
+    /// <summary>Winning cells (empty unless won). Never drawn through the ghost cell.</summary>
+    [Parameter] public IReadOnlyList<int>? WinLine { get; set; }
+    /// <summary>Winner colour for the line.</summary>
+    [Parameter] public Color? Winner { get; set; }
+    /// <summary>Threat-hint cells.</summary>
+    [Parameter] public IReadOnlyCollection<int>? Threats { get; set; }
+    /// <summary>Legal cells (null = every empty cell).</summary>
+    [Parameter] public IReadOnlyCollection<int>? Legal { get; set; }
+    /// <summary>Accepts input.</summary>
+    [Parameter] public bool Interactive { get; set; }
+    /// <summary>Optimistic placement awaiting ack.</summary>
+    [Parameter] public int? Pending { get; set; }
+    /// <summary>Colour of the pending piece.</summary>
+    [Parameter] public Color? PendingColor { get; set; }
+    /// <summary>Most recently placed cell (place animation).</summary>
+    [Parameter] public int? LastPlaced { get; set; }
+    /// <summary>Red-alert frame.</summary>
+    [Parameter] public bool SuddenDeath { get; set; }
+    /// <summary>Mini, non-interactive preview.</summary>
+    [Parameter] public bool Mini { get; set; }
+    /// <summary>Cell chosen.</summary>
+    [Parameter] public EventCallback<int> OnCellSelected { get; set; }
+
+    /// <summary>Win line actually drawn: empty when it would pass through the ghost (vanishing) piece.</summary>
+    public IReadOnlyList<int> EffectiveWinLine =>
+        WinLine is { Count: > 0 } w && !(Ghost is int g && w.Contains(g)) ? w : Array.Empty<int>();
+
+    private Color? PieceAt(int cell)
+    {
+        if (Cells is null || cell >= Cells.Length) return null;
+        return Cells[cell] switch { 'X' or 'x' => Color.X, 'O' or 'o' => Color.O, _ => null };
+    }
+
+    private static string? PieceClass(Color? c) => c switch { Color.X => "x", Color.O => "o", _ => null };
+
+    private string CellLabel(int cell, Color? piece, bool ghost, bool threat, bool win)
+    {
+        var s = $"Row {cell / Size + 1}, column {cell % Size + 1}, {(piece is null ? "empty" : piece.ToString())}";
+        if (ghost) s += ", vanishes next";
+        if (threat) s += ", opponent threatens here";
+        if (win) s += ", winning line";
+        return s;
+    }
+
+    private Task Select(int cell, bool enabled) => enabled ? OnCellSelected.InvokeAsync(cell) : Task.CompletedTask;
+
+    private async Task OnKey(KeyboardEventArgs e, int cell)
+    {
+        var r = cell / Size; var c = cell % Size;
+        switch (e.Key)
+        {
+            case "ArrowUp": r = (r + Size - 1) % Size; break;
+            case "ArrowDown": r = (r + 1) % Size; break;
+            case "ArrowLeft": c = (c + Size - 1) % Size; break;
+            case "ArrowRight": c = (c + 1) % Size; break;
+            default: return;
+        }
+        await Js.InvokeVoidAsync("focusCell", _el, r * Size + c);
+    }
+}

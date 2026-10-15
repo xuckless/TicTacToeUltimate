@@ -1,0 +1,21 @@
+@if (Text is not null)
+{
+    <div class="conn-banner @(Phase == ConnectionPhase.Offline ? "offline" : null)" role="status">@Text</div>
+}
+
+@code {
+    /// <summary>Connection phase.</summary>
+    [Parameter] public ConnectionPhase Phase { get; set; }
+    /// <summary>Reconnect attempt.</summary>
+    [Parameter] public int Attempt { get; set; }
+    /// <summary>Match resync in progress.</summary>
+    [Parameter] public bool Resyncing { get; set; }
+
+    private string? Text => Phase switch
+    {
+        ConnectionPhase.Reconnecting => Attempt > 1 ? $"Reconnecting… (attempt {Attempt})" : "Reconnecting…",
+        ConnectionPhase.Offline => "You're offline. We'll reconnect when you're back.",
+        ConnectionPhase.Connecting => "Connecting…",
+        _ => Resyncing ? "Syncing game…" : null,
+    };
+}

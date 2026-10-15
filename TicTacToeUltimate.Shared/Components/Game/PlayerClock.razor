@@ -1,0 +1,38 @@
+<div class="t-clock @CssClass" role="timer" aria-live="off" aria-label="@AriaLabel">@Text</div>
+
+@code {
+    /// <summary>Remaining ms for the running clock, or the allowance to show while idle. Null = no clock.</summary>
+    [Parameter] public int? RemainingMs { get; set; }
+    /// <summary>Owner's piece colour (ring colour).</summary>
+    [Parameter] public Color Piece { get; set; }
+    /// <summary>This clock is running.</summary>
+    [Parameter] public bool Active { get; set; }
+    /// <summary>Game is in sudden death.</summary>
+    [Parameter] public bool SuddenDeath { get; set; }
+    /// <summary>Urgency from <see cref="ClockView"/>.</summary>
+    [Parameter] public ClockUrgency Urgency { get; set; }
+    /// <summary>Daily: show hours.</summary>
+    [Parameter] public bool Long { get; set; }
+
+    /// <summary>State class: idle | normal | warn | sd (plus o and crit modifiers).</summary>
+    public string State => !Active ? "idle"
+        : SuddenDeath ? "sd"
+        : Urgency is ClockUrgency.Warning or ClockUrgency.Critical ? "warn"
+        : "normal";
+
+    private string CssClass => string.Join(' ', new[]
+    {
+        State,
+        Piece == Color.O ? "o" : null,
+        Active && Urgency == ClockUrgency.Critical ? "crit" : null,
+    }.Where(s => s is not null));
+
+    private string Text => RemainingMs is null ? "--" : Long ? LongText(RemainingMs.Value) : Ui.Clock(RemainingMs);
+    private string AriaLabel => RemainingMs is null ? "No clock" : $"{Text} {(Active ? "remaining" : "per move")}";
+
+    private static string LongText(int ms)
+    {
+        var t = TimeSpan.FromMilliseconds(Math.Max(0, ms));
+        return t.TotalHours >= 1 ? $"{(int)t.TotalHours}h {t.Minutes:00}m" : Ui.Clock(ms);
+    }
+}

@@ -1,0 +1,77 @@
+@page "/onboarding"
+@inject ISessionStore Session
+@inject NavigationManager Nav
+
+<PageTitle>Welcome · TTT Ultimate</PageTitle>
+<h1 class="t-title">Pick your name</h1>
+
+<TextField Label="Username" Value="@_username" ValueChanged="v => _username = v.ToLowerInvariant()" MaxLength="16" Placeholder="e.g. ali_xo"
+           Hint="3–16 characters: a–z, 0–9 and _. You get 1 free rename." Error="@UsernameError" />
+
+<div class="t-field">
+    <label class="t-label" for="country">Country</label>
+    <select id="country" class="t-input" @bind="_country">
+        <option value="">Prefer not to say</option>
+        @foreach (var c in Countries) { <option value="@c">@c</option> }
+    </select>
+</div>
+
+<div class="t-field">
+    <span class="t-label">Avatar</span>
+    <div class="avatar-grid">
+        @foreach (var (id, glyph) in Avatar.Presets)
+        {
+            <button type="button" aria-pressed="@(_avatar == id ? "true" : "false")" aria-label="@($"Avatar {glyph}")" @onclick="() => _avatar = id">@glyph</button>
+        }
+    </div>
+</div>
+
+<label class="t-toggle"><span>I am 13 or older and accept the Terms of Service</span><input type="checkbox" @bind="_tos" /></label>
+@if (_error is not null) { <p class="t-alert" role="alert">@_error</p> }
+<Button Variant="primary" Block="true" OnClick="Submit" Disabled="@(_busy || UsernameError is not null || _username.Length == 0 || !_tos)">Let's play</Button>
+
+@code {
+    private static readonly string[] Countries = ["US", "CA", "GB", "AU", "DE", "FR", "ES", "IT", "BR", "MX", "IN", "PK", "JP", "KR", "NL", "SE", "PL", "TR", "AE", "NG"];
+    private static readonly System.Text.RegularExpressions.Regex UsernameRx = new("^[a-z0-9_]{3,16}$", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    private string _username = "", _country = "", _avatar = "a1";
+    private bool _tos, _busy;
+    private string? _error;
+
+    /// <summary>Client-side username rule (server re-checks uniqueness and the profanity filter).</summary>
+    public static bool IsValidUsername(string? s) => s is not null && UsernameRx.IsMatch(s);
+
+    private string? UsernameError => _username.Length == 0 || IsValidUsername(_username) ? null : "Use 3–16 characters: a–z, 0–9 and _";
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _username = Session.State.Me?.Username ?? "";
+        _country = Session.State.Me?.Country ?? "";
+        _avatar = Session.State.Me?.AvatarId ?? "a1";
+    }
+
+    private async Task Submit()
+    {
+        _busy = true; _error = null;
+        try
+        {
+            var ack = await Session.SetUsernameAsync(_username, _tos);
+            if (!ack.Ok)
+            {
+                _error = ack.Error switch
+                {
+                    ErrorCodes.UsernameTaken => "That name is taken.",
+                    ErrorCodes.UsernameInvalid => "That name isn't allowed.",
+                    ErrorCodes.TosRequired => "Please accept the Terms of Service.",
+                    ErrorCodes.NoRenamesLeft => "You've used your free rename.",
+                    _ => "Couldn't save your name.",
+                };
+                return;
+            }
+            await Session.UpdateProfileAsync(new UpdateProfileDto(_avatar, _country.Length == 0 ? null : _country, null));
+            Nav.NavigateTo("", replace: true);
+        }
+        finally { _busy = false; }
+    }
+}

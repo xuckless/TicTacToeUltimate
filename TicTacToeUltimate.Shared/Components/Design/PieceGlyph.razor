@@ -1,0 +1,6 @@
+<span class="t-piece @(Color == Engine.Color.X ? "x" : "o")">@(Color == Engine.Color.X ? "X" : "O")</span>
+
+@code {
+    /// <summary>Piece colour.</summary>
+    [Parameter] public Color Color { get; set; }
+}

@@ -1,0 +1,62 @@
+@page "/daily"
+@inject IGameQueries Queries
+@inject IQueueStore Queue
+@inject NavigationManager Nav
+
+<PageTitle>Daily · TTT Ultimate</PageTitle>
+<div class="t-spread"><h1 class="t-title">Daily</h1><Button Variant="primary" Small="true" OnClick="NewGame" Disabled="@(_games.Count >= 10)">New game</Button></div>
+<p class="t-small t-muted" style="margin:0">24 hours per move. Up to 10 games at once.</p>
+
+@if (_loading)
+{
+    <p class="t-muted">Loading…</p>
+}
+else if (_games.Count == 0)
+{
+    <Card><p style="margin:0">No daily games yet. Start one and play at your own pace.</p></Card>
+}
+else
+{
+    <section class="t-card" style="padding:4px 16px">
+        @foreach (var g in _games)
+        {
+            <a class="t-listrow" href="@($"match/{g.MatchId}")" style="color:inherit;text-decoration:none">
+                <Avatar Name="@g.Opponent.DisplayName" AvatarId="@g.Opponent.AvatarId" />
+                <div class="who"><div class="name">@g.Opponent.DisplayName</div>
+                    <div class="meta">You play <PieceGlyph Color="g.YourColor" /> · move @(g.Ply + 1)@DeadlineText(g)</div></div>
+                @if (g.YourTurn) { <span class="t-chip" style="color:var(--success)">Your move</span> } else { <span class="t-small t-muted">Waiting</span> }
+            </a>
+        }
+    </section>
+}
+<AdSlot />
+
+@code {
+    private List<DailyGameDto> _games = [];
+    private bool _loading = true;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var all = await Queries.GetDailyGamesAsync();
+            _games = all.OrderByDescending(g => g.YourTurn).ThenBy(g => g.DeadlineAtMs ?? long.MaxValue).ToList();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { }
+        _loading = false;
+    }
+
+    private static string DeadlineText(DailyGameDto g)
+    {
+        if (g.DeadlineAtMs is not long d) return "";
+        var left = TimeSpan.FromMilliseconds(Math.Max(0, d - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+        return $" · {(int)left.TotalHours}h left";
+    }
+
+    private async Task NewGame()
+    {
+        await Queue.EnterAsync(TimeControl.Daily);
+        Nav.NavigateTo("play");
+    }
+}

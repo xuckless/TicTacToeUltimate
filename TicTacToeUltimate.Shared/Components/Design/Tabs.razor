@@ -1,0 +1,20 @@
+<div class="t-tabs" role="tablist" aria-label="@Label">
+    @foreach (var item in Items)
+    {
+        var selected = item == Active;
+        <button type="button" role="tab" aria-selected="@(selected ? "true" : "false")" @onclick="() => Select(item)">@item</button>
+    }
+</div>
+
+@code {
+    /// <summary>Tab captions.</summary>
+    [Parameter] public IReadOnlyList<string> Items { get; set; } = [];
+    /// <summary>Active caption.</summary>
+    [Parameter] public string? Active { get; set; }
+    /// <summary>Selection changed.</summary>
+    [Parameter] public EventCallback<string> ActiveChanged { get; set; }
+    /// <summary>Accessible label.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    private Task Select(string item) => item == Active ? Task.CompletedTask : ActiveChanged.InvokeAsync(item);
+}

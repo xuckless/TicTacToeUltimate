@@ -1,0 +1,17 @@
+<div class="chat" role="log" aria-live="polite" aria-label="Messages">
+    @if (Messages.Count == 0)
+    {
+        <p class="t-muted t-small">No messages yet. Say hi!</p>
+    }
+    @foreach (var m in Messages)
+    {
+        <div class="msg @(m.From == MeId ? "mine" : null)">@m.Body</div>
+    }
+</div>
+
+@code {
+    /// <summary>Messages oldest first.</summary>
+    [Parameter] public IReadOnlyList<DirectMessageDto> Messages { get; set; } = [];
+    /// <summary>Local user id.</summary>
+    [Parameter] public Guid MeId { get; set; }
+}

@@ -1,0 +1,64 @@
+<div class="t-player @ActiveClass" aria-label="@($"{Name}, {Piece}")">
+    <Avatar Name="@Seat?.Player.DisplayName" AvatarId="@Seat?.Player.AvatarId" />
+    <div class="who">
+        <div class="name">@Name <BotBadge Kind="@(Seat?.Player.Kind ?? AccountKind.Account)" /> <PieceGlyph Color="Piece" /></div>
+        <div class="meta @MetaClass">@MetaText</div>
+    </div>
+    @if (ShowClock)
+    {
+        <PlayerClock RemainingMs="ClockMs" Piece="Piece" Active="Active" SuddenDeath="SuddenDeath" Urgency="Urgency" Long="LongClock" />
+    }
+    @if (Emote is not null)
+    {
+        <span class="emote-bubble" role="status">@Emote</span>
+    }
+</div>
+
+@code {
+    /// <summary>Seat.</summary>
+    [Parameter] public SeatDto? Seat { get; set; }
+    /// <summary>The local player's card.</summary>
+    [Parameter] public bool IsMe { get; set; }
+    /// <summary>Colour this seat plays.</summary>
+    [Parameter] public Color Piece { get; set; }
+    /// <summary>Seat to move.</summary>
+    [Parameter] public bool Active { get; set; }
+    /// <summary>Sudden death.</summary>
+    [Parameter] public bool SuddenDeath { get; set; }
+    /// <summary>Clock urgency.</summary>
+    [Parameter] public ClockUrgency Urgency { get; set; }
+    /// <summary>Clock value (remaining when active, allowance when idle).</summary>
+    [Parameter] public int? ClockMs { get; set; }
+    /// <summary>Show the clock pill.</summary>
+    [Parameter] public bool ShowClock { get; set; } = true;
+    /// <summary>Daily clock.</summary>
+    [Parameter] public bool LongClock { get; set; }
+    /// <summary>Allowance in seconds for "YOUR MOVE · 8s WINDOW".</summary>
+    [Parameter] public int? WindowSeconds { get; set; }
+    /// <summary>Visible emote text.</summary>
+    [Parameter] public string? Emote { get; set; }
+    /// <summary>Game over: no "your move".</summary>
+    [Parameter] public bool Ended { get; set; }
+
+    private string Name => IsMe ? "You" : Seat?.Player.DisplayName ?? "Opponent";
+    private string? ActiveClass => !Active || !IsMe || Ended ? null : SuddenDeath ? "active-sd" : Piece == Color.X ? "active-x" : "active-o";
+
+    private string? MetaClass => IsMe && Active && !Ended ? (SuddenDeath ? "sd" : "yourmove") : null;
+
+    private string MetaText
+    {
+        get
+        {
+            if (IsMe && Active && !Ended)
+                return SuddenDeath && WindowSeconds is int w ? $"YOUR MOVE · {w}s WINDOW" : "Your move";
+            var p = Seat?.Player;
+            if (p is null) return "";
+            var parts = new List<string>();
+            if (p.Tier is not null) parts.Add(Ui.TierName(p.Tier));
+            if (p.Rating is int r) parts.Add(r.ToString(CultureInfo.InvariantCulture));
+            if (!IsMe && Seat!.RttMs is int rtt && !SuddenDeath) parts.Add($"{rtt}ms");
+            if (Seat!.Connected == false) parts.Add("Reconnecting…");
+            return string.Join(" · ", parts);
+        }
+    }
+}
