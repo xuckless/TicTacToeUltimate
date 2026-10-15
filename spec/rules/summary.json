@@ -1,0 +1,19 @@
+{
+  "source": "tools/study/results.txt (two independent solvers); ARCHITECTURE.md section 0.3. Hand-maintained oracle, not generated. Values are for the side to move (X) at the empty board.",
+  "rows": [
+    {"rulesId": "n3k3-fifo7-v1-w1-none", "reachable": 368074, "nonTerminal": 265402, "start": "Win", "distance": 9},
+    {"rulesId": "n3k3-fifo7-v0-w1-none", "reachable": 357130, "nonTerminal": 254458, "start": "Draw", "distance": 0},
+    {"rulesId": "n3k3-fifo5-v1-w1-none", "reachable": 33850, "nonTerminal": 30970, "start": "Win", "distance": 7},
+    {"rulesId": "n3k3-fifo6-v1-w1-none", "reachable": 128170, "nonTerminal": 116074, "start": "Draw", "distance": 0},
+    {"rulesId": "n3k3-fifo6-v0-w1-none", "reachable": 128170, "nonTerminal": 116074, "start": "Win", "distance": 13},
+    {"rulesId": "n3k3-fifo8-v1-w1-none", "reachable": 597178, "nonTerminal": 422650, "start": "Draw", "distance": 0},
+    {"rulesId": "n3k3-fifo9-v1-w1-none", "reachable": 596026, "nonTerminal": 363898, "start": "Win", "distance": 11},
+    {"rulesId": "n3k3-fifo9-v0-w1-none", "reachable": 549946, "nonTerminal": 340858, "start": "Draw", "distance": 0},
+    {"rulesId": "n3k3-cap3-v1-w1-none", "reachable": 128170, "nonTerminal": 116074, "start": "Draw", "distance": 0},
+    {"rulesId": "n3k3-cap4-v0-w1-none", "reachable": 549946, "nonTerminal": 375418, "start": "Win", "distance": 11},
+    {"rulesId": "n3k3-fifo7-v1-w1-ban", "reachable": 360137, "nonTerminal": 258201, "start": "Loss", "distance": 10},
+    {"rulesId": "n3k3-fifo7-v1-w0-none", "reachable": 369802, "nonTerminal": 331066, "start": "Win", "distance": 13,
+     "openings": {"0": ["Draw", 0], "1": ["Loss", 12], "2": ["Draw", 0], "3": ["Loss", 12], "4": ["Draw", 0], "5": ["Loss", 12], "6": ["Draw", 0], "7": ["Loss", 12], "8": ["Draw", 0]},
+     "pie": "Draw"}
+  ]
+}
