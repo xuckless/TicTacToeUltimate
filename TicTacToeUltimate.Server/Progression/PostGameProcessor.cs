@@ -58,6 +58,10 @@ public sealed class PostGameProcessor(
         {
             before[0] = await ratings.GetAsync(s.SeatA.UserId, pool, ct);
             before[1] = await ratings.GetAsync(s.SeatB.UserId, pool, ct);
+            // Bots are rating-matched to their opponent (bots/), so a bot counts as an equal: the human's rating with a firm RD.
+            for (var seat = 0; seat < 2; seat++)
+                if (!IsHuman(seats[seat]) && IsHuman(seats[1 - seat]))
+                    before[seat] = before[1 - seat]! with { UserId = seats[seat].UserId, Rd = Math.Min(before[1 - seat]!.Rd, 150) };
             for (var seat = 0; seat < 2; seat++)
             {
                 if (!IsHuman(seats[seat])) continue;

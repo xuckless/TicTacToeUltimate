@@ -12,6 +12,12 @@ public static class BotsServiceCollectionExtensions
     {
         services.AddSingleton<BotPool>();
         services.AddSingleton<IBotPool>(sp => sp.GetRequiredService<BotPool>());
+        // Dispatcher to the external bot service (bots/, Go): HTTP when Ttt:Bots:Service:Url is set, otherwise a no-op.
+        services.AddHttpClient<HttpBotDispatcher>(c => c.Timeout = TimeSpan.FromSeconds(5));
+        services.AddSingleton<IBotDispatcher>(sp =>
+            string.IsNullOrWhiteSpace(sp.GetRequiredService<TicTacToeUltimate.Server.Hosting.TttOptions>().Bots.Service.Url)
+                ? new NullBotDispatcher()
+                : sp.GetRequiredService<HttpBotDispatcher>());
         services.AddSingleton<BotKeyResolver>();
         services.AddHostedService<DevBotUserSeeder>();
 

@@ -44,11 +44,12 @@ public sealed record ReconnectQueueCommand(Guid UserId) : QueueCommand;
 
 /// <summary>Single-loop matchmaker (§6.6). Single-threaded, so it cannot double-pair.</summary>
 public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activity, IUserNotifier notifier, IPlayerCardService cards,
-    IBotPool bots, TimeProvider time, TttOptions options, ILogger<Matchmaker> log) : BackgroundService
+    IBotPool bots, TimeProvider time, TttOptions options, ILogger<Matchmaker> log, TicTacToeUltimate.Server.Bots.IBotDispatcher? dispatcher = null) : BackgroundService
 {
     private readonly Channel<QueueCommand> _commands = Channel.CreateUnbounded<QueueCommand>(new UnboundedChannelOptions { SingleReader = true });
     private readonly List<QueueEntry> _entries = [];
     private long _lastStatusMs = long.MinValue / 2;
+    private readonly HashSet<QueueEntry> _dispatched = [];
 
     /// <summary>Posts a command; applied on the next tick.</summary>
     public void Post(QueueCommand command) => _commands.Writer.TryWrite(command);
@@ -92,10 +93,18 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
             await CreatePairAsync(a, b, ct).ConfigureAwait(false);
         }
 
-        foreach (var e in _entries.Where(e => now - e.EnqueuedAtMs >= o.BotFallbackSeconds * 1000L).ToArray())
+        // Bots: real people get priority (pairing above). A player still waiting after DispatchAfterSeconds triggers one bot
+        // dispatch; after BotFallbackSeconds the longest-waiting player is paired with a seeking bot. Nobody is left alone.
+        _dispatched.RemoveWhere(e => !_entries.Contains(e));
+        foreach (var e in _entries.Where(e => e.DisconnectedAtMs is null && !BotsExcluded(e.TimeControl) && !_dispatched.Contains(e)
+                     && now - e.EnqueuedAtMs >= options.Bots.Service.DispatchAfterSeconds * 1000L).ToArray())
         {
-            // Bots speak classic rules only: never offered for Arena queues.
-            if (e.TimeControl == TimeControl.Daily || MoveClock.IsArena(e.TimeControl) || (e.TimeControl == TimeControl.Ranked && !options.Bots.Ranked)) continue;
+            _dispatched.Add(e);
+            if (dispatcher is not null) _ = dispatcher.RequestAsync(e.TimeControl, e.UserId, e.Rating, CancellationToken.None).AsTask();
+        }
+        foreach (var e in _entries.Where(e => now - e.EnqueuedAtMs >= o.BotFallbackSeconds * 1000L).OrderBy(e => e.EnqueuedAtMs).ToArray())
+        {
+            if (BotsExcluded(e.TimeControl) || e.DisconnectedAtMs is not null) continue;
             if (!bots.TryReserve(e.TimeControl, e.Rating, out var bot)) continue;
             _entries.Remove(e);
             await CreateBotMatchAsync(e, bot, ct).ConfigureAwait(false);
@@ -111,6 +120,9 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
             }
         }
     }
+
+    private bool BotsExcluded(TimeControl tc) => !options.Bots.Enabled || tc == TimeControl.Daily
+        || ((tc == TimeControl.Ranked || tc == TimeControl.ArenaRanked) && !options.Bots.Ranked);
 
     private void Apply(QueueCommand cmd, long now)
     {

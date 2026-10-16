@@ -10,11 +10,17 @@ using TicTacToeUltimate.Shared;
 using TicTacToeUltimate.Web.Client;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+// Static hosting (wwwroot/index.html, e.g. Vercel) has no server-rendered root: mount Routes and HeadOutlet ourselves.
+if (System.Runtime.InteropServices.JavaScript.JSHost.GlobalThis.GetPropertyAsBoolean("tttStandalone"))
+{
+    builder.RootComponents.Add<Routes>("#app");
+    builder.RootComponents.Add<Microsoft.AspNetCore.Components.Web.HeadOutlet>("head::after");
+}
 
 var options = new ClientOptions
 {
-    BackendBaseUrl = new Uri(builder.Configuration["Backend:BaseUrl"] ?? "http://localhost:5091"),
-    WebBaseUrl = new Uri(builder.Configuration["Web:BaseUrl"] ?? builder.HostEnvironment.BaseAddress),
+    BackendBaseUrl = new Uri(NonEmpty(builder.Configuration["Backend:BaseUrl"]) ?? "http://localhost:5091"),
+    WebBaseUrl = new Uri(NonEmpty(builder.Configuration["Web:BaseUrl"]) ?? builder.HostEnvironment.BaseAddress),
     Platform = ClientPlatform.Web,
     IsDevelopment = builder.HostEnvironment.IsDevelopment(),
 };
@@ -37,3 +43,5 @@ if (options.IsDevelopment)
 }
 
 await host.RunAsync();
+
+static string? NonEmpty(string? s) => string.IsNullOrWhiteSpace(s) ? null : s;

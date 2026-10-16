@@ -316,3 +316,33 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
     - **GO!** impact frame at match start.
     - Staggered page-entrance animation.
   - All of it respects reduced motion.
+
+### Bots (owner, 2026-10-15)
+- **Go bot service** in this monorepo (`bots/`). A dynamic dispatch handler spawns one goroutine per requested session. Difficulty is sized to the opponent's Elo and adapts so **bots win ≈49%**.
+- **C# bot request/dispatch service** in the game server. When no human match is available it asks the bot service for a bot, which becomes the opponent. **Real people always take priority over bots.** No online player is left waiting alone.
+- Bots can play every queue: Casual, Old school, Unlimited, Arena (unrated), **Ranked (Arena ladder)**, and guests' queues.
+- Difficulty: a rating-matched tablebase bot (perfect play from the solved table, with deliberate mistakes tuned to the player), plus humanlike think-time delays.
+- Presentation: **human-like names with a small BOT tag.**
+- **Monorepo:** Docker images plus GitHub Actions with path filters, so only the parts that changed get built.
+
+#### Bots: as built
+- `bots/` (Go 1.24, module `github.com/xuckless/tictactoeultimate/bots`): `botd` exposes HTTP `POST /v1/sessions` (bearer `TTT_DISPATCH_TOKEN`), `GET /v1/stats` and `/healthz`.
+  - Each request starts one goroutine. It borrows a free **persona** (one bot API key with a human-like name, `config/personas.dev.json`), connects to `/bot/ws`, seeks that time control, plays one game and exits.
+  - `internal/engine` is a Go port of the rules plus a retrograde tablebase. It is checked against every `spec/rules/vectors` file, including the tablebase counts and values.
+  - `internal/brain`: base skill = P(perfect move), a logistic curve on opponent rating (0.30 + 0.62·σ((r−1400)/260)). A per-opponent adaptive staircase (−0.051 after a bot win, +0.049 after a loss) converges on a **49% bot win rate** in decided games. Tests check this against weak, medium and strong opponents.
+  - Arena uses a board heuristic: complete a line, block, then centre and corners; mistakes are skill-gated. Think delay is 12–42% of the move allowance (≤1.9s in Arena).
+- Server: `IBotDispatcher` (`HttpBotDispatcher` when `Ttt:Bots:Service:Url` is set).
+  - The matchmaker pairs humans first.
+  - After `DispatchAfterSeconds` (6) it requests one bot per waiting player.
+  - After `BotFallbackSeconds` (12) it pairs the longest-waiting player with a seeking bot.
+  - Every queue except Daily is covered, including Arena and Ranked (`Bots:Ranked=true`) and guests.
+- Rated games vs a bot rate the bot as an equal: the human's rating with RD ≤150, since bots are rating-matched. Bots' own ratings are never stored.
+- Persona keys live in `appsettings.Development.json` only. Production gets them from secrets (`Ttt__Bots__DevKeys__0__Name/Key`…), with the same list mounted into botd as `TTT_BOT_PERSONAS`.
+- Run locally: `cd bots && go run ./cmd/botd` (port 7070; the dev server already points at it).
+
+#### Monorepo build / deploy
+- `.github/workflows/{server,bots,web}.yml` use path filters: only the parts that changed get tested and built.
+  - Server and bot images are pushed to GHCR: `ghcr.io/<owner>/ttt-server`, `ttt-bots` (multi-arch).
+- Web is a **static** Blazor WebAssembly build (`deploy/web/build.sh` → `deploy/web/out`). `TicTacToeUltimate.Web.Client/wwwroot/index.html` sets `window.tttStandalone`, so Program.cs mounts Routes itself.
+  - **Vercel** builds it from `vercel.json`: it installs .NET via dotnet-install and adds SPA rewrites.
+  - Env for the build: `TTT_BACKEND_URL`, `TTT_WEB_URL`, `TTT_ADSENSE_CLIENT`.

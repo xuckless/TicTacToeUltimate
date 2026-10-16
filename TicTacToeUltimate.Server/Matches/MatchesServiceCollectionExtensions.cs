@@ -39,7 +39,7 @@ public static class MatchesServiceCollectionExtensions
 
         services.AddSingleton(sp => new Matchmaker(sp.GetRequiredService<IMatchGateway>(), sp.GetRequiredService<UserActivityRegistry>(),
             sp.GetRequiredService<IUserNotifier>(), sp.GetRequiredService<IPlayerCardService>(), sp.GetRequiredService<IBotPool>(),
-            sp.GetRequiredService<TimeProvider>(), sp.GetRequiredService<TttOptions>(), sp.GetRequiredService<ILogger<Matchmaker>>()));
+            sp.GetRequiredService<TimeProvider>(), sp.GetRequiredService<TttOptions>(), sp.GetRequiredService<ILogger<Matchmaker>>(), sp.GetService<TicTacToeUltimate.Server.Bots.IBotDispatcher>()));
         services.AddHostedService(sp => sp.GetRequiredService<Matchmaker>());
 
         services.AddSingleton(sp => new ChallengeService(sp.GetRequiredService<IChallengeRepository>(), sp.GetRequiredService<IMatchGateway>(),

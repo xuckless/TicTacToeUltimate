@@ -1,0 +1,8 @@
+TicTacToeUltimate/
+bots/
+tests/
+tools/
+design/
+docs/
+**/bin/
+**/obj/

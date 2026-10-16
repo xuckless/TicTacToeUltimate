@@ -52,3 +52,6 @@ DerivedData/
 **/TestResults/
 *.DotSettings.user
 .claude/worktrees/
+deploy/web/out/
+deploy/web/publish/
+.vercel/

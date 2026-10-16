@@ -33,8 +33,9 @@ public class MatchmakerTests
         public FakeBotPool Bots { get; } = new() { Available = false };
         public UserActivityRegistry Activity { get; } = new();
         public TttOptions Options { get; } = new();
+        public RecordingDispatcher Dispatcher { get; } = new();
         public Matchmaker Mm { get; }
-        public Rig() => Mm = new Matchmaker(Gateway, Activity, Notifier, new FakeCards(), Bots, Time, Options, NullLogger<Matchmaker>.Instance);
+        public Rig() => Mm = new Matchmaker(Gateway, Activity, Notifier, new FakeCards(), Bots, Time, Options, NullLogger<Matchmaker>.Instance, Dispatcher);
 
         public Guid Enter(int rating, TimeControl tc = TimeControl.Ranked, AccountKind kind = AccountKind.Account, string? region = null)
         {
@@ -140,6 +141,43 @@ public class MatchmakerTests
         Assert.Contains(u, new[] { s.SeatA.UserId, s.SeatB.UserId });
         Assert.Single(r.Bots.Notified);
         Assert.Contains(r.Mm.Entries, e => e.UserId == ranked);   // Ranked never falls back to bots unless Bots:Ranked
+    }
+
+    private sealed class RecordingDispatcher : TicTacToeUltimate.Server.Bots.IBotDispatcher
+    {
+        public List<(TimeControl Tc, Guid User)> Requests { get; } = [];
+        public ValueTask RequestAsync(TimeControl timeControl, Guid forUserId, int forRating, CancellationToken ct)
+        {
+            Requests.Add((timeControl, forUserId));
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    [Fact]
+    public async Task DispatchesOneBotPerWaitingPlayerAndHumansPairFirst()
+    {
+        var r = new Rig();
+        r.Options.Bots.Ranked = true;
+        var a = r.Enter(1200, TimeControl.Casual);
+        var arena = r.Enter(1500, TimeControl.ArenaRanked);
+        var daily = r.Enter(1200, TimeControl.Daily);
+        await r.At(5.9);
+        Assert.Empty(r.Dispatcher.Requests);
+        await r.At(6);
+        await r.At(7);
+        Assert.Equal(2, r.Dispatcher.Requests.Count);                       // once each, never for Daily
+        Assert.Contains((TimeControl.Casual, a), r.Dispatcher.Requests);
+        Assert.Contains((TimeControl.ArenaRanked, arena), r.Dispatcher.Requests);
+        Assert.DoesNotContain(r.Dispatcher.Requests, q => q.User == daily);
+        // A human arriving before the fallback still wins over the bot.
+        r.Bots.Available = true;
+        var b = r.Enter(1210, TimeControl.Casual);
+        await r.At(8);
+        var s = Assert.Single(r.Gateway.Created);
+        Assert.Equal(MatchOrigin.Queue, s.Origin);
+        Assert.Contains(b, new[] { s.SeatA.UserId, s.SeatB.UserId });
+        await r.At(20);
+        Assert.Contains(r.Gateway.Created, m => m.Origin == MatchOrigin.BotFallback && (m.SeatA.UserId == arena || m.SeatB.UserId == arena));
     }
 
     [Fact]

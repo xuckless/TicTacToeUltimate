@@ -1,0 +1,19 @@
+name: web
+# Vercel builds and deploys the site itself (vercel.json, Git integration). This job only checks it builds and tests pass.
+on:
+  pull_request:
+    paths: ['TicTacToeUltimate.Shared/**', 'TicTacToeUltimate.Client/**', 'TicTacToeUltimate.Web.Client/**', 'TicTacToeUltimate.Contracts/**', 'TicTacToeUltimate.Engine/**', 'tests/TicTacToeUltimate.Client.Tests/**', 'tests/TicTacToeUltimate.Shared.Tests/**', 'deploy/web/**', 'vercel.json', '.github/workflows/web.yml']
+  push:
+    branches: [main]
+    paths: ['TicTacToeUltimate.Shared/**', 'TicTacToeUltimate.Client/**', 'TicTacToeUltimate.Web.Client/**', 'deploy/web/**', 'vercel.json', '.github/workflows/web.yml']
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { global-json-file: global.json }
+      - run: dotnet test tests/TicTacToeUltimate.Client.Tests
+      - run: dotnet test tests/TicTacToeUltimate.Shared.Tests
+      - run: bash deploy/web/build.sh

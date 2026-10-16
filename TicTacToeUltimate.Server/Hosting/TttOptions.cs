@@ -75,6 +75,15 @@ public sealed class BotsOptions
     public bool Ranked { get; set; }
     public bool AllowQueryKey { get; set; }
     public List<BotDevKeyOptions> DevKeys { get; set; } = [];
+    /// <summary>External bot service (bots/, Go). Empty Url = no dispatch.</summary>
+    public BotServiceOptions Service { get; set; } = new();
+}
+public sealed class BotServiceOptions
+{
+    public string Url { get; set; } = "";
+    public string Token { get; set; } = "";
+    /// <summary>A waiting player triggers one bot dispatch after this many seconds (before the bot-fallback pairing).</summary>
+    public int DispatchAfterSeconds { get; set; } = 6;
 }
 public sealed class BotDevKeyOptions { public string Name { get; set; } = ""; public string Key { get; set; } = ""; }
 public sealed class RatingsOptions { public double Tau { get; set; } = 0.5; public int ProvisionalGames { get; set; } = 10; public int IdlePeriodDays { get; set; } = 7; public int MinRatedGames { get; set; } = 20; }
