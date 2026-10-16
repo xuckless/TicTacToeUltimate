@@ -36,7 +36,7 @@
         <Nullable>enable</Nullable>
 
         <!-- Display name -->
-        <ApplicationTitle>TTT Ultimate</ApplicationTitle>
+        <ApplicationTitle>Tic Tac Toe Ultimate</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.wedirectsoftwares.tictactoeultimate</ApplicationId>
@@ -68,7 +68,7 @@
         <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#7442ef"/>
 
         <!-- Splash Screen -->
-        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#7442ef" BaseSize="128,128"/>
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#120a22" BaseSize="160,160"/>
 
         <!-- Blazor static web assets -->
         <Content Update="wwwroot\**\*">
