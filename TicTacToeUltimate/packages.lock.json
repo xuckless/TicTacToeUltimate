@@ -1825,7 +1825,10 @@
         }
       }
     },
-    "net10.0-android36.0/ios-arm64": {},
+    "net10.0-android36.0/android-arm64": {},
+    "net10.0-android36.0/android-x64": {},
+    "net10.0-android36.0/iossimulator-arm64": {},
+    "net10.0-android36.0/maccatalyst-arm64": {},
     "net10.0-ios27.0": {
       "Microsoft.AspNetCore.Components.WebView.Maui": {
         "type": "Direct",
@@ -2327,7 +2330,10 @@
         }
       }
     },
-    "net10.0-ios27.0/ios-arm64": {},
+    "net10.0-ios27.0/android-arm64": {},
+    "net10.0-ios27.0/android-x64": {},
+    "net10.0-ios27.0/iossimulator-arm64": {},
+    "net10.0-ios27.0/maccatalyst-arm64": {},
     "net10.0-maccatalyst27.0": {
       "Microsoft.AspNetCore.Components.WebView.Maui": {
         "type": "Direct",
@@ -2817,6 +2823,9 @@
         }
       }
     },
-    "net10.0-maccatalyst27.0/ios-arm64": {}
+    "net10.0-maccatalyst27.0/android-arm64": {},
+    "net10.0-maccatalyst27.0/android-x64": {},
+    "net10.0-maccatalyst27.0/iossimulator-arm64": {},
+    "net10.0-maccatalyst27.0/maccatalyst-arm64": {}
   }
 }

@@ -28,9 +28,15 @@ body { min-height: 100dvh; }
 .splash { min-height: 100dvh; display: grid; place-items: center; background: var(--bg); color: var(--primary); font: var(--type-title); }
 
 /* Three columns so the wordmark stays centered whatever sits left (streak + diamonds) and right (settings). */
-.home-header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
-.home-header > :first-child { justify-self: start; min-width: 0; }
-.home-header > :last-child { justify-self: end; }
+.home-header { display: grid; grid-template-columns: 1fr auto 1fr; grid-template-areas: "pills brand settings"; align-items: center; gap: 8px; }
+.home-header > :first-child { grid-area: pills; justify-self: start; min-width: 0; }
+.home-header > .brand { grid-area: brand; white-space: nowrap; }
+.home-header > :last-child { grid-area: settings; justify-self: end; }
+/* Phones: the pills (streak + freezes + diamonds) are too wide to share a row with the wordmark, so the wordmark gets its own row. */
+@media (max-width: 520px) {
+  .home-header { grid-template-columns: 1fr auto; grid-template-areas: "brand brand" "pills settings"; row-gap: 10px; }
+  .home-header > .brand { justify-self: center; }
+}
 .home-header .brand { font: 400 21px/1.05 var(--font-headline); text-align: center; }
 .play-hero { display: flex; align-items: center; justify-content: space-between; background: var(--primary-fill); color: var(--on-primary); text-decoration: none;
   border-radius: var(--radius-lg); box-shadow: var(--ledge-primary); padding: 20px; border: 0; width: 100%; cursor: pointer; text-align: left; transition: transform 80ms, box-shadow 80ms; }
