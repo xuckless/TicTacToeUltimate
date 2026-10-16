@@ -7,40 +7,51 @@
 @inject ToastService Toasts
 
 <PageTitle>Play · TTT Ultimate</PageTitle>
-<h1 class="t-title">Play</h1>
+<h1 class="play-title"><BounceText Text="Play" /></h1>
 
-<div class="t-col" style="padding:0">
-    @foreach (var m in Modes)
-    {
-        var locked = IsGuest && !m.Guests;
-        <button type="button" class="mode-btn" style="flex-direction:row;justify-content:space-between;padding:14px 16px" disabled="@locked"
-                @onclick="() => Enter(m.Tc)" aria-label="@($"{m.Name}{(locked ? ", account required" : "")}")">
-            <span style="display:flex;flex-direction:column;align-items:flex-start;gap:2px">
-                <span class="t-label">@m.Name</span><span class="sub">@m.Sub</span>
-            </span>
-            @if (locked) { <span class="t-chip">Account</span> }
-            else if (m.Tc == TimeControl.Ranked && RankedRating is not null) { <TierBadge Tier="RankedRating.Tier" /> }
-            else if (m.Tc == TimeControl.ArenaRanked && ArenaRating is not null) { <TierBadge Tier="ArenaRating.Tier" /> }
-            else if (MoveClock.IsArena(m.Tc)) { <span class="t-chip arena-chip">Arena</span> }
-        </button>
-    }
-</div>
+@foreach (var group in Groups)
+{
+    <section class="mode-group" aria-label="@group">
+        <h2 class="mode-group-title">@group</h2>
+        @foreach (var m in Modes.Where(x => x.Group == group))
+        {
+            var locked = IsGuest && !m.Guests;
+            <button type="button" class="mode-card" style="--accent:@m.Accent" disabled="@locked"
+                    @onclick="() => Enter(m.Tc)" aria-label="@($"{m.Name}{(locked ? ", account required" : "")}")">
+                <span class="mode-art" aria-hidden="true"><Icon Name="@m.Icon" /></span>
+                <span class="mode-text">
+                    <span class="mode-name">@m.Name</span>
+                    <span class="mode-sub">@m.Sub</span>
+                </span>
+                <span class="mode-side">
+                    @if (locked) { <span class="t-chip"><Icon Name="lock" /> Account</span> }
+                    else if (m.Tc == TimeControl.Ranked && RankedRating is not null) { <TierBadge Tier="RankedRating.Tier" /> }
+                    else if (m.Tc == TimeControl.ArenaRanked && ArenaRating is not null) { <TierBadge Tier="ArenaRating.Tier" /> }
+                    else { <Icon Name="next" Class="mode-go" /> }
+                </span>
+                <span class="mode-watermark" aria-hidden="true">@m.Glyph</span>
+            </button>
+        }
+        @if (group == "Offline")
+        {
+            <a class="mode-card" style="--accent:#2ec27e" href="local" data-testid="play-passplay">
+                <span class="mode-art" aria-hidden="true"><Icon Name="passplay" /></span>
+                <span class="mode-text"><span class="mode-name">Pass &amp; Play</span><span class="mode-sub">Two players on this device · works offline</span></span>
+                <span class="mode-side"><Icon Name="next" Class="mode-go" /></span>
+                <span class="mode-watermark" aria-hidden="true">XO</span>
+            </a>
+        }
+    </section>
+}
 
-<a class="mode-btn local-entry" href="local" data-testid="play-passplay">
-    <span class="t-label">Pass &amp; Play</span><span class="sub">Two players on this device · offline · unrated</span>
-</a>
-
-<Card Title="Play a friend">
-    <p class="t-small t-muted" style="margin:0">Send a link. Friendly games are unrated and allow rematches.</p>
-    @if (IsGuest)
-    {
-        <Button Variant="secondary" Href="signin">Create an account to invite friends</Button>
-    }
-    else
-    {
-        <InviteLinkButton Text="Create invite link" CreateLink="CreateLink" />
-    }
-</Card>
+<section class="mode-group" aria-label="Play a friend">
+    <h2 class="mode-group-title">Play a friend</h2>
+    <div class="friend-invite">
+        <Ghosty Mood="wink" Size="56" />
+        <p class="t-small t-muted" style="margin:0;flex:1">Send a link. Friendly games are unrated and allow rematches.</p>
+    </div>
+    <InviteLinkButton Text="Create invite link" CreateLink="CreateLink" />
+</section>
 
 <Sheet Open="@(Queue.State.Phase is QueuePhase.Entering or QueuePhase.Searching or QueuePhase.Found)" Title="Finding a match" Dismissible="false">
     <div class="t-col" style="padding:0;align-items:center;text-align:center">
@@ -67,17 +78,18 @@
 </Sheet>
 
 @code {
-    private sealed record ModeOption(TimeControl Tc, string Name, string Sub, bool Guests);
+    private sealed record ModeOption(TimeControl Tc, string Name, string Sub, bool Guests, string Group, string Icon, string Accent, string Glyph);
+    private static readonly string[] Groups = ["Competitive", "Casual", "Offline"];
 
     private static readonly ModeOption[] Modes =
     [
-        new(TimeControl.Ranked, "Ranked", "15s per move · sudden death", false),
-        new(TimeControl.CasualX2, "Casual x2", "30s per move · unrated", true),
-        new(TimeControl.CasualX4, "Casual x4", "60s per move · unrated", true),
-        new(TimeControl.Unlimited, "Unlimited", "No clock", true),
-        new(TimeControl.Daily, "Daily", "24h per move", false),
-        new(TimeControl.ArenaCasual, "Casual Arena", "Health bars · 2:00 round · 5s per move · unrated", true),
-        new(TimeControl.ArenaRanked, "Arena Ranked Ladder", "Health bars · own rating · timeout loses", false),
+        new(TimeControl.Ranked, "Ranked", "15s per move · sudden death", false, "Competitive", "ranked", "#7442ef", "X"),
+        new(TimeControl.CasualX2, "Casual x2", "30s per move · unrated", true, "Casual", "casual", "#2f9be0", "O"),
+        new(TimeControl.CasualX4, "Casual x4", "60s per move · unrated", true, "Casual", "clock", "#1fb5a0", "X"),
+        new(TimeControl.Unlimited, "Unlimited", "No clock · take your time", true, "Casual", "unlimited", "#8a6cff", "O"),
+        new(TimeControl.Daily, "Daily", "24h per move · up to 10 games", false, "Competitive", "calendar", "#ff8a2a", "O"),
+        new(TimeControl.ArenaCasual, "Casual Arena", "Health bars · 2:00 round · unrated", true, "Casual", "arena", "#e0457b", "X"),
+        new(TimeControl.ArenaRanked, "Arena Ladder", "Health bars · own rating · timeout loses", false, "Competitive", "crown", "#c2185b", "X"),
     ];
 
     [SupplyParameterFromQuery(Name = "tc")] private string? Tc { get; set; }

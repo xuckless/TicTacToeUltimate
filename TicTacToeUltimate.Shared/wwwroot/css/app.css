@@ -149,3 +149,29 @@ body { min-height: 100dvh; }
 @media (prefers-reduced-motion: reduce) { .sd-edge.sd { animation: none; } }
 :root[data-motion="reduce"] .sd-edge.sd { animation: none; }
 .sd-edge.arena-red { --glow-color: #6a0f26; --rate: 1s; }
+
+/* Play page: illustrated mode cards */
+.play-title { margin: 0; font-size: 40px; }
+.mode-group { display: flex; flex-direction: column; gap: 10px; }
+.mode-group-title { margin: 6px 0 0; font: 600 13px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); }
+.mode-card { position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; width: 100%; padding: 12px 14px; text-align: left; cursor: pointer;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--accent) 22%, var(--surface)) 0%, var(--surface) 62%);
+  border: 2px solid color-mix(in srgb, var(--accent) 55%, var(--line)); border-radius: 18px; box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 45%, #000);
+  color: var(--ink); text-decoration: none; font: inherit; transition: transform 80ms, box-shadow 80ms; }
+.mode-card:hover { border-color: var(--accent); }
+.mode-card:active { transform: translateY(4px); box-shadow: none; }
+.mode-card:disabled { cursor: not-allowed; filter: saturate(.45); opacity: .8; }
+.mode-art { width: 52px; height: 52px; flex: none; border-radius: 16px; display: grid; place-items: center; color: #fff; background: var(--accent);
+  box-shadow: 0 3px 0 rgb(0 0 0 / .35), inset 0 2px 0 rgb(255 255 255 / .28); transform: rotate(-5deg); position: relative; z-index: 1; }
+.mode-art .t-icon { width: 30px; height: 30px; }
+.mode-art .t-icon .d { fill-opacity: .35; }
+.mode-art .t-icon .x { stroke: #fff; } .mode-art .t-icon .o { stroke: #fff; }
+.mode-card:hover .mode-art { transform: rotate(4deg) scale(1.06); transition: transform .2s cubic-bezier(.3, 1.6, .5, 1); }
+.mode-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; position: relative; z-index: 1; }
+.mode-name { font: 700 18px/1.15 var(--font-display); }
+.mode-sub { font: 500 13px/1.3 var(--font-sans); color: var(--ink-muted); }
+.mode-side { position: relative; z-index: 1; display: flex; align-items: center; }
+.mode-side .t-chip .t-icon { width: 14px; height: 14px; }
+.mode-go { color: var(--accent); width: 24px; height: 24px; }
+.mode-watermark { position: absolute; right: 44px; top: 50%; transform: translateY(-50%) rotate(-12deg); font: 400 96px/1 var(--font-headline); color: var(--accent); opacity: .12; pointer-events: none; }
+.friend-invite { display: flex; align-items: center; gap: 12px; }
