@@ -368,3 +368,5 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
   - The perfect-play card shows the final board greyed and rotated in the background (no more squashed mini board).
   - Quests show the Home `QuestCard`, which bursts quests completed by this win.
 - Perched X/O trinkets removed everywhere (too distracting). Flybys now rotate Bert, X, O and an X+O duo (`PieceBuddy`: 2D X/O characters with faces, gloved hands, shoes; moods happy/wave/cheer), and come more often (every 14–30 s).
+
+- **Ad blocker prompt (2026-10-15):** web only, when AdSense is configured. `tttAds.blocked()` runs a no-cors probe of the AdSense script plus a bait element. A dismissible Bert notice (`AdBlockNotice`, menus only, once per day) asks the player to allow ads. Rewarded ads that fail because of a blocker toast "Your ad blocker stopped the ad…" (`ErrorCodes.AdBlocked`). Note: the dev Mac blocks googlesyndication at DNS level (local resolver 127.31.17.22), so ads never load there.

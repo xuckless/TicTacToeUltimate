@@ -5,7 +5,7 @@ using TicTacToeUltimate.Contracts;
 namespace TicTacToeUltimate.Web.Client;
 
 /// <summary>Web ads via AdSense (wwwroot/js/ads.js). Used when <c>Ads:AdSenseClient</c> is configured; otherwise the stub.</summary>
-public sealed class AdSenseAdProvider(IJSRuntime js, AdSenseOptions options) : IAdProvider, IBannerAds
+public sealed class AdSenseAdProvider(IJSRuntime js, AdSenseOptions options) : IAdProvider, IBannerAds, IAdBlockDetector
 {
     private bool _init;
 
@@ -40,6 +40,17 @@ public sealed class AdSenseAdProvider(IJSRuntime js, AdSenseOptions options) : I
     {
         try { if (await EnsureAsync() && options.BannerSlot is { } slot) await js.InvokeAsync<bool>("tttAds.banner", host, slot); }
         catch (JSException) { /* blocked by an ad blocker: leave the slot empty */ }
+    }
+
+    private bool? _blocked;
+
+    /// <inheritdoc />
+    public async ValueTask<bool> IsBlockedAsync()
+    {
+        if (_blocked is { } b) return b;
+        try { _blocked = await EnsureAsync() && await js.InvokeAsync<bool>("tttAds.blocked"); }
+        catch (JSException) { _blocked = true; }
+        return _blocked.Value;
     }
 
     private async ValueTask<bool> EnsureAsync()

@@ -29,6 +29,8 @@ public interface IAdProvider
     Task<bool> ShowInterstitialAsync(CancellationToken ct);
     Task<RewardedAdResult> ShowRewardedAsync(RewardKind kind, CancellationToken ct);
 }
+/// <summary>Detects a browser ad blocker (web AdSense only; absent elsewhere).</summary>
+public interface IAdBlockDetector { ValueTask<bool> IsBlockedAsync(); }
 /// <summary>Real banner ads (web AdSense). Absent = the stub banner.</summary>
 public interface IBannerAds
 {

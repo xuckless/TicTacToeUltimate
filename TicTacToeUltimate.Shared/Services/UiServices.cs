@@ -156,6 +156,15 @@ public static class Ui
     public static string Delta(int d) => d > 0 ? $"+{d}" : d < 0 ? $"−{-d}" : "±0";
 
     /// <summary>"Line"/"Timeout" etc. as player-facing copy.</summary>
+    /// <summary>Toast text when a rewarded ad didn't pay out.</summary>
+    public static string RewardFailText(RewardClaimResultDto r, string fallback) => r.Error switch
+    {
+        ErrorCodes.AdBlocked => "Your ad blocker stopped the ad. Allow ads on this site to earn rewards.",
+        ErrorCodes.RewardRequired => fallback,
+        null => fallback,
+        _ => "Couldn't give the reward. Try again.",
+    };
+
     public static string ReasonText(EndReason r) => r switch
     {
         EndReason.Line => "Three in a row",

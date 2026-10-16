@@ -8,12 +8,14 @@ namespace TicTacToeUltimate.Client.Stores;
 /// <summary>Streak and quests; rewarded claims.</summary>
 public sealed class ProgressStore : StoreBase<ProgressState>, IProgressStore
 {
+    private readonly IAdBlockDetector? _adBlock;
     private readonly TttApiClient _api;
     private readonly IAdCoordinator _ads;
 
     /// <summary>Creates the store.</summary>
-    public ProgressStore(TttApiClient api, IAdCoordinator ads, IRealtimeTransport rt) : base(ProgressState.Empty)
+    public ProgressStore(TttApiClient api, IAdCoordinator ads, IRealtimeTransport rt, IAdBlockDetector? adBlock = null) : base(ProgressState.Empty)
     {
+        _adBlock = adBlock;
         _api = api; _ads = ads;
         rt.PostGameSummaryReceived += s =>
         {
@@ -39,7 +41,11 @@ public sealed class ProgressStore : StoreBase<ProgressState>, IProgressStore
     public async Task<RewardClaimResultDto> ClaimRewardAsync(RewardKind kind, Guid? gameId = null)
     {
         RewardedAdResult ad = await _ads.ShowRewardedAsync(kind);
-        if (!ad.Earned || ad.Receipt is null) return new RewardClaimResultDto(false, ErrorCodes.RewardRequired, State.Progress);
+        if (!ad.Earned || ad.Receipt is null)
+        {
+            var blocked = _adBlock is not null && await _adBlock.IsBlockedAsync();
+            return new RewardClaimResultDto(false, blocked ? ErrorCodes.AdBlocked : ErrorCodes.RewardRequired, State.Progress);
+        }
         try
         {
             var result = await _api.ClaimRewardAsync(new RewardClaimDto(kind, gameId, ad.Receipt));

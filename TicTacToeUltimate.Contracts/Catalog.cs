@@ -53,7 +53,7 @@ public static class ErrorCodes
         ChallengeExpired = "challenge_expired", ChallengeTaken = "challenge_taken", CannotChallengeSelf = "cannot_challenge_self",
         NotFriends = "not_friends", Blocked = "blocked", UsernameTaken = "username_taken", UsernameInvalid = "username_invalid",
         NoRenamesLeft = "no_renames_left", TosRequired = "tos_required", AnalysisWarming = "analysis_warming",
-        AnalysisUnavailable = "analysis_unavailable", RewardRequired = "reward_required", RewardInvalid = "reward_invalid",
+        AnalysisUnavailable = "analysis_unavailable", RewardRequired = "reward_required", AdBlocked = "ad_blocked", RewardInvalid = "reward_invalid",
         RewardCapped = "reward_capped", RematchNotAllowed = "rematch_not_allowed", EmoteUnknown = "emote_unknown",
         Timeout = "timeout", ProtocolVersion = "protocol_version", Validation = "validation", Internal = "internal";
 

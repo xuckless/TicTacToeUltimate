@@ -58,6 +58,6 @@ else
     private async Task ExtraQuest()
     {
         var r = await Progress.ClaimRewardAsync(RewardKind.ExtraQuest);
-        Toasts.Show(r.Granted ? "Bonus quest unlocked" : "No reward this time", r.Granted ? ToastKind.Success : ToastKind.Info);
+        Toasts.Show(r.Granted ? "Bonus quest unlocked" : Ui.RewardFailText(r, "Watch the full ad for the bonus quest"), r.Granted ? ToastKind.Success : ToastKind.Info);
     }
 }

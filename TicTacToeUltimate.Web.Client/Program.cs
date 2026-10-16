@@ -38,6 +38,7 @@ if (NonEmpty(builder.Configuration["Ads:AdSenseClient"]) is { } adClient)
     builder.Services.AddSingleton<AdSenseAdProvider>();
     builder.Services.Replace(ServiceDescriptor.Singleton<IAdProvider>(sp => sp.GetRequiredService<AdSenseAdProvider>()));
     builder.Services.AddSingleton<IBannerAds>(sp => sp.GetRequiredService<AdSenseAdProvider>());
+    builder.Services.AddSingleton<IAdBlockDetector>(sp => sp.GetRequiredService<AdSenseAdProvider>());
 }
 else
 {

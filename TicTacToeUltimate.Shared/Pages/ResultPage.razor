@@ -182,7 +182,7 @@ else
         {
             var r = await Progress.ClaimRewardAsync(RewardKind.Analysis, Id);
             if (r.Granted) await Leave($"replay/{Id}?analysis=1");
-            else Toasts.Show(r.Error is null ? "Watch the full ad to unlock" : "Couldn't unlock analysis", ToastKind.Error);
+            else Toasts.Show(Ui.RewardFailText(r, "Watch the full ad to unlock"), ToastKind.Error);
         }
         finally { _busy = false; }
     }

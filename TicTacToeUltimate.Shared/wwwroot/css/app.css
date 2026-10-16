@@ -438,3 +438,11 @@ body { min-height: 100dvh; }
 .bert-fly .duo { display: flex; align-items: flex-end; gap: 2px; }
 .bert-fly .duo .buddy-o { margin-bottom: 10px; }
 @media (prefers-reduced-motion: reduce) { .buddy, .buddy * { animation: none !important; } }
+/* Ad blocker notice */
+.adblock-notice { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 18px; margin-bottom: 14px;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--streak, #ffb020) 18%, var(--surface)), var(--surface) 70%);
+  border: 2px solid color-mix(in srgb, var(--streak, #ffb020) 50%, var(--line)); box-shadow: 0 4px 0 rgb(0 0 0 / .3); }
+.abn-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.abn-text strong { font: 700 17px/1.2 var(--font-display); }
+.abn-steps { margin: 2px 0 0; padding-left: 18px; display: grid; gap: 2px; }
+.abn-actions { display: flex; gap: 6px; flex-wrap: wrap; }

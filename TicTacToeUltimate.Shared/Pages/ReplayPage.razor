@@ -79,7 +79,7 @@ else
         {
             var r = await Progress.ClaimRewardAsync(RewardKind.Analysis, Id);
             if (r.Granted) await LoadAnalysis();
-            else Toasts.Show("Watch the full ad to unlock", ToastKind.Error);
+            else Toasts.Show(Ui.RewardFailText(r, "Watch the full ad to unlock"), ToastKind.Error);
         }
         finally { _busy = false; }
     }

@@ -1,0 +1,56 @@
+@inject IServiceProvider Services
+@inject IKeyValueStore Prefs
+@* Friendly ask to allow ads, shown in menus when the web build detects an ad blocker. Dismissed for a day at a time;
+   never blocks play and never appears during a match. *@
+@if (_show)
+{
+    <aside class="adblock-notice" role="note" aria-label="Ad blocker detected" data-testid="adblock-notice">
+        <Bert Mood="sad" Size="56" />
+        <div class="abn-text">
+            <strong>Ad blocker on?</strong>
+            <span class="t-small">Tic Tac Toe Ultimate is free because of ads. We never show them during a match. Please allow ads on this site.</span>
+            @if (_how)
+            {
+                <ol class="t-small abn-steps">
+                    <li>Click your ad blocker's icon in the browser toolbar.</li>
+                    <li>Choose "Pause on this site" or "Allow ads here".</li>
+                    <li>Reload the page.</li>
+                </ol>
+            }
+            <div class="abn-actions">
+                @if (!_how) { <Button Variant="primary" Small="true" OnClick="() => _how = true">How?</Button> }
+                else { <Button Variant="primary" Small="true" OnClick="Reload">I've allowed ads</Button> }
+                <Button Variant="ghost" Small="true" OnClick="Dismiss">Not now</Button>
+            </div>
+        </div>
+    </aside>
+}
+
+@code {
+    private const string Key = "ttt.adblockNoticeDay";
+    private bool _show, _how;
+
+    /// <summary>Cascaded false on match routes.</summary>
+    [CascadingParameter(Name = "AdsAllowed")] public bool? AdsAllowed { get; set; }
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || AdsAllowed == false || Services.GetService(typeof(IAdBlockDetector)) is not IAdBlockDetector detector) return;
+        try { if (await Prefs.GetAsync(Key) == Today) return; } catch (Exception) { /* storage blocked: still ask */ }
+        if (!await detector.IsBlockedAsync()) return;
+        _show = true;
+        StateHasChanged();
+    }
+
+    private static string Today => DateTime.UtcNow.ToString("yyyy-MM-dd");
+
+    private async Task Dismiss()
+    {
+        _show = false;
+        try { await Prefs.SetAsync(Key, Today); } catch (Exception) { /* ignore */ }
+    }
+
+    private void Reload() => Nav.NavigateTo(Nav.Uri, forceLoad: true);
+}
