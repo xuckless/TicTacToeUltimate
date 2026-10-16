@@ -1,0 +1,30 @@
+@inject NavigationManager Nav
+@inject ILogger<CrashPanel> Log
+
+@* Shown by the layout ErrorBoundary when a page throws while rendering or handling an event. Without it Blazor Hybrid stops
+   rendering and the app looks frozen (that was the "Daily on an offline friend" bug). *@
+<div class="t-card crash-panel" role="alert" data-testid="crash-panel">
+    <Bert Mood="shocked" Size="72" />
+    <span class="t-title">Oops, that didn't work</span>
+    <span class="t-small t-muted">Something went wrong on this screen. Your game and progress are safe on the server.</span>
+    <div style="display:grid;gap:10px;width:100%;margin-top:8px">
+        <Button Variant="primary" Block="true" OnClick="Recover">Try again</Button>
+        <Button Variant="secondary" Block="true" OnClick="Home">Home</Button>
+    </div>
+</div>
+
+@code {
+    /// <summary>The exception.</summary>
+    [Parameter] public Exception? Exception { get; set; }
+    /// <summary>Clears the boundary.</summary>
+    [Parameter] public EventCallback OnRecover { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Exception is not null) Log.LogError(Exception, "Unhandled UI exception");
+    }
+
+    private Task Recover() => OnRecover.InvokeAsync();
+    private async Task Home() { await OnRecover.InvokeAsync(); Nav.NavigateTo("", forceLoad: false); }
+}

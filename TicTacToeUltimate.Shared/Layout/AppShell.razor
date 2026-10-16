@@ -25,7 +25,7 @@
     <div class="shell-main">
         <ConnectionBanner Phase="Session.State.Connection" Attempt="Session.State.ReconnectAttempt" />
         <CascadingValue Name="AdsAllowed" Value="true" IsFixed="true">
-            <main id="main" class="page"><ResumeBanner /><AdBlockNotice />@Body</main>
+            <main id="main" class="page"><ResumeBanner /><AdBlockNotice /><ErrorBoundary @ref="_errors"><ChildContent>@Body</ChildContent><ErrorContent Context="ex"><CrashPanel Exception="ex" OnRecover="() => _errors?.Recover()" /></ErrorContent></ErrorBoundary></main>
         </CascadingValue>
     </div>
     <nav class="t-nav" aria-label="Main">
@@ -37,6 +37,7 @@
 </div>
 
 @code {
+    private ErrorBoundary? _errors;
     private sealed record NavItem(string Href, string Label, string Icon, NavLinkMatch Match);
 
     private static readonly NavItem[] Primary =

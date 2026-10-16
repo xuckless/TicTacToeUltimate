@@ -5,7 +5,11 @@
 <div class="shell plain-shell">
     <div class="shell-main">
         <CascadingValue Name="AdsAllowed" Value="false" IsFixed="true">
-            <main id="main" class="page">@Body</main>
+            <main id="main" class="page"><ErrorBoundary @ref="_errors"><ChildContent>@Body</ChildContent><ErrorContent Context="ex"><CrashPanel Exception="ex" OnRecover="() => _errors?.Recover()" /></ErrorContent></ErrorBoundary></main>
         </CascadingValue>
     </div>
 </div>
+
+@code {
+    private ErrorBoundary? _errors;
+}

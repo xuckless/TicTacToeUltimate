@@ -263,6 +263,17 @@ public sealed class SharedUiTests : IDisposable
     }
 
     [Fact]
+    public void SocialPage_daily_challenge_to_offline_friend_renders_waiting_card()
+    {
+        var cut = _ctx.Render<SocialPage>();
+        var daily = cut.FindAll("button").First(b => b.TextContent.Trim() == "Daily");
+        daily.Click();
+        cut.WaitForAssertion(() => Assert.Contains("Waiting for tic_tac_tess", cut.Markup, StringComparison.Ordinal));
+        Assert.Contains("Daily", cut.Markup, StringComparison.Ordinal);
+        cut.FindAll("button").First(b => b.TextContent.Trim() == "Cancel").Click();
+    }
+
+    [Fact]
     public void ProfilePage_matches_mockup()
     {
         var cut = _ctx.Render<ProfilePage>();

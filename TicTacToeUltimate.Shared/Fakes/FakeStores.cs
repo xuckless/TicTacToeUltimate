@@ -121,7 +121,14 @@ public sealed class FakeSocialStore() : FakeStore<SocialState>(MockupFixtures.So
     /// <inheritdoc />
     public Task MarkReadAsync(Guid friendId) => Task.CompletedTask;
     /// <inheritdoc />
-    public Task<ChallengeDto> CreateChallengeAsync(CreateChallengeDto request) { Calls.Add($"Challenge:{request.TimeControl}"); return Task.FromResult(MockupFixtures.Challenge); }
+    public Task<ChallengeDto> CreateChallengeAsync(CreateChallengeDto request)
+    {
+        Calls.Add($"Challenge:{request.TimeControl}");
+        // Mirror the real store: a targeted challenge shows up as "waiting" until the friend answers.
+        var c = MockupFixtures.Challenge with { Code = "WAIT01", ToUserId = request.ToUserId, TimeControl = request.TimeControl, From = MockupFixtures.Ali };
+        if (request.ToUserId is not null) Set(State with { OutgoingChallenges = [.. State.OutgoingChallenges.Where(x => x.Code != c.Code), c] });
+        return Task.FromResult(c);
+    }
     /// <inheritdoc />
     public Task<ChallengeDto?> GetChallengeAsync(string code) => Task.FromResult<ChallengeDto?>(MockupFixtures.Challenge with { Code = code });
     /// <inheritdoc />
