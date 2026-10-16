@@ -44,6 +44,8 @@ public sealed class FakeSessionStore() : FakeStore<SessionState>(MockupFixtures.
     /// <inheritdoc />
     public Task SignOutAsync() { Calls.Add("SignOut"); Set(State with { Status = SessionStatus.SignedOut, Me = null }); return Task.CompletedTask; }
     /// <inheritdoc />
+    public Task<string?> DeleteAccountAsync() { Calls.Add("DeleteAccount"); Set(State with { Status = SessionStatus.SignedOut, Me = null }); return Task.FromResult<string?>(null); }
+    /// <inheritdoc />
     public Task<CommandAckDto> SetUsernameAsync(string username, bool acceptTos) { Calls.Add($"SetUsername:{username}"); return Task.FromResult(new CommandAckDto(acceptTos, acceptTos ? null : ErrorCodes.TosRequired)); }
     /// <inheritdoc />
     public Task<CommandAckDto> UpdateProfileAsync(UpdateProfileDto patch) { Calls.Add("UpdateProfile"); return Task.FromResult(new CommandAckDto(true, null)); }
@@ -103,7 +105,7 @@ public sealed class FakeSocialStore() : FakeStore<SocialState>(MockupFixtures.So
     public Task<IReadOnlyList<PlayerCardDto>> SearchAsync(string prefix)
         => Task.FromResult<IReadOnlyList<PlayerCardDto>>(MockupFixtures.Friends.Select(f => f.Player).Where(p => p.DisplayName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList());
     /// <inheritdoc />
-    public Task<CommandAckDto> SendRequestAsync(string username) { Calls.Add($"Request:{username}"); return Task.FromResult(new CommandAckDto(true, null)); }
+    public Task<CommandAckDto> SendRequestAsync(string username, Guid? userId = null) { Calls.Add($"Request:{username}"); return Task.FromResult(new CommandAckDto(true, null)); }
     /// <inheritdoc />
     public Task<CommandAckDto> RespondAsync(Guid requestId, bool accept) { Calls.Add($"Respond:{accept}"); return Task.FromResult(new CommandAckDto(true, null)); }
     /// <inheritdoc />
@@ -126,6 +128,17 @@ public sealed class FakeSocialStore() : FakeStore<SocialState>(MockupFixtures.So
     public Task<AcceptChallengeResultDto> AcceptChallengeAsync(string code) { Calls.Add($"Accept:{code}"); return Task.FromResult(new AcceptChallengeResultDto(true, null, MockupFixtures.MatchId)); }
     /// <inheritdoc />
     public Task DeclineChallengeAsync(string code) { Calls.Add($"Decline:{code}"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task CancelChallengeAsync(string code) { Calls.Add($"Cancel:{code}"); return Task.CompletedTask; }
+}
+
+/// <summary>Fake <see cref="IActiveMatchesStore"/> (no active games unless a test sets some).</summary>
+public sealed class FakeActiveMatchesStore() : FakeStore<ActiveMatchesState>(ActiveMatchesState.Empty with { Loaded = true }), IActiveMatchesStore
+{
+    /// <inheritdoc />
+    public Task RefreshAsync() => Task.CompletedTask;
+    /// <inheritdoc />
+    public void Forget(Guid matchId) => Set(State with { Matches = [.. State.Matches.Where(m => m.MatchId != matchId)] });
 }
 
 /// <summary>Fake <see cref="IProgressStore"/>.</summary>
@@ -133,6 +146,8 @@ public sealed class FakeProgressStore() : FakeStore<ProgressState>(new ProgressS
 {
     /// <inheritdoc />
     public Task LoadAsync() => Task.CompletedTask;
+    /// <inheritdoc />
+    public void Apply(ProgressDto progress) => Set(new ProgressState(progress, true));
     /// <inheritdoc />
     public Task<RewardClaimResultDto> ClaimRewardAsync(RewardKind kind, Guid? gameId = null)
     { Calls.Add($"Claim:{kind}"); return Task.FromResult(new RewardClaimResultDto(true, null, State.Progress)); }
@@ -184,6 +199,35 @@ public sealed class FakeAdCoordinator : IAdCoordinator
     public Task OnGameCompletedAsync(GameResultForUser result) { Completed.Add(result); return Task.CompletedTask; }
     /// <inheritdoc />
     public Task<RewardedAdResult> ShowRewardedAsync(RewardKind kind) => Task.FromResult(new RewardedAdResult(true, $"stub:{kind}:{Guid.Empty}"));
+    /// <summary>Last ad-free pass end.</summary>
+    public long? AdFreeUntilMs { get; private set; }
+    /// <inheritdoc />
+    public void SetAdFreeUntil(long? untilMs) => AdFreeUntilMs = untilMs;
+}
+
+/// <summary>Fake <see cref="IWalletStore"/> with a modest balance.</summary>
+public sealed class FakeWalletStore() : FakeStore<WalletState>(new WalletState(MockupFixtures.Wallet, [.. MockupFixtures.StoreItems], true)), IWalletStore
+{
+    /// <inheritdoc />
+    public Task LoadAsync() { Calls.Add("LoadWallet"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task<PurchaseResultDto> BuyAsync(string itemId, Guid? gameId = null)
+    {
+        Calls.Add($"Buy:{itemId}");
+        var item = State.Items.FirstOrDefault(i => i.Id == itemId);
+        if (item is null || State.Wallet is null || State.Wallet.Diamonds < item.Price) return Task.FromResult(new PurchaseResultDto(false, ErrorCodes.InsufficientDiamonds, null, null));
+        var w = State.Wallet with { Diamonds = State.Wallet.Diamonds - item.Price };
+        Set(State with { Wallet = w });
+        return Task.FromResult(new PurchaseResultDto(true, null, new StoreDto(w, [.. State.Items]), null));
+    }
+    /// <inheritdoc />
+    public Task<RewardClaimResultDto> WatchAdAsync()
+    {
+        Calls.Add("WatchAd");
+        var w = State.Wallet is { } x ? x with { Diamonds = x.Diamonds + x.AdReward, AdViewsToday = x.AdViewsToday + 1 } : null;
+        if (w is not null) Set(State with { Wallet = w });
+        return Task.FromResult(new RewardClaimResultDto(true, null, null) { Wallet = w });
+    }
 }
 
 /// <summary>Registers every fake store (tests and design previews).</summary>
@@ -197,6 +241,8 @@ public static class FakeServiceCollectionExtensions
         services.TryAddSingleton<FakeMatchStore>(); services.TryAddSingleton<IMatchStore>(sp => sp.GetRequiredService<FakeMatchStore>());
         services.TryAddSingleton<FakeSocialStore>(); services.TryAddSingleton<ISocialStore>(sp => sp.GetRequiredService<FakeSocialStore>());
         services.TryAddSingleton<FakeProgressStore>(); services.TryAddSingleton<IProgressStore>(sp => sp.GetRequiredService<FakeProgressStore>());
+        services.TryAddSingleton<FakeWalletStore>(); services.TryAddSingleton<IWalletStore>(sp => sp.GetRequiredService<FakeWalletStore>());
+        services.TryAddSingleton<FakeActiveMatchesStore>(); services.TryAddSingleton<IActiveMatchesStore>(sp => sp.GetRequiredService<FakeActiveMatchesStore>());
         services.TryAddSingleton<FakeSettingsStore>(); services.TryAddSingleton<ISettingsStore>(sp => sp.GetRequiredService<FakeSettingsStore>());
         services.TryAddSingleton<FakeAdCoordinator>(); services.TryAddSingleton<IAdCoordinator>(sp => sp.GetRequiredService<FakeAdCoordinator>());
         services.TryAddSingleton<IGameQueries, FakeGameQueries>();

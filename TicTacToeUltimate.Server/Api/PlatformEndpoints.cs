@@ -53,7 +53,7 @@ public static class PlatformEndpoints
     public static WebApplication MapPlatformEndpoints(this WebApplication app)
     {
         var opts = app.Services.GetRequiredService<IOptions<TttOptions>>().Value;
-        var api = app.MapGroup("/api");
+        var api = app.MapGroup("/api").RequireRateLimiting(RateLimits.Api);
         const string Account = TttPolicies.Account;
 
         api.MapGet("/config", (IOptions<TttOptions> o, TierCalculator t) => Results.Ok(BuildConfig(o.Value, t))).AllowAnonymous();
@@ -61,10 +61,12 @@ public static class PlatformEndpoints
         if (opts.Auth.Dev.Enabled)
         {
             api.MapGet("/auth/dev/users", async (AccountService a, CancellationToken ct) => Results.Ok(await a.DevUsersAsync(ct))).AllowAnonymous();
-            api.MapPost("/auth/dev/token", async (DevTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.DevTokenAsync(req, ct))).AllowAnonymous();
+            api.MapPost("/auth/dev/token", async (DevTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.DevTokenAsync(req, ct)))
+                .AllowAnonymous().RequireRateLimiting(RateLimits.Auth);
         }
         // Guests (device-bound, server-signed tokens) exist in every environment.
-        api.MapPost("/auth/guest", async (GuestTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.GuestTokenAsync(req, ct))).AllowAnonymous();
+        api.MapPost("/auth/guest", async (GuestTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.GuestTokenAsync(req, ct)))
+            .AllowAnonymous().RequireRateLimiting(RateLimits.Auth);
         // After an email sign-in: move the device's guest history into the account (the guest token proves ownership).
         api.MapPost("/auth/claim-guest", async (ClaimGuestDto req, HttpContext http, AccountService a, CancellationToken ct) =>
             From(await a.ClaimGuestAsync(http.Me().UserId, req.GuestToken, ct))).RequireAuthorization(Account);
@@ -81,6 +83,12 @@ public static class PlatformEndpoints
             .RequireAuthorization();
         api.MapPatch("/me", async (UpdateProfileDto req, HttpContext http, AccountService a, CancellationToken ct) => From(await a.UpdateProfileAsync(http.Me().UserId, req, ct)))
             .RequireAuthorization();
+        // In-app account deletion (store policies). Works for guests and accounts.
+        api.MapDelete("/me", async (HttpContext http, AccountService a, CancellationToken ct) =>
+        {
+            var r = await a.DeleteAccountAsync(http.Me().UserId, ct);
+            return r.Ok ? Results.NoContent() : ApiErrors.Problem(r.Status, r.Error!);
+        }).RequireAuthorization().RequireRateLimiting(RateLimits.Auth);
 
         // ---- players ----
         api.MapGet("/players/search", async (string? q, IUserRepository users, IPlayerCardService cards, CancellationToken ct) =>
@@ -139,7 +147,10 @@ public static class PlatformEndpoints
         {
             var g = await games.GetAsync(id, ct);
             if (g is null) return ApiErrors.Problem(404, ErrorCodes.MatchNotFound);
-            if (!await ledger.HasGrantAsync(http.Me().UserId, RewardKind.Analysis, id, ct)) return ApiErrors.Problem(403, ErrorCodes.RewardRequired);
+            var meId = http.Me().UserId;
+            if (!await ledger.HasGrantAsync(meId, RewardKind.Analysis, id, ct)
+                && (await http.RequestServices.GetRequiredService<TicTacToeUltimate.Server.Economy.WalletService>().GetAsync(meId, ct)).AnalysisPassUntilMs is null)
+                return ApiErrors.Problem(403, ErrorCodes.RewardRequired);
             if (MoveClock.IsArena(g.Setup.TimeControl)) return ApiErrors.Problem(404, ErrorCodes.AnalysisUnavailable);
             switch (cache.GetStatus(g.Setup.Rules))
             {
@@ -187,7 +198,7 @@ public static class PlatformEndpoints
         api.MapGet("/friends", async (HttpContext http, SocialService s, CancellationToken ct) => Results.Ok(await s.OverviewAsync(http.Me().UserId, ct)))
             .RequireAuthorization(Account);
         api.MapPost("/friends/requests", async (SendFriendRequestDto req, HttpContext http, SocialService s, CancellationToken ct) =>
-            Results.Ok(await s.RequestAsync(http.Me().UserId, req.Username, ct))).RequireAuthorization(Account);
+            Results.Ok(await s.RequestAsync(http.Me().UserId, req.Username, req.UserId, ct))).RequireAuthorization(Account).RequireRateLimiting(RateLimits.Social);
         api.MapPost("/friends/requests/{id:guid}/accept", async (Guid id, HttpContext http, SocialService s, CancellationToken ct) =>
             Results.Ok(await s.RespondAsync(http.Me().UserId, id, true, ct))).RequireAuthorization(Account);
         api.MapPost("/friends/requests/{id:guid}/decline", async (Guid id, HttpContext http, SocialService s, CancellationToken ct) =>
@@ -217,8 +228,18 @@ public static class PlatformEndpoints
         // ---- progress / rewards ----
         api.MapGet("/progress", async (HttpContext http, ProgressService p, CancellationToken ct) => Results.Ok(await p.GetAsync(http.Me().UserId, ct)))
             .RequireAuthorization();
+        // ---- store / wallet ----
+        api.MapGet("/wallet", async (HttpContext http, TicTacToeUltimate.Server.Economy.WalletService w, CancellationToken ct) => Results.Ok(await w.GetAsync(http.Me().UserId, ct)))
+            .RequireAuthorization();
+        api.MapGet("/store", async (HttpContext http, TicTacToeUltimate.Server.Economy.WalletService w, CancellationToken ct) => Results.Ok(await w.StoreAsync(http.Me().UserId, ct)))
+            .RequireAuthorization();
+        api.MapPost("/store/buy", async (PurchaseDto req, HttpContext http, TicTacToeUltimate.Server.Economy.WalletService w, CancellationToken ct) =>
+            Results.Ok(await w.PurchaseAsync(http.Me().UserId, req, ct))).RequireAuthorization().RequireRateLimiting(RateLimits.Rewards);
+
+        api.MapPost("/rewards/nonce", async (RewardNonceRequestDto req, HttpContext http, RewardService r, CancellationToken ct) =>
+            Results.Ok(await r.IssueNonceAsync(http.Me().UserId, req, ct))).RequireAuthorization().RequireRateLimiting(RateLimits.Rewards);
         api.MapPost("/rewards/claim", async (RewardClaimDto req, HttpContext http, RewardService r, CancellationToken ct) =>
-            Results.Ok(await r.ClaimAsync(http.Me().UserId, req, ct))).RequireAuthorization();
+            Results.Ok(await r.ClaimAsync(http.Me().UserId, req, ct))).RequireAuthorization().RequireRateLimiting(RateLimits.Rewards);
 
         return app;
     }

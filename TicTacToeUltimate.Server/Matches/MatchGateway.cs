@@ -85,7 +85,8 @@ public sealed class MatchGateway : IMatchGateway
             _rt.Activity.AddDaily(setup.SeatA.UserId, setup.MatchId);
             _rt.Activity.AddDaily(setup.SeatB.UserId, setup.MatchId);
         }
-        var actor = MatchActor.CreateNew(_rt, setup, cards, _hooks);
+        var rtt = _rt.HalfRtt is { } lookup ? new[] { lookup(setup.SeatA.UserId), lookup(setup.SeatB.UserId) } : null;
+        var actor = MatchActor.CreateNew(_rt, setup, cards, _hooks, rtt);
         Track(actor);
         _registry.Add(actor);
         return setup.MatchId;

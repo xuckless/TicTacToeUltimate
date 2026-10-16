@@ -48,6 +48,13 @@ public sealed class PgGuestMergeStore(PgDb db) : IGuestMergeStore
               select @a, day, wins, freeze_awarded, bonus_target, bonus_claimed from quest_days where user_id = @g
               on conflict (user_id, day) do update set wins = quest_days.wins + excluded.wins;
             delete from quest_days where user_id = @g;
+            insert into diamond_ledger (user_id, delta, reason, ref, created_at)
+              select @a, balance, 'merge', 'guest:' || @gs, now() from wallets where user_id = @g and balance > 0;
+            insert into wallets (user_id, balance, updated_at) select @a, balance, now() from wallets where user_id = @g and balance > 0
+              on conflict (user_id) do update set balance = wallets.balance + excluded.balance, updated_at = now();
+            delete from diamond_ledger where user_id = @g;
+            delete from wallets where user_id = @g;
+            update inventory set user_id = @a where user_id = @g;
             delete from players where id = @g and kind = 'guest';
             """, p, tx);
         await tx.CommitAsync(ct);
@@ -56,8 +63,8 @@ public sealed class PgGuestMergeStore(PgDb db) : IGuestMergeStore
 }
 
 /// <summary>InMemory: delegates to each store.</summary>
-public sealed class InMemoryGuestMergeStore(IGameRepository games, IRatingRepository ratings, IProgressRepository progress, IUserRepository users)
-    : IGuestMergeStore
+public sealed class InMemoryGuestMergeStore(IGameRepository games, IRatingRepository ratings, IProgressRepository progress, IUserRepository users,
+    IWalletRepository wallets) : IGuestMergeStore
 {
     /// <inheritdoc />
     public Task<int> MergeAsync(Guid guestId, Guid accountId, CancellationToken ct)
@@ -65,6 +72,7 @@ public sealed class InMemoryGuestMergeStore(IGameRepository games, IRatingReposi
         var n = (games as InMemoryGameRepository)?.Reassign(guestId, accountId) ?? 0;
         (ratings as InMemoryRatingRepository)?.Reassign(guestId, accountId);
         (progress as InMemoryProgressRepository)?.Reassign(guestId, accountId);
+        (wallets as InMemoryWalletRepository)?.Reassign(guestId, accountId);
         (users as InMemoryUserRepository)?.DeleteGuest(guestId);
         return Task.FromResult(n);
     }

@@ -103,7 +103,6 @@ public sealed class PgUserRepository(PgDb db) : IUserRepository
         {
             await c.ExecuteAsync("""
                 update players set username = @key, display_name = @key,
-                  kind = case when kind = 'guest' then 'account' else kind end,
                   renames_left = renames_left - @dec, tos_accepted_at = coalesce(tos_accepted_at, @tos)
                 where id = @id
                 """, new { id, key, dec = (short)(first ? 0 : 1), tos = PgDb.Utc(tosAcceptedAt) }, tx);
@@ -111,6 +110,12 @@ public sealed class PgUserRepository(PgDb db) : IUserRepository
             return UsernameResult.Ok;
         }
         catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation) { return UsernameResult.Taken; }
+    }
+
+    public async Task AddRenamesAsync(Guid id, int count, CancellationToken ct)
+    {
+        await using var c = await db.Source.OpenConnectionAsync(ct);
+        await c.ExecuteAsync("update players set renames_left = renames_left + @count where id = @id", new { id, count = (short)count });
     }
 
     public async Task UpdateProfileAsync(Guid id, ProfilePatch p, CancellationToken ct)

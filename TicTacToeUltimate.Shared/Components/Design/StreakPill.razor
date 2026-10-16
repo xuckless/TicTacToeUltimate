@@ -1,10 +1,13 @@
-<span class="t-pill" aria-label="@($"{Count} day streak{(AtRisk ? ", at risk" : "")}")">
+<a class="t-pill @(AtRisk && Count > 0 ? "at-risk" : null)" href="store" aria-label="@($"{Count} day streak{(AtRisk ? ", not secured today" : "")}, {Freezes} freeze{(Freezes == 1 ? "" : "s")} banked. Open the store")" data-testid="streak-pill">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-6 1-9.5z" /></svg>@Count
-</span>
+    @if (Freezes > 0) { <span class="t-small" title="Streak freezes banked">❄@Freezes</span> }
+</a>
 
 @code {
     /// <summary>Current streak.</summary>
     [Parameter] public int Count { get; set; }
     /// <summary>Not yet secured today.</summary>
     [Parameter] public bool AtRisk { get; set; }
+    /// <summary>Banked streak freezes.</summary>
+    [Parameter] public int Freezes { get; set; }
 }

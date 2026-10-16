@@ -69,6 +69,19 @@ public static class MockupFixtures
         ChallengeStatus.Open, Now.AddDays(1), null);
 
     /// <summary>Social state.</summary>
+    /// <summary>Wallet mockup: enough for a freeze, 2 ad views used.</summary>
+    public static readonly WalletDto Wallet = new(230, 35, 2, 5, 15, null, null);
+    /// <summary>Store mockup (prices as in EconomyRules).</summary>
+    public static readonly StoreItemDto[] StoreItems =
+    [
+        new("streak-freeze", "Streak freeze", "Skip a day without losing your streak. You can bank 2.", 150, "streak", "perk", true, null, 1),
+        new("streak-repair", "Streak repair", "Bring back a streak you lost in the last 2 days.", 300, "flame", "perk", false, "No lost streak to repair.", null),
+        new("extra-quest", "Bonus quest", "One more quest today: reach 2 more wins for 30 diamonds.", 50, "quest", "perk", true, null, null),
+        new("analysis-pass-30d", "Review pass · 30 days", "Unlimited perfect-play reviews for a month.", 300, "chart", "pass", true, null, null),
+        new("ad-free-7d", "No interstitials · 7 days", "No between-game ads for a week. Rewarded ads stay available.", 400, "tv", "pass", true, null, null),
+        new("rename-token", "Name change", "Change your username once more.", 500, "profile", "perk", false, "You still have a free rename.", null),
+    ];
+
     public static SocialState Social => SocialState.Empty with
     {
         Friends = Friends,

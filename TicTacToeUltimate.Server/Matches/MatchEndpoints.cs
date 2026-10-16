@@ -18,18 +18,33 @@ public static class MatchEndpoints
         app.MapGet("/api/daily", async (HttpContext http, MatchGateway gateway, CancellationToken ct) =>
             Results.Ok(await DailyGamesAsync(http.User.ToTttUser().UserId, gateway, ct))).RequireAuthorization();
 
-        app.MapGet("/api/live", async (HttpContext http, MatchGateway gateway, bool? friends, CancellationToken ct) =>
+        // The caller's own unfinished games: live matches (any mode) + Daily. Drives "Active games" and the resume banner.
+        app.MapGet("/api/me/matches", async (HttpContext http, MatchGateway gateway, CancellationToken ct) =>
+        {
+            var me = http.User.ToTttUser().UserId;
+            var result = new List<ActiveMatchDto>();
+            foreach (var i in gateway.LiveMatches().Where(i => i.Setup.TimeControl != TimeControl.Daily))
+            {
+                int? seat = i.Setup.SeatA.UserId == me ? 0 : i.Setup.SeatB.UserId == me ? 1 : null;
+                if (seat is not { } s) continue;
+                var myColor = (s == 0) ^ i.Swapped ? Color.X : Color.O;
+                result.Add(new ActiveMatchDto(i.Setup.MatchId, i.Setup.Mode, i.Setup.TimeControl, i.Cards[1 - s], myColor, i.ToMoveSeat == s, i.Ply, i.DeadlineAtMs, false));
+            }
+            foreach (var d in await DailyGamesAsync(me, gateway, ct))
+                result.Add(new ActiveMatchDto(d.MatchId, MatchMode.Daily, TimeControl.Daily, d.Opponent, d.YourColor, d.YourTurn, d.Ply, d.DeadlineAtMs, true));
+            return Results.Ok(result.OrderByDescending(m => m.YourTurn).ThenBy(m => m.DeadlineAtMs ?? long.MaxValue).ToArray());
+        }).RequireAuthorization();
+
+        // Friends' live games only (D16): listing every live match leaked ids and player cards to any guest.
+        app.MapGet("/api/live", async (HttpContext http, MatchGateway gateway, CancellationToken ct) =>
         {
             var me = http.User.ToTttUser();
-            var list = gateway.LiveMatches().Where(i => i.Setup.TimeControl != TimeControl.Daily);
-            if (friends != false)
-            {
-                var repo = http.RequestServices.GetService<IFriendRepository>();
-                var ids = repo is null ? new HashSet<Guid>() : (await repo.ListFriendsAsync(me.UserId, ct)).ToHashSet();
-                list = list.Where(i => ids.Contains(i.Setup.SeatA.UserId) || ids.Contains(i.Setup.SeatB.UserId));
-            }
+            var repo = http.RequestServices.GetService<IFriendRepository>();
+            var ids = repo is null ? new HashSet<Guid>() : (await repo.ListFriendsAsync(me.UserId, ct)).ToHashSet();
+            var list = gateway.LiveMatches().Where(i => i.Setup.TimeControl != TimeControl.Daily
+                && (ids.Contains(i.Setup.SeatA.UserId) || ids.Contains(i.Setup.SeatB.UserId)));
             return Results.Ok(list.Select(i => new LiveMatchDto(i.Setup.MatchId, i.Setup.TimeControl, i.Cards, i.Ply, i.SpectatorCount)).ToArray());
-        }).RequireAuthorization();
+        }).RequireAuthorization(TttPolicies.Account);
         return app;
     }
 

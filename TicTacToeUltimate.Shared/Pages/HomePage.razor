@@ -3,17 +3,19 @@
 @inject ISessionStore Session
 @inject IProgressStore Progress
 @inject ISocialStore Social
+@inject IWalletStore Wallet
 @inject NavigationManager Nav
 @inject ToastService Toasts
 
 <PageTitle>Tic Tac Toe Ultimate</PageTitle>
 
 <header class="home-header">
-    <StreakPill Count="@(Progress.State.Progress?.Streak.Current ?? 0)" AtRisk="@(Progress.State.Progress?.Streak.AtRisk ?? false)" />
+    <span style="display:flex;gap:6px;align-items:center"><StreakPill Count="@(Progress.State.Progress?.Streak.Current ?? 0)" AtRisk="@(Progress.State.Progress?.Streak.AtRisk ?? false)" Freezes="@(Progress.State.Progress?.Streak.FreezesBanked ?? 0)" /><DiamondPill /></span>
     <h1 class="brand" style="margin:0"><BounceText Text="Tic Tac Toe" /> <BounceText Text="Ultimate" Class="ultimate" /></h1>
     <a class="t-iconbtn t-iconbtn--round" href="settings" aria-label="Settings"><Icon Name="settings" /></a>
 </header>
 
+<ActiveGames />
 <PlayHero Rating="RankedRating" Guest="IsGuest" Subtitle="@(IsGuest ? "Unrated · 15s per move" : "Placement games")" />
 <ModeGrid DailyYourTurn="Session.State.DailyYourTurn" Guest="IsGuest" />
 @if (!IsGuest && Session.State.DailyYourTurn > 0)
@@ -57,7 +59,10 @@ else
 
     private async Task ExtraQuest()
     {
-        var r = await Progress.ClaimRewardAsync(RewardKind.ExtraQuest);
-        Toasts.Show(r.Granted ? "Bonus quest unlocked" : Ui.RewardFailText(r, "Watch the full ad for the bonus quest"), r.Granted ? ToastKind.Success : ToastKind.Info);
+        // Perks are bought with Diamonds (50); ads earn Diamonds in the Store.
+        var r = await Wallet.BuyAsync("extra-quest");
+        if (r.Ok) Toasts.Show("Bonus quest unlocked", ToastKind.Success);
+        else if (r.Error == ErrorCodes.InsufficientDiamonds) { Toasts.Show("The bonus quest costs 50 Diamonds. Earn some in the Store.", ToastKind.Info); Nav.NavigateTo("store"); }
+        else Toasts.Show(Ui.ErrorToastText(r.Error, "Couldn't unlock the bonus quest."), ToastKind.Error);
     }
 }

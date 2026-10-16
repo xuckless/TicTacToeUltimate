@@ -98,10 +98,10 @@ public class MatchClockTests
         Assert.True(ack.Accepted, ack.Error);
         snap = await h.SnapAsync(id);
         Assert.Equal(14_900, snap.Actions[1].ThinkMs);
-        Assert.Equal([4000, 3700], snap.Clock!.LagBudgetLeftMs);
+        Assert.Equal([4000, 3800], snap.Clock!.LagBudgetLeftMs);   // only the 200 ms actually used past the allowance is debited
         Assert.True((await h.PlaceAsync(id, A, 2, 8)).Accepted);
         snap = await h.SnapAsync(id);
-        Assert.Equal([3700, 3700], snap.Clock!.LagBudgetLeftMs);
+        Assert.Equal([4000, 3800], snap.Clock!.LagBudgetLeftMs);   // an instant move costs no budget
         Assert.Equal(0, snap.Actions[2].ThinkMs);
     }
 

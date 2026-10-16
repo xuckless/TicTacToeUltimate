@@ -60,6 +60,7 @@ else
     {
         _busy = true;
         try { await Session.SignInGuestAsync(); await Accept(); }
+        catch (Exception ex) { _error = ErrorText.Code(ex) == "offline" ? "Can't reach the server. Check your connection." : "Couldn't join as a guest."; }
         finally { _busy = false; }
     }
 
@@ -68,13 +69,19 @@ else
         _busy = true;
         try
         {
-            var r = await Social.AcceptChallengeAsync(Code);
+            AcceptChallengeResultDto r;
+            try { r = await Social.AcceptChallengeAsync(Code); }
+            catch (Exception ex) { r = new AcceptChallengeResultDto(false, ErrorText.Code(ex), null); }
             if (r.Accepted && r.MatchId is Guid id) Nav.NavigateTo($"match/{id}");
             else _error = r.Error switch
             {
                 ErrorCodes.ChallengeTaken => "Someone else already accepted.",
                 ErrorCodes.ChallengeExpired => "This challenge expired.",
                 ErrorCodes.CannotChallengeSelf => "That's your own challenge. Share the link with a friend.",
+                ErrorCodes.GuestNotAllowed => "This game needs an account. Sign in to accept.",
+                ErrorCodes.AlreadyInMatch => "Finish your current game first.",
+                ErrorCodes.ServerUpdating => Ui.ServerUpdatingText,
+                "offline" => "Can't reach the server. Check your connection.",
                 _ => "Couldn't accept the challenge.",
             };
         }

@@ -49,7 +49,7 @@ public class AuthTests
     }
 
     [Fact]
-    public async Task GuestTokenIsStablePerDevice_UpgradeKeepsId()
+    public async Task GuestTokenIsStablePerDevice_CannotUpgradeByUsername()
     {
         using var p = new TestPlatform();
         var accounts = p.Get<AccountService>();
@@ -61,14 +61,10 @@ public class AuthTests
         Assert.Matches("^Guest#[0-9]{4}$", g1.Me.DisplayName);
         Assert.Empty(g1.Me.Ratings);
 
-        Assert.Equal(ErrorCodes.TosRequired, (await accounts.SetUsernameAsync(g1.Me.UserId, new SetUsernameDto(N("up_"), false), default)).Error);
-        var name = N("up_");
-        var up = await accounts.SetUsernameAsync(g1.Me.UserId, new SetUsernameDto(name.ToUpperInvariant(), true), default);
-        Assert.True(up.Ok);
-        Assert.Equal(g1.Me.UserId, up.Value!.UserId);
-        Assert.Equal(AccountKind.Account, up.Value.Kind);
-        Assert.Equal(name, up.Value.Username);
-        Assert.Equal(RatingPools.Visible.Length, up.Value.Ratings.Length);   // Ranked, Daily, Arena Ranked Ladder
+        // A device id is not an identity: picking a username must NOT turn the guest into an account (that minted unlimited accounts).
+        var up = await accounts.SetUsernameAsync(g1.Me.UserId, new SetUsernameDto(N("up_"), true), default);
+        Assert.Equal((ErrorCodes.GuestNotAllowed, 403), (up.Error, up.Status));
+        Assert.Equal(AccountKind.Guest, (await accounts.GetMeAsync(g1.Me.UserId, default))!.Kind);
     }
 
     [Theory]
@@ -110,11 +106,47 @@ public class AuthTests
 
         var email = new ClaimsIdentity([new Claim("sub", Guid.NewGuid().ToString()), new Claim("email", "jane.doe@example.com")], "Supabase");
         var acct = (await tx.TransformAsync(new ClaimsPrincipal(email))).ToTttUser();
-        Assert.Equal((AccountKind.Account, "jane.doe"), (acct.Kind, acct.DisplayName));
+        Assert.Equal((AccountKind.Account, "Player"), (acct.Kind, acct.DisplayName));   // never the email local part (PII)
 
-        // Stale guest claim is refreshed from the store after an upgrade.
+        // Setting a username never changes the kind; a stale claim is refreshed from the store (still a guest here).
         await p.Get<IUserRepository>().SetUsernameAsync(sub, N("sb_"), TestPlatform.Start, default);
-        var stale = new ClaimsIdentity([new Claim("sub", sub.ToString()), new Claim(TttClaims.Kind, "guest")], "Dev");
-        Assert.Equal(AccountKind.Account, (await tx.TransformAsync(new ClaimsPrincipal(stale))).ToTttUser().Kind);
+        var stale = new ClaimsIdentity([new Claim("sub", sub.ToString()), new Claim(TttClaims.Kind, "account")], "Dev");
+        Assert.Equal(AccountKind.Guest, (await tx.TransformAsync(new ClaimsPrincipal(stale))).ToTttUser().Kind);
+    }
+}
+
+public class AccountDeletionTests
+{
+    [Fact]
+    public async Task DeleteAnonymisesAndPurges()
+    {
+        using var p = new TestPlatform();
+        var a = await p.UserAsync("da" + Guid.NewGuid().ToString("N")[..8]);
+        var b = await p.UserAsync("db" + Guid.NewGuid().ToString("N")[..8]);
+        var m = TestPlatform.Match(a, b, 0);
+        await p.Get<TicTacToeUltimate.Server.Progression.PostGameProcessor>().ProcessAsync(m, default);
+        var friends = p.Get<TicTacToeUltimate.Server.Abstractions.Persistence.IFriendRepository>();
+        await friends.RequestAsync(a.Id, b.Id, TestPlatform.Start, default);
+        await friends.RequestAsync(b.Id, a.Id, TestPlatform.Start, default);   // auto-accept → friends
+        Assert.Contains(a.Id, await friends.ListFriendsAsync(b.Id, default));
+
+        var r = await p.Get<AccountService>().DeleteAccountAsync(a.Id, default);
+        Assert.True(r.Ok);
+
+        var users = p.Get<TicTacToeUltimate.Server.Abstractions.Persistence.IUserRepository>();
+        var row = (await users.GetAsync(a.Id, default))!;
+        Assert.Equal(AccountKind.Deleted, row.Kind);
+        Assert.Null(row.Username);
+        Assert.Equal("Deleted player", row.DisplayName);
+        Assert.Null(await users.GetByUsernameAsync(a.Username!, default));
+        Assert.DoesNotContain(a.Id, await friends.ListFriendsAsync(b.Id, default));
+        // The opponent keeps the game; the seat is anonymised.
+        var game = (await p.Get<TicTacToeUltimate.Server.Abstractions.Persistence.IGameRepository>().GetAsync(m.Setup.MatchId, default))!;
+        var seat = game.Setup.SeatA.UserId == a.Id ? game.Setup.SeatA : game.Setup.SeatB;
+        Assert.Equal(("Deleted player", AccountKind.Deleted), (seat.DisplayName, seat.Kind));
+        // A stale token for the deleted id no longer authenticates.
+        var tx = p.Services.CreateScope().ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Authentication.IClaimsTransformation>();
+        var stale = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity([new System.Security.Claims.Claim("sub", a.Id.ToString()), new System.Security.Claims.Claim(TttClaims.Kind, "account")], "Dev"));
+        Assert.False((await tx.TransformAsync(stale)).Identity?.IsAuthenticated ?? false);
     }
 }

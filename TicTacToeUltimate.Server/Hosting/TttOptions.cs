@@ -37,6 +37,8 @@ public sealed class SupabaseAuthOptions
     public string AnonKey { get; set; } = "";
     public string JwtSecret { get; set; } = "";
     public string Audience { get; set; } = "authenticated";
+    /// <summary>Service-role key (secret) for the auth admin API: deleting auth users on account deletion.</summary>
+    public string ServiceRoleKey { get; set; } = "";
 }
 public sealed class PersistenceOptions
 {
@@ -75,6 +77,8 @@ public sealed class BotsOptions
     public bool Enabled { get; set; } = true;
     public bool Ranked { get; set; }
     public bool AllowQueryKey { get; set; }
+    /// <summary>Let accounts create their own bot API keys (off: 403). Default off until the public bot API is reviewed.</summary>
+    public bool AllowUserKeys { get; set; }
     public List<BotDevKeyOptions> DevKeys { get; set; } = [];
     /// <summary>External bot service (bots/, Go). Empty Url = no dispatch.</summary>
     public BotServiceOptions Service { get; set; } = new();

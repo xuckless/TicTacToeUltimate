@@ -77,7 +77,7 @@ public abstract class UserRepositoryContractTests<TF> : ContractBase<TF> where T
     }
 
     [Fact]
-    public async Task UsernameFirstSetFreeThenOneRename_GuestUpgradeKeepsId()
+    public async Task UsernameFirstSetFreeThenOneRename_KindUnchanged()
     {
         var device = Guid.NewGuid().ToString();
         var g = await NewUserAsync(null, AccountKind.Guest, device);
@@ -85,7 +85,7 @@ public abstract class UserRepositoryContractTests<TF> : ContractBase<TF> where T
         var n1 = Name();
         Assert.Equal(UsernameResult.Ok, await R.Users.SetUsernameAsync(g.Id, n1, T0, Ct));
         var after = (await R.Users.GetAsync(g.Id, Ct))!;
-        Assert.Equal(AccountKind.Account, after.Kind);
+        Assert.Equal(AccountKind.Guest, after.Kind);   // the repository never promotes a guest; only a verified sign-in + claim does
         Assert.Equal(1, after.RenamesLeft);
         Assert.Equal(UsernameResult.Ok, await R.Users.SetUsernameAsync(g.Id, Name(), null, Ct));
         Assert.Equal(0, (await R.Users.GetAsync(g.Id, Ct))!.RenamesLeft);

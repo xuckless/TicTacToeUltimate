@@ -1,0 +1,39 @@
+@using TicTacToeUltimate.Engine.Clocks
+@using TicTacToeUltimate.Shared.Services
+
+@* Targeted friend challenge with the same mode choice as invite links (Casual / Arena / Old school / Unlimited / Daily). *@
+<Sheet Open="Open" Title="@($"Challenge {TargetName}")" OnClose="OnClose">
+    <p class="t-small t-muted" style="margin:0">Pick a mode. Friendly games are unrated and allow rematches.</p>
+    <div class="lobby-modes" role="radiogroup" aria-label="Mode">
+        @foreach (var m in LobbyModes.All)
+        {
+            var on = _tc == m.Tc;
+            var locked = Guest && m.AccountOnly;
+            <div class="mode-wrap">
+                <button type="button" role="radio" aria-checked="@(on ? "true" : "false")" class="mode-btn local-opt @(on ? "on" : null)" disabled="@locked"
+                        data-testid="@($"challenge-{m.Tc}")" @onclick="() => _tc = m.Tc">
+                    <Icon Name="@m.Icon" Class="mode-ico" /><span class="t-label">@m.Name</span><span class="sub">@(locked ? "Account only" : m.Sub)</span>
+                </button>
+                <InfoButton Key="@m.Guide" Class="corner" />
+            </div>
+        }
+    </div>
+    <Button Variant="primary" Block="true" Disabled="Busy" OnClick="() => OnPick.InvokeAsync(_tc)" data-testid="challenge-send">Send challenge</Button>
+</Sheet>
+
+@code {
+    private TimeControl _tc = TimeControl.Casual;
+
+    /// <summary>Visible.</summary>
+    [Parameter] public bool Open { get; set; }
+    /// <summary>Friend's display name.</summary>
+    [Parameter] public string TargetName { get; set; } = "";
+    /// <summary>Caller is a guest (Daily locked).</summary>
+    [Parameter] public bool Guest { get; set; }
+    /// <summary>Sending.</summary>
+    [Parameter] public bool Busy { get; set; }
+    /// <summary>Mode chosen.</summary>
+    [Parameter] public EventCallback<TimeControl> OnPick { get; set; }
+    /// <summary>Closed.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+}

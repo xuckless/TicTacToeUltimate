@@ -97,10 +97,11 @@ internal sealed class MatchActor
         }
     }
 
-    /// <summary>New match: first turn starts now.</summary>
-    public static MatchActor CreateNew(MatchRuntime rt, MatchSetup setup, PlayerCardDto[] cards, MatchActorHooks hooks)
+    /// <summary>New match: first turn starts now. <paramref name="halfRtt"/> seeds each seat's lag credit (else the first turn gets none).</summary>
+    public static MatchActor CreateNew(MatchRuntime rt, MatchSetup setup, PlayerCardDto[] cards, MatchActorHooks hooks, int[]? halfRtt = null)
     {
         var a = new MatchActor(rt, setup, cards, hooks);
+        if (halfRtt is { Length: 2 }) { a._halfRtt[0] = Math.Clamp(halfRtt[0], 0, 1000); a._halfRtt[1] = Math.Clamp(halfRtt[1], 0, 1000); }
         var now = a.NowMs();
         a._startedAtMs = now;
         a._lastActivityMs = now;
@@ -366,7 +367,10 @@ internal sealed class MatchActor
         var think = Math.Max(0, rawThink - credit);
         var step = Step(c.Action, think, out var arenaStep);
         if (!step.Ok) { Reply(c.Reply, Ack(ErrorCodes.FromMoveError(step.Error))); return; }
-        _budget[seat.Value] = Math.Max(0, _budget[seat.Value] - credit);
+        // Debit only the part of the credit the move actually needed past the nominal allowance. Charging the full credit
+        // for every move (even instant ones) emptied the 4 s budget after ~13 moves, exactly when the 2 s floor needs it.
+        var used = _allowanceMs is { } allowance ? Math.Clamp(rawThink - allowance, 0, credit) : 0;
+        _budget[seat.Value] = Math.Max(0, _budget[seat.Value] - used);
         Commit(seat.Value, c.Action, step, think, auto: false, now, arenaStep);
         var ack = new MoveAckDto(true, null, _seq, _state.Ply);
         _acks[c.ActionId] = ack;
@@ -438,7 +442,9 @@ internal sealed class MatchActor
     {
         if (_result is not null || Tc != TimeControl.Unlimited || ToMoveSeat is not { } seat) return;
         if (SeatConnected(seat) || _detachedSinceMs[seat] is not { } since) return;
-        if (now - since < _rt.Options.Unlimited.DisconnectForfeitMinutes * 60_000L) return;
+        // Measured from whichever is later: the disconnect or the start of the player's turn (leaving while the opponent
+        // thinks for 9 minutes must not forfeit you 30 s into your own turn).
+        if (now - Math.Max(since, _turnStartMs) < _rt.Options.Unlimited.DisconnectForfeitMinutes * 60_000L) return;
         if (_state.Ply == 0) End(Outcome.None, null, EndReason.Aborted, [], "abandoned", now);
         else EndWithWinner(1 - seat, EndReason.Abandoned, now);
     }
@@ -658,7 +664,7 @@ internal sealed class MatchActor
         var elapsed = TimeSpan.FromMilliseconds(_gameElapsedMs);
         var scaled = Tc is not (TimeControl.Daily or TimeControl.Unlimited);
         var next = scaled ? _rt.Clock.NextStep(Tc, elapsed) : null;
-        return new ClockDto(Tc, _turnStartMs, _allowanceMs is { } a ? _turnStartMs + a : null, _allowanceMs, (int)_gameElapsedMs,
+        return new ClockDto(Tc, _turnStartMs, _allowanceMs is { } a ? _turnStartMs + a : null, _allowanceMs, (int)Math.Min(_gameElapsedMs, int.MaxValue),
             scaled && _rt.Clock.IsSuddenDeath(Tc, elapsed),
             next is { } n ? (int)n.Allowance.TotalMilliseconds : null,
             next is { } n2 ? (int)n2.AtGameElapsed.TotalMilliseconds : null,

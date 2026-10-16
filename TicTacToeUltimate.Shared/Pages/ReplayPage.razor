@@ -1,6 +1,7 @@
 @page "/replay/{Id:guid}"
 @inject IGameQueries Queries
 @inject IProgressStore Progress
+@inject IWalletStore Wallet
 @inject ToastService Toasts
 
 <PageTitle>Replay · Tic Tac Toe Ultimate</PageTitle>
@@ -22,11 +23,19 @@ else
                WinLine="@(final ? _game.Result.WinLine : null)" Winner="Winner" Interactive="false" />
     </div>
     <ReplayScrubber Ply="_ply" Max="_frames.Count - 1" PlyChanged="p => _ply = p" />
-    @if (_analysis is null)
+    @if (_analysis is null && AnalysisPossible)
     {
         <Card Title="Perfect-play review">
             <p class="t-small t-muted" style="margin:0">@(_analysisError ?? "See which moves won and which were blunders.")</p>
-            <Button Variant="primary" OnClick="Unlock" Disabled="_busy">Watch ad to unlock</Button>
+            @if (_unlocked)
+            {
+                <Button Variant="secondary" OnClick="LoadAnalysis" Disabled="_busy">Try again</Button>
+            }
+            else
+            {
+                <Button Variant="primary" OnClick="Unlock" Disabled="_busy"><Icon Name="diamond" /> Unlock · 20</Button>
+                <a class="t-small" href="store">Need Diamonds? Earn them in the Store</a>
+            }
         </Card>
     }
     <MoveList Actions="_game.Actions" Current="_ply" Analysis="_analysis?.Plies" OnSelect="p => _ply = p" Size="_game.Rules.BoardSize" />
@@ -38,7 +47,11 @@ else
     private GameAnalysisDto? _analysis;
     private string? _analysisError;
     private int _ply;
-    private bool _loading = true, _busy;
+    private bool _loading = true, _busy, _unlocked;
+
+    /// <summary>The tablebase covers classic 3x3 games only: not Arena (scoring layer), not Old school, not aborted games.</summary>
+    private bool AnalysisPossible => _game is not null && _game.Result.Reason != EndReason.Aborted && _game.Actions.Length > 0
+        && !TicTacToeUltimate.Engine.Clocks.MoveClock.IsArena(_game.TimeControl) && _game.TimeControl != TicTacToeUltimate.Engine.Clocks.TimeControl.OldSchool;
 
     /// <summary>Game id.</summary>
     [Parameter] public Guid Id { get; set; }
@@ -56,13 +69,15 @@ else
         var arena = TicTacToeUltimate.Engine.Clocks.MoveClock.IsArena(_game.TimeControl) ? TicTacToeUltimate.Engine.Arena.ArenaRules.RulesetC with { Board = _game.Rules.ToEngine() } : null;
         _frames = ReplayFrames.Build(_game.Rules, _game.Actions, arena);
         _ply = _frames.Count - 1;
-        if (AnalysisFlag == 1) await LoadAnalysis();
+        // Already unlocked (earlier ad, or the result screen) → show it without asking for another ad.
+        if (AnalysisPossible) await LoadAnalysis();
     }
 
     private async Task LoadAnalysis()
     {
         var (a, err) = await Queries.GetAnalysisAsync(Id);
         _analysis = a;
+        if (a is not null || err is ErrorCodes.AnalysisWarming) _unlocked = true;   // the grant exists; no second ad
         _analysisError = err switch
         {
             null => null,
@@ -77,9 +92,10 @@ else
         _busy = true;
         try
         {
-            var r = await Progress.ClaimRewardAsync(RewardKind.Analysis, Id);
-            if (r.Granted) await LoadAnalysis();
-            else Toasts.Show(Ui.RewardFailText(r, "Watch the full ad to unlock"), ToastKind.Error);
+            var r = await Wallet.BuyAsync("analysis", Id);
+            if (r.Ok || r.Error == ErrorCodes.ItemUnavailable) await LoadAnalysis();
+            else if (r.Error == ErrorCodes.InsufficientDiamonds) Toasts.Show("The review costs 20 Diamonds. Win games or watch an ad in the Store.", ToastKind.Info);
+            else Toasts.Show(Ui.ErrorToastText(r.Error, "Couldn't unlock the review."), ToastKind.Error);
         }
         finally { _busy = false; }
     }

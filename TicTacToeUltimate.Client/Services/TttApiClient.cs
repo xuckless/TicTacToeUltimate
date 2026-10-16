@@ -38,6 +38,7 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
     public Task<MeDto> GetMeAsync() => Get<MeDto>("api/me")!;
     /// <summary>PUT /api/me/username.</summary>
     public Task<MeDto> SetUsernameAsync(SetUsernameDto request) => Send<MeDto>(HttpMethod.Put, "api/me/username", request)!;
+    public Task DeleteAccountAsync() => Send<object>(HttpMethod.Delete, "api/me", null);
     /// <summary>PATCH /api/me.</summary>
     public Task<MeDto> UpdateProfileAsync(UpdateProfileDto request) => Send<MeDto>(HttpMethod.Patch, "api/me", request)!;
     /// <summary>GET /api/players/{username}; null on 404.</summary>
@@ -66,8 +67,8 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
     /// <summary>GET /api/friends.</summary>
     public Task<FriendsOverviewDto> GetFriendsAsync() => Get<FriendsOverviewDto>("api/friends")!;
     /// <summary>POST /api/friends/requests.</summary>
-    public Task<CommandAckDto> SendFriendRequestAsync(string username)
-        => Send<CommandAckDto>(HttpMethod.Post, "api/friends/requests", new SendFriendRequestDto(username))!;
+    public Task<CommandAckDto> SendFriendRequestAsync(string? username, Guid? userId = null)
+        => Send<CommandAckDto>(HttpMethod.Post, "api/friends/requests", new SendFriendRequestDto(username, userId))!;
     /// <summary>POST /api/friends/requests/{id}/accept|decline.</summary>
     public Task<CommandAckDto> RespondFriendRequestAsync(Guid id, bool accept)
         => Send<CommandAckDto>(HttpMethod.Post, $"api/friends/requests/{id}/{(accept ? "accept" : "decline")}", null)!;
@@ -87,11 +88,17 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
     /// <summary>GET /api/progress.</summary>
     public Task<ProgressDto> GetProgressAsync() => Get<ProgressDto>("api/progress")!;
     /// <summary>POST /api/rewards/claim.</summary>
+    public Task<WalletDto> GetWalletAsync() => Get<WalletDto>("api/wallet")!;
+    public Task<StoreDto> GetStoreAsync() => Get<StoreDto>("api/store")!;
+    public Task<PurchaseResultDto> BuyAsync(PurchaseDto request) => Send<PurchaseResultDto>(HttpMethod.Post, "api/store/buy", request)!;
+    public Task<RewardNonceDto> RequestRewardNonceAsync(RewardNonceRequestDto request) => Send<RewardNonceDto>(HttpMethod.Post, "api/rewards/nonce", request)!;
     public Task<RewardClaimResultDto> ClaimRewardAsync(RewardClaimDto claim) => Send<RewardClaimResultDto>(HttpMethod.Post, "api/rewards/claim", claim)!;
     /// <summary>GET /api/challenges/{code}; null on 404.</summary>
     public Task<ChallengeDto?> GetChallengeAsync(string code) => GetOrNull<ChallengeDto>($"api/challenges/{Uri.EscapeDataString(code)}");
     /// <summary>GET /api/daily; empty when the endpoint is missing.</summary>
     public async Task<IReadOnlyList<DailyGameDto>> GetDailyGamesAsync() => await GetOrNull<DailyGameDto[]>("api/daily") ?? [];
+    /// <summary>GET /api/me/matches: the caller's unfinished games (live + Daily).</summary>
+    public async Task<IReadOnlyList<ActiveMatchDto>> GetActiveMatchesAsync() => await GetOrNull<ActiveMatchDto[]>("api/me/matches") ?? [];
     /// <summary>GET /api/live?friends=true (§6.5); empty when the endpoint is missing.</summary>
     public async Task<IReadOnlyList<LiveMatchDto>> GetLiveFriendMatchesAsync() => await GetOrNull<LiveMatchDto[]>("api/live?friends=true") ?? [];
 

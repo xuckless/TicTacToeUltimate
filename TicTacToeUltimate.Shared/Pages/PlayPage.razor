@@ -8,6 +8,7 @@
 
 <PageTitle>Play · Tic Tac Toe Ultimate</PageTitle>
 <h1 class="play-title"><BounceText Text="Play" /></h1>
+<ActiveGames />
 
 @foreach (var group in Groups)
 {
@@ -57,6 +58,8 @@
         <p class="t-small t-muted" style="margin:0;flex:1">Send a link. Friendly games are unrated and allow rematches.</p>
     </div>
     <InviteLinkButton Text="Create invite link" CreateLink="CreateLink" Guest="IsGuest" />
+    <p class="t-small t-muted" style="margin:10px 0 4px">Got a code from a friend?</p>
+    <JoinCodeBox />
 </section>
 
 <Sheet Open="@(Queue.State.Phase is QueuePhase.Entering or QueuePhase.Searching or QueuePhase.Found)" Title="Finding a match" Dismissible="false">
@@ -115,6 +118,7 @@
     // Localised impact frame on the chosen card, then queue.
     private async Task Press(TimeControl tc)
     {
+        if (Queue.State.Phase != QueuePhase.Idle) return;   // double tap / already searching
         _burstTc = tc;
         _burst++;
         StateHasChanged();
@@ -164,8 +168,8 @@
     {
         if (tc == TimeControl.Daily) { Nav.NavigateTo("daily"); return; }
         try { await Queue.EnterAsync(tc); }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't join the queue.", ToastKind.Error); }
-        if (Queue.State.Error == ErrorCodes.ServerUpdating) Toasts.Show(Ui.ServerUpdatingText, ToastKind.Info);
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't join the queue.", ToastKind.Error); return; }
+        if (Queue.State is { Phase: QueuePhase.Idle, Error: { } err }) Toasts.Show(Ui.ErrorToastText(err, "Couldn't join the queue."), err == ErrorCodes.ServerUpdating ? ToastKind.Info : ToastKind.Error);
     }
 
     private Task Cancel() => Queue.LeaveAsync();

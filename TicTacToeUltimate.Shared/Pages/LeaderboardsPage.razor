@@ -5,15 +5,18 @@
 <PageTitle>Leaderboards · Tic Tac Toe Ultimate</PageTitle>
 <h1 class="t-title">Leaderboards</h1>
 
-<Tabs Items="Scopes" Active="@_scope" ActiveChanged="SetScope" Label="Scope" />
-<div class="t-seg" role="group" aria-label="Pool">
-    <button type="button" aria-pressed="@(_pool == RatingPool.ArenaRanked ? "true" : "false")" @onclick="() => SetPool(RatingPool.ArenaRanked)">Ranked</button>
-    <button type="button" aria-pressed="@(_pool == RatingPool.Daily ? "true" : "false")" @onclick="() => SetPool(RatingPool.Daily)">Daily</button>
-</div>
+@if (!Session.State.IsGuest)
+{
+    <Tabs Items="Scopes" Active="@_scope" ActiveChanged="SetScope" Label="Scope" />
+}
 
 @if (Session.State.IsGuest)
 {
     <Card><p style="margin:0">Leaderboards are for accounts. <a href="signin">Create one</a> to get ranked.</p></Card>
+}
+else if (_error)
+{
+    <Card><div class="t-empty"><Bert Mood="shocked" Size="64" /><span>Couldn't load the leaderboard.</span><Button Variant="secondary" Small="true" OnClick="Load">Retry</Button></div></Card>
 }
 else if (_page is null)
 {
@@ -44,6 +47,7 @@ else
     private RatingPool _pool = RatingPools.Headline;
     private int _pageNo = 1;
     private LeaderboardPageDto? _page;
+    private bool _error;
 
     /// <inheritdoc />
     protected override Task OnInitializedAsync() => Session.State.IsGuest ? Task.CompletedTask : Load();
@@ -52,8 +56,9 @@ else
     {
         var scope = _scope switch { "Friends" => LeaderboardScope.Friends, "Country" => LeaderboardScope.Country, "Master" => LeaderboardScope.MasterSeason, _ => LeaderboardScope.Global };
         var country = scope == LeaderboardScope.Country ? Session.State.Me?.Country : null;
+        _error = false;
         try { _page = await Queries.GetLeaderboardAsync(_pool, scope, country, _pageNo); }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { _page = null; }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { _page = null; _error = true; }
     }
 
     private Task SetScope(string s) { _scope = s; _pageNo = 1; return Load(); }

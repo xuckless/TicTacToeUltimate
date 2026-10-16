@@ -34,6 +34,8 @@ public static class PlatformServiceCollectionExtensions
 
         services.AddSingleton(_ => new ProfanityFilter());
         services.AddSingleton<UsernameRules>();
+        services.AddHttpClient(nameof(SupabaseAdminClient));
+        services.AddSingleton<SupabaseAdminClient>();
         services.AddSingleton<AccountService>();
         services.AddSingleton<IPlayerCardService, PlayerCardService>();
         services.AddSingleton<PresenceLookup>();
@@ -42,8 +44,8 @@ public static class PlatformServiceCollectionExtensions
         services.AddSingleton<SocialService>();
         services.AddSingleton<GameViews>();
 
-        if (string.Equals(cfg["Ttt:Ads:Provider"], "AdSense", StringComparison.OrdinalIgnoreCase)) services.AddSingleton<IRewardVerifier, AdSenseRewardVerifier>();
-        else services.AddSingleton<IRewardVerifier, StubRewardVerifier>();
+        services.AddSingleton<TicTacToeUltimate.Server.Economy.WalletService>();
+        services.AddSingleton<RewardNonceService>();   // server-minted single-use nonces; Ttt:Ads:Provider only steers the client
         services.AddSingleton<RewardService>();
         return services;
     }
@@ -65,8 +67,10 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<IChallengeRepository, PgChallengeRepository>();
             services.AddSingleton<IBotKeyRepository, PgBotKeyRepository>();
             services.AddSingleton<IRewardLedger, PgRewardLedger>();
+            services.AddSingleton<IWalletRepository, TicTacToeUltimate.Server.Persistence.PgWalletRepository>();
             services.AddSingleton<ISeasonRepository, PgSeasonRepository>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.PgGuestMergeStore>();
+            services.AddSingleton<TicTacToeUltimate.Server.Persistence.IAccountDeletionStore, TicTacToeUltimate.Server.Persistence.PgAccountDeletionStore>();
         }
         else
         {
@@ -80,8 +84,10 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<IChallengeRepository, InMemoryChallengeRepository>();
             services.AddSingleton<IBotKeyRepository, InMemoryBotKeyRepository>();
             services.AddSingleton<IRewardLedger, InMemoryRewardLedger>();
+            services.AddSingleton<IWalletRepository, TicTacToeUltimate.Server.Persistence.InMemoryWalletRepository>();
             services.AddSingleton<ISeasonRepository, InMemorySeasonRepository>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.InMemoryGuestMergeStore>();
+            services.AddSingleton<TicTacToeUltimate.Server.Persistence.IAccountDeletionStore, TicTacToeUltimate.Server.Persistence.InMemoryAccountDeletionStore>();
             services.AddHostedService<FixtureSeeder>();
         }
         return services;

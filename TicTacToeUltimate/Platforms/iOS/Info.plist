@@ -31,9 +31,9 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-	<!-- AdMob. GADApplicationIdentifier is Google's sample app id until the real one exists (DEPLOYMENT_GUIDE.md). -->
+	<!-- AdMob. GADApplicationIdentifier is the real iOS AdMob app id. -->
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-7292645320711380~2038336860</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Allowing tracking lets us show ads that are more relevant to you. Ads keep Tic Tac Toe Ultimate free.</string>
 	<key>MinimumOSVersion</key>

@@ -1,0 +1,23 @@
+@inherits StoreComponent
+@inject IQueueStore Queue
+@inject IActiveMatchesStore Active
+@inject NavigationManager Nav
+
+@* App-wide: when the server pairs us (queue, or a friend accepted our challenge while we were on any page), go to the match.
+   Only the Play page used to react, so a challenge creator on Social/Profile/Home was never taken to the game and the
+   queue stayed "Found" (which also hid banners and blocked interstitials for the rest of the session). *@
+
+@code {
+    /// <inheritdoc />
+    protected override void OnInitialized() => Subscribe(Queue);
+
+    /// <inheritdoc />
+    protected override void OnStoresChanged()
+    {
+        if (Queue.State is not { Phase: QueuePhase.Found, Found: { } f }) return;
+        Queue.Acknowledge();
+        _ = Active.RefreshAsync();
+        var current = Nav.ToBaseRelativePath(Nav.Uri);
+        if (!current.StartsWith($"match/{f.MatchId}", StringComparison.OrdinalIgnoreCase)) Nav.NavigateTo($"match/{f.MatchId}");
+    }
+}

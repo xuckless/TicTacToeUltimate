@@ -12,6 +12,10 @@ public sealed class AdCoordinator(IAdProvider provider, ISessionStore session, I
     private readonly Lock _gate = new();
     private AdPolicyState _state;
     private volatile bool _matchRoute;
+    private long? _adFreeUntilMs;
+
+    /// <inheritdoc />
+    public void SetAdFreeUntil(long? untilMs) => _adFreeUntilMs = untilMs;
 
     /// <summary>Current policy counters.</summary>
     public AdPolicyState PolicyState { get { lock (_gate) return _state; } }
@@ -28,7 +32,8 @@ public sealed class AdCoordinator(IAdProvider provider, ISessionStore session, I
         bool show;
         lock (_gate)
         {
-            var blocked = _matchRoute || queue.State.Phase != QueuePhase.Idle || !provider.IsAvailable;
+            var adFree = _adFreeUntilMs is { } until && until > DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();   // bought "no interstitials" pass
+            var blocked = _matchRoute || queue.State.Phase != QueuePhase.Idle || !provider.IsAvailable || adFree;
             (show, _state) = AdPolicy.OnGameCompleted(_state, result, session.State.Config?.Ads ?? DefaultConfig, blocked,
                 DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
         }

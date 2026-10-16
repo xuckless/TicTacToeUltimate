@@ -89,6 +89,9 @@ public sealed class BotKeyResolver
     /// <summary>The configured dev bots.</summary>
     public IEnumerable<TttUser> DevBots => _devKeys.Values.Select(v => v.User);
 
+    /// <summary>True when the bot user comes from a configured (persona) key rather than a user-created one.</summary>
+    public bool IsTrusted(Guid botUserId) => _devKeys.Values.Any(v => v.User.UserId == botUserId);
+
     /// <summary>Deterministic user id of a dev bot.</summary>
     public static Guid DevBotUserId(string keyId) => GuidV5.Create(GuidV5.BotNamespace, "dev-bot:" + keyId);
 

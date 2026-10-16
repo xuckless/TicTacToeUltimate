@@ -36,8 +36,29 @@ public readonly record struct OpResult<T>(T? Value, string? Error, int Status = 
 
 /// <summary>Account lifecycle: dev users, guest login, me, username, profile.</summary>
 public sealed class AccountService(IUserRepository users, RatingService ratings, UsernameRules rules, DevTokenIssuer issuer, TimeProvider time,
-    TicTacToeUltimate.Server.Persistence.IGuestMergeStore merge)
+    TicTacToeUltimate.Server.Persistence.IGuestMergeStore merge, TicTacToeUltimate.Server.Persistence.IAccountDeletionStore deletion,
+    SupabaseAdminClient supabaseAdmin, IServiceProvider services, ILogger<AccountService> log)
 {
+    /// <summary>
+    /// DELETE /api/me: resigns live games, anonymises the player and purges personal data (see IAccountDeletionStore), then deletes
+    /// the Supabase auth user when the admin key is configured. The caller must sign out; the id can never authenticate again.
+    /// </summary>
+    public async Task<OpResult<bool>> DeleteAccountAsync(Guid userId, CancellationToken ct)
+    {
+        var u = await users.GetAsync(userId, ct);
+        if (u is null || u.Kind == AccountKind.Bot) return OpResult<bool>.Fail(ErrorCodes.Validation, 400);
+        if (services.GetService(typeof(TicTacToeUltimate.Server.Abstractions.IMatchGateway)) is TicTacToeUltimate.Server.Abstractions.IMatchGateway gateway)
+            foreach (var matchId in gateway.ActiveMatchesFor(userId))
+            {
+                try { await gateway.ResignAsync(matchId, userId, ct); }
+                catch (Exception ex) when (ex is not OperationCanceledException) { log.LogWarning(ex, "Resign on delete failed for {Match}", matchId); }
+            }
+        await deletion.DeleteAsync(userId, ct);
+        if (u.Kind == AccountKind.Account) await supabaseAdmin.DeleteUserAsync(userId, ct);
+        log.LogInformation("Account {User} deleted", userId);
+        return new(true, null);
+    }
+
     /// <summary>Builds MeDto.</summary>
     public async Task<MeDto?> GetMeAsync(Guid userId, CancellationToken ct)
     {
@@ -130,15 +151,21 @@ public sealed class AccountService(IUserRepository users, RatingService ratings,
         return new TokenResponseDto(token, exp, (await GetMeAsync(u.Id, ct))!);
     }
 
-    /// <summary>PUT /api/me/username (guest = upgrade, same id).</summary>
+    /// <summary>PUT /api/me/username (accounts only; guests upgrade through Supabase sign-in + claim-guest).</summary>
     public async Task<OpResult<MeDto>> SetUsernameAsync(Guid userId, SetUsernameDto req, CancellationToken ct)
     {
         var u = await users.GetAsync(userId, ct);
         if (u is null || u.Kind == AccountKind.Bot) return OpResult<MeDto>.Fail(ErrorCodes.Validation, 400);
+        // A guest token proves only possession of a device id. Accounts come from a verified Supabase sign-in (then claim-guest);
+        // letting a guest pick a username used to mint unlimited "accounts" with ranked/social/bot-key access.
+        if (u.Kind == AccountKind.Guest) return OpResult<MeDto>.Fail(ErrorCodes.GuestNotAllowed, 403);
         var name = UsernameRules.Normalize(req.Username);
         if (!rules.IsValid(name)) return OpResult<MeDto>.Fail(ErrorCodes.UsernameInvalid, 400);
         if (u.Username is null && u.TosAcceptedAt is null && !req.AcceptTos) return OpResult<MeDto>.Fail(ErrorCodes.TosRequired, 400);
+        var first = u.Username is null;
         var result = await users.SetUsernameAsync(userId, name, req.AcceptTos ? time.GetUtcNow() : null, ct);
+        if (result == UsernameResult.Ok && first && services.GetService(typeof(TicTacToeUltimate.Server.Economy.WalletService)) is TicTacToeUltimate.Server.Economy.WalletService wallet)
+            await wallet.GrantAsync(userId, TicTacToeUltimate.Server.Economy.EconomyRules.FirstUsernameReward, TicTacToeUltimate.Server.Economy.EconomyRules.ReasonFirstUsername, "once", ct);
         return result switch
         {
             UsernameResult.Ok => new((await GetMeAsync(userId, ct))!, null),

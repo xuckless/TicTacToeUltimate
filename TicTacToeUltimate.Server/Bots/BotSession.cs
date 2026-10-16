@@ -52,11 +52,15 @@ public sealed class BotSession : IMatchObserver, IBotSeeker
 
     /// <summary>Creates a session for an authenticated bot socket.</summary>
     public BotSession(WebSocket socket, TttUser bot, IMatchGateway? gateway, IChallengeService? challenges, BotPool pool,
-        TimeProvider time, ILogger log, BotSessionSettings? settings = null)
+        TimeProvider time, ILogger log, BotSessionSettings? settings = null, bool trusted = false)
     {
         _socket = socket; _bot = bot; _gateway = gateway; _challenges = challenges; _pool = pool; _time = time; _log = log;
         _settings = settings ?? BotSessionSettings.Default;
+        Trusted = trusted;
     }
+
+    /// <inheritdoc />
+    public bool Trusted { get; }
 
     /// <summary>Unique id of this connection; namespace for idempotent action ids.</summary>
     public Guid SessionId { get; } = Guid.NewGuid();

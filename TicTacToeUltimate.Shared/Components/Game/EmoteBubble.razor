@@ -1,9 +1,17 @@
-@if (Emote is not null)
+@* One emote bubble: a Bert mood or a phrase. *@
+@if (Text is not null)
 {
-    <span class="emote-bubble" role="status">@Emote.Text</span>
+    @if (Text.StartsWith("bert:", StringComparison.Ordinal))
+    {
+        <span class="emote-bubble bert-bubble" role="status" aria-label="@($"Bert {Text[5..]}")"><Bert Mood="@Text[5..]" Size="56" /></span>
+    }
+    else
+    {
+        <span class="emote-bubble" role="status">@Text</span>
+    }
 }
 
 @code {
-    /// <summary>Emote to show.</summary>
-    [Parameter] public EmoteView? Emote { get; set; }
+    /// <summary>Emote text ("bert:laugh" or a phrase).</summary>
+    [Parameter] public string? Text { get; set; }
 }

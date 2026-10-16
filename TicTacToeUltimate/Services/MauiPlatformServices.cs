@@ -123,6 +123,8 @@ public sealed class MauiDeepLinkSource : IDeepLinkSource
 {
     /// <summary>The scheme.</summary>
     public const string Scheme = "tttu";
+    /// <summary>Web host whose https links the app also opens (universal / app links).</summary>
+    public const string WebHost = "tictactoeultimate.alidirect.dev";
 
     /// <inheritdoc />
     public Uri? InitialLink { get; private set; }
@@ -132,8 +134,10 @@ public sealed class MauiDeepLinkSource : IDeepLinkSource
     /// <summary>Publishes a link from the platform (intent / openURL).</summary>
     public void Publish(string? url)
     {
-        if (string.IsNullOrEmpty(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri)
-            || !string.Equals(uri.Scheme, Scheme, StringComparison.OrdinalIgnoreCase)) return;
+        if (string.IsNullOrEmpty(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri)) return;
+        var custom = string.Equals(uri.Scheme, Scheme, StringComparison.OrdinalIgnoreCase);
+        var web = string.Equals(uri.Scheme, "https", StringComparison.OrdinalIgnoreCase) && string.Equals(uri.Host, WebHost, StringComparison.OrdinalIgnoreCase);
+        if (!custom && !web) return;
         if (LinkOpened is null) InitialLink = uri;
         else LinkOpened.Invoke(uri);
     }

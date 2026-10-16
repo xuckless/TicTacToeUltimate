@@ -25,12 +25,15 @@ public static class CoreServiceCollectionExtensions
             {
                 o.MaximumReceiveMessageSize = 16 * 1024;
                 o.EnableDetailedErrors = env.IsDevelopment();
+                o.AddFilter<HubRateLimitFilter>();
             })
             .AddJsonProtocol(o => InsertContracts(o.PayloadSerializerOptions.TypeInfoResolverChain));
         services.Replace(ServiceDescriptor.Singleton<IUserIdProvider, SubUserIdProvider>());   // AddSignalR TryAdds DefaultUserIdProvider (NameIdentifier); we key users by "sub".
 
         services.AddAuthentication();
         services.AddAuthorization();
+        services.AddTttRateLimiting(cfg);
+        services.AddSingleton<HubRateLimitFilter>();
 
         var origins = cfg.GetSection("Ttt:Cors:Origins").Get<string[]>() ?? [];
         services.AddCors(o => o.AddPolicy(CorsPolicy, p => p.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));

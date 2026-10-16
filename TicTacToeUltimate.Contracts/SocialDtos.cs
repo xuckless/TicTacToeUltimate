@@ -20,7 +20,8 @@ public sealed record PresenceDto(Guid UserId, PresenceStatus Status, Guid? Match
 public sealed record FriendDto(PlayerCardDto Player, PresenceDto Presence, int UnreadMessages, DateTimeOffset? LastSeenAt);
 public sealed record FriendRequestDto(Guid RequestId, PlayerCardDto From, PlayerCardDto To, FriendRequestDirection Direction, DateTimeOffset CreatedAt);
 public sealed record FriendsOverviewDto(FriendDto[] Friends, FriendRequestDto[] Requests, PlayerCardDto[] Blocked);
-public sealed record SendFriendRequestDto(string Username);
+/// <summary>By username, or by user id (e.g. the opponent on the result screen, whose card carries no username).</summary>
+public sealed record SendFriendRequestDto(string? Username, Guid? UserId = null);
 public sealed record DirectMessageDto(long Id, Guid From, Guid To, string Body, DateTimeOffset SentAt, DateTimeOffset? ReadAt);
 public sealed record SendDirectMessageDto(Guid ToUserId, string Body);
 
@@ -29,8 +30,16 @@ public sealed record ChallengeDto(string Code, string Url, PlayerCardDto From, G
     RuleSetDto Rules, ChallengeStatus Status, DateTimeOffset ExpiresAt, Guid? MatchId);
 public sealed record AcceptChallengeResultDto(bool Accepted, string? Error, Guid? MatchId);
 
+/// <summary>Step 1 of a rewarded ad: ask the server for a single-use nonce (it also checks eligibility before the ad plays).</summary>
+public sealed record RewardNonceRequestDto(RewardKind Kind, Guid? GameId);
+/// <summary>The nonce to send back as the claim receipt after the ad; Error (reward_capped, reward_invalid) when not eligible.</summary>
+public sealed record RewardNonceDto(string? Nonce, long ExpiresAtMs, string? Error);
 public sealed record RewardClaimDto(RewardKind Kind, Guid? GameId, string Receipt);
-public sealed record RewardClaimResultDto(bool Granted, string? Error, ProgressDto? Progress);
+public sealed record RewardClaimResultDto(bool Granted, string? Error, ProgressDto? Progress)
+{
+    /// <summary>Wallet after a Diamonds grant.</summary>
+    public WalletDto? Wallet { get; init; }
+}
 
 public sealed record BotKeyDto(string KeyId, Guid BotUserId, string BotName, DateTimeOffset CreatedAt, DateTimeOffset? RevokedAt);
 public sealed record CreateBotKeyDto(string BotName);

@@ -1,0 +1,32 @@
+@inject ISocialStore Social
+@inject NavigationManager Nav
+@inject ToastService Toasts
+
+@* Enter a room / challenge code by hand (links were the only way in). Opens the existing lobby page at /c/{code}. *@
+<form class="join-code" @onsubmit="Join" @onsubmit:preventDefault="true" aria-label="Join with a code">
+    <input class="t-input join-code-input" value="@_code" @oninput="e => _code = Normalize(e.Value?.ToString())" placeholder="Room code" maxlength="12"
+           autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Room code" data-testid="join-code" />
+    <Button Variant="secondary" Type="submit" Disabled="@(_busy || _code.Length < 4)" data-testid="join-code-go">Join</Button>
+</form>
+
+@code {
+    private string _code = "";
+    private bool _busy;
+
+    private static string Normalize(string? s) => new string((s ?? "").Trim().ToUpperInvariant().Where(char.IsLetterOrDigit).ToArray());
+
+    private async Task Join()
+    {
+        if (_busy || _code.Length < 4) return;
+        _busy = true;
+        try
+        {
+            var c = await Social.GetChallengeAsync(_code);
+            if (c is null) { Toasts.Show("No game with that code. Check it and try again.", ToastKind.Error); return; }
+            if (c.Status != ChallengeStatus.Open) { Toasts.Show("That game has already started or expired.", ToastKind.Error); return; }
+            Nav.NavigateTo($"c/{c.Code}");
+        }
+        catch (Exception) { Toasts.Show("Couldn't look up that code. Check your connection.", ToastKind.Error); }
+        finally { _busy = false; }
+    }
+}

@@ -26,7 +26,7 @@ public static class ClaimsPrincipalExtensions
         if (sub is null || !Guid.TryParse(sub, out var userId))
             throw new Microsoft.AspNetCore.SignalR.HubException(ErrorCodes.NotAParticipant);
         var kindText = principal.FindFirst(TttClaims.Kind)?.Value;
-        var kind = Enum.TryParse<AccountKind>(kindText, ignoreCase: true, out var k) ? k : AccountKind.Account;
+        var kind = Enum.TryParse<AccountKind>(kindText, ignoreCase: true, out var k) ? k : AccountKind.Guest;   // missing kind fails closed
         var name = principal.FindFirst(TttClaims.Name)?.Value ?? "Player";
         return new TttUser(userId, kind, name);
     }

@@ -108,9 +108,12 @@ public sealed class SocialService(
     }
 
     /// <summary>Sends a friend request by username.</summary>
-    public async Task<CommandAckDto> RequestAsync(Guid me, string username, CancellationToken ct)
+    public Task<CommandAckDto> RequestAsync(Guid me, string username, CancellationToken ct) => RequestAsync(me, username, null, ct);
+
+    /// <summary>Sends a friend request to a username or a user id.</summary>
+    public async Task<CommandAckDto> RequestAsync(Guid me, string? username, Guid? userId, CancellationToken ct)
     {
-        var target = await users.GetByUsernameAsync((username ?? "").Trim(), ct);
+        var target = userId is { } id ? await users.GetAsync(id, ct) : await users.GetByUsernameAsync((username ?? "").Trim(), ct);
         if (target is null || target.Kind != AccountKind.Account) return new(false, ErrorCodes.Validation);
         if (target.Id == me) return new(false, ErrorCodes.Validation);
         var result = await friends.RequestAsync(me, target.Id, time.GetUtcNow(), ct);

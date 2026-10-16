@@ -26,8 +26,13 @@ else
 {
     var ranked = _profile.Ratings.FirstOrDefault(r => r.Pool == RatingPools.Headline);
     <ProfileHeader Card="_profile.Card" JoinedAt="_profile.JoinedAt" />
-    @if (!IsSelf)
+    @if (!IsSelf && Session.State.IsGuest)
     {
+        <Card><p class="t-small t-muted" style="margin:0">Create an account to add friends and challenge players. <a href="signin">Create account</a></p></Card>
+    }
+    else if (!IsSelf)
+    {
+        <ChallengeModePicker Open="_picking" TargetName="@_profile.Card.DisplayName" Busy="_sending" OnPick="SendChallenge" OnClose="() => _picking = false" />
         <div class="t-row">
             @switch (_profile.FriendStatus)
             {
@@ -35,7 +40,7 @@ else
                 case FriendStatus.RequestSent: <Button Variant="secondary" Small="true" Disabled="true">Request sent</Button> break;
                 case FriendStatus.RequestReceived: <Button Variant="primary" Small="true" Href="social">Respond to request</Button> break;
                 case FriendStatus.Friends:
-                    <Button Variant="primary" Small="true" OnClick="ChallengeFriend">Challenge</Button>
+                    <Button Variant="primary" Small="true" OnClick="() => _picking = true">Challenge</Button>
                     <Button Variant="secondary" Small="true" Href="@($"social/chat/{_profile.Card.UserId}")">Message</Button>
                     break;
             }
@@ -87,14 +92,22 @@ else
     private async Task AddFriend()
     {
         var ack = await Social.SendRequestAsync(_profile!.Card.DisplayName);
-        Toasts.Show(ack.Ok ? "Request sent" : "Couldn't send the request.", ack.Ok ? ToastKind.Success : ToastKind.Error);
+        Toasts.Show(ack.Ok ? "Request sent" : Ui.ErrorToastText(ack.Error, "Couldn't send the request."), ack.Ok ? ToastKind.Success : ToastKind.Error);
         if (ack.Ok) _profile = _profile with { FriendStatus = FriendStatus.RequestSent };
     }
 
-    private async Task ChallengeFriend()
+    private bool _picking, _sending;
+
+    private async Task SendChallenge(TimeControl tc)
     {
-        await Social.CreateChallengeAsync(new CreateChallengeDto(TimeControl.CasualX2, _profile!.Card.UserId));
-        Toasts.Show("Challenge sent", ToastKind.Success);
+        _sending = true;
+        try
+        {
+            await Social.CreateChallengeAsync(new CreateChallengeDto(tc, _profile!.Card.UserId));
+            Toasts.Show($"Challenge sent to {_profile.Card.DisplayName}. They have 24 hours to accept.", ToastKind.Success);
+        }
+        catch (Exception ex) { Toasts.Show(Ui.ErrorToastText(ErrorText.Code(ex), "Couldn't send the challenge."), ToastKind.Error); }
+        finally { _sending = false; _picking = false; }
     }
 
     private async Task Block()

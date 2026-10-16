@@ -33,6 +33,16 @@ public sealed class InMemoryFriendRepository : IFriendRepository
         }
     }
 
+    internal void RemoveUser(Guid id)
+    {
+        lock (_gate)
+        {
+            _friends.RemoveWhere(f => f.Item1 == id || f.Item2 == id);
+            foreach (var k in _requests.Where(kv => kv.Value.From == id || kv.Value.To == id).Select(kv => kv.Key).ToArray()) _requests.Remove(k);
+            _blocks.RemoveWhere(b => b.Blocker == id || b.Blocked == id);
+        }
+    }
+
     /// <summary>Adds a pending request with a fixed id (fixtures).</summary>
     internal void SeedRequest(FriendRequestRecord r) { lock (_gate) _requests[r.Id] = r; }
 
@@ -108,6 +118,11 @@ public sealed class InMemoryChatRepository : IChatRepository
     private readonly List<DirectMessageRecord> _messages = [];
     private long _nextId;
 
+    internal void RemoveUser(Guid id)
+    {
+        lock (_gate) _messages.RemoveAll(m => m.From == id || m.To == id);
+    }
+
     public Task<DirectMessageRecord> AppendAsync(Guid from, Guid to, string body, DateTimeOffset at, CancellationToken ct)
     {
         lock (_gate)
@@ -154,6 +169,15 @@ public sealed class InMemoryProgressRepository : IProgressRepository
     private readonly Dictionary<Guid, StreakRecord> _streaks = [];
     private readonly Dictionary<(Guid, DateOnly), QuestDayRecord> _days = [];
 
+    internal void RemoveUser(Guid id)
+    {
+        lock (_gate)
+        {
+            _streaks.Remove(id);
+            foreach (var key in _days.Keys.Where(k => k.Item1 == id).ToArray()) _days.Remove(key);
+        }
+    }
+
     /// <summary>Guest merge: better streak wins; quest wins add up.</summary>
     internal void Reassign(Guid from, Guid to)
     {
@@ -199,6 +223,11 @@ public sealed class InMemoryChallengeRepository : IChallengeRepository
     private readonly Lock _gate = new();
     private readonly Dictionary<string, ChallengeRecord> _map = new(StringComparer.Ordinal);
 
+    internal void RemoveUser(Guid id)
+    {
+        lock (_gate) foreach (var k in _map.Where(kv => kv.Value.CreatorId == id || kv.Value.TargetUserId == id).Select(kv => kv.Key).ToArray()) _map.Remove(k);
+    }
+
     public Task<bool> CreateAsync(ChallengeRecord record, CancellationToken ct)
     {
         lock (_gate) return Task.FromResult(_map.TryAdd(record.Code, record));
@@ -234,6 +263,11 @@ public sealed class InMemoryBotKeyRepository : IBotKeyRepository
     private readonly Lock _gate = new();
     private readonly Dictionary<string, BotKeyRecord> _map = new(StringComparer.Ordinal);
 
+    internal void RevokeOwner(Guid ownerId, DateTimeOffset at)
+    {
+        lock (_gate) foreach (var k in _map.Where(kv => kv.Value.OwnerUserId == ownerId && kv.Value.RevokedAt is null).Select(kv => kv.Key).ToArray()) _map[k] = _map[k] with { RevokedAt = at };
+    }
+
     public Task<BotKeyRecord?> FindAsync(string keyId, CancellationToken ct)
     {
         lock (_gate) return Task.FromResult(_map.GetValueOrDefault(keyId));
@@ -268,6 +302,11 @@ public sealed class InMemoryRewardLedger : IRewardLedger
     private readonly Lock _gate = new();
     private readonly Dictionary<string, RewardGrantRecord> _map = new(StringComparer.Ordinal);
 
+    internal void RemoveUser(Guid id)
+    {
+        lock (_gate) foreach (var k in _map.Where(kv => kv.Value.UserId == id).Select(kv => kv.Key).ToArray()) _map.Remove(k);
+    }
+
     public Task<bool> TryGrantAsync(RewardGrantRecord grant, CancellationToken ct)
     {
         lock (_gate) return Task.FromResult(_map.TryAdd(grant.Nonce, grant));
@@ -276,5 +315,10 @@ public sealed class InMemoryRewardLedger : IRewardLedger
     public Task<bool> HasGrantAsync(Guid userId, RewardKind kind, Guid? gameId, CancellationToken ct)
     {
         lock (_gate) return Task.FromResult(_map.Values.Any(g => g.UserId == userId && g.Kind == kind && g.GameId == gameId));
+    }
+
+    public Task<int> CountSinceAsync(Guid userId, RewardKind kind, DateTimeOffset since, CancellationToken ct)
+    {
+        lock (_gate) return Task.FromResult(_map.Values.Count(g => g.UserId == userId && g.Kind == kind && g.GrantedAt >= since));
     }
 }

@@ -262,6 +262,16 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     }
 
     /// <inheritdoc />
+    public async Task<string?> DeleteAccountAsync()
+    {
+        try { await _api.DeleteAccountAsync(); }
+        catch (Exception ex) { return ErrorText.Code(ex); }
+        await _kv.RemoveAsync(DeviceIdKey);   // a fresh guest identity next time; the old id is dead server-side
+        await SignOutAsync();
+        return null;
+    }
+
+    /// <inheritdoc />
     public async Task<CommandAckDto> SetUsernameAsync(string username, bool acceptTos)
     {
         try

@@ -57,7 +57,13 @@ public sealed record CommandAckDto(bool Ok, string? Error);
 
 public sealed record PostGameSummaryDto(Guid MatchId, MatchResultDto Result, GameResultForUser YourResult,
     RatingChangeDto? Rating, TierChangeDto? Tier, int WinStreak, ProgressDto? Progress,
-    bool AnalysisAvailable, int? YourBlunders, bool RematchAllowed);
+    bool AnalysisAvailable, int? YourBlunders, bool RematchAllowed)
+{
+    /// <summary>Diamonds this game paid (win/loss payout + quests + streak milestones + promotion); 0 for challenges, rematches and bot games.</summary>
+    public int DiamondsEarned { get; init; }
+    /// <summary>Wallet after the payout.</summary>
+    public WalletDto? Wallet { get; init; }
+}
 
 public sealed record QueueRequestDto(TimeControl TimeControl);
 public sealed record QueueTicketDto(bool Accepted, string? Error, TimeControl TimeControl, long EnqueuedAtMs);
@@ -70,3 +76,6 @@ public sealed record ServerHelloDto(MeDto Me, long ServerNowMs, Guid[] ActiveMat
 
 public sealed record DailyGameDto(Guid MatchId, PlayerCardDto Opponent, Color YourColor, bool YourTurn, long? DeadlineAtMs, int Ply);
 public sealed record LiveMatchDto(Guid MatchId, TimeControl TimeControl, PlayerCardDto[] Players, int Ply, int SpectatorCount);
+/// <summary>One of the caller's unfinished games (live or Daily), for the "Active games" list and the resume banner.</summary>
+public sealed record ActiveMatchDto(Guid MatchId, MatchMode Mode, TimeControl TimeControl, PlayerCardDto Opponent, Color YourColor,
+    bool YourTurn, int Ply, long? DeadlineAtMs, bool Daily);

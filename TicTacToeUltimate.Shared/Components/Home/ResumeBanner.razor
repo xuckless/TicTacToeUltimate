@@ -1,0 +1,26 @@
+@inherits StoreComponent
+@inject IActiveMatchesStore Active
+@inject ISessionStore Session
+
+@* "Back to home (game continues)" used to be a one-way door: nothing led back while the clock kept running. *@
+@if (Live is { } g)
+{
+    <a class="daily-nudge resume-banner" href="@($"match/{g.MatchId}")" data-testid="resume-banner">
+        <Icon Name="play" />
+        <span><strong>Game in progress</strong> · vs @g.Opponent.DisplayName@(g.YourTurn ? " · your move" : "")</span>
+        <span class="t-chip">Resume</span>
+    </a>
+}
+
+@code {
+    /// <summary>The first live (non-Daily) game; Daily games have their own nudge and 24 h to spare.</summary>
+    private ActiveMatchDto? Live => Session.State.Status == SessionStatus.SignedIn
+        ? Active.State.Matches.FirstOrDefault(m => !m.Daily) : null;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Active, Session);
+        await Active.RefreshAsync();
+    }
+}

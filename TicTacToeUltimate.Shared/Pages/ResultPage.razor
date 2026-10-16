@@ -1,8 +1,11 @@
 @page "/result/{Id:guid}"
 @inherits StoreComponent
 @inject IMatchStore Matches
+@inject ISessionStore Session
 @inject IProgressStore Progress
 @inject IQueueStore Queue
+@inject ISocialStore Social
+@inject IWalletStore Wallet
 @inject ISettingsStore Settings
 @inject IServiceProvider Services
 @inject NavigationManager Nav
@@ -26,11 +29,45 @@ else
         <div class="t-result @BannerClass" data-testid="result-banner">
             <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
                 <Bert Mood="@(YourResult switch { GameResultForUser.Win => "cheer", GameResultForUser.Loss => "sad", _ => "shocked" })" Size="72" />
-                <span class="t-label">@Ui.ReasonText(r.Reason)</span>
+                <span class="t-label">@Ui.ReasonText(r.Reason, _view.IsSpectator ? null : YourResult)</span>
                 <h1><BounceText Text="@Title" /></h1>
                 <span class="result-sub">vs @(opp?.Player.DisplayName ?? "opponent") · @Ui.Elapsed(_view.Snapshot.Clock?.GameElapsedMsAtTurnStart ?? 0) · @_view.Snapshot.Ply moves</span>
+                @if (s is { DiamondsEarned: > 0 })
+                {
+                    <span class="t-chip diamond-chip" data-testid="diamonds-earned"><Icon Name="diamond" /> +@s.DiamondsEarned</span>
+                }
             </div>
         </div>
+
+        @if (!_view.IsSpectator && opp is not null)
+        {
+            var me = _view.Snapshot.Seats.FirstOrDefault(x => x.Seat == (_view.MySeat ?? 0));
+            <div class="result-social" data-testid="result-social">
+                <div class="rs-player">
+                    <Avatar Name="@opp.Player.DisplayName" AvatarId="@opp.Player.AvatarId" />
+                    <span class="t-small">@opp.Player.DisplayName <BotBadge Kind="opp.Player.Kind" /></span>
+                    @if (EmoteFor(opp.Seat) is { } oe) { <EmoteBubble Text="@oe" /> }
+                </div>
+                <div class="rs-actions">
+                    @if (_emotesOpen)
+                    {
+                        <Button Variant="secondary" Small="true" OnClick="() => _emotes = true" data-testid="result-emote"><Icon Name="emote" /> Emote</Button>
+                    }
+                    @if (CanAddFriend)
+                    {
+                        <Button Variant="primary" Small="true" OnClick="AddFriend" Disabled="_busy" data-testid="result-add-friend"><Icon Name="social" /> Add friend</Button>
+                    }
+                    else if (_friendSent) { <span class="t-chip">Request sent</span> }
+                </div>
+                <div class="rs-player">
+                    <Avatar Name="@me?.Player.DisplayName" AvatarId="@me?.Player.AvatarId" />
+                    <span class="t-small">You</span>
+                    @if (me is not null && EmoteFor(me.Seat) is { } ye) { <EmoteBubble Text="@ye" /> }
+                </div>
+                <ThrownEmote Text="@_thrownText" FromBottom="_thrownFromMe" Key="_thrownKey" />
+            </div>
+            <EmotePicker Open="_emotes" Emotes="Session.State.Config?.Emotes" OnPick="SendEmote" OnClose="() => _emotes = false" />
+        }
 
         @if (s?.Rating is { } rc)
         {
@@ -62,7 +99,8 @@ else
                         <span class="at-title"><Icon Name="chart" /> Perfect-play review</span>
                         <span class="t-small t-muted">See every winning and losing move.</span>
                         @if (s.YourBlunders is int b) { <span class="at-blunders">@b blunder@(b == 1 ? "" : "s") found</span> }
-                        <Button Variant="primary" Small="true" OnClick="UnlockAnalysis" Disabled="_busy"><Icon Name="ad" /> Watch ad to unlock</Button>
+                        <Button Variant="primary" Small="true" OnClick="UnlockAnalysis" Disabled="_busy"><Icon Name="diamond" /> Unlock · 20</Button>
+                        @if ((Wallet.State.Wallet?.Diamonds ?? 0) < 20) { <a class="t-small" href="store">Need Diamonds? Watch an ad in the Store</a> }
                     </div>
                 </div>
             </Card>
@@ -75,10 +113,14 @@ else
 
         <div class="result-actions">
             <Button Variant="primary" Block="true" OnClick="NewMatch">New @Ui.TimeControlName(_view.Snapshot.TimeControl).ToLowerInvariant() match</Button>
-            @if (RematchAllowed)
+            @if (RematchAllowed && opp?.Player.Kind == AccountKind.Bot)
             {
-                <Button Variant="secondary" Block="true" OnClick="Rematch" Disabled="_view.RematchOfferedByMe" data-testid="rematch">
-                    @(_view.RematchOfferedByMe ? "Rematch offered…" : _view.RematchOfferedByOpponent ? "Accept rematch" : "Rematch")
+                <div class="t-small t-muted" style="text-align:center">Bots don't take rematches. Start a new match for another opponent.</div>
+            }
+            else if (RematchAllowed)
+            {
+                <Button Variant="secondary" Block="true" OnClick="Rematch" Disabled="@(_view.RematchOfferedByMe || _rematchExpired)" data-testid="rematch">
+                    @(_rematchExpired ? "No answer to the rematch" : _view.RematchOfferedByMe ? $"Rematch offered… {_rematchLeft}s" : _view.RematchOfferedByOpponent ? "Accept rematch" : "Rematch")
                 </Button>
             }
             <Button Variant="secondary" Block="true" OnClick="Home">Home</Button>
@@ -90,7 +132,73 @@ else
 
 @code {
     private MatchView? _view;
-    private bool _loading = true, _busy, _completedReported;
+    private bool _loading = true, _busy, _completedReported, _emotes, _emotesOpen = true, _friendSent, _rematchExpired;
+    private int _rematchLeft = 60;
+    private string? _thrownText;
+    private bool _thrownFromMe;
+    private int _thrownKey;
+    private long _lastThrownAt;
+    private bool _emoteBaselineSet;
+
+    private string? EmoteFor(int seat) => _view?.RecentEmotes.LastOrDefault(e => e.Seat == seat && !(seat != _view.MySeat && Settings.State.MuteOpponentEmotes))?.Text;
+
+    /// <summary>Add friend: accounts only, not already friends / requested / blocked, never bots or guests.</summary>
+    private bool CanAddFriend
+    {
+        get
+        {
+            if (_friendSent || _view is null || _view.IsSpectator || Session.State.Me is not { Kind: AccountKind.Account }) return false;
+            var opp = _view.Snapshot.Seats.FirstOrDefault(x => x.Seat != (_view.MySeat ?? 0));
+            if (opp is null || opp.Player.Kind != AccountKind.Account) return false;
+            var id = opp.Player.UserId;
+            var s = Social.State;
+            return s.Friends.All(f => f.Player.UserId != id) && s.Requests.All(r => r.From.UserId != id && r.To.UserId != id) && s.Blocked.All(b => b.UserId != id);
+        }
+    }
+
+    private async Task AddFriend()
+    {
+        var opp = _view?.Snapshot.Seats.FirstOrDefault(x => x.Seat != (_view.MySeat ?? 0));
+        if (opp is null) return;
+        _busy = true;
+        try
+        {
+            var ack = await Social.SendRequestAsync(opp.Player.DisplayName, opp.Player.UserId);
+            if (ack.Ok) { _friendSent = true; Toasts.Show($"Friend request sent to {opp.Player.DisplayName}", ToastKind.Success); }
+            else Toasts.Show(Ui.ErrorToastText(ack.Error, "Couldn't send the request."), ToastKind.Error);
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task SendEmote(string id)
+    {
+        _emotes = false;
+        await Matches.SendEmoteAsync(Id, id);
+        // The match actor lingers about 2 minutes after the end; after that emotes bounce and the button goes away.
+        if (Matches.State.Matches.GetValueOrDefault(Id)?.LastError is ErrorCodes.MatchNotFound or ErrorCodes.MatchOver) _emotesOpen = false;
+    }
+
+    private void ThrowNewEmotes()
+    {
+        if (_view is null) return;
+        var newest = _view.RecentEmotes.LastOrDefault();
+        if (!_emoteBaselineSet) { _emoteBaselineSet = true; _lastThrownAt = newest?.ShownAtMs ?? 0; return; }
+        if (newest is { } em && em.ShownAtMs > _lastThrownAt)
+        {
+            _lastThrownAt = em.ShownAtMs;
+            if (!(em.Seat != _view.MySeat && Settings.State.MuteOpponentEmotes)) { _thrownText = em.Text; _thrownFromMe = em.Seat == _view.MySeat; _thrownKey++; }
+        }
+    }
+
+    private async Task RematchCountdown()
+    {
+        for (_rematchLeft = 60; _rematchLeft > 0 && _view?.RematchMatchId is null; _rematchLeft--)
+        {
+            try { await Task.Delay(1000, _cts.Token); } catch (TaskCanceledException) { return; }
+            await InvokeAsync(StateHasChanged);
+        }
+        if (_view?.RematchMatchId is null) { _rematchExpired = true; await InvokeAsync(StateHasChanged); }
+    }
     private int _shownRating, _promoTrigger, _gainBurst;
     private CancellationTokenSource _cts = new();
 
@@ -134,7 +242,7 @@ else
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        Subscribe(Matches);
+        Subscribe(Matches, Social, Settings);
         _view = Matches.State.Matches.GetValueOrDefault(Id);
         if (_view is null)
         {
@@ -151,7 +259,13 @@ else
         var hadSummary = _view?.Summary is not null;
         _view = Matches.State.Matches.GetValueOrDefault(Id) ?? _view;
         if (!hadSummary && _view?.Summary is not null) StartCountUp();
-        if (_view?.RematchMatchId is Guid next) _ = Leave($"match/{next}");
+        ThrowNewEmotes();
+        if (_view?.RematchMatchId is Guid next)
+        {
+            // The new game's clock is already running: never put an interstitial in front of it.
+            _completedReported = true;
+            Nav.NavigateTo($"match/{next}");
+        }
     }
 
     private void StartCountUp()
@@ -180,9 +294,11 @@ else
         _busy = true;
         try
         {
-            var r = await Progress.ClaimRewardAsync(RewardKind.Analysis, Id);
-            if (r.Granted) await Leave($"replay/{Id}?analysis=1");
-            else Toasts.Show(Ui.RewardFailText(r, "Watch the full ad to unlock"), ToastKind.Error);
+            var r = await Wallet.BuyAsync("analysis", Id);
+            if (r.Ok) { _completedReported = true; Nav.NavigateTo($"replay/{Id}?analysis=1"); }
+            else if (r.Error == ErrorCodes.InsufficientDiamonds) Toasts.Show("The review costs 20 Diamonds. Win games or watch an ad in the Store.", ToastKind.Info);
+            else if (r.Error == ErrorCodes.ItemUnavailable) { _completedReported = true; Nav.NavigateTo($"replay/{Id}?analysis=1"); }   // already unlocked
+            else Toasts.Show(Ui.ErrorToastText(r.Error, "Couldn't unlock the review."), ToastKind.Error);
         }
         finally { _busy = false; }
     }
@@ -190,13 +306,18 @@ else
     private async Task NewMatch()
     {
         var tc = _view!.Snapshot.TimeControl;
-        await Leave(tc == TimeControl.Daily ? "daily" : $"play?tc={tc}");
+        // Retired / unlisted time controls (CasualX2 challenges, legacy Ranked) fall back to the Play page.
+        var listed = tc is TimeControl.Casual or TimeControl.ArenaCasual or TimeControl.ArenaRanked or TimeControl.OldSchool or TimeControl.Unlimited;
+        await Leave(tc == TimeControl.Daily ? "daily" : listed ? $"play?tc={tc}" : "play");
     }
 
     private async Task Rematch()
     {
         await Matches.OfferRematchAsync(Id);
-        if (Matches.State.Matches.GetValueOrDefault(Id)?.LastError == ErrorCodes.ServerUpdating) Toasts.Show(Ui.ServerUpdatingText, ToastKind.Info);
+        var v = Matches.State.Matches.GetValueOrDefault(Id);
+        if (v?.LastError == ErrorCodes.ServerUpdating) Toasts.Show(Ui.ServerUpdatingText, ToastKind.Info);
+        else if (v?.LastError is { } err && !v.RematchOfferedByMe) Toasts.Show(Ui.ErrorToastText(err, "Couldn't offer a rematch."), ToastKind.Error);
+        else if (v?.RematchOfferedByMe == true && v.RematchMatchId is null) _ = RematchCountdown();   // the window is 60 s (D14)
     }
     private Task Home() => Leave("");
 

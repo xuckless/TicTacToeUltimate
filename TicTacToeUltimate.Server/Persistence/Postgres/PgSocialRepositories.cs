@@ -287,6 +287,13 @@ public sealed class PgRewardLedger(PgDb db) : IRewardLedger
         return await c.ExecuteScalarAsync<bool>("select exists(select 1 from reward_grants where user_id=@userId and kind=@k and game_id is not distinct from @gameId::uuid)",
             new { userId, k = kind.ToString(), gameId });
     }
+
+    public async Task<int> CountSinceAsync(Guid userId, RewardKind kind, DateTimeOffset since, CancellationToken ct)
+    {
+        await using var c = await db.Source.OpenConnectionAsync(ct);
+        return await c.ExecuteScalarAsync<int>("select count(*) from reward_grants where user_id=@userId and kind=@k and granted_at >= @since",
+            new { userId, k = kind.ToString(), since = since.UtcDateTime });
+    }
 }
 
 /// <summary>Silences an unused-using analyzer in some configurations.</summary>

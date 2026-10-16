@@ -40,6 +40,8 @@ public interface ISessionStore : IStore<SessionState>
     /// <summary>Sets a new password for the signed-in email account.</summary>
     Task<string?> SetPasswordAsync(string password);
     Task SignOutAsync();
+    /// <summary>Deletes the account (server anonymises + purges), then signs out locally. Returns an error code or null.</summary>
+    Task<string?> DeleteAccountAsync();
     Task<CommandAckDto> SetUsernameAsync(string username, bool acceptTos);
     Task<CommandAckDto> UpdateProfileAsync(UpdateProfileDto patch);
 }
@@ -87,12 +89,16 @@ public interface IMatchStore : IStore<MatchesState>
 public sealed record SocialState(ImmutableArray<FriendDto> Friends, ImmutableArray<FriendRequestDto> Requests,
     ImmutableArray<PlayerCardDto> Blocked, ImmutableArray<ChallengeDto> IncomingChallenges,
     ImmutableDictionary<Guid, ImmutableArray<DirectMessageDto>> Threads, bool Loaded, string? Error)
-{ public static SocialState Empty { get; } = new([], [], [], [], ImmutableDictionary<Guid, ImmutableArray<DirectMessageDto>>.Empty, false, null); }
+{
+    public static SocialState Empty { get; } = new([], [], [], [], ImmutableDictionary<Guid, ImmutableArray<DirectMessageDto>>.Empty, false, null);
+    /// <summary>Targeted challenges we sent that are still open (waiting for the friend).</summary>
+    public ImmutableArray<ChallengeDto> OutgoingChallenges { get; init; } = [];
+}
 public interface ISocialStore : IStore<SocialState>
 {
     Task LoadAsync();
     Task<IReadOnlyList<PlayerCardDto>> SearchAsync(string prefix);
-    Task<CommandAckDto> SendRequestAsync(string username);
+    Task<CommandAckDto> SendRequestAsync(string username, Guid? userId = null);
     Task<CommandAckDto> RespondAsync(Guid requestId, bool accept);
     Task RemoveFriendAsync(Guid userId);
     Task BlockAsync(Guid userId);
@@ -104,6 +110,31 @@ public interface ISocialStore : IStore<SocialState>
     Task<ChallengeDto?> GetChallengeAsync(string code);
     Task<AcceptChallengeResultDto> AcceptChallengeAsync(string code);
     Task DeclineChallengeAsync(string code);
+    /// <summary>Withdraws an outgoing challenge.</summary>
+    Task CancelChallengeAsync(string code);
+}
+
+/// <summary>The signed-in player's unfinished games.</summary>
+public sealed record ActiveMatchesState(ImmutableArray<ActiveMatchDto> Matches, bool Loaded)
+{ public static ActiveMatchesState Empty { get; } = new([], false); }
+public interface IActiveMatchesStore : IStore<ActiveMatchesState>
+{
+    /// <summary>Reloads from the server (debounced by the store).</summary>
+    Task RefreshAsync();
+    /// <summary>Forgets a game the user just finished or left (optimistic; a refresh follows).</summary>
+    void Forget(Guid matchId);
+}
+
+/// <summary>Diamonds wallet + store catalogue.</summary>
+public sealed record WalletState(WalletDto? Wallet, ImmutableArray<StoreItemDto> Items, bool Loaded)
+{ public static WalletState Empty { get; } = new(null, [], false); }
+public interface IWalletStore : IStore<WalletState>
+{
+    Task LoadAsync();
+    /// <summary>Buys an item (gameId for the single-game review).</summary>
+    Task<PurchaseResultDto> BuyAsync(string itemId, Guid? gameId = null);
+    /// <summary>Rewarded ad for Diamonds (nonce → ad → claim).</summary>
+    Task<RewardClaimResultDto> WatchAdAsync();
 }
 
 public sealed record ProgressState(ProgressDto? Progress, bool Loaded)
@@ -111,6 +142,8 @@ public sealed record ProgressState(ProgressDto? Progress, bool Loaded)
 public interface IProgressStore : IStore<ProgressState>
 {
     Task LoadAsync();
+    /// <summary>Applies progress returned by another call (store purchase, reward).</summary>
+    void Apply(ProgressDto progress);
     /// <summary>Shows a rewarded ad via IAdCoordinator, then POST /api/rewards/claim. Returns the claim result.</summary>
     Task<RewardClaimResultDto> ClaimRewardAsync(RewardKind kind, Guid? gameId = null);
 }
@@ -144,4 +177,6 @@ public interface IAdCoordinator
     void SetMatchRouteActive(bool active);           // called by MatchLayout (WP6)
     Task OnGameCompletedAsync(GameResultForUser result);   // AdPolicy decides; never shows during a match route
     Task<RewardedAdResult> ShowRewardedAsync(RewardKind kind);
+    /// <summary>Store pass: no interstitials until this server time (null = none).</summary>
+    void SetAdFreeUntil(long? untilMs);
 }

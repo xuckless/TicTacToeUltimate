@@ -13,7 +13,8 @@ namespace TicTacToeUltimate.Server.Progression;
 /// </summary>
 public sealed class PostGameProcessor(
     IGameRepository games, IRatingRepository ratings, RatingService ratingService, TierCalculator tiers, ProgressService progress,
-    ITablebaseCache tablebases, IAnalysisService analysis, IUserNotifier notifier, TimeProvider time, ILogger<PostGameProcessor> logger)
+    ITablebaseCache tablebases, IAnalysisService analysis, IUserNotifier notifier, TimeProvider time, ILogger<PostGameProcessor> logger,
+    TicTacToeUltimate.Server.Economy.WalletService? wallet = null)
     : BackgroundService, IMatchResultSink
 {
     private readonly Channel<CompletedMatch> _queue = Channel.CreateUnbounded<CompletedMatch>(new UnboundedChannelOptions { SingleReader = true });
@@ -91,12 +92,22 @@ public sealed class PostGameProcessor(
             }
         }
 
-        // 4-5. streaks and quests
+        // 4-5. streaks and quests (+ Diamonds for quests completed and streak milestones reached by this game)
         var progressBySeat = new ProgressDto?[2];
+        var diamonds = new int[2];
         if (!aborted)
             for (var seat = 0; seat < 2; seat++)
-                if (IsHuman(seats[seat]))
-                    progressBySeat[seat] = await progress.ApplyGameAsync(seats[seat].UserId, m.Result.WinnerSeat == seat, m.EndedAt, ct);
+            {
+                if (!IsHuman(seats[seat])) continue;
+                var userId = seats[seat].UserId;
+                var progBefore = wallet is null ? null : await progress.GetAsync(userId, ct);
+                var farmable = s.Origin is MatchOrigin.Challenge or MatchOrigin.Rematch || s.Mode == MatchMode.Challenge;
+                // Streak: any played game. Quest wins: queue and bot-fallback games only (two friends could farm quests through rematches).
+                progressBySeat[seat] = await progress.ApplyGameAsync(userId, m.Result.WinnerSeat == seat && !farmable, m.EndedAt, ct);
+                if (wallet is null) continue;
+                try { diamonds[seat] = await PayoutAsync(wallet, userId, seat, s, m, progBefore!, progressBySeat[seat]!, tierChanges[seat], ct); }
+                catch (Exception e) when (e is not OperationCanceledException) { logger.LogWarning(e, "Diamond payout failed for {User}", userId); }
+            }
 
         // 6. analysis
         // Arena games are not classic games: the tablebase cannot judge them.
@@ -122,10 +133,44 @@ public sealed class PostGameProcessor(
             }
             var winStreak = visible ? await WinStreakAsync(userId, pool, ct) : 0;
             var summary = new PostGameSummaryDto(s.MatchId, m.Result, ResultFor(m.Result, seat), rc, tierChanges[seat], winStreak,
-                progressBySeat[seat], analysisReady, blunders is { Length: 2 } ? blunders[seat] : null, rematch);
+                progressBySeat[seat], analysisReady, blunders is { Length: 2 } ? blunders[seat] : null, rematch)
+            { DiamondsEarned = diamonds[seat], Wallet = wallet is null ? null : await wallet.GetAsync(userId, ct) };
             await Safe(() => notifier.ToUserAsync(userId, c => c.PostGameSummary(summary)));
         }
         return true;
+    }
+
+    /// <summary>
+    /// Diamonds for one player's finished game. Win/loss payouts count only queue and bot-fallback games (challenges and
+    /// rematches pay nothing: friends could farm them). Quest completions, streak milestones and promotions pay on any game.
+    /// </summary>
+    private static async Task<int> PayoutAsync(TicTacToeUltimate.Server.Economy.WalletService wallet, Guid userId, int seat, MatchSetup s, CompletedMatch m,
+        ProgressDto before, ProgressDto after, TierChangeDto? tier, CancellationToken ct)
+    {
+        var total = 0;
+        var won = m.Result.WinnerSeat == seat;
+        var farmable = s.Origin is MatchOrigin.Challenge or MatchOrigin.Rematch || s.Mode == MatchMode.Challenge;
+        if (!farmable) total += await wallet.GrantGameAsync(userId, won, s.MatchId, m.EndedAt, ct);
+        var day = after.Day.ToString("yyyy-MM-dd");
+        foreach (var q in after.Quests)
+        {
+            var was = before.Quests.FirstOrDefault(x => x.QuestId == q.QuestId)?.Completed ?? false;
+            if (!q.Completed || was) continue;
+            var reward = q.QuestId switch
+            {
+                "win1" => TicTacToeUltimate.Server.Economy.EconomyRules.Quest1Reward, "win3" => TicTacToeUltimate.Server.Economy.EconomyRules.Quest3Reward,
+                "win5" => TicTacToeUltimate.Server.Economy.EconomyRules.Quest5Reward, "bonus" => TicTacToeUltimate.Server.Economy.EconomyRules.BonusQuestReward, _ => 0,
+            };
+            total += await wallet.GrantAsync(userId, reward, TicTacToeUltimate.Server.Economy.EconomyRules.ReasonQuest, $"{q.QuestId}:{day}", ct);
+        }
+        if (after.Streak.Current > before.Streak.Current)
+            foreach (var (days, reward) in TicTacToeUltimate.Server.Economy.EconomyRules.StreakMilestones)
+                if (after.Streak.Current == days)
+                    total += await wallet.GrantAsync(userId, reward, TicTacToeUltimate.Server.Economy.EconomyRules.ReasonStreak, $"{days}:{day}", ct);
+        if (tier is { Promoted: true })
+            total += await wallet.GrantAsync(userId, TicTacToeUltimate.Server.Economy.EconomyRules.TierPromotionReward, TicTacToeUltimate.Server.Economy.EconomyRules.ReasonTier,
+                $"{tier.After.Tier}-{tier.After.Division}:{m.EndedAt:yyyyMMddHHmmss}", ct);
+        return total;
     }
 
     private async Task<int> WinStreakAsync(Guid userId, RatingPool pool, CancellationToken ct)
