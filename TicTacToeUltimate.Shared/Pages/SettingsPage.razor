@@ -5,6 +5,7 @@
 @inject NavigationManager Nav
 @inject ToastService Toasts
 @inject TicTacToeUltimate.Client.Abstractions.ClientOptions Options
+@inject TicTacToeUltimate.Client.Diagnostics.IScreenshotProvider Screenshots
 
 <PageTitle>Settings · Tic Tac Toe Ultimate</PageTitle>
 <h1 class="t-title">Settings</h1>
@@ -68,7 +69,9 @@
         <a href="@Web("how-to-play/")" target="_blank" rel="noopener">How to play</a>
         <a href="mailto:hello@alidirect.dev">Contact</a>
     </div>
+    <Button Variant="secondary" Small="true" OnClick="OpenBugReport" data-testid="report-bug"><Icon Name="flag" /> Report a bug</Button>
 </Card>
+<BugReportSheet Open="_bug" Screenshot="_bugShot" OnClose="() => _bug = false" />
 
 <Sheet Open="_confirmDelete" Title="Delete account?" OnClose="() => _confirmDelete = false">
     <p class="t-body">This removes your @(Session.State.Me?.Kind == AccountKind.Guest ? "guest profile" : "account"), ratings, streak, quests, friends and messages right away. Finished games stay in your opponents' history as "Deleted player". This cannot be undone.</p>
@@ -79,6 +82,12 @@
 </Sheet>
 
 @code {
+    private bool _bug;
+    private string? _bugShot;
+
+    // The screenshot is taken before the sheet opens, so it shows the screen, not the form.
+    private async Task OpenBugReport() { _bugShot = await Screenshots.CaptureBase64PngAsync(); _bug = true; }
+
     private SettingsState S => Settings.State;
     private bool _confirmDelete, _deleting;
 

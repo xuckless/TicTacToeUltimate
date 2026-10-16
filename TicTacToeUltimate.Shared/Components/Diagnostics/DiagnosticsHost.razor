@@ -1,0 +1,51 @@
+@using TicTacToeUltimate.Client.Diagnostics
+@inject NavigationManager Nav
+@inject TttJsModule Js
+@inject DiagnosticsTrail Trail
+@inject CrashReporter Reporter
+@inject CurrentRoute Route
+@implements IDisposable
+
+@* App-wide: feeds the recent-actions trail (navigation, taps), reports uncaught JS errors, sends crash reports saved offline. *@
+
+@code {
+    private DotNetObjectReference<DiagnosticsHost>? _ref;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        Route.Route = Path(Nav.Uri);
+        Trail.Add("nav", Route.Route ?? "/");
+        Nav.LocationChanged += OnLocation;
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _ref = DotNetObjectReference.Create(this);
+        await Js.InvokeVoidAsync("diagInstall", _ref);
+        _ = Reporter.FlushAsync();
+    }
+
+    private string Path(string uri) => "/" + Nav.ToBaseRelativePath(uri).Split('?', '#')[0];
+
+    private void OnLocation(object? sender, LocationChangedEventArgs e)
+    {
+        Route.Route = Path(e.Location);
+        Trail.Add("nav", Route.Route);
+    }
+
+    /// <summary>JS: a tap (label only).</summary>
+    [JSInvokable] public void OnTap(string label) => Trail.Add("tap", label);
+
+    /// <summary>JS: an uncaught error or rejected promise.</summary>
+    [JSInvokable] public Task OnJsError(string type, string message, string stack) => Reporter.ReportCrashAsync("js:" + type, message, stack);
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocation;
+        _ref?.Dispose();
+    }
+}

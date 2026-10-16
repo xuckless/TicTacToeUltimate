@@ -168,3 +168,65 @@ export function setMotion(mode) {
 export function focusCell(boardEl, index) {
   try { const cells = boardEl.querySelectorAll('[data-cell]'); cells[index]?.focus(); } catch { }
 }
+
+// ---------- Diagnostics (crash + bug reports, 2026-10-16) ----------
+let diagInstalled = false;
+// Taps go to the recent-actions trail by label (data-testid, aria-label or short text; never input values or chat text).
+// Uncaught JS errors and promise rejections are reported as crashes.
+export function diagInstall(dotnetRef) {
+  if (diagInstalled) return;
+  diagInstalled = true;
+  document.addEventListener('click', e => {
+    try {
+      const el = e.target && e.target.closest ? e.target.closest('button,a,[role=button],[data-testid],input[type=checkbox]') : null;
+      if (!el) return;
+      const label = el.getAttribute('data-testid') || el.getAttribute('aria-label')
+        || (el.closest('.chat, .msg, textarea, input[type=text]') ? '(chat)' : (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40));
+      dotnetRef.invokeMethodAsync('OnTap', (el.tagName || '').toLowerCase() + ':' + label);
+    } catch { }
+  }, { capture: true, passive: true });
+  window.addEventListener('error', e => {
+    try {
+      const err = e.error;
+      dotnetRef.invokeMethodAsync('OnJsError', err && err.name ? err.name : 'Error', String(e.message || err || 'script error'),
+        String((err && err.stack) || (e.filename ? e.filename + ':' + e.lineno + ':' + e.colno : '')));
+    } catch { }
+  });
+  window.addEventListener('unhandledrejection', e => {
+    try {
+      const r = e.reason;
+      dotnetRef.invokeMethodAsync('OnJsError', 'UnhandledRejection', String((r && r.message) || r || 'rejected promise'), String((r && r.stack) || ''));
+    } catch { }
+  });
+}
+
+export function diagDescribe() {
+  const ua = navigator.userAgent || '';
+  const os = /Windows/.test(ua) ? 'Windows' : /iPhone|iPad|iPod/.test(ua) ? 'iOS' : /Android/.test(ua) ? 'Android' : /Mac OS X/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : 'Unknown';
+  return { os, device: null, browser: ua.slice(0, 300), screen: `${window.innerWidth}x${window.innerHeight}@${window.devicePixelRatio || 1}`,
+           locale: (navigator.languages && navigator.languages[0]) || navigator.language || null };
+}
+
+let h2c = null;
+function loadHtml2Canvas() {
+  if (window.html2canvas) return Promise.resolve(window.html2canvas);
+  if (!h2c) h2c = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = new URL('./vendor/html2canvas.min.js', import.meta.url).href;
+    s.onload = () => resolve(window.html2canvas);
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  return h2c;
+}
+
+// PNG (base64, no prefix) of what the player sees, max 720 px wide; null on failure.
+export async function diagScreenshot() {
+  try {
+    const html2canvas = await loadHtml2Canvas();
+    const scale = Math.min(1, 720 / Math.max(1, window.innerWidth));
+    const canvas = await html2canvas(document.body, { scale, useCORS: true, logging: false, backgroundColor: getComputedStyle(document.body).backgroundColor,
+      width: window.innerWidth, height: window.innerHeight, x: window.scrollX, y: window.scrollY });
+    return canvas.toDataURL('image/png').split(',')[1] || null;
+  } catch { return null; }
+}

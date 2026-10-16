@@ -19,7 +19,7 @@ public sealed class TttApiException(HttpStatusCode status, string? code, Penalty
 }
 
 /// <summary>Typed REST client for §6.7. Raises <see cref="Unauthorized"/> on any 401.</summary>
-public sealed class TttApiClient(HttpClient http, TokenStore tokens)
+public sealed class TttApiClient(HttpClient http, TokenStore tokens, TicTacToeUltimate.Client.Diagnostics.DiagnosticsTrail? trail = null)
 {
     /// <summary>Raised after a 401 response.</summary>
     public event Action? Unauthorized;
@@ -36,6 +36,8 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
     public Task<TokenResponseDto> DevTokenAsync(DevTokenRequestDto request) => Send<TokenResponseDto>(HttpMethod.Post, "api/auth/dev/token", request)!;
     /// <summary>POST /api/auth/guest.</summary>
     public Task<TokenResponseDto> GuestTokenAsync(GuestTokenRequestDto request) => Send<TokenResponseDto>(HttpMethod.Post, "api/auth/guest", request)!;
+    /// <summary>POST /api/diagnostics/report (crash or bug).</summary>
+    public Task ReportDiagnosticsAsync(CrashReportDto report) => Send<CrashReportResultDto>(HttpMethod.Post, "api/diagnostics/report", report);
     /// <summary>GET /api/me/standing.</summary>
     public Task<StandingDto?> GetStandingAsync() => Get<StandingDto>("api/me/standing");
     /// <summary>POST /api/appeals.</summary>
@@ -130,6 +132,7 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
         if (tokens.DeviceId is { Length: > 0 } device) req.Headers.TryAddWithoutValidation("X-Ttt-Device", device);
         if (body is not null) req.Content = JsonContent.Create(body, body.GetType(), options: Json);
         using var res = await http.SendAsync(req, ct).ConfigureAwait(false);
+        if (!path.StartsWith("api/diagnostics", StringComparison.Ordinal)) trail?.Add("net", $"{method} /{path.Split('?')[0]} {(int)res.StatusCode}");
         if (res.StatusCode == HttpStatusCode.Unauthorized) Unauthorized?.Invoke();
         if (!res.IsSuccessStatusCode)
         {

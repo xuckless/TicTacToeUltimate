@@ -48,6 +48,7 @@ else
 builder.Services.AddTttClientFallbacks();
 
 var host = builder.Build();
+host.Services.GetRequiredService<TicTacToeUltimate.Client.Diagnostics.CrashReporter>().InstallGlobalHandlers();
 
 // Dev-only "?as={username}": sign this tab in as a fixture user without touching localStorage (two tabs can play).
 if (options.IsDevelopment)

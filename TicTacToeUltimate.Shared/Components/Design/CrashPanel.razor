@@ -1,5 +1,8 @@
+@using TicTacToeUltimate.Client.Diagnostics
 @inject NavigationManager Nav
 @inject ILogger<CrashPanel> Log
+@inject CrashReporter Reporter
+@inject IScreenshotProvider Screenshots
 
 @* Shown by the layout ErrorBoundary when a page throws while rendering or handling an event. Without it Blazor Hybrid stops
    rendering and the app looks frozen (that was the "Daily on an offline friend" bug). *@
@@ -10,8 +13,10 @@
     <div style="display:grid;gap:10px;width:100%;margin-top:8px">
         <Button Variant="primary" Block="true" OnClick="Recover">Try again</Button>
         <Button Variant="secondary" Block="true" OnClick="Home">Home</Button>
+        <button type="button" class="t-link-btn" @onclick="OpenReport" data-testid="crash-report">Tell us what happened</button>
     </div>
 </div>
+<BugReportSheet Open="_reporting" Screenshot="_shot" OnClose="() => _reporting = false" />
 
 @code {
     /// <summary>The exception.</summary>
@@ -22,7 +27,20 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Exception is not null) Log.LogError(Exception, "Unhandled UI exception");
+        if (Exception is null || ReferenceEquals(Exception, _reported)) return;
+        _reported = Exception;
+        Log.LogError(Exception, "Unhandled UI exception");
+        _ = Reporter.ReportCrashAsync(Exception);   // automatic (owner decision 2026-10-16); the button adds the player's words
+    }
+
+    private Exception? _reported;
+    private bool _reporting;
+    private string? _shot;
+
+    private async Task OpenReport()
+    {
+        _shot = await Screenshots.CaptureBase64PngAsync();
+        _reporting = true;
     }
 
     private Task Recover() => OnRecover.InvokeAsync();

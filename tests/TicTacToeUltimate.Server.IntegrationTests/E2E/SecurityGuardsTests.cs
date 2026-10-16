@@ -51,4 +51,16 @@ public sealed class SecurityGuardsTests : IAsyncLifetime
         var config = await http.GetFromJsonAsync<AppConfigDto>("/api/config", ContractsJsonContext.Default.Options);
         Assert.Null(config!.ReviewEmail);
     }
+
+    [Fact]
+    public async Task CrashReports_AreAccepted_BeforeSignIn_AndBugsNeedWords()
+    {
+        using var http = _factory.Http();
+        var crash = new CrashReportDto("crash", "Web", "1.0", "macOS", null, "test", "en", "1x1", "/", "TicTacToeUltimate.Shared.Pages.HomePage",
+            "System.Exception", "boom", "at TicTacToeUltimate.Shared.Pages.HomePage.Foo()", null, [], [new TrailEntryDto(1, "nav", "/")], null, null, 1);
+        var res = await http.PostAsJsonAsync("/api/diagnostics/report", crash, ContractsJsonContext.Default.Options);
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var bug = crash with { Kind = "bug", Description = null };
+        Assert.Equal(HttpStatusCode.BadRequest, (await http.PostAsJsonAsync("/api/diagnostics/report", bug, ContractsJsonContext.Default.Options)).StatusCode);
+    }
 }

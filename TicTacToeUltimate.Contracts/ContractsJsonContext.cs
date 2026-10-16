@@ -41,6 +41,8 @@ namespace TicTacToeUltimate.Contracts;
 [JsonSerializable(typeof(StandingDto))]
 [JsonSerializable(typeof(AppealRequestDto))]
 [JsonSerializable(typeof(MessageHiddenDto))]
+[JsonSerializable(typeof(CrashReportDto))]
+[JsonSerializable(typeof(CrashReportResultDto))]
 [JsonSerializable(typeof(SetUsernameDto))]
 [JsonSerializable(typeof(UpdateProfileDto))]
 [JsonSerializable(typeof(EmoteDto))]
