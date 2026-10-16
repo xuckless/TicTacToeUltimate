@@ -106,7 +106,7 @@ public class AuthTests
 
         var email = new ClaimsIdentity([new Claim("sub", Guid.NewGuid().ToString()), new Claim("email", "jane.doe@example.com")], "Supabase");
         var acct = (await tx.TransformAsync(new ClaimsPrincipal(email))).ToTttUser();
-        Assert.Equal((AccountKind.Account, "jane.doe"), (acct.Kind, acct.DisplayName));
+        Assert.Equal((AccountKind.Account, "Player"), (acct.Kind, acct.DisplayName));   // never the email local part (PII)
 
         // Setting a username never changes the kind; a stale claim is refreshed from the store (still a guest here).
         await p.Get<IUserRepository>().SetUsernameAsync(sub, N("sb_"), TestPlatform.Start, default);
