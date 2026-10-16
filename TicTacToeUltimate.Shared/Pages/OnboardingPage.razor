@@ -3,11 +3,18 @@
 @inject TicTacToeUltimate.Client.Abstractions.ClientOptions Options
 @inject NavigationManager Nav
 
-<PageTitle>Welcome · Tic Tac Toe Ultimate</PageTitle>
-<h1 class="t-title">Pick your name</h1>
+<PageTitle>@(Editing ? "Edit profile" : "Welcome") · Tic Tac Toe Ultimate</PageTitle>
+<h1 class="t-title">@(Editing ? "Edit profile" : "Pick your name")</h1>
 
-<TextField Label="Username" Value="@_username" ValueChanged="v => _username = v.ToLowerInvariant()" MaxLength="16" Placeholder="e.g. ali_xo"
-           Hint="3–16 characters: a–z, 0–9 and _. You get 1 free rename." Error="@UsernameError" />
+@if (Editing && (Session.State.Me?.RenamesLeft ?? 0) == 0)
+{
+    <div class="t-field"><span class="t-label">Username</span><div class="t-input" aria-readonly="true">@_username</div><span class="t-small t-muted">Your free rename is used. A name change token comes with the store.</span></div>
+}
+else
+{
+    <TextField Label="Username" Value="@_username" ValueChanged="v => _username = v.ToLowerInvariant()" MaxLength="16" Placeholder="e.g. ali_xo"
+               Hint="@(Editing ? "3–16 characters: a–z, 0–9 and _. This uses your 1 free rename." : "3–16 characters: a–z, 0–9 and _. You get 1 free rename.")" Error="@UsernameError" />
+}
 
 <div class="t-field">
     <label class="t-label" for="country">Country</label>
@@ -27,9 +34,13 @@
     </div>
 </div>
 
-<label class="t-toggle"><span>I am 13 or older and accept the <a href="@Web("terms/")" target="_blank" rel="noopener" @onclick:stopPropagation="true">Terms of Service</a> and <a href="@Web("privacy/")" target="_blank" rel="noopener" @onclick:stopPropagation="true">Privacy Policy</a></span><input type="checkbox" @bind="_tos" /></label>
+@if (!Editing)
+{
+    <label class="t-toggle"><span>I am 13 or older and accept the <a href="@Web("terms/")" target="_blank" rel="noopener" @onclick:stopPropagation="true">Terms of Service</a> and <a href="@Web("privacy/")" target="_blank" rel="noopener" @onclick:stopPropagation="true">Privacy Policy</a></span><input type="checkbox" @bind="_tos" /></label>
+}
 @if (_error is not null) { <p class="t-alert" role="alert">@_error</p> }
-<Button Variant="primary" Block="true" OnClick="Submit" Disabled="@(_busy || UsernameError is not null || _username.Length == 0 || !_tos)">Let's play</Button>
+<Button Variant="primary" Block="true" OnClick="Submit" Disabled="@(_busy || UsernameError is not null || _username.Length == 0 || (!_tos && !Editing))">@(Editing ? "Save" : "Let's play")</Button>
+@if (Editing) { <Button Variant="secondary" Block="true" Href="settings">Cancel</Button> }
 
 @code {
     private string Web(string path) => new Uri(Options.WebBaseUrl, path).ToString();
@@ -45,6 +56,9 @@
 
     private string? UsernameError => _username.Length == 0 || IsValidUsername(_username) ? null : "Use 3–16 characters: a–z, 0–9 and _";
 
+    /// <summary>An account that already has a username is editing (avatar / country / optional rename); ToS was accepted at creation.</summary>
+    private bool Editing => Session.State.Me is { Kind: AccountKind.Account, Username: not null };
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {
@@ -58,7 +72,8 @@
         _busy = true; _error = null;
         try
         {
-            var ack = await Session.SetUsernameAsync(_username, _tos);
+            var unchanged = Editing && string.Equals(_username, Session.State.Me?.Username, StringComparison.Ordinal);
+            var ack = unchanged ? new CommandAckDto(true, null) : await Session.SetUsernameAsync(_username, _tos || Editing);
             if (!ack.Ok)
             {
                 _error = ack.Error switch
@@ -72,7 +87,7 @@
                 return;
             }
             await Session.UpdateProfileAsync(new UpdateProfileDto(_avatar, _country.Length == 0 ? null : _country, null));
-            Nav.NavigateTo("", replace: true);
+            Nav.NavigateTo(Editing ? "settings" : "", replace: true);
         }
         finally { _busy = false; }
     }

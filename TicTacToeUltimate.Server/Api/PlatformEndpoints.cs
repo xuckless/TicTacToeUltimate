@@ -195,7 +195,7 @@ public static class PlatformEndpoints
         api.MapGet("/friends", async (HttpContext http, SocialService s, CancellationToken ct) => Results.Ok(await s.OverviewAsync(http.Me().UserId, ct)))
             .RequireAuthorization(Account);
         api.MapPost("/friends/requests", async (SendFriendRequestDto req, HttpContext http, SocialService s, CancellationToken ct) =>
-            Results.Ok(await s.RequestAsync(http.Me().UserId, req.Username, ct))).RequireAuthorization(Account).RequireRateLimiting(RateLimits.Social);
+            Results.Ok(await s.RequestAsync(http.Me().UserId, req.Username, req.UserId, ct))).RequireAuthorization(Account).RequireRateLimiting(RateLimits.Social);
         api.MapPost("/friends/requests/{id:guid}/accept", async (Guid id, HttpContext http, SocialService s, CancellationToken ct) =>
             Results.Ok(await s.RespondAsync(http.Me().UserId, id, true, ct))).RequireAuthorization(Account);
         api.MapPost("/friends/requests/{id:guid}/decline", async (Guid id, HttpContext http, SocialService s, CancellationToken ct) =>

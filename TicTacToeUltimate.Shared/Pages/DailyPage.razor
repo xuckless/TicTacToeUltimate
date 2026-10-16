@@ -1,13 +1,19 @@
 @page "/daily"
 @inject IGameQueries Queries
 @inject IQueueStore Queue
+@inject ISessionStore Session
 @inject NavigationManager Nav
+@inject ToastService Toasts
 
 <PageTitle>Daily · Tic Tac Toe Ultimate</PageTitle>
-<div class="t-spread"><h1 class="t-title">Daily</h1><Button Variant="primary" Small="true" OnClick="NewGame" Disabled="@(_games.Count >= 10)">New game</Button></div>
-<p class="t-small t-muted" style="margin:0">24 hours per move. Up to 10 games at once.</p>
+<div class="t-spread"><h1 class="t-title">Daily</h1>@if (!Session.State.IsGuest) { <Button Variant="primary" Small="true" OnClick="NewGame" Disabled="@(_games.Count >= 10 || _starting)">New game</Button> }</div>
+<p class="t-small t-muted" style="margin:0">24 hours per move. Up to 10 games at once. Unrated.</p>
 
-@if (_loading)
+@if (Session.State.IsGuest)
+{
+    <Card Title="Daily games need an account"><p class="t-small t-muted" style="margin:0">Create an account to play correspondence games with 24 hours per move.</p><Button Variant="primary" Href="signin">Create account</Button></Card>
+}
+else if (_loading)
 {
     <BertLoader Text="Loading daily games" />
 }
@@ -40,7 +46,7 @@ else
     private bool _loading = true, _error;
 
     /// <inheritdoc />
-    protected override Task OnInitializedAsync() => Load();
+    protected override Task OnInitializedAsync() => Session.State.IsGuest ? Task.CompletedTask : Load();
 
     private async Task Load()
     {
@@ -61,9 +67,17 @@ else
         return left.TotalHours >= 1 ? $" · {(int)left.TotalHours}h left" : $" · {Math.Max(1, (int)left.TotalMinutes)}m left";
     }
 
+    private bool _starting;
+
     private async Task NewGame()
     {
-        await Queue.EnterAsync(TimeControl.Daily);
-        Nav.NavigateTo("play");
+        _starting = true;
+        try
+        {
+            await Queue.EnterAsync(TimeControl.Daily);
+            if (Queue.State is { Phase: QueuePhase.Idle, Error: { } err }) { Toasts.Show(Ui.ErrorToastText(err, "Couldn't start a daily game."), ToastKind.Error); return; }
+            Nav.NavigateTo("play");
+        }
+        finally { _starting = false; }
     }
 }

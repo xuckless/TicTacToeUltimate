@@ -31,6 +31,8 @@ public interface IRealtimeTransport : IGameHub
     event Action<MatchEventEnvelope>? MatchEventReceived;
     /// <summary>Server pushes.</summary>
     event Action<PostGameSummaryDto>? PostGameSummaryReceived;
+    /// <summary>Withdraws a challenge we created.</summary>
+    Task<CommandAckDto> CancelChallenge(string code);
     /// <summary>Server pushes.</summary>
     event Action<ChallengeDto>? ChallengeReceived;
     /// <summary>Server pushes.</summary>

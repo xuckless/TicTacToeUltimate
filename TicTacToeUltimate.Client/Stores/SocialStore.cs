@@ -31,6 +31,9 @@ public sealed class SocialStore : StoreBase<SocialState>, ISocialStore
             IncomingChallenges = c.Status == ChallengeStatus.Open
                 ? [.. s.IncomingChallenges.Select(x => x.Code == c.Code ? c : x)]
                 : [.. s.IncomingChallenges.Where(x => x.Code != c.Code)],
+            OutgoingChallenges = c.Status == ChallengeStatus.Open
+                ? [.. s.OutgoingChallenges.Select(x => x.Code == c.Code ? c : x)]
+                : [.. s.OutgoingChallenges.Where(x => x.Code != c.Code)],
         });
         if (session is SessionStore concrete)
             concrete.HelloReceived += hello => Update(s => s with { IncomingChallenges = [.. hello.PendingChallenges.Where(c => c.Status == ChallengeStatus.Open)] });
@@ -85,9 +88,9 @@ public sealed class SocialStore : StoreBase<SocialState>, ISocialStore
     }
 
     /// <inheritdoc />
-    public async Task<CommandAckDto> SendRequestAsync(string username)
+    public async Task<CommandAckDto> SendRequestAsync(string username, Guid? userId = null)
     {
-        var ack = await Ack(() => _api.SendFriendRequestAsync(username));
+        var ack = await Ack(() => _api.SendFriendRequestAsync(username, userId));
         await LoadAsync();
         return ack;
     }
@@ -139,7 +142,19 @@ public sealed class SocialStore : StoreBase<SocialState>, ISocialStore
     }
 
     /// <inheritdoc />
-    public Task<ChallengeDto> CreateChallengeAsync(CreateChallengeDto request) => _rt.CreateChallenge(request);
+    public async Task<ChallengeDto> CreateChallengeAsync(CreateChallengeDto request)
+    {
+        var c = await _rt.CreateChallenge(request);
+        if (request.ToUserId is not null) Update(s => s with { OutgoingChallenges = [.. s.OutgoingChallenges.Where(x => x.Code != c.Code), c] });
+        return c;
+    }
+
+    /// <inheritdoc />
+    public async Task CancelChallengeAsync(string code)
+    {
+        try { await _rt.CancelChallenge(code); } catch (Exception) { /* best effort */ }
+        Update(s => s with { OutgoingChallenges = [.. s.OutgoingChallenges.Where(x => x.Code != code)] });
+    }
 
     /// <inheritdoc />
     public async Task<ChallengeDto?> GetChallengeAsync(string code)

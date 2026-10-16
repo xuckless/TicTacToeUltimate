@@ -67,8 +67,8 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
     /// <summary>GET /api/friends.</summary>
     public Task<FriendsOverviewDto> GetFriendsAsync() => Get<FriendsOverviewDto>("api/friends")!;
     /// <summary>POST /api/friends/requests.</summary>
-    public Task<CommandAckDto> SendFriendRequestAsync(string username)
-        => Send<CommandAckDto>(HttpMethod.Post, "api/friends/requests", new SendFriendRequestDto(username))!;
+    public Task<CommandAckDto> SendFriendRequestAsync(string? username, Guid? userId = null)
+        => Send<CommandAckDto>(HttpMethod.Post, "api/friends/requests", new SendFriendRequestDto(username, userId))!;
     /// <summary>POST /api/friends/requests/{id}/accept|decline.</summary>
     public Task<CommandAckDto> RespondFriendRequestAsync(Guid id, bool accept)
         => Send<CommandAckDto>(HttpMethod.Post, $"api/friends/requests/{id}/{(accept ? "accept" : "decline")}", null)!;

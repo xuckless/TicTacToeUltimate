@@ -51,7 +51,7 @@
             <div class="who"><div class="name">@me.DisplayName</div><div class="meta">@(me.Kind == AccountKind.Guest ? "Guest" : me.RenamesLeft > 0 ? "1 free rename left" : "Account")</div></div>
         </div>
         @if (me.Kind == AccountKind.Guest) { <Button Variant="primary" Href="signin">Create account</Button> }
-        else if (me.RenamesLeft > 0) { <Button Variant="secondary" Href="onboarding">Edit profile</Button> }
+        else { <Button Variant="secondary" Href="onboarding">Edit profile</Button> }
     }
     <Button Variant="danger" OnClick="SignOut">Sign out</Button>
     @if (Session.State.Me is not null)

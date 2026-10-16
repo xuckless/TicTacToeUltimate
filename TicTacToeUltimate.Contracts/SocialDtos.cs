@@ -20,7 +20,8 @@ public sealed record PresenceDto(Guid UserId, PresenceStatus Status, Guid? Match
 public sealed record FriendDto(PlayerCardDto Player, PresenceDto Presence, int UnreadMessages, DateTimeOffset? LastSeenAt);
 public sealed record FriendRequestDto(Guid RequestId, PlayerCardDto From, PlayerCardDto To, FriendRequestDirection Direction, DateTimeOffset CreatedAt);
 public sealed record FriendsOverviewDto(FriendDto[] Friends, FriendRequestDto[] Requests, PlayerCardDto[] Blocked);
-public sealed record SendFriendRequestDto(string Username);
+/// <summary>By username, or by user id (e.g. the opponent on the result screen, whose card carries no username).</summary>
+public sealed record SendFriendRequestDto(string? Username, Guid? UserId = null);
 public sealed record DirectMessageDto(long Id, Guid From, Guid To, string Body, DateTimeOffset SentAt, DateTimeOffset? ReadAt);
 public sealed record SendDirectMessageDto(Guid ToUserId, string Body);
 

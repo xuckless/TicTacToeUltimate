@@ -89,12 +89,16 @@ public interface IMatchStore : IStore<MatchesState>
 public sealed record SocialState(ImmutableArray<FriendDto> Friends, ImmutableArray<FriendRequestDto> Requests,
     ImmutableArray<PlayerCardDto> Blocked, ImmutableArray<ChallengeDto> IncomingChallenges,
     ImmutableDictionary<Guid, ImmutableArray<DirectMessageDto>> Threads, bool Loaded, string? Error)
-{ public static SocialState Empty { get; } = new([], [], [], [], ImmutableDictionary<Guid, ImmutableArray<DirectMessageDto>>.Empty, false, null); }
+{
+    public static SocialState Empty { get; } = new([], [], [], [], ImmutableDictionary<Guid, ImmutableArray<DirectMessageDto>>.Empty, false, null);
+    /// <summary>Targeted challenges we sent that are still open (waiting for the friend).</summary>
+    public ImmutableArray<ChallengeDto> OutgoingChallenges { get; init; } = [];
+}
 public interface ISocialStore : IStore<SocialState>
 {
     Task LoadAsync();
     Task<IReadOnlyList<PlayerCardDto>> SearchAsync(string prefix);
-    Task<CommandAckDto> SendRequestAsync(string username);
+    Task<CommandAckDto> SendRequestAsync(string username, Guid? userId = null);
     Task<CommandAckDto> RespondAsync(Guid requestId, bool accept);
     Task RemoveFriendAsync(Guid userId);
     Task BlockAsync(Guid userId);
@@ -106,6 +110,8 @@ public interface ISocialStore : IStore<SocialState>
     Task<ChallengeDto?> GetChallengeAsync(string code);
     Task<AcceptChallengeResultDto> AcceptChallengeAsync(string code);
     Task DeclineChallengeAsync(string code);
+    /// <summary>Withdraws an outgoing challenge.</summary>
+    Task CancelChallengeAsync(string code);
 }
 
 /// <summary>The signed-in player's unfinished games.</summary>

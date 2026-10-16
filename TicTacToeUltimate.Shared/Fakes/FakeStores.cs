@@ -105,7 +105,7 @@ public sealed class FakeSocialStore() : FakeStore<SocialState>(MockupFixtures.So
     public Task<IReadOnlyList<PlayerCardDto>> SearchAsync(string prefix)
         => Task.FromResult<IReadOnlyList<PlayerCardDto>>(MockupFixtures.Friends.Select(f => f.Player).Where(p => p.DisplayName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList());
     /// <inheritdoc />
-    public Task<CommandAckDto> SendRequestAsync(string username) { Calls.Add($"Request:{username}"); return Task.FromResult(new CommandAckDto(true, null)); }
+    public Task<CommandAckDto> SendRequestAsync(string username, Guid? userId = null) { Calls.Add($"Request:{username}"); return Task.FromResult(new CommandAckDto(true, null)); }
     /// <inheritdoc />
     public Task<CommandAckDto> RespondAsync(Guid requestId, bool accept) { Calls.Add($"Respond:{accept}"); return Task.FromResult(new CommandAckDto(true, null)); }
     /// <inheritdoc />
@@ -128,6 +128,8 @@ public sealed class FakeSocialStore() : FakeStore<SocialState>(MockupFixtures.So
     public Task<AcceptChallengeResultDto> AcceptChallengeAsync(string code) { Calls.Add($"Accept:{code}"); return Task.FromResult(new AcceptChallengeResultDto(true, null, MockupFixtures.MatchId)); }
     /// <inheritdoc />
     public Task DeclineChallengeAsync(string code) { Calls.Add($"Decline:{code}"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task CancelChallengeAsync(string code) { Calls.Add($"Cancel:{code}"); return Task.CompletedTask; }
 }
 
 /// <summary>Fake <see cref="IActiveMatchesStore"/> (no active games unless a test sets some).</summary>

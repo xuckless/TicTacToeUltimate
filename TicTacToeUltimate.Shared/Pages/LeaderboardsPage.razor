@@ -5,10 +5,10 @@
 <PageTitle>Leaderboards · Tic Tac Toe Ultimate</PageTitle>
 <h1 class="t-title">Leaderboards</h1>
 
-<Tabs Items="Scopes" Active="@_scope" ActiveChanged="SetScope" Label="Scope" />
-<div class="t-seg" role="group" aria-label="Pool">
-    <button type="button" aria-pressed="@(_pool == RatingPool.ArenaRanked ? "true" : "false")" @onclick="() => SetPool(RatingPool.ArenaRanked)">Ranked</button>
-</div>
+@if (!Session.State.IsGuest)
+{
+    <Tabs Items="Scopes" Active="@_scope" ActiveChanged="SetScope" Label="Scope" />
+}
 
 @if (Session.State.IsGuest)
 {
