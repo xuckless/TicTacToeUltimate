@@ -186,7 +186,7 @@ body { min-height: 100dvh; }
 .local-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .local-opt { min-width: 0; padding: 14px 34px 12px 12px; }
 .local-options > .mode-wrap:last-child:nth-child(odd) { grid-column: span 2; }
-.local-options .info-btn.corner, .lobby-modes .info-btn.corner { top: 6px; inset-inline-end: 6px; width: 22px; height: 22px; min-width: 22px; font-size: 0.75rem; }
+.local-options .info-btn.corner, .lobby-modes .info-btn.corner { top: 6px; inset-inline-end: 6px; width: 24px; height: 24px; min-width: 24px; font-size: 0.75rem; }
 .local-opt .t-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .local-opt.on { outline: 3px solid var(--primary); outline-offset: 0; }
 .local-toggle { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
@@ -450,7 +450,7 @@ body { min-height: 100dvh; }
   animation: pp-pop .3s cubic-bezier(.3, 1.8, .5, 1); }
 .pp-check .t-icon { width: 14px; height: 14px; }
 @keyframes pp-pop { from { transform: scale(0); } to { transform: scale(1); } }
-.pp-tiles .info-btn.corner { top: 6px; inset-inline-end: 6px; width: 22px; height: 22px; min-width: 22px; font-size: 0.75rem; }
+.pp-tiles .info-btn.corner { top: 6px; inset-inline-end: 6px; width: 24px; height: 24px; min-width: 24px; font-size: 0.75rem; }
 .pp-pie { padding: 12px 14px; border-radius: 16px; background: var(--surface); border: 2px solid var(--line); }
 .pp-pie .t-toggle { flex: 1; }
 .pp-start { padding-top: 4px; }
@@ -558,3 +558,20 @@ body { min-height: 100dvh; }
 :lang(zh-Hans) { --font-headline: "Luckiest Guy", "TTT Headline SC", system-ui, sans-serif; }
 :lang(zh-Hant) { --font-headline: "Luckiest Guy", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; }
 :lang(ru), :lang(ar), :lang(fa), :lang(he), :lang(th) { --font-headline: "Luckiest Guy", Fredoka, system-ui, sans-serif; }
+
+/* Sound captions (Settings → Sound captions). */
+.sound-caption { position: fixed; inset-inline: 0; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); margin: 0 auto; width: max-content; max-width: calc(100% - 32px);
+  background: color-mix(in srgb, var(--surface-raised) 92%, transparent); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 999px;
+  padding: 6px 14px; font: var(--type-body-sm); z-index: 60; pointer-events: none; }
+
+/* High contrast (Settings → High contrast): solid surfaces, brighter text and lines, thick focus outlines. */
+:root[data-contrast="high"] {
+  --ink: #ffffff; --ink-muted: #e4dcff; --line: #c9b8ff; --line-strong: #ffffff;
+  --surface: #000000; --surface-raised: #140a2a; --bg: #000000;
+}
+:root[data-theme="light"][data-contrast="high"] {
+  --ink: #000000; --ink-muted: #1b1036; --line: #3b2a7a; --line-strong: #000000;
+  --surface: #ffffff; --surface-raised: #f3efff; --bg: #ffffff;
+}
+:root[data-contrast="high"] :focus-visible { outline: 3px solid var(--line-strong); outline-offset: 3px; }
+:root[data-contrast="high"] .t-card, :root[data-contrast="high"] .t-sheet { border: 2px solid var(--line); }

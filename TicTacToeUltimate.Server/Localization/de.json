@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "Du bist dran",
+ "push.your_move.body": "Du bist gegen {0} am Zug.",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "Deine {0}-Tage-Serie endet um Mitternacht. Ein Spiel hält sie am Leben!",
+ "push.streak.2": "Bert hier. {0} Tage stark… lass sie nicht verblassen wie einen alten Stein.",
+ "push.streak.3": "Psst — deine {0}-Tage-Serie wartet. Ein schnelles Spiel?",
+ "push.comeback.title": "Bert fordert dich heraus",
+ "push.comeback.1": "Bert fordert dich zu einem Spiel heraus. Hast du es noch drauf?",
+ "push.comeback.2": "Das Brett vermisst dich. Ein Casual-Spiel dauert 90 Sekunden.",
+ "push.comeback.3": "Gerade sind neue Gegner online. Spielst du mit?",
+ "notify.promoted": "Aufgestiegen!",
+ "notify.demoted": "Abgestiegen",
+ "notify.emote": "hat dir ein Emote geschickt",
+ "tier.Bronze": "Bronze",
+ "tier.Silver": "Silber",
+ "tier.Gold": "Gold",
+ "tier.Platinum": "Platin",
+ "tier.Diamond": "Diamant",
+ "tier.Master": "Meister"
+}

@@ -89,7 +89,10 @@ public sealed class JsSoundService(TttJsModule js) : ISoundService
     /// <inheritdoc />
     public ValueTask UnlockAsync() => js.InvokeVoidAsync("audioUnlock");
     /// <inheritdoc />
-    public void Play(SoundCue cue) => js.Fire("audioPlay", cue.ToString());
+    public void Play(SoundCue cue) { js.Fire("audioPlay", cue.ToString()); Played?.Invoke(cue); }
+
+    /// <summary>Every cue played (sound captions listen here, whether or not sound is on).</summary>
+    public static event Action<SoundCue>? Played;
     /// <inheritdoc />
     public void SetHeartbeat(int? beatsPerMinute) => js.Fire("audioHeartbeat", beatsPerMinute);
     /// <inheritdoc />

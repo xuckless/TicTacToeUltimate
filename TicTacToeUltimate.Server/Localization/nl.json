@@ -1,0 +1,21 @@
+{
+ "notify.demoted": "Gedegradeerd",
+ "notify.emote": "stuurde je een emote",
+ "notify.promoted": "Gepromoveerd!",
+ "push.comeback.1": "Bert daagt je uit voor een potje. Kun je het nog?",
+ "push.comeback.2": "Het bord mist je. Een casual potje duurt 90 seconden.",
+ "push.comeback.3": "Er zijn nu nieuwe tegenstanders online. Doe je mee?",
+ "push.comeback.title": "Bert daagt je uit",
+ "push.streak.1": "Je reeks van {0} dagen eindigt om middernacht. Eén potje houdt hem in leven!",
+ "push.streak.2": "Bert hier. Al {0} dagen sterk… laat het niet vervagen als een oud stuk.",
+ "push.streak.3": "Psst — je reeks van {0} dagen wacht op je. Snel een potje?",
+ "push.streak.title": "Bert 👻",
+ "push.your_move.body": "Je bent aan de beurt tegen {0}.",
+ "push.your_move.title": "Jouw zet",
+ "tier.Bronze": "Brons",
+ "tier.Diamond": "Diamant",
+ "tier.Gold": "Goud",
+ "tier.Master": "Meester",
+ "tier.Platinum": "Platina",
+ "tier.Silver": "Zilver"
+}

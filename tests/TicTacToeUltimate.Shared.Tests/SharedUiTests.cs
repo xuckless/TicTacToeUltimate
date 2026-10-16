@@ -76,8 +76,9 @@ public sealed class SharedUiTests : IDisposable
         var cut = _ctx.Render<Board>(p => p.Add(x => x.Cells, "X.OOOX.XO").Add(x => x.Interactive, true)
             .Add(x => x.OnCellSelected, EventCallback.Factory.Create<int>(this, c => picked = c)));
         var cells = cut.FindAll(".t-cell");
-        Assert.True(cells[0].HasAttribute("disabled"));
-        Assert.False(cells[1].HasAttribute("disabled"));
+        // aria-disabled, not disabled: occupied cells stay reachable by keyboard and screen readers (they just do nothing).
+        Assert.Equal("true", cells[0].GetAttribute("aria-disabled"));
+        Assert.False(cells[1].HasAttribute("aria-disabled"));
         cells[1].Click();
         Assert.Equal(1, picked);
     }
@@ -192,7 +193,7 @@ public sealed class SharedUiTests : IDisposable
         store.Put(MockupFixtures.Match(myTurn: false));
         store.Clock = MockupFixtures.MatchClock(myTurn: false);
         var cut = _ctx.Render<MatchPage>(p => p.Add(x => x.Id, MockupFixtures.MatchId));
-        Assert.All(cut.FindAll(".t-board .t-cell"), c => Assert.True(c.HasAttribute("disabled")));
+        Assert.All(cut.FindAll(".t-board .t-cell"), c => Assert.Equal("true", c.GetAttribute("aria-disabled")));
     }
 
     [Fact]

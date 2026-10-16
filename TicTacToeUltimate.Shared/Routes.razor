@@ -25,6 +25,7 @@
 <NotificationHost />
 <AdOverlayHost />
 <ToastHost />
+<CaptionHost />
 <DiagnosticsHost />
 
 @code {
@@ -43,6 +44,10 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender) await Sound.InitAsync();
+        if (firstRender)
+        {
+            await Sound.InitAsync();
+            await Js.InvokeVoidAsync("a11yInstall");   // dialog focus handling app-wide
+        }
     }
 }

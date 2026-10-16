@@ -1,0 +1,21 @@
+{
+ "notify.demoted": "Putosit tasolta",
+ "notify.emote": "lähetti sinulle emoten",
+ "notify.promoted": "Nousit tasoa!",
+ "push.comeback.1": "Bert haastaa sinut peliin. Luuletko, että sinusta on vielä siihen?",
+ "push.comeback.2": "Lauta kaipaa sinua. Rento peli kestää 90 sekuntia.",
+ "push.comeback.3": "Uusia vastustajia on paikalla juuri nyt. Hyppäätkö mukaan?",
+ "push.comeback.title": "Bert haastaa sinut",
+ "push.streak.1": "{0} päivän putkesi päättyy keskiyöllä. Yksi peli pitää sen hengissä!",
+ "push.streak.2": "Bert täällä. {0} päivää putkeen… älä anna sen haalistua kuin vanha nappula.",
+ "push.streak.3": "Psst — {0} päivän putkesi odottaa. Yksi nopea peli?",
+ "push.streak.title": "Bert 👻",
+ "push.your_move.body": "Sinun vuorosi pelissä vastustajaa {0} vastaan.",
+ "push.your_move.title": "Sinun siirtosi",
+ "tier.Bronze": "Pronssi",
+ "tier.Diamond": "Timantti",
+ "tier.Gold": "Kulta",
+ "tier.Master": "Mestari",
+ "tier.Platinum": "Platina",
+ "tier.Silver": "Hopea"
+}

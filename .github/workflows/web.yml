@@ -2,7 +2,7 @@ name: web
 # The site deploys to Cloudflare (deploy/cloudflare, `wrangler deploy`). This job only checks it builds and tests pass.
 on:
   pull_request:
-    paths: ['TicTacToeUltimate.Shared/**', 'TicTacToeUltimate.Client/**', 'TicTacToeUltimate.Web.Client/**', 'TicTacToeUltimate.Contracts/**', 'TicTacToeUltimate.Engine/**', 'tests/TicTacToeUltimate.Client.Tests/**', 'tests/TicTacToeUltimate.Shared.Tests/**', 'deploy/web/**', 'vercel.json', '.github/workflows/web.yml']
+    paths: ['TicTacToeUltimate.Shared/**', 'TicTacToeUltimate.Client/**', 'TicTacToeUltimate.Web.Client/**', 'TicTacToeUltimate.Contracts/**', 'TicTacToeUltimate.Engine/**', 'tests/TicTacToeUltimate.Client.Tests/**', 'tests/TicTacToeUltimate.Shared.Tests/**', 'deploy/web/**', 'vercel.json', 'TicTacToeUltimate.Admin/**', 'tools/a11y/**', '.github/workflows/web.yml']
   push:
     branches: [main]
     paths: ['TicTacToeUltimate.Shared/**', 'TicTacToeUltimate.Client/**', 'TicTacToeUltimate.Web.Client/**', 'deploy/web/**', 'vercel.json', '.github/workflows/web.yml']
@@ -17,3 +17,16 @@ jobs:
       - run: dotnet test tests/TicTacToeUltimate.Client.Tests
       - run: dotnet test tests/TicTacToeUltimate.Shared.Tests
       - run: bash deploy/web/build.sh
+      # Accessibility (WCAG 2.2 AA rules, axe-core): Pass & Play needs no game server, so it scans the static build directly.
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: a11y scan
+        working-directory: tools/a11y
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          npx --yes serve@14.2.4 -s ../../deploy/web/out -l 5050 &
+          sleep 3
+          node axe.mjs http://localhost:5050 /local /local/play
+      - name: admin site builds
+        run: dotnet publish TicTacToeUltimate.Admin -c Release -o /tmp/admin

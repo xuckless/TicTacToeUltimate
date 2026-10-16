@@ -187,6 +187,10 @@ public sealed record SettingsState(ThemePreference Theme, bool Sfx, bool Music, 
     public static SettingsState Default { get; } = new(ThemePreference.Dark, true, false, true, true, MotionPreference.System, false, false, 0.8, 0.5);
     /// <summary>UI language: "system" (device/browser language) or a code from Localizer.Languages.</summary>
     public string Language { get; init; } = "system";
+    /// <summary>Stronger colours, borders and focus outlines (accessibility).</summary>
+    public bool HighContrast { get; init; }
+    /// <summary>Short on-screen captions for sound cues (deaf / hard-of-hearing players).</summary>
+    public bool SoundCaptions { get; init; }
 }
 public interface ISettingsStore : IStore<SettingsState>
 {

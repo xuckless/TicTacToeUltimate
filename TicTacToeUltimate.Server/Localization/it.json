@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "Tocca a te",
+ "push.your_move.body": "È il tuo turno contro {0}.",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "La tua serie di {0} giorni finisce a mezzanotte. Basta una partita per salvarla!",
+ "push.streak.2": "Sono Bert. {0} giorni di fila… non farla sparire come un vecchio pezzo.",
+ "push.streak.3": "Psst — la tua serie di {0} giorni ti aspetta. Una partita veloce?",
+ "push.comeback.title": "Bert ti sfida",
+ "push.comeback.1": "Bert ti sfida a una partita. Pensi di essere ancora in forma?",
+ "push.comeback.2": "La griglia sente la tua mancanza. Una partita casual dura 90 secondi.",
+ "push.comeback.3": "Ci sono nuovi avversari online adesso. Ci stai?",
+ "notify.promoted": "Promosso!",
+ "notify.demoted": "Retrocesso",
+ "notify.emote": "ti ha inviato un'emote",
+ "tier.Bronze": "Bronzo",
+ "tier.Silver": "Argento",
+ "tier.Gold": "Oro",
+ "tier.Platinum": "Platino",
+ "tier.Diamond": "Diamante",
+ "tier.Master": "Maestro"
+}

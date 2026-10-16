@@ -1,0 +1,7 @@
+{
+  "name": "ttt-a11y",
+  "private": true,
+  "type": "module",
+  "description": "axe-core accessibility scan of the web app (WCAG 2.2 AA rules). npm ci && node axe.mjs <baseUrl> [routes…]",
+  "dependencies": { "axe-core": "4.10.2", "playwright": "1.56.1" }
+}

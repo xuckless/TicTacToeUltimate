@@ -1,0 +1,37 @@
+@inject ISettingsStore Settings
+@implements IDisposable
+
+@* Sound captions (accessibility): a short line for the cues that carry meaning, when the player turned them on. *@
+@if (Settings.State.SoundCaptions && _text is not null)
+{
+    <div class="sound-caption" role="status" aria-live="polite" @key="_n"><span aria-hidden="true">♪ </span>@_text</div>
+}
+
+@code {
+    private static readonly HashSet<SoundCue> Meaningful =
+    [
+        SoundCue.Warning, SoundCue.SuddenDeath, SoundCue.RedAlert, SoundCue.MatchFound, SoundCue.Win, SoundCue.Loss, SoundCue.Vanish,
+        SoundCue.Shatter, SoundCue.Crit, SoundCue.ComboBreak, SoundCue.Emote, SoundCue.Promotion, SoundCue.QuestDone,
+    ];
+    private string? _text;
+    private int _n;
+    private CancellationTokenSource? _hide;
+
+    protected override void OnInitialized() => TicTacToeUltimate.Shared.Platform.JsSoundService.Played += OnPlayed;
+
+    private void OnPlayed(SoundCue cue)
+    {
+        if (!Settings.State.SoundCaptions || !Meaningful.Contains(cue)) return;
+        _ = InvokeAsync(async () =>
+        {
+            _text = L.T($"caption.{cue}");
+            _n++;
+            _hide?.Cancel();
+            var cts = _hide = new CancellationTokenSource();
+            StateHasChanged();
+            try { await Task.Delay(2200, cts.Token); _text = null; StateHasChanged(); } catch (TaskCanceledException) { }
+        });
+    }
+
+    public void Dispose() => TicTacToeUltimate.Shared.Platform.JsSoundService.Played -= OnPlayed;
+}

@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "Lượt bạn",
+ "push.your_move.body": "Đến lượt bạn đấu với {0}.",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "Chuỗi {0} ngày của bạn sẽ hết lúc nửa đêm. Một ván là giữ được!",
+ "push.streak.2": "Bert đây. {0} ngày rồi đó… đừng để nó biến mất như quân cũ nha.",
+ "push.streak.3": "Psst — chuỗi {0} ngày đang chờ bạn. Làm một ván nhanh không?",
+ "push.comeback.title": "Bert thách đấu bạn",
+ "push.comeback.1": "Bert thách bạn một ván. Còn giữ phong độ không?",
+ "push.comeback.2": "Bàn cờ nhớ bạn đó. Một ván Thường chỉ mất 90 giây.",
+ "push.comeback.3": "Đối thủ mới đang online ngay lúc này. Vào chơi không?",
+ "notify.promoted": "Thăng hạng!",
+ "notify.demoted": "Xuống hạng",
+ "notify.emote": "đã gửi bạn một biểu cảm",
+ "tier.Bronze": "Đồng",
+ "tier.Silver": "Bạc",
+ "tier.Gold": "Vàng",
+ "tier.Platinum": "Bạch kim",
+ "tier.Diamond": "Kim cương",
+ "tier.Master": "Cao thủ"
+}

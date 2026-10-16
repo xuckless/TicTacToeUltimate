@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "Te toca",
+ "push.your_move.body": "Es tu turno contra {0}.",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "Tu racha de {0} días termina a medianoche. ¡Una partida la mantiene viva!",
+ "push.streak.2": "Aquí Bert. {0} días seguidos… no dejes que se esfume como una pieza vieja.",
+ "push.streak.3": "Psst — tu racha de {0} días te espera. ¿Una partida rápida?",
+ "push.comeback.title": "Bert te desafía",
+ "push.comeback.1": "Bert te desafía a una partida. ¿Crees que aún tienes nivel?",
+ "push.comeback.2": "El tablero te extraña. Una partida casual dura 90 segundos.",
+ "push.comeback.3": "Hay rivales nuevos en línea ahora mismo. ¿Te animas?",
+ "notify.promoted": "¡Ascenso!",
+ "notify.demoted": "Descenso",
+ "notify.emote": "te envió un emote",
+ "tier.Bronze": "Bronce",
+ "tier.Silver": "Plata",
+ "tier.Gold": "Oro",
+ "tier.Platinum": "Platino",
+ "tier.Diamond": "Diamante",
+ "tier.Master": "Maestro"
+}

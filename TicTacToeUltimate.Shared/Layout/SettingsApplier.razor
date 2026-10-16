@@ -8,6 +8,7 @@
 
 @code {
     private (ThemePreference, MotionPreference)? _applied;
+    private bool? _contrast;
     private string? _language;
 
     /// <inheritdoc />
@@ -37,6 +38,7 @@
     {
         var s = Settings.State;
         await ApplyLanguageAsync(s.Language);
+        if (_contrast != s.HighContrast) { _contrast = s.HighContrast; await Js.InvokeVoidAsync("setContrast", s.HighContrast); }
         if (_applied == (s.Theme, s.Motion)) return;
         _applied = (s.Theme, s.Motion);
         await Js.InvokeVoidAsync("setTheme", ThemeName(s.Theme));

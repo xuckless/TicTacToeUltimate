@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "À toi de jouer",
+ "push.your_move.body": "C'est ton tour contre {0}.",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "Ta série de {0} jours se termine à minuit. Une partie suffit pour la garder !",
+ "push.streak.2": "C'est Bert. {0} jours d'affilée… ne la laisse pas disparaître comme une vieille pièce.",
+ "push.streak.3": "Psst — ta série de {0} jours t'attend. Une petite partie ?",
+ "push.comeback.title": "Bert te défie",
+ "push.comeback.1": "Bert te défie en duel. Tu crois que tu as encore le niveau ?",
+ "push.comeback.2": "Le plateau s'ennuie de toi. Une partie Détente prend 90 secondes.",
+ "push.comeback.3": "De nouveaux adversaires sont en ligne. Tu te lances ?",
+ "notify.promoted": "Promu !",
+ "notify.demoted": "Rétrogradé",
+ "notify.emote": "t'a envoyé une emote",
+ "tier.Bronze": "Bronze",
+ "tier.Silver": "Argent",
+ "tier.Gold": "Or",
+ "tier.Platinum": "Platine",
+ "tier.Diamond": "Diamant",
+ "tier.Master": "Maître"
+}

@@ -253,3 +253,56 @@ export function setTextScale(scale) {
   const s = Math.min(1.35, Math.max(1, Number(scale) || 1));
   document.documentElement.style.fontSize = s === 1 ? '' : `${16 * s}px`;
 }
+
+// ---------- Dialog focus (accessibility, WCAG 2.4.3 / 2.1.2, 2026-10-16) ----------
+// Every [role=dialog][aria-modal=true] the app renders gets the same behaviour, without per-component code: focus moves
+// into it, Tab cycles inside it, Escape presses its [data-dialog-close] button (if it has one), and when it goes away focus
+// returns to whatever opened it.
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+let a11yInstalled = false;
+const openDialogs = [];
+function focusables(d) { return Array.from(d.querySelectorAll(FOCUSABLE)).filter(e => e.offsetParent !== null || e === document.activeElement); }
+function onDialogAdded(d) {
+  if (openDialogs.some(o => o.el === d)) return;
+  openDialogs.push({ el: d, opener: document.activeElement });
+  requestAnimationFrame(() => {
+    if (!d.contains(document.activeElement)) {
+      const first = d.querySelector('[autofocus]') || focusables(d)[0];
+      if (first) first.focus(); else { d.setAttribute('tabindex', '-1'); d.focus(); }
+    }
+  });
+}
+function onDialogRemoved(entry) {
+  const i = openDialogs.indexOf(entry);
+  if (i >= 0) openDialogs.splice(i, 1);
+  if (entry.opener && document.contains(entry.opener) && typeof entry.opener.focus === 'function') entry.opener.focus();
+}
+export function a11yInstall() {
+  if (a11yInstalled) return;
+  a11yInstalled = true;
+  const scan = () => {
+    document.querySelectorAll('[role="dialog"][aria-modal="true"]').forEach(onDialogAdded);
+    for (const o of [...openDialogs]) if (!document.contains(o.el)) onDialogRemoved(o);
+  };
+  new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
+  document.addEventListener('keydown', e => {
+    const top = openDialogs[openDialogs.length - 1];
+    if (!top || !document.contains(top.el)) return;
+    if (e.key === 'Escape') {
+      const close = top.el.querySelector('[data-dialog-close]');
+      if (close) { e.preventDefault(); close.click(); }
+    } else if (e.key === 'Tab') {
+      const items = focusables(top.el);
+      if (items.length === 0) { e.preventDefault(); return; }
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && (document.activeElement === first || !top.el.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && (document.activeElement === last || !top.el.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+    }
+  }, true);
+  scan();
+}
+
+export function setContrast(high) {
+  if (high) document.documentElement.setAttribute('data-contrast', 'high');
+  else document.documentElement.removeAttribute('data-contrast');
+}

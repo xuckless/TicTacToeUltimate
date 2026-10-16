@@ -1,0 +1,21 @@
+{
+ "notify.demoted": "Rebaixado",
+ "notify.emote": "te mandou um emote",
+ "notify.promoted": "Promovido!",
+ "push.comeback.1": "Bert te desafia para uma partida. Acha que ainda manda bem?",
+ "push.comeback.2": "O tabuleiro está com saudade. Uma partida casual leva 90 segundos.",
+ "push.comeback.3": "Tem adversários novos online agora. Bora?",
+ "push.comeback.title": "Bert te desafia",
+ "push.streak.1": "Sua sequência de {0} dias acaba à meia-noite. Uma partida a mantém viva!",
+ "push.streak.2": "Aqui é o Bert. {0} dias firme… não deixa sumir como uma peça antiga.",
+ "push.streak.3": "Psiu — sua sequência de {0} dias está te esperando. Uma partidinha rápida?",
+ "push.streak.title": "Bert 👻",
+ "push.your_move.body": "É sua vez contra {0}.",
+ "push.your_move.title": "Sua vez",
+ "tier.Bronze": "Bronze",
+ "tier.Diamond": "Diamante",
+ "tier.Gold": "Ouro",
+ "tier.Master": "Mestre",
+ "tier.Platinum": "Platina",
+ "tier.Silver": "Prata"
+}

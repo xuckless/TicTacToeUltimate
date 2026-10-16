@@ -65,3 +65,4 @@ DEPLOYMENT_GUIDE.md
 TODO.md
 deploy/admin/out/
 deploy/admin/publish/
+tools/a11y/node_modules/

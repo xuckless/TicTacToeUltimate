@@ -349,3 +349,5 @@ h1:focus, h1:focus-visible { outline: none; }
 .email-card .t-tabs, .email-card [role="tablist"] { margin-bottom: 4px; }
 .email-info { display: flex; align-items: center; gap: 10px; margin: 0; padding: 10px 12px; border-radius: 14px;
   background: color-mix(in srgb, var(--accent, #7442ef) 18%, transparent); }
+.t-board-row { display: contents; }
+.t-cell[aria-disabled="true"] { cursor: default; }

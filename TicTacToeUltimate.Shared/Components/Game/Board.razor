@@ -2,7 +2,11 @@
 
 <div class="t-board @(Mini ? "t-board--mini" : null) @(SuddenDeath ? "sd" : null)" @ref="_el" role="grid" aria-label="@(Mini ? L.T("board.board_preview") : L.T("board.game_board"))"
      aria-hidden="@(Mini ? "true" : null)" style="grid-template-columns:repeat(@Size, minmax(0, 1fr));grid-template-rows:repeat(@Size, minmax(0, 1fr))">
-    @for (var i = 0; i < Size * Size; i++)
+    @* Rows for screen readers (display:contents keeps the CSS grid); one Tab stop, arrows move between cells. *@
+    @for (var row = 0; row < Size; row++)
+    {
+    <div role="row" class="t-board-row">
+    @for (var i = row * Size; i < (row + 1) * Size; i++)
     {
         var cell = i;
         var piece = PieceAt(cell);
@@ -16,7 +20,7 @@
         var explain = Interactive && !enabled && !pending && OnBlockedSelected.HasDelegate;
         <button type="button" role="gridcell" data-cell="@cell"
                 class="t-cell @PieceClass(shown) @(ghost ? "fading" : null) @(aging ? "aging" : null) @(threat ? "threat" : null) @(pending ? "pending" : null) @(win ? "win" : null) @(explain ? "blocked" : null)"
-                disabled="@(!enabled && !explain)" aria-disabled="@(explain ? "true" : null)" tabindex="@(Mini ? "-1" : null)"
+                aria-disabled="@(!enabled ? "true" : null)" tabindex="@(Mini || cell != FocusCell ? "-1" : "0")"
                 aria-label="@CellLabel(cell, piece, ghost, aging, threat, win)"
                 @onclick="() => Select(cell, enabled, explain)" @onkeydown="e => OnKey(e, cell)">
             @if (shown is not null)
@@ -24,6 +28,8 @@
                 <span class="glyph @(LastPlaced == cell || pending ? "placed" : null)" aria-hidden="true">@(shown == Color.X ? "X" : "O")</span>
             }
         </button>
+    }
+    </div>
     }
     @if (EffectiveWinLine.Count >= 2 && !Mini)
     {
@@ -33,6 +39,11 @@
 
 @code {
     private ElementReference _el;
+    private int? _focus;
+
+    // Roving tabindex: the last cell moved to, else the first playable cell, else the first cell.
+    private int FocusCell => _focus is int f && f < Size * Size ? f
+        : Enumerable.Range(0, Size * Size).Cast<int?>().FirstOrDefault(c => Legal?.Contains(c!.Value) ?? PieceAt(c!.Value) is null) ?? 0;
 
     /// <summary>Board size N.</summary>
     [Parameter] public int Size { get; set; } = 3;
@@ -99,10 +110,14 @@
         {
             case "ArrowUp": r = (r + Size - 1) % Size; break;
             case "ArrowDown": r = (r + 1) % Size; break;
-            case "ArrowLeft": c = (c + Size - 1) % Size; break;
-            case "ArrowRight": c = (c + 1) % Size; break;
+            // Right-to-left languages mirror the layout, so the arrows mirror too.
+            case "ArrowLeft": c = L.Current.Rtl ? (c + 1) % Size : (c + Size - 1) % Size; break;
+            case "ArrowRight": c = L.Current.Rtl ? (c + Size - 1) % Size : (c + 1) % Size; break;
+            case "Home": c = 0; break;
+            case "End": c = Size - 1; break;
             default: return;
         }
+        _focus = r * Size + c;
         await Js.InvokeVoidAsync("focusCell", _el, r * Size + c);
     }
 }

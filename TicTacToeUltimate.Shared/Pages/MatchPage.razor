@@ -91,6 +91,7 @@ else
         <MatchActions Disabled="_view.IsSpectator" Ended="Ended" OnEmote="() => _emotes = true" OnResign="() => _resign = true" OnMenu="() => _menu = true" />
         <AdSlot />
         <div class="sr-only" aria-live="polite">@Announcement</div>
+        <div class="sr-only" aria-live="assertive">@ClockWarning(me)</div>
     </div>
 
     <SwapDecisionSheet Open="SwapOpen" OnDecide="Decide" />
@@ -347,6 +348,12 @@ else
 
     private bool IsActive(SeatDto? s) => s is not null && !Ended && ToMoveSeat == s.Seat;
     private ClockUrgency UrgencyFor(SeatDto? s) => IsActive(s) ? _clock?.Urgency ?? ClockUrgency.Normal : ClockUrgency.Idle;
+    // Screen readers hear the move clock at 10 and 5 seconds (the text changes only when the bucket does, so each is said once).
+    private string ClockWarning(SeatDto? me) =>
+        _view is { IsSpectator: false } && IsActive(me) && !IsDaily && _clock?.RemainingMs is int ms && ms > 0
+            ? ms <= 5000 ? L.F("match.seconds_left", 5) : ms <= 10_000 ? L.F("match.seconds_left", 10) : ""
+            : "";
+
     private int? ClockFor(SeatDto? s) => _clock is null ? null : IsActive(s) ? _clock.RemainingMs : _clock.AllowanceMs;
 
     private int? LastPlaced => _view?.Snapshot.Actions.LastOrDefault(a => a.Kind == ActionKind.Place)?.Cell;
