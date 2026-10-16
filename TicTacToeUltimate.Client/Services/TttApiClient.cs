@@ -36,6 +36,13 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens, TicTacToeUl
     public Task<TokenResponseDto> DevTokenAsync(DevTokenRequestDto request) => Send<TokenResponseDto>(HttpMethod.Post, "api/auth/dev/token", request)!;
     /// <summary>POST /api/auth/guest.</summary>
     public Task<TokenResponseDto> GuestTokenAsync(GuestTokenRequestDto request) => Send<TokenResponseDto>(HttpMethod.Post, "api/auth/guest", request)!;
+    /// <summary>PUT /api/me/locale: the language pushes and notifications are written in (fire and forget).</summary>
+    public async Task SetLocaleAsync(string locale)
+    {
+        if (tokens.Token is null) return;
+        try { await Send<object>(HttpMethod.Put, "api/me/locale", new SetLocaleDto(locale)); }
+        catch (Exception e) when (e is TttApiException or HttpRequestException or TaskCanceledException) { }
+    }
     /// <summary>POST /api/telemetry.</summary>
     public Task SendTelemetryAsync(TelemetryBatchDto batch) => Send<object>(HttpMethod.Post, "api/telemetry", batch);
     /// <summary>POST /api/diagnostics/report (crash or bug).</summary>

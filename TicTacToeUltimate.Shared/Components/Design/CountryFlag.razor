@@ -1,6 +1,6 @@
 @if (!string.IsNullOrWhiteSpace(Country))
 {
-    <span class="t-flag" title="@Country" aria-label="@($"Country {Country}")">@Country!.ToUpperInvariant()</span>
+    <span class="t-flag" title="@Country" aria-label="@L.F("countryFlag.country", Country)">@Country!.ToUpperInvariant()</span>
 }
 
 @code {

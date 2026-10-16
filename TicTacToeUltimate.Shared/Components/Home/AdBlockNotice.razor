@@ -4,23 +4,23 @@
    never blocks play and never appears during a match. *@
 @if (_show)
 {
-    <aside class="adblock-notice" role="note" aria-label="Ad blocker detected" data-testid="adblock-notice">
+    <aside class="adblock-notice" role="note" aria-label="@L.T("adBlockNotice.ad_blocker_detected")" data-testid="adblock-notice">
         <Bert Mood="sad" Size="56" />
         <div class="abn-text">
-            <strong>Ad blocker on?</strong>
-            <span class="t-small">Tic Tac Toe Ultimate is free because of ads. We never show them during a match. Please allow ads on this site.</span>
+            <strong>@L.T("adBlockNotice.ad_blocker_on")</strong>
+            <span class="t-small">@L.T("adBlockNotice.tic_tac_toe_ultimate_is")</span>
             @if (_how)
             {
                 <ol class="t-small abn-steps">
-                    <li>Click your ad blocker's icon in the browser toolbar.</li>
-                    <li>Choose "Pause on this site" or "Allow ads here".</li>
-                    <li>Reload the page.</li>
+                    <li>@L.T("adBlockNotice.click_your_ad_blocker_s")</li>
+                    <li>@L.T("adBlockNotice.choose_pause_on_this")</li>
+                    <li>@L.T("adBlockNotice.reload_the_page")</li>
                 </ol>
             }
             <div class="abn-actions">
-                @if (!_how) { <Button Variant="primary" Small="true" OnClick="() => _how = true">How?</Button> }
-                else { <Button Variant="primary" Small="true" OnClick="Reload">I've allowed ads</Button> }
-                <Button Variant="ghost" Small="true" OnClick="Dismiss">Not now</Button>
+                @if (!_how) { <Button Variant="primary" Small="true" OnClick="() => _how = true">@L.T("adBlockNotice.how")</Button> }
+                else { <Button Variant="primary" Small="true" OnClick="Reload">@L.T("adBlockNotice.i_ve_allowed_ads")</Button> }
+                <Button Variant="ghost" Small="true" OnClick="Dismiss">@L.T("adBlockNotice.not_now")</Button>
             </div>
         </div>
     </aside>

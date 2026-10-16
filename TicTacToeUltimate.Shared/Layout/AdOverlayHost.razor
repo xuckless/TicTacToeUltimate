@@ -3,20 +3,20 @@
 
 @if (_request is not null)
 {
-    <div class="ad-overlay" role="dialog" aria-modal="true" aria-label="Advertisement">
+    <div class="ad-overlay" role="dialog" aria-modal="true" aria-label="@L.T("adOverlayHost.advertisement")">
         <div class="box">
-            <IconButton Class="close" Label="@(_left > 0 ? "Close ad (no reward)" : "Close ad")" Icon="close" Round="true" OnClick="Close" />
-            <span class="t-label t-muted">@(_request.Kind == "rewarded" ? "Rewarded ad" : "Ad")</span>
-            <div class="t-title">Your ad here</div>
-            <p class="t-muted t-small">Stub ad. Real ads come later.</p>
+            <IconButton Class="close" Label="@(_left > 0 ? L.T("adOverlayHost.close_ad_no_reward") : L.T("adOverlayHost.close_ad"))" Icon="close" Round="true" OnClick="Close" />
+            <span class="t-label t-muted">@(_request.Kind == "rewarded" ? L.T("adOverlayHost.rewarded_ad") : L.T("adOverlayHost.ad"))</span>
+            <div class="t-title">@L.T("adOverlayHost.your_ad_here")</div>
+            <p class="t-muted t-small">@L.T("adOverlayHost.stub_ad_real_ads_come")</p>
             @if (_request.Reward is RewardKind r)
             {
-                <p class="t-small">Reward: @RewardText(r)</p>
+                <p class="t-small">@L.F("adOverlayHost.reward", RewardText(r))</p>
             }
-            <div class="t-num" style="font:var(--type-clock)" role="timer">@(_left > 0 ? $"{_left}s" : "Done")</div>
+            <div class="t-num" style="font:var(--type-clock)" role="timer">@(_left > 0 ? L.F("adOverlayHost.seconds", _left) : L.T("adOverlayHost.done"))</div>
             @if (_left <= 0)
             {
-                <Button Variant="primary" OnClick="Finish">@(_request.Reward is null ? "Continue" : "Claim reward")</Button>
+                <Button Variant="primary" OnClick="Finish">@(_request.Reward is null ? L.T("adOverlayHost.continue") : L.T("adOverlayHost.claim_reward"))</Button>
             }
         </div>
     </div>
@@ -63,9 +63,9 @@
 
     private static string RewardText(RewardKind r) => r switch
     {
-        RewardKind.StreakFreeze => "Streak freeze",
-        RewardKind.ExtraQuest => "Bonus quest",
-        _ => "Perfect-play review",
+        RewardKind.StreakFreeze => L.T("adOverlayHost.streak_freeze"),
+        RewardKind.ExtraQuest => L.T("adOverlayHost.bonus_quest"),
+        _ => L.T("adOverlayHost.perfect_play_review"),
     };
 
     /// <inheritdoc />

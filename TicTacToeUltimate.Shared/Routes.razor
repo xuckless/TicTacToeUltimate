@@ -2,9 +2,12 @@
 @inject TttJsModule Js
 @inject IJSRuntime JSRuntime
 @inject ISoundService Sound
+@inject Localizer Loc
+@implements IDisposable
 
 <SettingsApplier />
-<AuthGate>
+@* Re-keyed on a language change so every component renders its text again. *@
+<AuthGate @key="Loc.Language">
     <Router AppAssembly="typeof(Routes).Assembly">
         <Found Context="routeData">
             <RouteView RouteData="routeData" DefaultLayout="typeof(AppShell)" />
@@ -26,7 +29,16 @@
 
 @code {
     /// <inheritdoc />
-    protected override void OnInitialized() => Js.Attach(JSRuntime);
+    protected override void OnInitialized()
+    {
+        Js.Attach(JSRuntime);
+        Loc.Changed += OnLanguage;
+    }
+
+    private void OnLanguage() => _ = InvokeAsync(StateHasChanged);
+
+    /// <inheritdoc />
+    public void Dispose() => Loc.Changed -= OnLanguage;
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

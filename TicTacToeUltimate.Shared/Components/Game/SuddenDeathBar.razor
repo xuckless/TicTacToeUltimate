@@ -1,6 +1,6 @@
 @if (Clock is { SuddenDeath: true, AllowanceMs: > 0, RemainingMs: not null })
 {
-    <ProgressBar Value="@((double)Clock.RemainingMs!.Value / Clock.AllowanceMs!.Value)" Alert="true" Thin="true" Label="Move window remaining" />
+    <ProgressBar Value="@((double)Clock.RemainingMs!.Value / Clock.AllowanceMs!.Value)" Alert="true" Thin="true" Label="@L.T("suddenDeathBar.move_window_remaining")" />
 }
 
 @code {

@@ -3,27 +3,27 @@
 @inject ISessionStore Session
 @inject ISocialStore Social
 
-<PageTitle>Messages · Tic Tac Toe Ultimate</PageTitle>
+<PageTitle>@L.T("messages.messages_tic_tac_toe_ultimate")</PageTitle>
 <div class="t-row" style="flex-wrap:nowrap">
-    <a class="t-iconbtn t-iconbtn--round" href="social" aria-label="Back"><Icon Name="back" /></a>
-    <h1 class="t-heading">Messages</h1>
+    <a class="t-iconbtn t-iconbtn--round" href="social" aria-label="@L.T("chat.back")"><Icon Name="back" /></a>
+    <h1 class="t-heading">@L.T("messageList.messages")</h1>
 </div>
 
 @if (Session.State.IsGuest)
 {
-    <Card><p class="t-small t-muted" style="margin:0">Messages are between mutual friends. <a href="signin?mode=login">Log in</a> or <a href="signin?mode=create">create an account</a> to chat.</p></Card>
+    <Card><p class="t-small t-muted" style="margin:0">@((MarkupString)L.F("messages.guest_cta", Link("signin?mode=login", "accountCta.log_in"), Link("signin?mode=create", "common.create_an_account_lower")))</p></Card>
 }
 else if (!Social.State.Loaded)
 {
-    <BertLoader Text="Opening your inbox" Mood="wave" />
+    <BertLoader Text="@L.T("messages.opening_your_inbox")" Mood="wave" />
 }
 else if (Social.State.Friends.Length == 0)
 {
-    <div class="t-empty"><Bert Mood="wink" Size="56" /><span>No friends yet. Add some from Social, then chat here.</span></div>
+    <div class="t-empty"><Bert Mood="wink" Size="56" /><span>@L.T("messages.no_friends_yet_add_some")</span></div>
 }
 else
 {
-    <section class="t-card" style="padding:4px 16px" aria-label="Conversations">
+    <section class="t-card" style="padding:4px 16px" aria-label="@L.T("messages.conversations")">
         @foreach (var f in Threads)
         {
             <a class="t-listrow" href="@($"social/chat/{f.Player.UserId}")" style="color:inherit;text-decoration:none" data-testid="thread">
@@ -34,7 +34,7 @@ else
                 </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
                     @if (Last(f) is { } ts) { <span class="t-small t-muted">@Ago(ts.SentAt)</span> }
-                    @if (f.UnreadMessages > 0) { <span class="t-chip unread" aria-label="@($"{f.UnreadMessages} unread")">@f.UnreadMessages</span> }
+                    @if (f.UnreadMessages > 0) { <span class="t-chip unread" aria-label="@L.P("messages.unread_count", f.UnreadMessages)">@f.UnreadMessages</span> }
                 </div>
             </a>
         }
@@ -42,6 +42,8 @@ else
 }
 
 @code {
+    private static string Link(string href, string key) => $"<a href=\"{href}\">{System.Net.WebUtility.HtmlEncode(L.T(key))}</a>";
+
     private DirectMessageDto? Last(FriendDto f) =>
         Social.State.Threads.TryGetValue(f.Player.UserId, out var t) && !t.IsEmpty && (f.LastMessage is null || t[^1].Id >= f.LastMessage.Id) ? t[^1] : f.LastMessage;
 
@@ -53,13 +55,14 @@ else
     private static string Ago(DateTimeOffset at)
     {
         var d = DateTimeOffset.UtcNow - at;
-        return d.TotalMinutes < 1 ? "now" : d.TotalMinutes < 60 ? $"{(int)d.TotalMinutes}m" : d.TotalHours < 24 ? $"{(int)d.TotalHours}h" : d.TotalDays < 7 ? $"{(int)d.TotalDays}d" : at.ToString("MMM d", CultureInfo.InvariantCulture);
+        return d.TotalMinutes < 1 ? L.T("messages.now") : d.TotalMinutes < 60 ? L.F("messages.minutes_short", (int)d.TotalMinutes) : d.TotalHours < 24 ? L.F("messages.hours_short", (int)d.TotalHours) : d.TotalDays < 7 ? L.F("messages.days_short", (int)d.TotalDays) : at.ToString("MMM d", CultureInfo.InvariantCulture);
     }
 
     private string Preview(DirectMessageDto m)
     {
-        var body = m.Body.StartsWith("emote:", StringComparison.Ordinal) ? "sent an emote" : m.Body;
-        return (m.From == Session.State.Me?.UserId ? "You: " : "") + (body.Length > 60 ? body[..57] + "…" : body);
+        var body = m.Body.StartsWith("emote:", StringComparison.Ordinal) ? L.T("messages.sent_an_emote") : m.Body;
+        var text = body.Length > 60 ? body[..57] + "…" : body;
+        return m.From == Session.State.Me?.UserId ? L.F("messages.you_prefix", text) : text;
     }
 
     /// <inheritdoc />

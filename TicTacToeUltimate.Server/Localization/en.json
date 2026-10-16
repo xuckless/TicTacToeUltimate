@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "Your move",
+ "push.your_move.body": "It's your turn against {0}.",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "Your {0}-day streak ends at midnight. One game keeps it alive!",
+ "push.streak.2": "Bert here. {0} days strong… don't let it fade like an old piece.",
+ "push.streak.3": "Psst — your {0}-day streak is waiting. One quick game?",
+ "push.comeback.title": "Bert challenges you",
+ "push.comeback.1": "Bert challenges you to a game. Think you still have it?",
+ "push.comeback.2": "The board misses you. A casual game takes 90 seconds.",
+ "push.comeback.3": "New opponents are online right now. Jump in?",
+ "notify.promoted": "Promoted!",
+ "notify.demoted": "Demoted",
+ "notify.emote": "sent you an emote",
+ "tier.Bronze": "Bronze",
+ "tier.Silver": "Silver",
+ "tier.Gold": "Gold",
+ "tier.Platinum": "Platinum",
+ "tier.Diamond": "Diamond",
+ "tier.Master": "Master"
+}

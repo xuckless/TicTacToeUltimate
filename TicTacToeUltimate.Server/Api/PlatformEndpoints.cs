@@ -77,6 +77,13 @@ public static class PlatformEndpoints
             From(await a.ClaimGuestAsync(http.Me().UserId, req.GuestToken, ct))).RequireAuthorization(Account);
 
         // ---- me ----
+        api.MapPut("/me/locale", async (SetLocaleDto req, HttpContext http, IUserRepository users, CancellationToken ct) =>
+        {
+            var code = (req.Locale ?? "").Trim();
+            if (code.Length is 0 or > 10 || !code.All(ch => char.IsAsciiLetter(ch) || ch == '-')) return ApiErrors.Problem(400, ErrorCodes.Validation);
+            await users.SetLocaleAsync(http.Me().UserId, code, ct);
+            return Results.NoContent();
+        }).RequireAuthorization();
         api.MapGet("/me", async (HttpContext http, AccountService a, IUserRepository users, TimeProvider time, CancellationToken ct) =>
         {
             var me = http.Me();

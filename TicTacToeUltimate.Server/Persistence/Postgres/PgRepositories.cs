@@ -112,6 +112,18 @@ public sealed class PgUserRepository(PgDb db) : IUserRepository
         catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation) { return UsernameResult.Taken; }
     }
 
+    public async Task SetLocaleAsync(Guid id, string locale, CancellationToken ct)
+    {
+        await using var c = await db.Source.OpenConnectionAsync(ct);
+        await c.ExecuteAsync("update players set locale = @locale where id = @id", new { id, locale });
+    }
+
+    public async Task<string?> GetLocaleAsync(Guid id, CancellationToken ct)
+    {
+        await using var c = await db.Source.OpenConnectionAsync(ct);
+        return await c.ExecuteScalarAsync<string?>("select locale from players where id = @id", new { id });
+    }
+
     public async Task ResetUsernameAsync(Guid id, CancellationToken ct)
     {
         await using var c = await db.Source.OpenConnectionAsync(ct);

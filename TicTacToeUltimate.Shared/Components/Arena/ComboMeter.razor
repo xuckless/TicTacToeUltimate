@@ -15,5 +15,5 @@
     /// <summary>Just broken.</summary>
     [Parameter] public bool Broken { get; set; }
 
-    private string Text => Broken && Streak == 0 ? "COMBO BROKEN" : Streak <= 0 ? "Combo" : $"COMBO ×{Streak} · armed";
+    private string Text => Broken && Streak == 0 ? L.T("comboMeter.combo_broken") : Streak <= 0 ? L.T("comboMeter.combo") : L.F("comboMeter.combo_armed", Streak);
 }

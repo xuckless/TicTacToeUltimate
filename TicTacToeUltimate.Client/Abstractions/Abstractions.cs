@@ -42,6 +42,8 @@ public interface IBannerAds
 public sealed record AdOverlayRequest(string Kind /* "interstitial" | "rewarded" */, RewardKind? Reward, int Seconds);
 /// <summary>Implemented by Shared (WP6): renders the stub ad modal; returns true when the countdown completed (false if closed early).</summary>
 public interface IAdOverlay { Task<bool> ShowAsync(AdOverlayRequest request, CancellationToken ct); }
+/// <summary>The device's text-size setting as a multiplier (iOS Dynamic Type, Android font scale); 1 on the web, where the browser's own text size applies.</summary>
+public interface ITextScaleProvider { double Scale { get; } }
 public interface IShareService { ValueTask<string> ShareLinkAsync(string title, string text, Uri url); } // "shared" | "copied" | "failed"
 public interface IAppLifecycle { bool IsForeground { get; } bool IsOnline { get; } event Action? Resumed; event Action? Suspended; event Action<bool>? NetworkChanged; }
 public interface IDeepLinkSource { Uri? InitialLink { get; } event Action<Uri>? LinkOpened; }

@@ -17,6 +17,7 @@
   <ItemGroup>
     <None Update="Social/Data/*.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Social/Data/words/*.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Localization/*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="TicTacToeUltimate.Server.Tests" />

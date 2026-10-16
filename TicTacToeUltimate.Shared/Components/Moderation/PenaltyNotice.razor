@@ -5,24 +5,24 @@
     <Bert Mood="@(Penalty.Kind == "warn" ? "think" : "sad")" Size="72" />
     <h2 class="t-heading">@Title</h2>
     <p class="t-muted" style="margin:0">@Penalty.Reason</p>
-    @if (Until is { } until) { <p class="t-small" style="margin:0" data-testid="penalty-until">Until @until</p> }
-    else if (Penalty.Kind == "ban") { <p class="t-small" style="margin:0">This ban is permanent.</p> }
-    @if (Penalty.Kind == "warn") { <p class="t-small t-muted" style="margin:0">Further breaks of the chat rules mute your chat for longer.</p> }
+    @if (Until is { } until) { <p class="t-small" style="margin:0" data-testid="penalty-until">@L.F("penaltyNotice.until", until)</p> }
+    else if (Penalty.Kind == "ban") { <p class="t-small" style="margin:0">@L.T("penaltyNotice.this_ban_is_permanent")</p> }
+    @if (Penalty.Kind == "warn") { <p class="t-small t-muted" style="margin:0">@L.T("penaltyNotice.further_breaks_of_the_chat")</p> }
 
     @if (Penalty.AppealStatus is { } status)
     {
-        <p class="t-small penalty-appeal-status" role="status">@(status switch { "approved" => "Your appeal was approved.", "denied" => "Your appeal was reviewed and denied.", _ => "Appeal sent. We'll review it soon." })</p>
+        <p class="t-small penalty-appeal-status" role="status">@(status switch { "approved" => L.T("penaltyNotice.your_appeal_was_approved"), "denied" => L.T("penaltyNotice.your_appeal_was_reviewed"), _ => L.T("penaltyNotice.appeal_sent_we_ll_review") })</p>
     }
     else if (Penalty.CanAppeal)
     {
-        @if (!_appealing) { <Button Variant="secondary" Small="true" OnClick="() => _appealing = true" data-testid="appeal-open">Appeal</Button> }
+        @if (!_appealing) { <Button Variant="secondary" Small="true" OnClick="() => _appealing = true" data-testid="appeal-open">@L.T("penaltyNotice.appeal")</Button> }
         else
         {
             <div class="t-field" style="width:100%">
-                <label class="t-label" for="appeal-text">Tell us why this was a mistake</label>
+                <label class="t-label" for="appeal-text">@L.T("penaltyNotice.tell_us_why_this_was")</label>
                 <textarea id="appeal-text" class="t-input" rows="4" maxlength="1000" @bind="_text" @bind:event="oninput"></textarea>
             </div>
-            <Button Variant="primary" Block="true" OnClick="Send" Disabled="@(_busy || string.IsNullOrWhiteSpace(_text))" data-testid="appeal-send">Send appeal</Button>
+            <Button Variant="primary" Block="true" OnClick="Send" Disabled="@(_busy || string.IsNullOrWhiteSpace(_text))" data-testid="appeal-send">@L.T("penaltyNotice.send_appeal")</Button>
             @if (_error is not null) { <p class="t-alert" role="alert">@_error</p> }
         }
     }
@@ -39,7 +39,7 @@
     /// <summary>Extra actions under the notice.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    private string Title => Penalty.Kind switch { "ban" => "Your account is banned", "chat_mute" => "Your chat is muted", _ => "Warning" };
+    private string Title => Penalty.Kind switch { "ban" => L.T("penaltyNotice.your_account_is_banned"), "chat_mute" => L.T("penaltyNotice.your_chat_is_muted"), _ => L.T("penaltyNotice.warning") };
     private string? Until => Penalty.EndsAtMs is { } ms ? DateTimeOffset.FromUnixTimeMilliseconds(ms).ToLocalTime().ToString("g") : null;
 
     private async Task Send()
@@ -48,6 +48,6 @@
         var err = await Moderation.AppealAsync(Penalty.Id, _text.Trim());
         _busy = false;
         if (err is null) { _appealing = false; Penalty = Penalty with { CanAppeal = false, AppealStatus = "open" }; }
-        else _error = err == ErrorCodes.AlreadyAppealed ? "You already appealed this." : "Couldn't send the appeal. Try again.";
+        else _error = err == ErrorCodes.AlreadyAppealed ? L.T("penaltyNotice.you_already_appealed_this") : L.T("penaltyNotice.couldn_t_send_the_appeal");
     }
 }

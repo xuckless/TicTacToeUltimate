@@ -13,9 +13,9 @@
 
     private string? Text => Phase switch
     {
-        ConnectionPhase.Reconnecting => Attempt > 1 ? $"Reconnecting… (attempt {Attempt})" : "Reconnecting…",
-        ConnectionPhase.Offline => "You're offline. We'll reconnect when you're back.",
-        ConnectionPhase.Connecting => "Connecting…",
-        _ => Resyncing ? "Syncing game…" : null,
+        ConnectionPhase.Reconnecting => Attempt > 1 ? L.F("connectionBanner.reconnecting_attempt", Attempt) : L.T("connectionBanner.reconnecting"),
+        ConnectionPhase.Offline => L.T("connectionBanner.youre_offline_well_reconnect"),
+        ConnectionPhase.Connecting => L.T("connectionBanner.connecting"),
+        _ => Resyncing ? L.T("connectionBanner.syncing_game") : null,
     };
 }

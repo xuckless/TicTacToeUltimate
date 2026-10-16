@@ -14,5 +14,8 @@ public sealed record TelemetryEventDto(long AtMs, string Kind, string Name, Dict
 /// <summary>POST /api/telemetry: a batch from one app session.</summary>
 public sealed record TelemetryBatchDto(string SessionId, string Platform, string AppVersion, string? Locale, string? Campaign, TelemetryEventDto[] Events);
 
+/// <summary>PUT /api/me/locale.</summary>
+public sealed record SetLocaleDto(string Locale);
+
 /// <summary>GET /api/c/{slug}: where a campaign short link sends this visitor.</summary>
 public sealed record CampaignRedirectDto(string Url);

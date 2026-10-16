@@ -3,11 +3,11 @@
 @inject LocalPlaySession Local
 @inject NavigationManager Nav
 
-<PageTitle>Pass &amp; Play · Tic Tac Toe Ultimate</PageTitle>
+<PageTitle>@L.T("localSetup.page_title")</PageTitle>
 <header class="pp-hero">
     <div class="pp-hero-text">
-        <h1 class="play-title"><BounceText Text="Pass &amp; Play" /></h1>
-        <p class="pp-tag">Two players · one device · works offline</p>
+        <h1 class="play-title"><BounceText Text="@L.T("localSetup.pass_play")" /></h1>
+        <p class="pp-tag">@L.T("localSetup.two_players_one_device_works")</p>
     </div>
     <Bert Mood="jumpy" Size="76" Class="pp-bert" />
     <InfoButton Key="passplay" Class="pp-info" />
@@ -17,31 +17,31 @@
 {
     <a class="pp-resume" href="local/play" data-testid="local-current">
         <span class="pp-resume-score"><span class="x">@cur.NameOf(0)</span> <b class="t-num">@cur.Score[0] – @cur.Score[1]</b> <span class="o">@cur.NameOf(1)</span></span>
-        <span class="t-small t-muted">@(cur.IsLive ? $"Game {cur.GameNumber} in progress" : $"{cur.GameNumber} played")</span>
-        <span class="pp-resume-go">@(cur.IsLive ? "Resume" : "Back to board") <Icon Name="next" /></span>
+        <span class="t-small t-muted">@(cur.IsLive ? L.F("localSetup.game_in_progress", cur.GameNumber) : L.F("localSetup.played", cur.GameNumber))</span>
+        <span class="pp-resume-go">@(cur.IsLive ? L.T("resumeBanner.resume") : L.T("localSetup.back_to_board")) <Icon Name="next" /></span>
     </a>
 }
 
-<section class="pp-versus" aria-label="Players">
+<section class="pp-versus" aria-label="@L.T("localSetup.players")">
     <label class="pp-player x">
         <span class="pp-piece" aria-hidden="true">X</span>
-        <span class="pp-role">Starts</span>
-        <input class="pp-name" value="@_p1" @oninput="e => _p1 = e.Value?.ToString() ?? string.Empty" placeholder="@LocalGameOptions.DefaultPlayer1"
-               maxlength="@LocalGameOptions.MaxNameLength" aria-label="Player 1 name" />
+        <span class="pp-role">@L.T("localSetup.starts")</span>
+        <input class="pp-name" value="@_p1" @oninput="e => _p1 = e.Value?.ToString() ?? string.Empty" placeholder="@L.T("localSetup.player_1")"
+               maxlength="@LocalGameOptions.MaxNameLength" aria-label="@L.T("localSetup.player_1_name")" />
     </label>
-    <span class="pp-vs" aria-hidden="true">VS</span>
+    <span class="pp-vs" aria-hidden="true">@L.T("localSetup.vs")</span>
     <label class="pp-player o">
         <span class="pp-piece" aria-hidden="true">O</span>
-        <span class="pp-role">Second</span>
-        <input class="pp-name" value="@_p2" @oninput="e => _p2 = e.Value?.ToString() ?? string.Empty" placeholder="@LocalGameOptions.DefaultPlayer2"
-               maxlength="@LocalGameOptions.MaxNameLength" aria-label="Player 2 name" @onkeydown="Enter" />
+        <span class="pp-role">@L.T("localSetup.second")</span>
+        <input class="pp-name" value="@_p2" @oninput="e => _p2 = e.Value?.ToString() ?? string.Empty" placeholder="@L.T("localSetup.player_2")"
+               maxlength="@LocalGameOptions.MaxNameLength" aria-label="@L.T("localSetup.player_2_name")" @onkeydown="Enter" />
     </label>
 </section>
-<p class="t-small t-muted pp-note">Colours swap every rematch.</p>
+<p class="t-small t-muted pp-note">@L.T("localSetup.colours_swap_every_rematch")</p>
 
-<section class="mode-group" aria-label="Mode">
-    <h2 class="mode-group-title">Mode</h2>
-    <div class="pp-tiles" role="radiogroup" aria-label="Mode">
+<section class="mode-group" aria-label="@L.T("challengeModePicker.mode")">
+    <h2 class="mode-group-title">@L.T("challengeModePicker.mode")</h2>
+    <div class="pp-tiles" role="radiogroup" aria-label="@L.T("challengeModePicker.mode")">
         @foreach (var c in Clocks)
         {
             var on = _tc == c.Tc;
@@ -62,9 +62,9 @@
 
 @if (_tc != TimeControl.ArenaCasual)
 {
-<section class="mode-group" aria-label="Rules">
-    <h2 class="mode-group-title">Rules</h2>
-    <div class="pp-tiles" role="radiogroup" aria-label="Rules">
+<section class="mode-group" aria-label="@L.T("localSetup.rules")">
+    <h2 class="mode-group-title">@L.T("localSetup.rules")</h2>
+    <div class="pp-tiles" role="radiogroup" aria-label="@L.T("localSetup.rules")">
         @foreach (var p in Presets)
         {
             var on = _preset == p.Preset;
@@ -82,7 +82,7 @@
     </div>
     <div class="pie-row pp-pie">
         <label class="t-toggle">
-            <span><strong>Pie rule</strong><br /><span class="t-small t-muted">Player 2 may take the first move instead of replying.</span></span>
+            <span><strong>@L.T("localSetup.pie_rule")</strong><br /><span class="t-small t-muted">@L.T("localSetup.player_2_may_take_the")</span></span>
             <input type="checkbox" checked="@_pie" @onchange="e => _pie = e.Value is true" data-testid="pie" />
         </label>
         <InfoButton Key="pie" />
@@ -91,26 +91,26 @@
 }
 
 <div class="pp-start">
-    <Button Variant="hero" Block="true" OnClick="Start" data-testid="local-start">@(Local.Current is null ? "Let's play!" : "Start new session")</Button>
+    <Button Variant="hero" Block="true" OnClick="Start" data-testid="local-start">@(Local.Current is null ? L.T("localSetup.let_s_play") : L.T("localSetup.start_new_session"))</Button>
 </div>
 
 @code {
     private sealed record ClockOption(TimeControl Tc, string Name, string Sub, string Guide, string Icon, string Accent);
     private sealed record PresetOption(LocalRulePreset Preset, string Name, string Sub, string Guide, string Glyph, string Accent);
 
-    private static readonly PresetOption[] Presets =
+    private static PresetOption[] Presets =>
     [
-        new(LocalRulePreset.Classic, "Ultimate", "3 pieces each", "classic", "3", "#7442ef"),
-        new(LocalRulePreset.OldSchool, "Old school", "No vanishing", "oldschool", "#", "#1fb5a0"),
-        new(LocalRulePreset.Legacy7, "Legacy", "7-piece prototype", "legacy7", "7", "#8b8aa6"),
+        new(LocalRulePreset.Classic, L.T("localSetup.ultimate"), L.T("localSetup.3_pieces_each"), "classic", "3", "#7442ef"),
+        new(LocalRulePreset.OldSchool, L.T("modeGrid.old_school"), L.T("localSetup.no_vanishing"), "oldschool", "#", "#1fb5a0"),
+        new(LocalRulePreset.Legacy7, L.T("localSetup.legacy"), L.T("localSetup.7_piece_prototype"), "legacy7", "7", "#8b8aa6"),
     ];
     private LocalRulePreset _preset = LocalRulePreset.Classic;
 
-    private static readonly ClockOption[] Clocks =
+    private static ClockOption[] Clocks =>
     [
-        new(TimeControl.Unlimited, "Unlimited", "No clock", "unlimited", "unlimited", "#8a6cff"),
-        new(TimeControl.Casual, "Casual", "15s clock", "casual", "casual", "#2f9be0"),
-        new(TimeControl.ArenaCasual, "Arena", "Health bars", "arena", "arena", "#e0457b"),
+        new(TimeControl.Unlimited, L.T("localSetup.unlimited"), L.T("localSetup.no_clock"), "unlimited", "unlimited", "#8a6cff"),
+        new(TimeControl.Casual, L.T("modeGrid.casual"), L.T("localSetup.15s_clock"), "casual", "casual", "#2f9be0"),
+        new(TimeControl.ArenaCasual, L.T("modeGrid.arena"), L.T("localSetup.health_bars"), "arena", "arena", "#e0457b"),
     ];
 
     private string _p1 = "", _p2 = "";

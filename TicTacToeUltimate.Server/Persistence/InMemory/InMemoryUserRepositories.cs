@@ -102,6 +102,10 @@ public sealed class InMemoryUserRepository : IUserRepository
         }
     }
 
+    private readonly Dictionary<Guid, string> _locales = [];
+    public Task SetLocaleAsync(Guid id, string locale, CancellationToken ct) { lock (_gate) _locales[id] = locale; return Task.CompletedTask; }
+    public Task<string?> GetLocaleAsync(Guid id, CancellationToken ct) { lock (_gate) return Task.FromResult(_locales.TryGetValue(id, out var l) ? l : null); }
+
     public Task ResetUsernameAsync(Guid id, CancellationToken ct)
     {
         lock (_gate)

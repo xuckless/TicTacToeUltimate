@@ -1,15 +1,15 @@
-<div class="chat" role="log" aria-live="polite" aria-label="Messages">
+<div class="chat" role="log" aria-live="polite" aria-label="@L.T("messageList.messages")">
     @if (Messages.Count == 0)
     {
-        <p class="t-muted t-small">No messages yet. Say hi!</p>
+        <p class="t-muted t-small">@L.T("messageList.no_messages_yet_say_hi")</p>
     }
     @foreach (var m in Messages)
     {
         @if (EmoteOf(m.Body) is { } e)
         {
-            <div class="msg emote @(m.From == MeId ? "mine" : null)" aria-label="@($"Emote: {e.Text}")">
+            <div class="msg emote @(m.From == MeId ? "mine" : null)" aria-label="@L.F("messageList.emote", Ui.EmoteText(e))">
                 @if (e.Text.StartsWith("bert:", StringComparison.Ordinal)) { <Bert Mood="@e.Text[5..]" Size="96" Bob="false" /> }
-                else { <span class="thrown-phrase">@e.Text</span> }
+                else { <span class="thrown-phrase">@Ui.EmoteText(e)</span> }
             </div>
         }
         else
@@ -17,7 +17,7 @@
             <div class="msg @(m.From == MeId ? "mine" : null)">@m.Body
                 @if (OnReport.HasDelegate && m.From != MeId)
                 {
-                    <button type="button" class="msg-report" aria-label="Report this message" title="Report" @onclick="() => OnReport.InvokeAsync(m)"><Icon Name="flag" /></button>
+                    <button type="button" class="msg-report" aria-label="@L.T("messageList.report_this_message")" title="@L.T("messageList.report")" @onclick="() => OnReport.InvokeAsync(m)"><Icon Name="flag" /></button>
                 }
             </div>
         }

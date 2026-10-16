@@ -35,7 +35,7 @@ public sealed class SupabaseAuthClient(HttpClient http)
     {
         HttpResponseMessage r;
         try { r = await SendRawAsync(url, key, "otp", new { email, create_user = true }); }
-        catch (HttpRequestException) { return "Can't reach the sign-in service. Check your connection."; }
+        catch (HttpRequestException) { return "auth.service_unreachable"; }
         return r.IsSuccessStatusCode ? null : await ErrorOf(r);
     }
 
@@ -80,12 +80,12 @@ public sealed class SupabaseAuthClient(HttpClient http)
     {
         HttpResponseMessage r;
         try { r = await SendRawAsync(url, key, path, body); }
-        catch (HttpRequestException) { return new(null, false, "Can't reach the sign-in service. Check your connection."); }
+        catch (HttpRequestException) { return new(null, false, "auth.service_unreachable"); }
         if (!r.IsSuccessStatusCode) return new(null, false, await ErrorOf(r));
         var t = await r.Content.ReadFromJsonAsync<TokenBody>();
         if (t?.AccessToken is { Length: > 0 } at && t.RefreshToken is { Length: > 0 } rt)
             return new(new SupabaseSession(at, rt, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + Math.Max(60, t.ExpiresIn) * 1000L), false, null);
-        return signUp ? new(null, true, null) : new(null, false, "Sign-in failed.");
+        return signUp ? new(null, true, null) : new(null, false, "auth.sign_in_failed");
     }
 
     private async Task<HttpResponseMessage> SendRawAsync(string url, string key, string path, object body)
@@ -107,15 +107,15 @@ public sealed class SupabaseAuthClient(HttpClient http)
             var msg = root.TryGetProperty("msg", out var m) ? m.GetString() : root.TryGetProperty("error_description", out var d) ? d.GetString() : null;
             return code switch
             {
-                "invalid_credentials" or "invalid_grant" => "Wrong email or password.",
-                "email_not_confirmed" => "Confirm your email first: check your inbox for the link.",
-                "user_already_exists" or "email_exists" => "That email already has an account. Sign in instead.",
-                "weak_password" => "Pick a stronger password (at least 8 characters).",
-                "over_email_send_rate_limit" or "over_request_rate_limit" => "Too many attempts. Try again in a few minutes.",
-                "validation_failed" or "email_address_invalid" => "That email doesn't look right.",
-                _ => msg ?? "Sign-in failed.",
+                "invalid_credentials" or "invalid_grant" => "auth.wrong_email_or_password",
+                "email_not_confirmed" => "auth.confirm_email_first",
+                "user_already_exists" or "email_exists" => "auth.email_exists",
+                "weak_password" => "auth.weak_password",
+                "over_email_send_rate_limit" or "over_request_rate_limit" => "auth.too_many_attempts",
+                "validation_failed" or "email_address_invalid" => "auth.email_invalid",
+                _ => msg ?? "auth.sign_in_failed",
             };
         }
-        catch (JsonException) { return "Sign-in failed."; }
+        catch (JsonException) { return "auth.sign_in_failed"; }
     }
 }

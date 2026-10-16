@@ -39,7 +39,7 @@
 .arena-hp.hit-1 .arena-hp-track { animation: ttt-hp-hit-b 360ms ease-out; }
 .arena-combo.broken { animation: ttt-combo-break 420ms ease-out; }
 .arena-hp-ghost { animation: ttt-ghost-flash .7s ease-in-out infinite; }
-.impact[data-kind="crit"] .text { font-size: 64px; color: var(--streak); }
+.impact[data-kind="crit"] .text { font-size: 4rem; color: var(--streak); }
 .impact[data-kind="crit"] { animation: ttt-shake 90ms linear 5; }
 .impact[data-kind="shatter"] .flash { animation-duration: 260ms; opacity: .6; }
 .impact[data-kind="shatter"] .sil { display: none; }
@@ -64,7 +64,7 @@
 .page > *:nth-child(5) { animation-delay: .2s; } .page > *:nth-child(6) { animation-delay: .25s; } .page > *:nth-child(n+7) { animation-delay: .3s; }
 @keyframes page-in { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
 /* Start impact frame */
-.impact[data-kind="start"] .text { font-size: 72px; color: #fff; }
+.impact[data-kind="start"] .text { font-size: 4.5rem; color: #fff; }
 .impact[data-kind="start"] .sil { display: none; }
 @media (prefers-reduced-motion: reduce) { .page > * { animation: none; } }
 :root[data-motion="reduce"] .page > * { animation: none; }

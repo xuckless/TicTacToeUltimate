@@ -4,7 +4,7 @@
         <div class="t-sheet" role="dialog" aria-modal="true" aria-label="@Title" @onclick:stopPropagation="true">
             <header>
                 <h2 class="t-heading">@Title</h2>
-                @if (Dismissible) { <IconButton Label="Close" Icon="close" Round="true" OnClick="Close" /> }
+                @if (Dismissible) { <IconButton Label="@L.T("sheet.close")" Icon="close" Round="true" OnClick="Close" /> }
             </header>
             @ChildContent
         </div>

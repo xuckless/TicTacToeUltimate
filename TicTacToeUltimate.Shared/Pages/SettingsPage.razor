@@ -7,81 +7,90 @@
 @inject TicTacToeUltimate.Client.Abstractions.ClientOptions Options
 @inject TicTacToeUltimate.Client.Diagnostics.IScreenshotProvider Screenshots
 
-<PageTitle>Settings · Tic Tac Toe Ultimate</PageTitle>
-<h1 class="t-title">Settings</h1>
+<PageTitle>@L.T("settings.settings_tic_tac_toe_ultimate")</PageTitle>
+<h1 class="t-title">@L.T("appShell.settings")</h1>
 
-<Card Title="Look">
-    <span class="t-label">Theme</span>
-    <div class="t-seg" role="group" aria-label="Theme">
+<Card Title="@L.T("settings.look")">
+    <span class="t-label">@L.T("settings.theme")</span>
+    <div class="t-seg" role="group" aria-label="@L.T("settings.theme")">
         @foreach (var t in Enum.GetValues<ThemePreference>())
         {
-            <button type="button" aria-pressed="@(S.Theme == t ? "true" : "false")" @onclick="() => Update(s => s with { Theme = t })">@t</button>
+            <button type="button" aria-pressed="@(S.Theme == t ? "true" : "false")" @onclick="() => Update(s => s with { Theme = t })">@ThemeName(t)</button>
         }
     </div>
-    <span class="t-label">Motion</span>
-    <div class="t-seg" role="group" aria-label="Motion">
+    <span class="t-label">@L.T("settings.motion")</span>
+    <div class="t-seg" role="group" aria-label="@L.T("settings.motion")">
         @foreach (var m in Enum.GetValues<MotionPreference>())
         {
-            <button type="button" aria-pressed="@(S.Motion == m ? "true" : "false")" @onclick="() => Update(s => s with { Motion = m })">@m</button>
+            <button type="button" aria-pressed="@(S.Motion == m ? "true" : "false")" @onclick="() => Update(s => s with { Motion = m })">@MotionName(m)</button>
         }
     </div>
-    <label class="t-toggle"><span>Impact frames</span><input type="checkbox" checked="@S.ImpactFrames" @onchange="e => Update(s => s with { ImpactFrames = On(e) })" /></label>
+    <div class="t-field">
+        <label class="t-label" for="language">@L.T("settings.language")</label>
+        <select id="language" class="t-input" value="@S.Language" @onchange="SetLanguage" data-testid="language">
+            <option value="system">@L.T("settings.system_default")</option>
+            @foreach (var lang in Localizer.Languages) { <option value="@lang.Code">@lang.Native</option> }
+        </select>
+    </div>
+    <label class="t-toggle"><span>@L.T("matchMenuSheet.impact_frames")</span><input type="checkbox" checked="@S.ImpactFrames" @onchange="e => Update(s => s with { ImpactFrames = On(e) })" /></label>
 </Card>
 
-<Card Title="Sound and feel">
-    <label class="t-toggle"><span>Sound effects</span><input type="checkbox" checked="@S.Sfx" @onchange="e => Update(s => s with { Sfx = On(e) })" /></label>
-    <label class="t-toggle"><span>SFX volume</span><input type="range" min="0" max="100" value="@((int)(S.SfxVolume * 100))" aria-label="SFX volume" @onchange="e => Update(s => s with { SfxVolume = Vol(e) })" /></label>
-    <label class="t-toggle"><span>Music</span><input type="checkbox" checked="@S.Music" @onchange="e => Update(s => s with { Music = On(e) })" /></label>
-    <label class="t-toggle"><span>Music volume</span><input type="range" min="0" max="100" value="@((int)(S.MusicVolume * 100))" aria-label="Music volume" @onchange="e => Update(s => s with { MusicVolume = Vol(e) })" /></label>
-    <label class="t-toggle"><span>Haptics</span><input type="checkbox" checked="@S.Haptics" @onchange="e => Update(s => s with { Haptics = On(e) })" /></label>
+<Card Title="@L.T("settings.sound_and_feel")">
+    <label class="t-toggle"><span>@L.T("matchMenuSheet.sound_effects")</span><input type="checkbox" checked="@S.Sfx" @onchange="e => Update(s => s with { Sfx = On(e) })" /></label>
+    <label class="t-toggle"><span>@L.T("settings.sfx_volume")</span><input type="range" min="0" max="100" value="@((int)(S.SfxVolume * 100))" aria-label="@L.T("settings.sfx_volume")" @onchange="e => Update(s => s with { SfxVolume = Vol(e) })" /></label>
+    <label class="t-toggle"><span>@L.T("settings.music")</span><input type="checkbox" checked="@S.Music" @onchange="e => Update(s => s with { Music = On(e) })" /></label>
+    <label class="t-toggle"><span>@L.T("settings.music_volume")</span><input type="range" min="0" max="100" value="@((int)(S.MusicVolume * 100))" aria-label="@L.T("settings.music_volume")" @onchange="e => Update(s => s with { MusicVolume = Vol(e) })" /></label>
+    <label class="t-toggle"><span>@L.T("matchMenuSheet.haptics")</span><input type="checkbox" checked="@S.Haptics" @onchange="e => Update(s => s with { Haptics = On(e) })" /></label>
 </Card>
 
-<Card Title="Gameplay">
+<Card Title="@L.T("settings.gameplay")">
     <div style="display:flex;align-items:center;gap:8px">
-        <label class="t-toggle" style="flex:1"><span>Guided mode</span><input type="checkbox" checked="@S.ThreatHints" @onchange="e => Update(s => s with { ThreatHints = On(e) })" /></label>
+        <label class="t-toggle" style="flex:1"><span>@L.T("settings.guided_mode")</span><input type="checkbox" checked="@S.ThreatHints" @onchange="e => Update(s => s with { ThreatHints = On(e) })" /></label>
         <InfoButton Key="guided" />
     </div>
-    <label class="t-toggle"><span>Mute opponent emotes</span><input type="checkbox" checked="@S.MuteOpponentEmotes" @onchange="e => Update(s => s with { MuteOpponentEmotes = On(e) })" /></label>
+    <label class="t-toggle"><span>@L.T("matchMenuSheet.mute_opponent_emotes")</span><input type="checkbox" checked="@S.MuteOpponentEmotes" @onchange="e => Update(s => s with { MuteOpponentEmotes = On(e) })" /></label>
 </Card>
 
-<Card Title="Account">
+<Card Title="@L.T("play.account")">
     @if (Session.State.Me is { } me)
     {
         <div class="t-listrow" style="border:0">
             <Avatar Name="@me.DisplayName" AvatarId="@me.AvatarId" />
-            <div class="who"><div class="name">@me.DisplayName</div><div class="meta">@(me.Kind == AccountKind.Guest ? "Guest" : me.RenamesLeft > 0 ? "1 free rename left" : "Account")</div></div>
+            <div class="who"><div class="name">@me.DisplayName</div><div class="meta">@(me.Kind == AccountKind.Guest ? L.T("settings.guest") : me.RenamesLeft > 0 ? L.T("settings.1_free_rename_left") : L.T("play.account"))</div></div>
         </div>
         @if (me.Kind == AccountKind.Guest) { <AccountCta /> }
-        else { <Button Variant="secondary" Href="onboarding">Edit profile</Button> }
+        else { <Button Variant="secondary" Href="onboarding">@L.T("settings.edit_profile")</Button> }
     }
-    <Button Variant="danger" OnClick="SignOut">Sign out</Button>
+    <Button Variant="danger" OnClick="SignOut">@L.T("settings.sign_out")</Button>
     @if (Session.State.Me is not null)
     {
-        <button type="button" class="t-linkbtn t-small t-muted" style="margin-top:8px;background:none;border:0;cursor:pointer;color:inherit;text-decoration:underline" @onclick="() => _confirmDelete = true" data-testid="delete-account">Delete my account…</button>
+        <button type="button" class="t-linkbtn t-small t-muted" style="margin-top:8px;background:none;border:0;cursor:pointer;color:inherit;text-decoration:underline" @onclick="() => _confirmDelete = true" data-testid="delete-account">@L.T("settings.delete_my_account")</button>
     }
 </Card>
 
-<Card Title="About">
+<Card Title="@L.T("settings.about")">
     <div class="t-small t-muted">Tic Tac Toe Ultimate @Options.ClientVersion</div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px">
-        <a href="@Web("privacy/")" target="_blank" rel="noopener">Privacy policy</a>
-        <a href="@Web("terms/")" target="_blank" rel="noopener">Terms of service</a>
-        <a href="@Web("how-to-play/")" target="_blank" rel="noopener">How to play</a>
-        <a href="mailto:hello@alidirect.dev">Contact</a>
+        <a href="@Web("privacy/")" target="_blank" rel="noopener">@L.T("settings.privacy_policy")</a>
+        <a href="@Web("terms/")" target="_blank" rel="noopener">@L.T("settings.terms_of_service")</a>
+        <a href="@Web("how-to-play/")" target="_blank" rel="noopener">@L.T("settings.how_to_play")</a>
+        <a href="mailto:hello@alidirect.dev">@L.T("settings.contact")</a>
     </div>
-    <Button Variant="secondary" Small="true" OnClick="OpenBugReport" data-testid="report-bug"><Icon Name="flag" /> Report a bug</Button>
+    <Button Variant="secondary" Small="true" OnClick="OpenBugReport" data-testid="report-bug"><Icon Name="flag" /> @L.T("bugReportSheet.report_a_bug")</Button>
 </Card>
 <BugReportSheet Open="_bug" Screenshot="_bugShot" OnClose="() => _bug = false" />
 
-<Sheet Open="_confirmDelete" Title="Delete account?" OnClose="() => _confirmDelete = false">
-    <p class="t-body">This removes your @(Session.State.Me?.Kind == AccountKind.Guest ? "guest profile" : "account"), ratings, streak, quests, friends and messages right away. Finished games stay in your opponents' history as "Deleted player". This cannot be undone.</p>
+<Sheet Open="_confirmDelete" Title="@L.T("settings.delete_account")" OnClose="() => _confirmDelete = false">
+    <p class="t-body">@(Session.State.Me?.Kind == AccountKind.Guest ? L.T("settings.delete_body_guest") : L.T("settings.delete_body_account"))</p>
     <div style="display:grid;gap:10px;margin-top:12px">
-        <Button Variant="danger" Block="true" Disabled="_deleting" OnClick="DeleteAccount" data-testid="confirm-delete">@(_deleting ? "Deleting…" : "Delete everything")</Button>
-        <Button Variant="secondary" Block="true" OnClick="() => _confirmDelete = false">Keep my account</Button>
+        <Button Variant="danger" Block="true" Disabled="_deleting" OnClick="DeleteAccount" data-testid="confirm-delete">@(_deleting ? L.T("settings.deleting") : L.T("settings.delete_everything"))</Button>
+        <Button Variant="secondary" Block="true" OnClick="() => _confirmDelete = false">@L.T("settings.keep_my_account")</Button>
     </div>
 </Sheet>
 
 @code {
+    private Task SetLanguage(ChangeEventArgs e) => Update(s => s with { Language = e.Value?.ToString() is { Length: > 0 } v ? v : "system" });
+
     private bool _bug;
     private string? _bugShot;
 
@@ -93,14 +102,28 @@
 
     private string Web(string path) => new Uri(Options.WebBaseUrl, path).ToString();
 
+    private static string ThemeName(ThemePreference t) => t switch
+    {
+        ThemePreference.Dark => L.T("settings.dark"),
+        ThemePreference.Light => L.T("settings.light"),
+        _ => L.T("settings.system"),
+    };
+
+    private static string MotionName(MotionPreference m) => m switch
+    {
+        MotionPreference.Reduced => L.T("settings.reduced"),
+        MotionPreference.Full => L.T("settings.full"),
+        _ => L.T("settings.system"),
+    };
+
     private async Task DeleteAccount()
     {
         _deleting = true;
         var error = await Session.DeleteAccountAsync();
         _deleting = false;
-        if (error is not null) { Toasts.Show(error == ErrorCodes.RateLimited ? "Too many attempts. Try again in a minute." : "Couldn't delete your account. Check your connection and try again.", ToastKind.Error); return; }
+        if (error is not null) { Toasts.Show(error == ErrorCodes.RateLimited ? L.T("settings.too_many_attempts") : L.T("settings.couldn_t_delete_your_account"), ToastKind.Error); return; }
         _confirmDelete = false;
-        Toasts.Show("Your account was deleted.", ToastKind.Success);
+        Toasts.Show(L.T("settings.your_account_was_deleted"), ToastKind.Success);
         Nav.NavigateTo("signin", replace: true);
     }
 

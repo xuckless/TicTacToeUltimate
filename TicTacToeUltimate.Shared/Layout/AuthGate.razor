@@ -13,7 +13,7 @@ else if (Moderation.State.Ban is { } ban)
     @* Banned account or device: nothing else runs; the player can read why and appeal once. *@
     <div class="ban-screen"><div>
         <PenaltyNotice Penalty="ban">
-            <a class="t-small" href="mailto:hello@alidirect.dev">Contact support</a>
+            <a class="t-small" href="mailto:hello@alidirect.dev">@L.T("authGate.contact_support")</a>
         </PenaltyNotice>
     </div></div>
 }
@@ -22,10 +22,10 @@ else if ((_error is not null || Session.State.Error == "offline") && Session.Sta
     @* Config never loaded: the server is unreachable (or down). Offer Pass & Play instead of a sign-in page that cannot work. *@
     <div class="splash" style="flex-direction:column;gap:16px;text-align:center;padding:16px" data-testid="offline-splash">
         <Bert Mood="sleepy" Size="72" />
-        <span>Can't reach the server</span>
-        <span class="t-small t-muted">@(_error ?? "Check your connection, or play offline for now.")</span>
-        <Button OnClick="Init">Retry</Button>
-        <Button Variant="secondary" Href="local">Play offline · Pass &amp; Play</Button>
+        <span>@L.T("authGate.can_t_reach_the_server")</span>
+        <span class="t-small t-muted">@(_error ?? L.T("authGate.check_your_connection_or"))</span>
+        <Button OnClick="Init">@L.T("authGate.retry")</Button>
+        <Button Variant="secondary" Href="local">@L.T("authGate.play_offline_pass_play")</Button>
     </div>
 }
 else if (Session.State.Status == SessionStatus.Initializing && Session.State.WakingSeconds > 0)
@@ -33,15 +33,15 @@ else if (Session.State.Status == SessionStatus.Initializing && Session.State.Wak
     @* Server restarting or waking up: a friendly buffer instead of an error. *@
     <div class="splash wake" role="status" data-testid="waking">
         <span class="splash-logo"><BounceText Text="Tic Tac Toe" /> <BounceText Text="Ultimate" Class="ultimate" /></span>
-        <BertLoader Text="Waking up the game server" Mood="sleepy" />
-        <span class="t-small t-muted">This takes a few seconds after a restart. Hang tight!</span>
+        <BertLoader Text="@L.T("authGate.waking_up_the_game_server")" Mood="sleepy" />
+        <span class="t-small t-muted">@L.T("authGate.this_takes_a_few_seconds")</span>
         <div class="wake-bar" aria-hidden="true"><span style="width:@(Math.Min(100, Session.State.WakingSeconds * 100 / 60))%"></span></div>
-        <Button Variant="ghost" Small="true" Href="local">Play offline meanwhile · Pass &amp; Play</Button>
+        <Button Variant="ghost" Small="true" Href="local">@L.T("authGate.play_offline_meanwhile")</Button>
     </div>
 }
 else if (Session.State.Status == SessionStatus.Initializing || RedirectTarget() is not null)
 {
-    <div class="splash" role="status" style="flex-direction:column;gap:6px"><span class="splash-logo"><BounceText Text="Tic Tac Toe" /> <BounceText Text="Ultimate" Class="ultimate" /></span><BertLoader Text="Warming up" Mood="jumpy" /></div>
+    <div class="splash" role="status" style="flex-direction:column;gap:6px"><span class="splash-logo"><BounceText Text="Tic Tac Toe" /> <BounceText Text="Ultimate" Class="ultimate" /></span><BertLoader Text="@L.T("authGate.warming_up")" Mood="jumpy" /></div>
 }
 else
 {

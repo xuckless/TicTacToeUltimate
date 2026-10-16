@@ -13,7 +13,7 @@
     {
         @if (Emote.StartsWith("bert:", StringComparison.Ordinal))
         {
-            <span class="emote-bubble bert-bubble" role="status" aria-label="@($"Bert {Emote[5..]}")"><Bert Mood="@Emote[5..]" Size="56" /></span>
+            <span class="emote-bubble bert-bubble" role="status" aria-label="@L.F("emotePicker.bert_mood", Emote[5..])"><Bert Mood="@Emote[5..]" Size="56" /></span>
         }
         else
         {
@@ -50,7 +50,7 @@
     /// <summary>Phones: the match info line ("Casual · Game 0:41 · move 15s") lives inside the top card instead of its own header row.</summary>
     [Parameter] public string? Tag { get; set; }
 
-    private string Name => IsMe ? "You" : Seat?.Player.DisplayName ?? "Opponent";
+    private string Name => IsMe ? L.T("result.you") : Seat?.Player.DisplayName ?? L.T("playerCard.opponent");
     private string? ActiveClass => !Active || !IsMe || Ended ? null : SuddenDeath ? "active-sd" : Piece == Color.X ? "active-x" : "active-o";
 
     private string? MetaClass => IsMe && Active && !Ended ? (SuddenDeath ? "sd" : "yourmove") : null;
@@ -60,14 +60,14 @@
         get
         {
             if (IsMe && Active && !Ended)
-                return SuddenDeath && WindowSeconds is int w ? $"YOUR MOVE · {w}s WINDOW" : "Your move";
+                return SuddenDeath && WindowSeconds is int w ? L.F("playerCard.your_move_window", w) : L.T("activeGames.your_move");
             var p = Seat?.Player;
             if (p is null) return "";
             var parts = new List<string>();
             if (p.Tier is not null) parts.Add(Ui.TierName(p.Tier));
             if (p.Rating is int r) parts.Add(r.ToString(CultureInfo.InvariantCulture));
             if (!IsMe && Seat!.RttMs is int rtt && !SuddenDeath) parts.Add($"{rtt}ms");
-            if (Seat!.Connected == false) parts.Add("Reconnecting…");
+            if (Seat!.Connected == false) parts.Add(L.T("connectionBanner.reconnecting"));
             return string.Join(" · ", parts);
         }
     }

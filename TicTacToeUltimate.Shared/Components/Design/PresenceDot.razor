@@ -6,5 +6,5 @@
     private string? Css => Status switch { PresenceStatus.Online => "online", PresenceStatus.InGame => "ingame", _ => null };
 
     /// <summary>Copy for a status.</summary>
-    public static string Text(PresenceStatus s) => s switch { PresenceStatus.Online => "Online", PresenceStatus.InGame => "In a game", _ => "Offline" };
+    public static string Text(PresenceStatus s) => s switch { PresenceStatus.Online => L.T("presenceDot.online"), PresenceStatus.InGame => L.T("presenceDot.in_a_game"), _ => L.T("presenceDot.offline") };
 }

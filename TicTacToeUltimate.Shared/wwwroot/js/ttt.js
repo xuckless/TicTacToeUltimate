@@ -230,3 +230,26 @@ export async function diagScreenshot() {
     return canvas.toDataURL('image/png').split(',')[1] || null;
   } catch { return null; }
 }
+
+// ---------- Language (2026-10-16) ----------
+export function languages() {
+  return (navigator.languages && navigator.languages.length ? Array.from(navigator.languages) : [navigator.language || 'en']);
+}
+// Catalogs live next to this module: _content/TicTacToeUltimate.Shared/i18n/<code>.json (web and the MAUI web view alike).
+export async function loadCatalog(code) {
+  try {
+    const res = await fetch(new URL(`../i18n/${code}.json`, import.meta.url), { cache: 'force-cache' });
+    return res.ok ? await res.text() : null;
+  } catch { return null; }
+}
+export function setDocLang(lang, rtl) {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+}
+
+// ---------- Text size (accessibility, 2026-10-16) ----------
+// Font sizes are in rem, so the root size carries the phone's text-size setting into the whole app.
+export function setTextScale(scale) {
+  const s = Math.min(1.35, Math.max(1, Number(scale) || 1));
+  document.documentElement.style.fontSize = s === 1 ? '' : `${16 * s}px`;
+}

@@ -7,8 +7,8 @@
 {
     <a class="daily-nudge resume-banner" href="@($"match/{g.MatchId}")" data-testid="resume-banner">
         <Icon Name="play" />
-        <span><strong>Game in progress</strong> · vs @g.Opponent.DisplayName@(g.YourTurn ? " · your move" : "")</span>
-        <span class="t-chip">Resume</span>
+        <span>@((MarkupString)L.F(g.YourTurn ? "resumeBanner.line_your_move" : "resumeBanner.line", System.Net.WebUtility.HtmlEncode(g.Opponent.DisplayName)))</span>
+        <span class="t-chip">@L.T("resumeBanner.resume")</span>
     </a>
 }
 

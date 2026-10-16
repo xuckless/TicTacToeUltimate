@@ -4,29 +4,29 @@
 @inject ISessionStore Session
 @inject NavigationManager Nav
 
-<PageTitle>Sign in · Tic Tac Toe Ultimate</PageTitle>
+<PageTitle>@L.T("signIn.sign_in_tic_tac_toe")</PageTitle>
 <div class="t-col" style="padding:0;align-items:stretch">
     <h1 class="signin-logo" style="text-align:center;margin:0"><BounceText Text="Tic Tac Toe" Class="sub" /><br /><BounceText Text="Ultimate" Class="ultimate" /></h1>
-    <p class="t-muted" style="text-align:center;margin:0">Pieces vanish. Every game ends in a win.</p>
+    <p class="t-muted" style="text-align:center;margin:0">@L.T("signIn.pieces_vanish_every_game_ends")</p>
 
     @if (_step == Step.Landing)
     {
         @* Log in is the main door; creating an account is the same email code, so it is a quiet link (owner decision 2026-10-16). *@
         @if (EmailAuth)
         {
-            <Button Variant="primary" Block="true" OnClick="() => Start(create: false)" Disabled="_busy" data-testid="login">Log in</Button>
+            <Button Variant="primary" Block="true" OnClick="() => Start(create: false)" Disabled="_busy" data-testid="login">@L.T("accountCta.log_in")</Button>
         }
         @if (!Session.State.IsGuest)
         {
-            <Button Variant="secondary" Block="true" OnClick="Guest" Disabled="_busy" data-testid="guest">Play as guest</Button>
+            <Button Variant="secondary" Block="true" OnClick="Guest" Disabled="_busy" data-testid="guest">@L.T("challenge.play_as_guest")</Button>
         }
         else
         {
-            <p class="t-small t-muted" style="text-align:center;margin:0" data-testid="guest-keep">Your guest games, streak and quests move into your account when you sign in.</p>
+            <p class="t-small t-muted" style="text-align:center;margin:0" data-testid="guest-keep">@L.T("signIn.your_guest_games_streak_and")</p>
         }
         @if (EmailAuth)
         {
-            <p class="t-small t-muted signin-create" style="text-align:center;margin:0">New here? <button type="button" class="t-link-btn" @onclick="() => Start(create: true)" data-testid="create-account">Create account</button></p>
+            <p class="t-small t-muted signin-create" style="text-align:center;margin:0">@Before("accountCta.new_here_create")<button type="button" class="t-link-btn" @onclick="() => Start(create: true)" data-testid="create-account">@L.T("accountCta.create_account")</button>@After("accountCta.new_here_create")</p>
         }
     }
     else if (EmailAuth)
@@ -34,32 +34,32 @@
         <Card Title="@CardTitle" Class="email-card">
             @if (_step == Step.Email)
             {
-                <p class="t-small t-muted" style="margin:0">@(_create ? "Enter your email and we'll send a 6-digit code. Then pick a username and you're in." : "Enter your email and we'll send a 6-digit code. No password to remember.")</p>
-                <TextField Label="Email" Type="email" Value="@_email" ValueChanged="v => _email = v" Placeholder="you@example.com" MaxLength="254" OnEnter="SendCode" />
-                <Button Variant="primary" Block="true" OnClick="SendCode" Disabled="@(_busy || !_email.Contains('@'))" data-testid="email-submit">Send code</Button>
-                <button type="button" class="t-link-btn" @onclick="Back">Back</button>
+                <p class="t-small t-muted" style="margin:0">@(_create ? L.T("signIn.enter_your_email_create") : L.T("signIn.enter_your_email_login"))</p>
+                <TextField Label="@L.T("signIn.email")" Type="email" Value="@_email" ValueChanged="v => _email = v" Placeholder="you@example.com" MaxLength="254" OnEnter="SendCode" />
+                <Button Variant="primary" Block="true" OnClick="SendCode" Disabled="@(_busy || !_email.Contains('@'))" data-testid="email-submit">@L.T("signIn.send_code")</Button>
+                <button type="button" class="t-link-btn" @onclick="Back">@L.T("chat.back")</button>
             }
             else
             {
-                <p class="t-small t-muted" style="margin:0">Sent to <strong>@_email.Trim()</strong>. Type the code, or just tap the link in the email. Check spam if it takes a minute.</p>
-                <TextField Label="6-digit code" Type="text" Value="@_code" ValueChanged="v => _code = new string(v.Where(char.IsDigit).Take(6).ToArray())" Placeholder="123456" MaxLength="6"
+                <p class="t-small t-muted" style="margin:0">@((MarkupString)L.F("signIn.sent_to_type_the_code", System.Net.WebUtility.HtmlEncode(_email.Trim())))</p>
+                <TextField Label="@L.T("signIn.6_digit_code")" Type="text" Value="@_code" ValueChanged="v => _code = new string(v.Where(char.IsDigit).Take(6).ToArray())" Placeholder="123456" MaxLength="6"
                            OnEnter="VerifyCode" />
-                <Button Variant="primary" Block="true" OnClick="VerifyCode" Disabled="@(_busy || _code.Length != 6)" data-testid="code-submit">@(_create ? "Create account" : "Log in")</Button>
+                <Button Variant="primary" Block="true" OnClick="VerifyCode" Disabled="@(_busy || _code.Length != 6)" data-testid="code-submit">@(_create ? L.T("accountCta.create_account") : L.T("accountCta.log_in"))</Button>
                 <div class="t-spread">
-                    <button type="button" class="t-link-btn" @onclick="ChangeEmail">Use a different email</button>
-                    <button type="button" class="t-link-btn" disabled="@(_resendIn > 0 || _busy)" @onclick="SendCode">@(_resendIn > 0 ? $"Resend in {_resendIn}s" : "Resend code")</button>
+                    <button type="button" class="t-link-btn" @onclick="ChangeEmail">@L.T("signIn.use_a_different_email")</button>
+                    <button type="button" class="t-link-btn" disabled="@(_resendIn > 0 || _busy)" @onclick="SendCode">@(_resendIn > 0 ? L.F("signIn.resend_in", _resendIn) : L.T("signIn.resend_code"))</button>
                 </div>
             }
-            @if (_info is not null) { <p class="t-small email-info" role="status"><Bert Mood="wink" Size="34" /> @_info</p> }
+            @if (_info is not null) { <p class="t-small email-info" role="status"><Bert Mood="wink" Size="34" /> @L.T(_info)</p> }
         </Card>
         <p class="t-small t-muted" style="text-align:center;margin:0">
-            @if (_create) { <span>Already have an account? <button type="button" class="t-link-btn" @onclick="() => Switch(create: false)">Log in</button></span> }
-            else { <span>New here? <button type="button" class="t-link-btn" @onclick="() => Switch(create: true)">Create account</button></span> }
+            @if (_create) { <span>@Before("signIn.already_have_an_account_log_in")<button type="button" class="t-link-btn" @onclick="() => Switch(create: false)">@L.T("accountCta.log_in")</button>@After("signIn.already_have_an_account_log_in")</span> }
+            else { <span>@Before("accountCta.new_here_create")<button type="button" class="t-link-btn" @onclick="() => Switch(create: true)">@L.T("accountCta.create_account")</button>@After("accountCta.new_here_create")</span> }
         </p>
     }
     @if (Session.State.Config?.DevAuth == true)
     {
-        <Card Title="Dev sign-in">
+        <Card Title="@L.T("signIn.dev_sign_in")">
             @if (_users.Count == 0) { <span class="t-small t-muted">@(_loading ? "Loading dev users…" : "No dev users.")</span> }
             @foreach (var u in _users)
             {
@@ -69,12 +69,12 @@
                     <span class="who"><span class="name">@u.DisplayName</span> <BotBadge Kind="u.Kind" /><br /><span class="meta">@Ui.TierName(u.Tier)@(u.Rating is int r ? $" · {r}" : "")</span></span>
                 </button>
             }
-            <TextField Label="Create dev user" Placeholder="username" Value="@_newName" ValueChanged="v => _newName = v" OnEnter="Create" MaxLength="16"
+            <TextField Label="@L.T("signIn.create_dev_user")" Placeholder="@L.T("signIn.username")" Value="@_newName" ValueChanged="v => _newName = v" OnEnter="Create" MaxLength="16"
                        Error="@(_newName.Length > 0 && !OnboardingPage.IsValidUsername(_newName) ? "3–16 chars: a–z, 0–9, _" : null)" />
-            <Button Variant="secondary" OnClick="Create" Disabled="@(_busy || !OnboardingPage.IsValidUsername(_newName))">Create and sign in</Button>
+            <Button Variant="secondary" OnClick="Create" Disabled="@(_busy || !OnboardingPage.IsValidUsername(_newName))">@L.T("signIn.create_and_sign_in")</Button>
         </Card>
     }
-    @if (_error is not null) { <p class="t-alert" role="alert">@_error</p> }
+    @if (_error is not null) { <p class="t-alert" role="alert">@L.T(_error)</p> }
 </div>
 
 @code {
@@ -93,8 +93,12 @@
     /// <summary>"login" or "create" skips the landing and opens the email step directly.</summary>
     [SupplyParameterFromQuery(Name = "mode")] private string? Mode { get; set; }
 
+    // A sentence with an inline button: the text before and after its {0} slot.
+    private static string Before(string key) { var t = L.T(key); var i = t.IndexOf("{0}", StringComparison.Ordinal); return i < 0 ? t + " " : t[..i]; }
+    private static string After(string key) { var t = L.T(key); var i = t.IndexOf("{0}", StringComparison.Ordinal); return i < 0 ? "" : t[(i + 3)..]; }
+
     private bool EmailAuth => Session.State.Config?.SupabaseAuth == true;
-    private string CardTitle => _step == Step.Code ? "Enter your code" : _create ? "Create your account" : "Welcome back";
+    private string CardTitle => _step == Step.Code ? L.T("signIn.enter_your_code") : _create ? L.T("signIn.create_your_account") : L.T("signIn.welcome_back");
 
     private void Start(bool create) { _create = create; _step = Step.Email; _error = null; _info = null; }
     private void Switch(bool create) { _create = create; if (_step == Step.Code) ChangeEmail(); }
@@ -113,12 +117,12 @@
             var ok = await Session.CompleteRedirectAsync(uri.Fragment);
             _busy = false;
             Nav.NavigateTo(Nav.Uri.Split('#')[0], replace: true);
-            if (!ok) _error = "That link has expired. Sign in with a code instead.";
+            if (!ok) _error = "signIn.link_expired";
             else { Done(); return; }
         }
         else if (uri.Fragment.Contains("error_description=", StringComparison.Ordinal))
         {
-            _error = "That link has expired or was already used. Sign in with a code instead.";
+            _error = "signIn.link_expired_or_used";
         }
         if (Session.State.Config?.DevAuth == true)
         {
@@ -141,9 +145,9 @@
         try
         {
             _error = await Session.SendCodeAsync(_email);
-            if (_error is null) { _step = Step.Code; _code = ""; _info = "Code sent! It's valid for 10 minutes."; _ = Countdown(); }
+            if (_error is null) { _step = Step.Code; _code = ""; _info = "signIn.code_sent"; _ = Countdown(); }
         }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _error = "Can't reach the server. Try again."; }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _error = "signIn.cant_reach_server"; }
         finally { _busy = false; }
     }
 
@@ -164,7 +168,7 @@
         if (_code.Length != 6 || _busy) return;
         _busy = true; _error = null; _info = null;
         try { _error = await Session.VerifyCodeAsync(_email, _code); }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _error = "Can't reach the server. Try again."; }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _error = "signIn.cant_reach_server"; }
         finally { _busy = false; }
         if (_error is null && Session.State.Status == SessionStatus.SignedIn && !Session.State.IsGuest) Done();
     }
@@ -177,10 +181,10 @@
     {
         _busy = true; _error = null;
         try { await action(); }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { _error = "Sign-in failed. Is the server running?"; }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { _error = "signIn.sign_in_failed_server"; }
         finally { _busy = false; }
         if (Session.State.Status == SessionStatus.SignedIn) Done();
-        else _error ??= Session.State.Error ?? "Sign-in failed.";
+        else _error ??= Session.State.Error ?? "auth.sign_in_failed";
     }
 
     private void Done()

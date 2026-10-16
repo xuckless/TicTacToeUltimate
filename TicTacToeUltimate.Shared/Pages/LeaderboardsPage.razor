@@ -2,30 +2,30 @@
 @inject IGameQueries Queries
 @inject ISessionStore Session
 
-<PageTitle>Leaderboards · Tic Tac Toe Ultimate</PageTitle>
-<h1 class="t-title">Leaderboards</h1>
+<PageTitle>@L.T("leaderboards.leaderboards_tic_tac_toe_ultimate")</PageTitle>
+<h1 class="t-title">@L.T("appShell.leaderboards")</h1>
 
 @if (!Session.State.IsGuest)
 {
-    <Tabs Items="Scopes" Active="@_scope" ActiveChanged="SetScope" Label="Scope" />
+    <Tabs Items="Scopes" Active="@_scope" ActiveChanged="SetScope" Label="@L.T("leaderboards.scope")" Caption="ScopeCaption" />
 }
 
 @if (Session.State.IsGuest)
 {
-    <Card><p style="margin:0">Leaderboards are for accounts. <a href="signin?mode=login">Log in</a> or <a href="signin?mode=create">create one</a> to get ranked.</p></Card>
+    <Card><p style="margin:0">@((MarkupString)L.T("leaderboards.guest_cta"))</p></Card>
 }
 else if (_error)
 {
-    <Card><div class="t-empty"><Bert Mood="shocked" Size="64" /><span>Couldn't load the leaderboard.</span><Button Variant="secondary" Small="true" OnClick="Load">Retry</Button></div></Card>
+    <Card><div class="t-empty"><Bert Mood="shocked" Size="64" /><span>@L.T("leaderboards.couldn_t_load_the_leaderboard")</span><Button Variant="secondary" Small="true" OnClick="Load">@L.T("authGate.retry")</Button></div></Card>
 }
 else if (_page is null)
 {
-    <BertLoader Text="Loading leaderboard" />
+    <BertLoader Text="@L.T("leaderboards.loading_leaderboard")" />
 }
 else
 {
-    <section aria-label="Rankings">
-        @if (_page.Rows.Length == 0) { <p class="t-muted t-small">Nobody here yet.</p> }
+    <section aria-label="@L.T("leaderboards.rankings")">
+        @if (_page.Rows.Length == 0) { <p class="t-muted t-small">@L.T("leaderboards.nobody_here_yet")</p> }
         @foreach (var (row, i) in _page.Rows.Select((r, i) => (r, i))) { <LeaderboardRow Row="row" IsMe="@(row.Player.UserId == Session.State.Me?.UserId)" />@if (Ui.FeedAdAfter(i)) { <AdSlot Kind="AdSlotKind.Feed" /> } }
         @if (_page.Me is { } me && _page.Rows.All(r => r.Player.UserId != me.Player.UserId))
         {
@@ -34,9 +34,9 @@ else
         }
     </section>
     <div class="t-spread">
-        <Button Variant="secondary" Small="true" Disabled="@(_pageNo <= 1)" OnClick="() => Go(_pageNo - 1)">Previous</Button>
-        <span class="t-small t-muted">Page @_pageNo</span>
-        <Button Variant="secondary" Small="true" Disabled="@(_pageNo * _page.PageSize >= _page.TotalCount)" OnClick="() => Go(_pageNo + 1)">Next</Button>
+        <Button Variant="secondary" Small="true" Disabled="@(_pageNo <= 1)" OnClick="() => Go(_pageNo - 1)">@L.T("leaderboards.previous")</Button>
+        <span class="t-small t-muted">@L.F("leaderboards.page", _pageNo)</span>
+        <Button Variant="secondary" Small="true" Disabled="@(_pageNo * _page.PageSize >= _page.TotalCount)" OnClick="() => Go(_pageNo + 1)">@L.T("leaderboards.next")</Button>
     </div>
 }
 <AdSlot />
@@ -44,6 +44,7 @@ else
 @code {
     private static readonly string[] Scopes = ["Global", "Friends", "Country", "Master"];
     private string _scope = "Global";
+    private static string ScopeCaption(string s) => L.T($"leaderboards.scope.{s.ToLowerInvariant()}");
     private RatingPool _pool = RatingPools.Headline;
     private int _pageNo = 1;
     private LeaderboardPageDto? _page;

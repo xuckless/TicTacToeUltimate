@@ -1,6 +1,6 @@
 @inject TttJsModule Js
 
-<div class="t-board @(Mini ? "t-board--mini" : null) @(SuddenDeath ? "sd" : null)" @ref="_el" role="grid" aria-label="@(Mini ? "Board preview" : "Game board")"
+<div class="t-board @(Mini ? "t-board--mini" : null) @(SuddenDeath ? "sd" : null)" @ref="_el" role="grid" aria-label="@(Mini ? L.T("board.board_preview") : L.T("board.game_board"))"
      aria-hidden="@(Mini ? "true" : null)" style="grid-template-columns:repeat(@Size, minmax(0, 1fr));grid-template-rows:repeat(@Size, minmax(0, 1fr))">
     @for (var i = 0; i < Size * Size; i++)
     {
@@ -81,11 +81,11 @@
 
     private string CellLabel(int cell, Color? piece, bool ghost, bool aging, bool threat, bool win)
     {
-        var s = $"Row {cell / Size + 1}, column {cell % Size + 1}, {(piece is null ? "empty" : piece.ToString())}";
-        if (ghost) s += ", vanishes when the player to move places";
-        if (aging) s += ", vanishes on the other player's next move";
-        if (threat) s += ", opponent threatens here";
-        if (win) s += ", winning line";
+        var s = L.F("board.row_column", cell / Size + 1, cell % Size + 1, piece is null ? L.T("board.empty") : piece.ToString());
+        if (ghost) s += ", " + L.T("board.vanishes_when_the_player");
+        if (aging) s += ", " + L.T("board.vanishes_on_the_other");
+        if (threat) s += ", " + L.T("board.opponent_threatens_here");
+        if (win) s += ", " + L.T("board.winning_line");
         return s;
     }
 

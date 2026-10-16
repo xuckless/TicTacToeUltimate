@@ -3,23 +3,23 @@
 @inject ToastService Toasts
 
 @* "Report a bug" (owner decision 2026-10-16): a description, optionally the screenshot taken just before this sheet opened. *@
-<Sheet Open="Open" Title="Report a bug" OnClose="Close">
+<Sheet Open="Open" Title="@L.T("bugReportSheet.report_a_bug")" OnClose="Close">
     <div class="t-col" style="padding:0;gap:12px">
         <div class="t-field">
-            <label class="t-label" for="bug-text">What went wrong?</label>
-            <textarea id="bug-text" class="t-input" rows="5" maxlength="4000" placeholder="What you did, what you expected, what happened instead" @bind="_text" @bind:event="oninput"></textarea>
+            <label class="t-label" for="bug-text">@L.T("bugReportSheet.what_went_wrong")</label>
+            <textarea id="bug-text" class="t-input" rows="5" maxlength="4000" placeholder="@L.T("bugReportSheet.what_you_did_what_you")" @bind="_text" @bind:event="oninput"></textarea>
         </div>
         @if (Screenshot is not null)
         {
-            <label class="t-toggle"><span>Include a screenshot of the screen</span><input type="checkbox" @bind="_withShot" /></label>
-            @if (_withShot) { <img class="bug-shot" src="@($"data:image/png;base64,{Screenshot}")" alt="Screenshot that will be attached" /> }
+            <label class="t-toggle"><span>@L.T("bugReportSheet.include_a_screenshot_of_the")</span><input type="checkbox" @bind="_withShot" /></label>
+            @if (_withShot) { <img class="bug-shot" src="@($"data:image/png;base64,{Screenshot}")" alt="@L.T("bugReportSheet.screenshot_that_will_be_attached")" /> }
         }
         @if (Reporter.LastCrash is not null)
         {
-            <label class="t-toggle"><span>Include details of the last error</span><input type="checkbox" @bind="_withCrash" /></label>
+            <label class="t-toggle"><span>@L.T("bugReportSheet.include_details_of_the_last")</span><input type="checkbox" @bind="_withCrash" /></label>
         }
-        <p class="t-small t-muted" style="margin:0">We also send your app version, device, recent screens and taps (never your messages).</p>
-        <Button Variant="primary" Block="true" OnClick="Send" Disabled="@(_busy || string.IsNullOrWhiteSpace(_text))" data-testid="bug-send">Send report</Button>
+        <p class="t-small t-muted" style="margin:0">@L.T("bugReportSheet.we_also_send_your_app")</p>
+        <Button Variant="primary" Block="true" OnClick="Send" Disabled="@(_busy || string.IsNullOrWhiteSpace(_text))" data-testid="bug-send">@L.T("bugReportSheet.send_report")</Button>
     </div>
 </Sheet>
 
@@ -39,8 +39,8 @@
         _busy = true;
         var ok = await Reporter.ReportBugAsync(_text.Trim(), _withShot ? Screenshot : null, _withCrash);
         _busy = false;
-        if (ok) { Toasts.Show("Thanks! Your report was sent.", ToastKind.Success); _text = ""; await OnClose.InvokeAsync(); }
-        else Toasts.Show("Couldn't send the report. Check your connection and try again.", ToastKind.Error);
+        if (ok) { Toasts.Show(L.T("bugReportSheet.thanks_your_report_was"), ToastKind.Success); _text = ""; await OnClose.InvokeAsync(); }
+        else Toasts.Show(L.T("bugReportSheet.couldn_t_send_the_report"), ToastKind.Error);
     }
 
     private async Task Close() => await OnClose.InvokeAsync();

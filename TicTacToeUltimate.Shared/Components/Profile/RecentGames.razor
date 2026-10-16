@@ -1,8 +1,8 @@
 <section class="t-col" style="padding:0;gap:0">
-    <div class="t-spread" style="padding-bottom:4px"><h2 class="t-heading">Recent games</h2>@if (ShowHistoryLink) { <a href="history" class="t-small">History</a> }</div>
+    <div class="t-spread" style="padding-bottom:4px"><h2 class="t-heading">@L.T("recentGames.recent_games")</h2>@if (ShowHistoryLink) { <a href="history" class="t-small">@L.T("appShell.history")</a> }</div>
     @if (Games.Count == 0)
     {
-        <div class="t-empty"><Bert Mood="happy" Size="52" /><span>No games yet. Your first win is waiting!</span></div>
+        <div class="t-empty"><Bert Mood="happy" Size="52" /><span>@L.T("recentGames.no_games_yet_your_first")</span></div>
     }
     @foreach (var g in Games)
     {

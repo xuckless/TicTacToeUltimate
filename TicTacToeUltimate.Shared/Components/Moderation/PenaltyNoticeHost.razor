@@ -2,11 +2,11 @@
 @inject IModerationStore Moderation
 
 @* Warnings and mutes arrive live: shown once as a sheet. *@
-<Sheet Open="@(Moderation.State.Notice is not null)" Title="Heads up" OnClose="Moderation.DismissNotice">
+<Sheet Open="@(Moderation.State.Notice is not null)" Title="@L.T("penaltyNoticeHost.heads_up")" OnClose="Moderation.DismissNotice">
     @if (Moderation.State.Notice is { } n)
     {
         <PenaltyNotice Penalty="n">
-            <Button Variant="primary" Block="true" OnClick="Moderation.DismissNotice">Got it</Button>
+            <Button Variant="primary" Block="true" OnClick="Moderation.DismissNotice">@L.T("penaltyNoticeHost.got_it")</Button>
         </PenaltyNotice>
     }
 </Sheet>

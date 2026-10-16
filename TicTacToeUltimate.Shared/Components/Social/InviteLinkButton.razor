@@ -5,27 +5,27 @@
 @inject IJSRuntime JS
 
 @* Custom lobby: pick a mode (each with a (?) explainer), then create and share an invite link. *@
-<Button Variant="dashed" Block="true" OnClick="() => { _created = null; _picking = true; }" Disabled="_busy">@Text</Button>
+<Button Variant="dashed" Block="true" OnClick="() => { _created = null; _picking = true; }" Disabled="_busy">@(Text ?? L.T("inviteLinkButton.invite_a_friend_by"))</Button>
 
-<Sheet Open="_picking" Title="@(_created is null ? "Invite a friend" : "Invite ready")" OnClose="() => _picking = false">
+<Sheet Open="_picking" Title="@(_created is null ? L.T("inviteLinkButton.invite_a_friend") : L.T("inviteLinkButton.invite_ready"))" OnClose="() => _picking = false">
     @if (_created is { } made)
     {
         <div class="invite-made" data-testid="invite-made">
             <Bert Mood="cheer" Size="64" />
-            <span class="t-small t-muted">Send this to a friend. It works for 24 hours.</span>
-            <span class="invite-code" style="position:relative" aria-label="Invite code">@made.Code<LocalBurst Trigger="_madeBurst" Color="var(--streak)" /></span>
-            <input class="invite-url" readonly value="@made.Url" aria-label="Invite link" data-testid="invite-url" @onfocus="SelectAll" id="invite-url" />
+            <span class="t-small t-muted">@L.T("inviteLinkButton.send_this_to_a_friend")</span>
+            <span class="invite-code" style="position:relative" aria-label="@L.T("inviteLinkButton.invite_code")">@made.Code<LocalBurst Trigger="_madeBurst" Color="var(--streak)" /></span>
+            <input class="invite-url" readonly value="@made.Url" aria-label="@L.T("inviteLinkButton.invite_link")" data-testid="invite-url" @onfocus="SelectAll" id="invite-url" />
             <div class="invite-actions">
-                <Button Variant="primary" OnClick="Copy" data-testid="invite-copy"><Icon Name="link" /> @(_copied ? "Copied!" : "Copy link")</Button>
-                <Button Variant="secondary" OnClick="ShareNative"><Icon Name="share" /> Share</Button>
+                <Button Variant="primary" OnClick="Copy" data-testid="invite-copy"><Icon Name="link" /> @(_copied ? L.T("inviteLinkButton.copied") : L.T("inviteLinkButton.copy_link"))</Button>
+                <Button Variant="secondary" OnClick="ShareNative"><Icon Name="share" /> @L.T("inviteLinkButton.share")</Button>
             </div>
-            <a class="t-small" href="@($"c/{made.Code}")">Open the lobby</a>
+            <a class="t-small" href="@($"c/{made.Code}")">@L.T("inviteLinkButton.open_the_lobby")</a>
         </div>
     }
     else
     {
-    <p class="t-small t-muted" style="margin:0">Pick a mode. Friendly games are unrated.</p>
-    <div class="lobby-modes" role="radiogroup" aria-label="Mode">
+    <p class="t-small t-muted" style="margin:0">@L.T("inviteLinkButton.pick_a_mode_friendly_games")</p>
+    <div class="lobby-modes" role="radiogroup" aria-label="@L.T("challengeModePicker.mode")">
         @foreach (var m in LobbyModes.All)
         {
             var on = _tc == m.Tc;
@@ -33,13 +33,13 @@
             <div class="mode-wrap">
                 <button type="button" role="radio" aria-checked="@(on ? "true" : "false")" class="mode-btn local-opt @(on ? "on" : null)" disabled="@locked"
                         data-testid="@($"invite-{m.Tc}")" @onclick="() => _tc = m.Tc">
-                    <Icon Name="@m.Icon" Class="mode-ico" /><span class="t-label">@m.Name</span><span class="sub">@(locked ? "Account only" : m.Sub)</span>
+                    <Icon Name="@m.Icon" Class="mode-ico" /><span class="t-label">@m.Name</span><span class="sub">@(locked ? L.T("arenaCard.account_only") : m.Sub)</span>
                 </button>
                 <InfoButton Key="@m.Guide" Class="corner" />
             </div>
         }
     </div>
-    <Button Variant="primary" Block="true" OnClick="Invite" Disabled="_busy" data-testid="invite-create">Create link</Button>
+    <Button Variant="primary" Block="true" OnClick="Invite" Disabled="_busy" data-testid="invite-create">@L.T("inviteLinkButton.create_link")</Button>
     }
 </Sheet>
 
@@ -49,8 +49,8 @@
     private int _madeBurst;
     private TimeControl _tc = TimeControl.Casual;
 
-    /// <summary>Caption.</summary>
-    [Parameter] public string Text { get; set; } = "Invite a friend by link";
+    /// <summary>Caption (null = "Invite a friend by link").</summary>
+    [Parameter] public string? Text { get; set; }
     /// <summary>Guests can't create Daily invites.</summary>
     [Parameter] public bool Guest { get; set; }
     /// <summary>Creates the challenge link for the chosen time control.</summary>
@@ -67,12 +67,12 @@
             {
                 // Server errors arrive as HubException with an ErrorCodes value in the message.
                 var m = ex.Message;
-                Toasts.Show(m.Contains(ErrorCodes.UsernameRequired) ? "Pick a username first (Profile) to create invite links."
-                    : m.Contains(ErrorCodes.GuestNotAllowed) ? "Sign in to create this kind of invite."
-                    : "Couldn't create a link. Check your connection and try again.", ToastKind.Error);
+                Toasts.Show(m.Contains(ErrorCodes.UsernameRequired) ? L.T("inviteLinkButton.pick_a_username_first")
+                    : m.Contains(ErrorCodes.GuestNotAllowed) ? L.T("inviteLinkButton.sign_in_to_create_this")
+                    : L.T("inviteLinkButton.couldn_t_create_a_link_check"), ToastKind.Error);
                 return;
             }
-            if (c is null || !Uri.TryCreate(c.Url, UriKind.Absolute, out _)) { Toasts.Show("Couldn't create a link.", ToastKind.Error); return; }
+            if (c is null || !Uri.TryCreate(c.Url, UriKind.Absolute, out _)) { Toasts.Show(L.T("inviteLinkButton.couldn_t_create_a_link"), ToastKind.Error); return; }
             // Keep the sheet open and show the link: never rely on a system share sheet the user may dismiss.
             _created = c;
             _copied = false;
@@ -84,15 +84,15 @@
     private async Task Copy()
     {
         if (_created is null) return;
-        try { await JS.InvokeVoidAsync("navigator.clipboard.writeText", _created.Url); _copied = true; Toasts.Show("Link copied", ToastKind.Success); }
-        catch (Exception) { Toasts.Show("Select the link above and copy it.", ToastKind.Info); }
+        try { await JS.InvokeVoidAsync("navigator.clipboard.writeText", _created.Url); _copied = true; Toasts.Show(L.T("inviteLinkButton.link_copied"), ToastKind.Success); }
+        catch (Exception) { Toasts.Show(L.T("inviteLinkButton.select_the_link_above"), ToastKind.Info); }
     }
 
     private async Task ShareNative()
     {
         if (_created is null || !Uri.TryCreate(_created.Url, UriKind.Absolute, out var url)) return;
-        var r = await Share.ShareLinkAsync("Tic Tac Toe Ultimate", $"Play me in Tic Tac Toe Ultimate! Code {_created.Code}", url);
-        if (r == "copied") { _copied = true; Toasts.Show("Link copied", ToastKind.Success); }
+        var r = await Share.ShareLinkAsync("Tic Tac Toe Ultimate", L.F("inviteLinkButton.play_me_in", _created.Code), url);
+        if (r == "copied") { _copied = true; Toasts.Show(L.T("inviteLinkButton.link_copied"), ToastKind.Success); }
     }
 
     private async Task SelectAll()

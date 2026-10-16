@@ -1,33 +1,64 @@
-@* Applies theme and motion preferences to the document (data-theme / data-motion). Renders nothing. *@
+@* Applies theme, motion and language preferences to the document (data-theme / data-motion / lang + dir). Renders nothing. *@
 @inject ISettingsStore Settings
 @inject TttJsModule Js
+@inject Localizer Loc
+@inject IServiceProvider Services
+@inject ISessionStore Session
 @implements IDisposable
 
 @code {
     private (ThemePreference, MotionPreference)? _applied;
+    private string? _language;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
         Settings.Changed += OnChanged;
+        Session.Changed += OnSession;
         try { await Settings.LoadAsync(); } catch (InvalidOperationException) { /* defaults stay */ }
+        if (Services.GetService(typeof(ITextScaleProvider)) is ITextScaleProvider text) await Js.InvokeVoidAsync("setTextScale", text.Scale);
         await ApplyAsync();
     }
 
     private void OnChanged() => _ = InvokeAsync(ApplyAsync);
 
+    // Signed in after the language was applied: tell the server now.
+    private Guid? _localeSentFor;
+    private void OnSession()
+    {
+        if (Session.State.Me is { } me && _localeSentFor != me.UserId && Services.GetService(typeof(TicTacToeUltimate.Client.Services.TttApiClient)) is TicTacToeUltimate.Client.Services.TttApiClient api)
+        {
+            _localeSentFor = me.UserId;
+            _ = api.SetLocaleAsync(Loc.Language);
+        }
+    }
+
     private async Task ApplyAsync()
     {
         var s = Settings.State;
+        await ApplyLanguageAsync(s.Language);
         if (_applied == (s.Theme, s.Motion)) return;
         _applied = (s.Theme, s.Motion);
         await Js.InvokeVoidAsync("setTheme", ThemeName(s.Theme));
         await Js.InvokeAsync<bool>("setMotion", s.Motion.ToString().ToLowerInvariant());
     }
 
+    // "system" follows the device/browser languages (owner decision 2026-10-16: system-detected, override in Settings).
+    private async Task ApplyLanguageAsync(string setting)
+    {
+        if (_language == setting) return;
+        _language = setting;
+        var code = setting != "system" ? setting : Localizer.Match(await Js.InvokeAsync<string[]>("languages") ?? []);
+        if (code != Loc.Language) await Loc.SetLanguageAsync(code, async c => await Js.InvokeAsync<string?>("loadCatalog", c));
+        await Js.InvokeVoidAsync("setDocLang", Loc.Language, Loc.Rtl);
+        if (Services.GetService(typeof(TicTacToeUltimate.Client.Diagnostics.Telemetry)) is TicTacToeUltimate.Client.Diagnostics.Telemetry t) t.Locale = Loc.Language;
+        if (Services.GetService(typeof(TicTacToeUltimate.Client.Services.TttApiClient)) is TicTacToeUltimate.Client.Services.TttApiClient api)
+            _ = api.SetLocaleAsync(Loc.Language);   // the server writes pushes and notifications in this language
+    }
+
     /// <summary>JS theme name.</summary>
     public static string ThemeName(ThemePreference t) => t switch { ThemePreference.Light => "light", ThemePreference.System => "system", _ => "dark" };
 
     /// <inheritdoc />
-    public void Dispose() => Settings.Changed -= OnChanged;
+    public void Dispose() { Settings.Changed -= OnChanged; Session.Changed -= OnSession; }
 }

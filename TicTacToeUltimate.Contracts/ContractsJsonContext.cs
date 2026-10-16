@@ -46,6 +46,7 @@ namespace TicTacToeUltimate.Contracts;
 [JsonSerializable(typeof(TelemetryBatchDto))]
 [JsonSerializable(typeof(TelemetryEventDto))]
 [JsonSerializable(typeof(CampaignRedirectDto))]
+[JsonSerializable(typeof(SetLocaleDto))]
 [JsonSerializable(typeof(SetUsernameDto))]
 [JsonSerializable(typeof(UpdateProfileDto))]
 [JsonSerializable(typeof(EmoteDto))]

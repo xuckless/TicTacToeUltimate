@@ -10,11 +10,11 @@
 @inject IHaptics Haptics
 @inject NavigationManager Nav
 
-<PageTitle>@(_g is { IsLive: true } ? $"{_g.State.ToMove}'s turn · " : "")Pass &amp; Play · Tic Tac Toe Ultimate</PageTitle>
+<PageTitle>@(_g is { IsLive: true } ? L.F("localMatch.s_turn", _g.State.ToMove) + " · " : "")@L.T("localSetup.pass_play") · Tic Tac Toe Ultimate</PageTitle>
 
 @if (_g is null)
 {
-    <BertLoader Text="Starting" Splash="true" Mood="jumpy" />
+    <BertLoader Text="@L.T("localArena.starting")" Splash="true" Mood="jumpy" />
 }
 else
 {
@@ -24,10 +24,10 @@ else
     <div class="match @AlertClass" data-testid="local-match">
         <ThrownEmote Text="@_thrownText" FromBottom="_thrownFromBottom" Key="_thrownKey" />
         <div class="match-header">
-            <span>Pass &amp; Play · @Ui.TimeControlName(g.TimeControl)@(g.Options.Preset == LocalRulePreset.Legacy7 ? " · Legacy 7-piece" : "")@(g.Options.Pie ? " · Pie" : "")</span>
-            <span class="t-num" data-testid="local-score" aria-label="Session score">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)</span>
+            <span>@L.T("localSetup.pass_play") · @Ui.TimeControlName(g.TimeControl)@(g.Options.Preset == LocalRulePreset.Legacy7 ? " · " + L.T("localMatch.legacy_7_piece") : "")@(g.Options.Pie ? " · " + L.T("localMatch.pie") : "")</span>
+            <span class="t-num" data-testid="local-score" aria-label="@L.T("localMatch.session_score")">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)</span>
         </div>
-        <h1 class="sr-only">Pass and play: @g.NameOf(0) vs @g.NameOf(1)</h1>
+        <h1 class="sr-only">@L.F("localMatch.pass_and_play_vs", g.NameOf(0), g.NameOf(1))</h1>
 
         @PlayerRow(1, clock, sd)
 
@@ -46,8 +46,8 @@ else
                 }
                 else if (g.IsLive)
                 {
-                    var mover = BoardHints.MoverCaption(g.State);
-                    var waiting = BoardHints.WaitingCaption(g.State);
+                    var mover = Render(BoardHints.MoverCaptionText(g.State));
+                    var waiting = Render(BoardHints.WaitingCaptionText(g.State));
                     if (mover is not null) { <span>@mover</span> }
                     if (mover is not null && waiting is not null) { <br /> }
                     if (waiting is not null) { <span class="match-hint-sub">@waiting</span> }
@@ -63,59 +63,59 @@ else
             {
                 @if (g.HasClock)
                 {
-                    <Button Variant="secondary" Small="true" OnClick="TogglePause">@(g.Paused ? "Resume" : "Pause")</Button>
+                    <Button Variant="secondary" Small="true" OnClick="TogglePause">@(g.Paused ? L.T("resumeBanner.resume") : L.T("localMatch.pause"))</Button>
                 }
-                <Button Variant="ghost" Small="true" OnClick="() => _resign = true">Resign</Button>
+                <Button Variant="ghost" Small="true" OnClick="() => _resign = true">@L.T("matchActions.resign")</Button>
             }
-            <Button Variant="ghost" Small="true" OnClick="Leave">Leave</Button>
+            <Button Variant="ghost" Small="true" OnClick="Leave">@L.T("localArena.leave")</Button>
         </div>
         <div class="sr-only" aria-live="polite">@_announce</div>
     </div>
 
     @if (g.Paused && g.IsLive)
     {
-        <div class="match-over" role="dialog" aria-modal="true" aria-label="Paused">
+        <div class="match-over" role="dialog" aria-modal="true" aria-label="@L.T("localMatch.paused")">
             <div class="t-card">
-                <span class="t-hero">Paused</span>
-                <span>@g.NameOf(g.ToMoveSeat) (@g.State.ToMove) is next</span>
-                <Button OnClick="TogglePause">Resume</Button>
+                <span class="t-hero">@L.T("localMatch.paused")</span>
+                <span>@L.F("localMatch.is_next", g.NameOf(g.ToMoveSeat), g.State.ToMove)</span>
+                <Button OnClick="TogglePause">@L.T("resumeBanner.resume")</Button>
             </div>
         </div>
     }
 
-    <Sheet Open="@(g.AwaitingSwap && !g.Paused)" Title="@($"{g.NameOf(g.ToMoveSeat)}: swap sides?")" Dismissible="false">
-        <p>@g.NameOf(1 - g.ToMoveSeat) opened. Take their <PieceGlyph Color="Color.X" /> position, or keep playing <PieceGlyph Color="Color.O" />.</p>
+    <Sheet Open="@(g.AwaitingSwap && !g.Paused)" Title="@L.F("localMatch.swap_sides", g.NameOf(g.ToMoveSeat))" Dismissible="false">
+        <p>@((MarkupString)L.F("localMatch.opened_take_their", System.Net.WebUtility.HtmlEncode(g.NameOf(1 - g.ToMoveSeat)), "<span class=\"t-piece x\">X</span>", "<span class=\"t-piece o\">O</span>"))</p>
         <div class="swap-choices">
-            <Button Variant="primary" OnClick="() => Decide(true)">Swap</Button>
-            <Button Variant="secondary" OnClick="() => Decide(false)">Keep</Button>
+            <Button Variant="primary" OnClick="() => Decide(true)">@L.T("swapDecisionSheet.swap")</Button>
+            <Button Variant="secondary" OnClick="() => Decide(false)">@L.T("swapDecisionSheet.keep")</Button>
         </div>
     </Sheet>
 
-    <Sheet Open="_resign" Title="@($"Resign as {g.NameOf(g.ToMoveSeat)}?")" OnClose="() => _resign = false">
-        <p>@g.NameOf(1 - g.ToMoveSeat) wins this game.</p>
+    <Sheet Open="_resign" Title="@L.F("localMatch.resign_as", g.NameOf(g.ToMoveSeat))" OnClose="() => _resign = false">
+        <p>@L.F("localMatch.wins_this_game", g.NameOf(1 - g.ToMoveSeat))</p>
         <div class="swap-choices">
-            <Button Variant="danger" OnClick="Resign">Resign</Button>
-            <Button Variant="secondary" OnClick="() => _resign = false">Cancel</Button>
+            <Button Variant="danger" OnClick="Resign">@L.T("matchActions.resign")</Button>
+            <Button Variant="secondary" OnClick="() => _resign = false">@L.T("localMatch.cancel")</Button>
         </div>
     </Sheet>
 
     @if (g.Result is { } r && _showOverlay)
     {
-        <div class="match-over" role="dialog" aria-modal="true" aria-label="Game over" data-testid="local-over">
+        <div class="match-over" role="dialog" aria-modal="true" aria-label="@L.T("localMatch.game_over")" data-testid="local-over">
             <div class="t-card" style="align-items:center;text-align:center">
                 <Bert Mood="@(r.WinnerSeat is null ? "think" : "cheer")" Size="64" />
-                <span class="t-hero"><BounceText Text="@(r.WinnerSeat is int w ? $"{g.NameOf(w)} wins!" : "Draw")" /></span>
+                <span class="t-hero"><BounceText Text="@(r.WinnerSeat is int w ? L.F("localMatch.wins_excl", g.NameOf(w)) : L.T("match.draw"))" /></span>
                 <Scoreboard Name0="@g.NameOf(0)" Name1="@g.NameOf(1)" Score0="g.Score[0]" Score1="g.Score[1]" Color0="g.ColorOf(0)" Color1="g.ColorOf(1)"
                             Winner="r.WinnerSeat" Reason="@ReasonText(r)" Draws="g.Draws" />
-                <Button OnClick="Rematch" data-testid="local-rematch">Rematch · swap colours</Button>
-                <Button Variant="secondary" OnClick="() => _showOverlay = false">View board</Button>
-                <Button Variant="ghost" Href="local">New setup</Button>
+                <Button OnClick="Rematch" data-testid="local-rematch">@L.T("localArena.rematch_swap_colours")</Button>
+                <Button Variant="secondary" OnClick="() => _showOverlay = false">@L.T("localArena.view_board")</Button>
+                <Button Variant="ghost" Href="local">@L.T("localArena.new_setup")</Button>
             </div>
         </div>
     }
     else if (g.Result is not null)
     {
-        <div class="match-actions"><Button OnClick="Rematch">Rematch · swap colours</Button></div>
+        <div class="match-actions"><Button OnClick="Rematch">@L.T("localArena.rematch_swap_colours")</Button></div>
     }
 
     <ImpactFrame Kind="@_impactKind" Text="@_impactText" Token="@_impactToken" Trigger="_impactTrigger" />
@@ -134,7 +134,7 @@ else
     private void ThrowEmote(string id)
     {
         if (_emoteSeat is not int seat) return;
-        _thrownText = EmoteCatalog.All.FirstOrDefault(e => e.Id == id)?.Text ?? id;
+        _thrownText = EmoteCatalog.All.FirstOrDefault(e => e.Id == id) is { } emote ? Ui.EmoteText(emote) : id;
         _thrownFromBottom = seat == 0;
         _thrownKey++;
     }
@@ -153,7 +153,7 @@ else
         _g = Local.Current;
         if (_g is null) { Nav.NavigateTo("local", replace: true); return; }
         _g.Event += OnEvent;
-        if (_g.State.Ply == 0 && _g.IsLive) Impact("start", "GO!", "primary-fill");
+        if (_g.State.Ply == 0 && _g.IsLive) Impact("start", L.T("match.go"), "primary-fill");
         _g.Changed += OnChanged;
         _showOverlay = _g.Result is not null;
         if (_g.HasClock)
@@ -173,14 +173,14 @@ else
             <Avatar Name="@g.NameOf(seat)" />
             <div class="who">
                 <div class="name">@g.NameOf(seat) <PieceGlyph Color="piece" /></div>
-                <div class="meta @(active ? (sd ? "sd" : "yourmove") : null)">@(active ? (sd && clock?.AllowanceMs is int a ? $"YOUR MOVE · {Ui.Seconds(a)}s WINDOW" : "Your move") : $"{g.Score[seat]} won")</div>
+                <div class="meta @(active ? (sd ? "sd" : "yourmove") : null)">@(active ? (sd && clock?.AllowanceMs is int a ? L.F("playerCard.your_move_window", Ui.Seconds(a)) : L.T("activeGames.your_move")) : L.P("localMatch.won", g.Score[seat]))</div>
             </div>
             @if (g.HasClock)
             {
                 <PlayerClock RemainingMs="@(active ? clock?.RemainingMs : clock?.AllowanceMs)" Piece="piece" Active="active" SuddenDeath="sd"
                              Urgency="@(active ? g.Urgency : ClockUrgency.Idle)" />
             }
-            <button type="button" class="t-iconbtn t-iconbtn--round seat-emote" aria-label="@($"Emote from {g.NameOf(seat)}")" @onclick="() => _emoteSeat = seat"><Icon Name="emote" /></button>
+            <button type="button" class="t-iconbtn t-iconbtn--round seat-emote" aria-label="@L.F("localMatch.emote_from", g.NameOf(seat))" @onclick="() => _emoteSeat = seat"><Icon Name="emote" /></button>
         </div>
     };
 
@@ -191,10 +191,10 @@ else
         get
         {
             var g = _g!;
-            if (g.Result is { } r) return r.WinnerSeat is int w ? $"{g.NameOf(w)} wins" : "Draw";
+            if (g.Result is { } r) return r.WinnerSeat is int w ? L.F("match.wins", g.NameOf(w)) : L.T("match.draw");
             var who = g.NameOf(g.ToMoveSeat);
-            if (g.AwaitingSwap) return $"{who} decides: swap or keep — pass the device";
-            return $"{g.State.ToMove}'s turn ({who}) — pass the device";
+            if (g.AwaitingSwap) return L.F("localMatch.decides_swap_or_keep", who);
+            return L.F("localMatch.s_turn_pass_the_device", g.State.ToMove, who);
         }
     }
 
@@ -211,10 +211,10 @@ else
 
     private static string ReasonText(LocalGameResult r) => r.Reason switch
     {
-        LocalEndReason.Line => "Three in a row",
-        LocalEndReason.Timeout => "Out of time",
-        LocalEndReason.Resign => "Resigned",
-        _ => "No legal moves",
+        LocalEndReason.Line => L.T("localMatch.three_in_a_row"),
+        LocalEndReason.Timeout => L.T("localMatch.out_of_time"),
+        LocalEndReason.Resign => L.T("localMatch.resigned"),
+        _ => L.T("localMatch.no_legal_moves"),
     };
 
     private async Task TickLoop(CancellationToken ct)
@@ -264,21 +264,21 @@ else
                 Haptic(HapticCue.Place);
                 if (e.VanishedCell is not null) { Sfx(SoundCue.Vanish); Haptic(HapticCue.Vanish); }
                 var n = g.State.Rules.BoardSize;
-                _announce = $"{g.NameOf(e.Seat)} placed {e.Color} at row {e.Cell / n + 1}, column {e.Cell % n + 1}";
+                _announce = L.F("match.placed_at_row", g.NameOf(e.Seat), e.Color, e.Cell / n + 1, e.Cell % n + 1);
                 break;
             case LocalEventKind.Swapped:
-                _announce = $"{g.NameOf(e.Seat)} swapped sides";
+                _announce = L.F("match.swapped_sides", g.NameOf(e.Seat));
                 break;
             case LocalEventKind.KeptSides:
-                _announce = $"{g.NameOf(e.Seat)} kept sides";
+                _announce = L.F("match.kept_sides", g.NameOf(e.Seat));
                 break;
             case LocalEventKind.AutoMoved:
                 Sfx(SoundCue.Warning);
-                _announce = $"{g.NameOf(e.Seat)} ran out of time: random move played";
+                _announce = L.F("localMatch.ran_out_of_time", g.NameOf(e.Seat));
                 break;
             case LocalEventKind.SuddenDeath:
                 Sfx(SoundCue.SuddenDeath);
-                Impact("suddendeath", "SUDDEN DEATH", "alert-fill");
+                Impact("suddendeath", L.T("matchHeader.sudden_death"), "alert-fill");
                 break;
             case LocalEventKind.Ended:
                 var r = g.Result!;
@@ -288,10 +288,10 @@ else
                     Sfx(SoundCue.Win); Haptic(HapticCue.Win);
                     _confetti++;
                     _ = RevealOverlayLater(Settings.State.ImpactFrames ? 1400 : 0);
-                    Impact("win", $"{g.NameOf(w).ToUpperInvariant()} WINS!", r.WinnerColor == Color.O ? "piece-o" : "piece-x");
-                    _announce = $"{g.NameOf(w)} wins. {ReasonText(r)}.";
+                    Impact("win", L.F("localMatch.name_wins_caps", g.NameOf(w).ToUpperInvariant()), r.WinnerColor == Color.O ? "piece-o" : "piece-x");
+                    _announce = L.F("localMatch.wins_reason", g.NameOf(w), ReasonText(r));
                 }
-                else { _announce = "Draw"; _showOverlay = true; }
+                else { _announce = L.T("match.draw"); _showOverlay = true; }
                 break;
         }
     }
@@ -333,10 +333,12 @@ else
     private void Blocked(int cell)
     {
         if (!CanPlace) return;
-        _blocked = BoardHints.BlockedReason(_g!.State, cell);
+        _blocked = Render(BoardHints.BlockedReasonText(_g!.State, cell));
         _announce = _blocked ?? _announce;
         Sfx(SoundCue.Error); Haptic(HapticCue.Error);
     }
+
+    private static string? Render(LocalizedHint? h) => h is null ? null : L.F(h.Key, h.Args);
 
     private void Decide(bool swap) => _g?.DecideSwap(swap);
 

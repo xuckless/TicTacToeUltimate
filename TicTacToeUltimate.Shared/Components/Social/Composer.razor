@@ -1,9 +1,9 @@
 @inject ISessionStore Session
 
 <div class="composer">
-    <IconButton Label="Emotes" Icon="emote" OnClick="() => _emotes = true" Disabled="_busy" />
-    <div style="flex:1"><TextField Label="Message" HideLabel="true" Placeholder="Message" Value="@_text" ValueChanged="v => _text = v" OnEnter="Send" MaxLength="500" /></div>
-    <IconButton Label="Send" Icon="send" OnClick="Send" Disabled="@(string.IsNullOrWhiteSpace(_text) || _busy)" />
+    <IconButton Label="@L.T("emotePicker.emotes")" Icon="emote" OnClick="() => _emotes = true" Disabled="_busy" />
+    <div style="flex:1"><TextField Label="@L.T("composer.message")" HideLabel="true" Placeholder="@L.T("composer.message")" Value="@_text" ValueChanged="v => _text = v" OnEnter="Send" MaxLength="500" /></div>
+    <IconButton Label="@L.T("composer.send")" Icon="send" OnClick="Send" Disabled="@(string.IsNullOrWhiteSpace(_text) || _busy)" />
 </div>
 <EmotePicker Open="_emotes" Emotes="Session.State.Config?.Emotes" OnPick="SendEmote" OnClose="() => _emotes = false" />
 

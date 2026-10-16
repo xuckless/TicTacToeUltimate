@@ -25,6 +25,9 @@ public interface IUserRepository
     Task AddRenamesAsync(Guid id, int count, CancellationToken ct);
     /// <summary>Moderation: drop the username (the player must pick a new one, for free) and show a neutral name meanwhile.</summary>
     Task ResetUsernameAsync(Guid id, CancellationToken ct);
+    /// <summary>UI language for pushes and notifications (players.locale).</summary>
+    Task SetLocaleAsync(Guid id, string locale, CancellationToken ct);
+    Task<string?> GetLocaleAsync(Guid id, CancellationToken ct);
     Task TouchAsync(Guid id, DateTimeOffset lastSeenAt, CancellationToken ct);
     Task<IReadOnlyList<UserRecord>> SearchAsync(string prefix, int take, CancellationToken ct);
     Task<IReadOnlyList<UserRecord>> ListAsync(int take, CancellationToken ct);        // dev user picker

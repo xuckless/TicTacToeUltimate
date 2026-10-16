@@ -5,12 +5,12 @@
 @inject NavigationManager Nav
 @inject ToastService Toasts
 
-<PageTitle>Social · Tic Tac Toe Ultimate</PageTitle>
+<PageTitle>@L.T("social.social_tic_tac_toe_ultimate")</PageTitle>
 <div class="t-spread" style="align-items:center">
-    <h1 class="t-title" style="margin:0">Social</h1>
+    <h1 class="t-title" style="margin:0">@L.T("social.social")</h1>
     @if (!Session.State.IsGuest)
     {
-        <a class="t-iconbtn t-iconbtn--round inbox-btn" href="social/messages" aria-label="@($"Messages{(Unread > 0 ? $", {Unread} unread" : "")}")" data-testid="inbox">
+        <a class="t-iconbtn t-iconbtn--round inbox-btn" href="social/messages" aria-label="@(Unread > 0 ? L.P("social.messages_unread", Unread) : L.T("messageList.messages"))" data-testid="inbox">
             <Icon Name="chat" />@if (Unread > 0) { <span class="badge">@Unread</span> }
         </a>
     }
@@ -18,8 +18,8 @@
 
 @if (Session.State.IsGuest)
 {
-    <Card Title="Friends need an account">
-        <p class="t-small t-muted" style="margin:0">Create an account to add friends, chat and challenge them.</p>
+    <Card Title="@L.T("social.friends_need_an_account")">
+        <p class="t-small t-muted" style="margin:0">@L.T("social.create_an_account_to_add")</p>
         <AccountCta />
     </Card>
 }
@@ -33,28 +33,28 @@ else
     }
     @foreach (var c in Social.State.OutgoingChallenges)
     {
-        var to = Social.State.Friends.FirstOrDefault(f => f.Player.UserId == c.ToUserId)?.Player.DisplayName ?? "your friend";
+        var to = Social.State.Friends.FirstOrDefault(f => f.Player.UserId == c.ToUserId)?.Player.DisplayName ?? L.T("social.your_friend");
         <Card data-testid="outgoing-challenge">
             <div class="t-listrow" style="border:0;padding:0">
                 <BertLoader Text="@null" Mood="think" />
-                <div class="who"><div class="name">Waiting for @to…</div><div class="meta">@Ui.TimeControlName(c.TimeControl) · unrated · code @c.Code</div></div>
-                <Button Variant="secondary" Small="true" OnClick="() => Social.CancelChallengeAsync(c.Code)">Cancel</Button>
+                <div class="who"><div class="name">@L.F("social.waiting_for", to)</div><div class="meta">@L.F("social.unrated_code", Ui.TimeControlName(c.TimeControl), c.Code)</div></div>
+                <Button Variant="secondary" Small="true" OnClick="() => Social.CancelChallengeAsync(c.Code)">@L.T("localMatch.cancel")</Button>
             </div>
         </Card>
     }
 
-    <div class="t-spread"><h2 class="t-heading">Friends</h2><span class="t-small t-muted">@OnlineCount online@(IncomingRequests.Count > 0 ? $" · {IncomingRequests.Count} request{(IncomingRequests.Count == 1 ? "" : "s")}" : "")</span></div>
+    <div class="t-spread"><h2 class="t-heading">@L.T("social.friends")</h2><span class="t-small t-muted">@L.P("social.online_count", OnlineCount)@(IncomingRequests.Count > 0 ? " · " + L.P("social.request_count", IncomingRequests.Count) : "")</span></div>
 
     @if (IncomingRequests.Count > 0)
     {
-        <section class="t-card" style="padding:4px 16px" aria-label="Friend requests">
+        <section class="t-card" style="padding:4px 16px" aria-label="@L.T("social.friend_requests")">
             @foreach (var r in IncomingRequests) { <FriendRequestRow Request="r" OnRespond="Respond" /> }
         </section>
     }
 
-    <section class="t-col" style="padding:0;gap:0" aria-label="Friends">
-        @if (!Social.State.Loaded) { <BertLoader Text="Finding your friends" Mood="wave" /> }
-        else if (Social.State.Friends.Length == 0) { <div class="t-empty"><Bert Mood="wink" Size="56" /><span>No friends yet. Search above or send an invite link.</span></div> }
+    <section class="t-col" style="padding:0;gap:0" aria-label="@L.T("social.friends")">
+        @if (!Social.State.Loaded) { <BertLoader Text="@L.T("social.finding_your_friends")" Mood="wave" /> }
+        else if (Social.State.Friends.Length == 0) { <div class="t-empty"><Bert Mood="wink" Size="56" /><span>@L.T("social.no_friends_yet_search_above")</span></div> }
         @foreach (var (f, i) in SortedFriends.Select((f, i) => (f, i)))
         {
             <FriendRow Friend="f" OnChallenge="Challenge" OnWatch="Watch" OnDaily="Daily" />
@@ -65,9 +65,9 @@ else
     <ChallengeModePicker Open="_pickFor is not null" TargetName="@(_pickFor?.Player.DisplayName ?? "")" Busy="_sending" Guest="@Session.State.IsGuest"
                          OnPick="SendPicked" OnClose="() => _pickFor = null" />
     <InviteLinkButton CreateLink="CreateLink" Guest="@Session.State.IsGuest" />
-    <p class="t-small t-muted" style="margin:10px 0 4px">Got a code from a friend?</p>
+    <p class="t-small t-muted" style="margin:10px 0 4px">@L.T("play.got_a_code_from_a")</p>
     <JoinCodeBox />
-    <div class="t-row"><Button Variant="ghost" Href="leaderboards">Leaderboards</Button></div>
+    <div class="t-row"><Button Variant="ghost" Href="leaderboards">@L.T("appShell.leaderboards")</Button></div>
 }
 
 @code {
@@ -84,17 +84,17 @@ else
         Subscribe(Session, Social);
         if (Session.State.IsGuest) return;
         try { await Social.LoadAsync(); }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't load friends.", ToastKind.Error); }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show(L.T("social.couldn_t_load_friends"), ToastKind.Error); }
     }
 
-    private async Task Add(PlayerCardDto p) => Ack(await Social.SendRequestAsync(p.DisplayName), "Request sent");
-    private async Task Respond((FriendRequestDto Request, bool Accept) r) => Ack(await Social.RespondAsync(r.Request.RequestId, r.Accept), r.Accept ? "Friend added" : null);
+    private async Task Add(PlayerCardDto p) => Ack(await Social.SendRequestAsync(p.DisplayName), L.T("profile.request_sent"));
+    private async Task Respond((FriendRequestDto Request, bool Accept) r) => Ack(await Social.RespondAsync(r.Request.RequestId, r.Accept), r.Accept ? L.T("social.friend_added") : null);
 
     private async Task Accept(ChallengeDto c)
     {
         var r = await Social.AcceptChallengeAsync(c.Code);
         if (r.Accepted && r.MatchId is Guid id) Nav.NavigateTo($"match/{id}");
-        else Toasts.Show("That challenge is no longer available.", ToastKind.Error);
+        else Toasts.Show(L.T("social.that_challenge_is_no_longer"), ToastKind.Error);
     }
 
     private Task Decline(ChallengeDto c) => Social.DeclineChallengeAsync(c.Code);
@@ -119,9 +119,9 @@ else
         try
         {
             await Social.CreateChallengeAsync(new CreateChallengeDto(tc, f.Player.UserId));
-            Toasts.Show($"Challenge sent to {f.Player.DisplayName}. They have 24 hours to accept.", ToastKind.Success);
+            Toasts.Show(L.F("social.challenge_sent_to", f.Player.DisplayName), ToastKind.Success);
         }
-        catch (Exception ex) { Toasts.Show(Ui.ErrorToastText(ErrorText.Code(ex), "Couldn't send the challenge."), ToastKind.Error); }
+        catch (Exception ex) { Toasts.Show(Ui.ErrorToastText(ErrorText.Code(ex), L.T("social.couldn_t_send_the_challenge")), ToastKind.Error); }
     }
 
     private void Watch(FriendDto f)
@@ -140,9 +140,9 @@ else
         if (ack.Ok) { if (ok is not null) Toasts.Show(ok, ToastKind.Success); }
         else Toasts.Show(ack.Error switch
         {
-            ErrorCodes.Blocked => "You can't add this player.",
-            ErrorCodes.GuestNotAllowed => "Guests can't add friends.",
-            _ => "Something went wrong.",
+            ErrorCodes.Blocked => L.T("social.you_can_t_add_this"),
+            ErrorCodes.GuestNotAllowed => L.T("social.guests_can_t_add_friends"),
+            _ => L.T("social.something_went_wrong"),
         }, ToastKind.Error);
     }
 }

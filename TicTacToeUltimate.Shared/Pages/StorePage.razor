@@ -5,41 +5,41 @@
 @inject IProgressStore Progress
 @inject ToastService Toasts
 
-<PageTitle>Store · Tic Tac Toe Ultimate</PageTitle>
-<h1 class="t-title">Store</h1>
+<PageTitle>@L.T("store.store_tic_tac_toe_ultimate")</PageTitle>
+<h1 class="t-title">@L.T("store.store")</h1>
 
 @if (Session.State.Status != SessionStatus.SignedIn)
 {
-    <Card><p class="t-small t-muted" style="margin:0">Sign in to earn and spend Diamonds.</p></Card>
+    <Card><p class="t-small t-muted" style="margin:0">@L.T("store.sign_in_to_earn_and")</p></Card>
 }
 else if (!Wallet.State.Loaded)
 {
-    <BertLoader Text="Counting your diamonds" Mood="think" />
+    <BertLoader Text="@L.T("store.counting_your_diamonds")" Mood="think" />
 }
 else if (Wallet.State.Wallet is not { } w)
 {
-    <Card><div class="t-empty"><Bert Mood="shocked" Size="64" /><span>Couldn't load your wallet.</span><Button Variant="secondary" Small="true" OnClick="Wallet.LoadAsync">Retry</Button></div></Card>
+    <Card><div class="t-empty"><Bert Mood="shocked" Size="64" /><span>@L.T("store.couldn_t_load_your_wallet")</span><Button Variant="secondary" Small="true" OnClick="Wallet.LoadAsync">@L.T("authGate.retry")</Button></div></Card>
 }
 else
 {
-    <section class="wallet-card" aria-label="Wallet" data-testid="wallet">
+    <section class="wallet-card" aria-label="@L.T("store.wallet")" data-testid="wallet">
         <div class="wallet-main">
             <span class="wallet-gem" aria-hidden="true"><Icon Name="diamond" /></span>
             <div>
                 <div class="wallet-balance" style="position:relative"><span data-testid="wallet-balance">@w.Diamonds</span><LocalBurst Trigger="_burst" Color="var(--diamond, #38d6ff)" /></div>
-                <div class="t-small t-muted">Diamonds · earned today @w.EarnedToday</div>
+                <div class="t-small t-muted">@L.F("store.diamonds_earned_today", w.EarnedToday)</div>
             </div>
         </div>
-        <p class="t-small t-muted" style="margin:6px 0 0">Earn Diamonds by winning (5), finishing quests (10 / 20 / 40), keeping your streak (3, 7, 14, 30, 100 days) and getting promoted (50).</p>
+        <p class="t-small t-muted" style="margin:6px 0 0">@L.T("store.earn_diamonds_by_winning_5")</p>
         <div class="wallet-ad">
             <Button Variant="primary" Small="true" OnClick="WatchAd" Disabled="@(_busy || w.AdViewsToday >= w.AdViewsPerDay)" data-testid="watch-ad">
-                <Icon Name="ad" /> Watch an ad · +@w.AdReward
+                <Icon Name="ad" /> @L.F("store.watch_an_ad", w.AdReward)
             </Button>
-            <span class="t-small t-muted">@w.AdViewsToday/@w.AdViewsPerDay today</span>
+            <span class="t-small t-muted">@L.F("store.ads_today", w.AdViewsToday, w.AdViewsPerDay)</span>
         </div>
     </section>
 
-    @foreach (var group in new[] { ("perk", "Perks"), ("pass", "Passes") })
+    @foreach (var group in new[] { ("perk", L.T("store.perks")), ("pass", L.T("store.passes")) })
     {
         var items = Wallet.State.Items.Where(i => i.Kind == group.Item1 && i.Id != "analysis").ToArray();
         if (items.Length == 0) continue;
@@ -51,9 +51,9 @@ else
                 <article class="store-item @(item.Available ? null : "off")" data-testid="@($"store-{item.Id}")">
                     <span class="store-ico" aria-hidden="true"><Icon Name="@item.Icon" /></span>
                     <div class="store-text">
-                        <span class="store-name">@item.Title @(item.Owned is int n and > 0 ? $"· {n} banked" : "")</span>
-                        <span class="t-small t-muted">@item.Description</span>
-                        @if (!item.Available && item.Unavailable is { } why) { <span class="t-small store-why">@why</span> }
+                        <span class="store-name">@ItemTitle(item) @(item.Owned is int n and > 0 ? L.F("store.banked", n) : "")</span>
+                        <span class="t-small t-muted">@ItemDescription(item)</span>
+                        @if (!item.Available && Why(item) is { } why) { <span class="t-small store-why">@why</span> }
                     </div>
                     <Button Variant="@(item.Available && canAfford ? "primary" : "secondary")" Small="true" Disabled="@(_busy || !item.Available)" OnClick="() => Buy(item)">
                         <Icon Name="diamond" /> @item.Price
@@ -62,13 +62,30 @@ else
             }
         </section>
     }
-    <p class="t-small t-muted" style="margin-top:12px">Diamond packs for real money come later. Nothing here changes how the game plays.</p>
+    <p class="t-small t-muted" style="margin-top:12px">@L.T("store.diamond_packs_for_real_money")</p>
 }
 <AdSlot />
 
 @code {
     private bool _busy;
     private int _burst;
+
+    // Item texts come from the server in English; render them from the item id (the server text is the fallback).
+    private static string Localized(string key, string fallback) => L.Current[key] is var t && t != key ? t : fallback;
+    private static string ItemTitle(StoreItemDto item) => Localized($"store.item.{item.Id}.title", item.Title);
+    private static string ItemDescription(StoreItemDto item) => Localized($"store.item.{item.Id}.description", item.Description);
+
+    private static readonly Dictionary<string, string> WhyKeys = new(StringComparer.Ordinal)
+    {
+        ["You already bank 2 freezes."] = "store.why.you_already_bank_2",
+        ["No lost streak to repair."] = "store.why.no_lost_streak",
+        ["Already active today."] = "store.why.already_active_today",
+        ["Buy from a finished game's result or replay."] = "store.why.buy_from_a_finished",
+        ["Active"] = "store.why.active",
+        ["Accounts only."] = "store.why.accounts_only",
+        ["You still have a free rename."] = "store.why.you_still_have_a",
+    };
+    private static string? Why(StoreItemDto item) => item.Unavailable is { } why && WhyKeys.TryGetValue(why, out var key) ? Localized(key, why) : item.Unavailable;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -83,8 +100,8 @@ else
         try
         {
             var r = await Wallet.WatchAdAsync();
-            if (r.Granted) { _burst++; Toasts.Show($"+{Wallet.State.Wallet?.AdReward ?? 15} Diamonds!", ToastKind.Success); }
-            else Toasts.Show(r.Error == ErrorCodes.RewardCapped ? "You've watched today's ads. Come back tomorrow!" : Ui.RewardFailText(r, "Watch the full ad to earn Diamonds."), ToastKind.Info);
+            if (r.Granted) { _burst++; Toasts.Show(L.F("store.plus_diamonds", Wallet.State.Wallet?.AdReward ?? 15), ToastKind.Success); }
+            else Toasts.Show(r.Error == ErrorCodes.RewardCapped ? L.T("store.you_ve_watched_today_s") : Ui.RewardFailText(r, L.T("store.watch_the_full_ad")), ToastKind.Info);
         }
         finally { _busy = false; }
     }
@@ -95,12 +112,12 @@ else
         try
         {
             var r = await Wallet.BuyAsync(item.Id);
-            if (r.Ok) { _burst++; Toasts.Show($"{item.Title} — done!", ToastKind.Success); }
+            if (r.Ok) { _burst++; Toasts.Show(L.F("store.item_done", ItemTitle(item)), ToastKind.Success); }
             else Toasts.Show(r.Error switch
             {
-                ErrorCodes.InsufficientDiamonds => $"You need {item.Price} Diamonds for that. Win games or watch an ad.",
-                ErrorCodes.ItemUnavailable => item.Unavailable ?? "That isn't available right now.",
-                _ => Ui.ErrorToastText(r.Error, "Couldn't complete the purchase."),
+                ErrorCodes.InsufficientDiamonds => L.F("store.you_need_diamonds", item.Price),
+                ErrorCodes.ItemUnavailable => Why(item) ?? L.T("store.that_isn_t_available"),
+                _ => Ui.ErrorToastText(r.Error, L.T("store.couldn_t_complete_the_purchase")),
             }, ToastKind.Error);
         }
         finally { _busy = false; }

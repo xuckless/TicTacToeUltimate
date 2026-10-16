@@ -5,25 +5,25 @@
 @inject NavigationManager Nav
 @inject ToastService Toasts
 
-<PageTitle>Daily · Tic Tac Toe Ultimate</PageTitle>
-<div class="t-spread"><h1 class="t-title">Daily</h1>@if (!Session.State.IsGuest) { <Button Variant="primary" Small="true" OnClick="NewGame" Disabled="@(_games.Count >= 10 || _starting)">New game</Button> }</div>
-<p class="t-small t-muted" style="margin:0">24 hours per move. Up to 10 games at once. Unrated.</p>
+<PageTitle>@L.T("daily.daily_tic_tac_toe_ultimate")</PageTitle>
+<div class="t-spread"><h1 class="t-title">@L.T("friendRow.daily")</h1>@if (!Session.State.IsGuest) { <Button Variant="primary" Small="true" OnClick="NewGame" Disabled="@(_games.Count >= 10 || _starting)">@L.T("daily.new_game")</Button> }</div>
+<p class="t-small t-muted" style="margin:0">@L.T("daily.24_hours_per_move_up")</p>
 
 @if (Session.State.IsGuest)
 {
-    <Card Title="Daily games need an account"><p class="t-small t-muted" style="margin:0">Create an account to play correspondence games with 24 hours per move.</p><AccountCta /></Card>
+    <Card Title="@L.T("daily.daily_games_need_an_account")"><p class="t-small t-muted" style="margin:0">@L.T("daily.create_an_account_to_play")</p><AccountCta /></Card>
 }
 else if (_loading)
 {
-    <BertLoader Text="Loading daily games" />
+    <BertLoader Text="@L.T("daily.loading_daily_games")" />
 }
 else if (_error)
 {
-    <Card><div class="t-empty"><Bert Mood="shocked" Size="64" /><span>Couldn't load your daily games.</span><Button Variant="secondary" Small="true" OnClick="Load">Retry</Button></div></Card>
+    <Card><div class="t-empty"><Bert Mood="shocked" Size="64" /><span>@L.T("daily.couldn_t_load_your_daily")</span><Button Variant="secondary" Small="true" OnClick="Load">@L.T("authGate.retry")</Button></div></Card>
 }
 else if (_games.Count == 0)
 {
-    <Card><div class="t-empty"><Bert Mood="sleepy" Size="64" /><span>No daily games yet. Start one and play at your own pace.</span></div></Card>
+    <Card><div class="t-empty"><Bert Mood="sleepy" Size="64" /><span>@L.T("daily.no_daily_games_yet_start")</span></div></Card>
 }
 else
 {
@@ -33,8 +33,8 @@ else
             <a class="t-listrow" href="@($"match/{g.MatchId}")" style="color:inherit;text-decoration:none">
                 <Avatar Name="@g.Opponent.DisplayName" AvatarId="@g.Opponent.AvatarId" />
                 <div class="who"><div class="name">@g.Opponent.DisplayName</div>
-                    <div class="meta">You play <PieceGlyph Color="g.YourColor" /> · move @(g.Ply + 1)@DeadlineText(g)</div></div>
-                @if (g.YourTurn) { <span class="t-chip" style="color:var(--success)">Your move</span> } else { <span class="t-small t-muted">Waiting</span> }
+                    <div class="meta">@L.T("daily.you_play") <PieceGlyph Color="g.YourColor" /> @L.F("activeGames.move", g.Ply + 1)@DeadlineText(g)</div></div>
+                @if (g.YourTurn) { <span class="t-chip" style="color:var(--success)">@L.T("activeGames.your_move")</span> } else { <span class="t-small t-muted">@L.T("daily.waiting")</span> }
             </a>
         }
     </section>
@@ -64,7 +64,7 @@ else
     {
         if (g.DeadlineAtMs is not long d) return "";
         var left = TimeSpan.FromMilliseconds(Math.Max(0, d - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
-        return left.TotalHours >= 1 ? $" · {(int)left.TotalHours}h left" : $" · {Math.Max(1, (int)left.TotalMinutes)}m left";
+        return " · " + (left.TotalHours >= 1 ? L.F("common.hours_left", (int)left.TotalHours) : L.F("common.minutes_left", Math.Max(1, (int)left.TotalMinutes)));
     }
 
     private bool _starting;
@@ -75,7 +75,7 @@ else
         try
         {
             await Queue.EnterAsync(TimeControl.Daily);
-            if (Queue.State is { Phase: QueuePhase.Idle, Error: { } err }) { Toasts.Show(Ui.ErrorToastText(err, "Couldn't start a daily game."), ToastKind.Error); return; }
+            if (Queue.State is { Phase: QueuePhase.Idle, Error: { } err }) { Toasts.Show(Ui.ErrorToastText(err, L.T("daily.couldn_t_start_a_daily")), ToastKind.Error); return; }
             Nav.NavigateTo("play");
         }
         finally { _starting = false; }

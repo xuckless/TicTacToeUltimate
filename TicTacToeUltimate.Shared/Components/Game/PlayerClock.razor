@@ -30,11 +30,11 @@
     /// <summary>Nominal time is up but the server may still accept the move within the lag credit (D8): show "0:00…" until it answers.</summary>
     private bool Waiting => Active && RemainingMs is <= 0;
     private string Text => RemainingMs is null ? "--" : Waiting ? "0:00…" : Long ? LongText(RemainingMs.Value) : Ui.Clock(RemainingMs);
-    private string AriaLabel => RemainingMs is null ? "No clock" : Waiting ? "Time is up, waiting for the server" : $"{Text} {(Active ? "remaining" : "per move")}";
+    private string AriaLabel => RemainingMs is null ? L.T("matchHeader.no_clock") : Waiting ? L.T("playerClock.time_is_up_waiting") : Active ? L.F("playerClock.remaining", Text) : L.F("playerClock.per_move", Text);
 
     private static string LongText(int ms)
     {
         var t = TimeSpan.FromMilliseconds(Math.Max(0, ms));
-        return t.TotalHours >= 1 ? $"{(int)t.TotalHours}h {t.Minutes:00}m" : Ui.Clock(ms);
+        return t.TotalHours >= 1 ? L.F("playerClock.hours_minutes", (int)t.TotalHours, t.Minutes) : Ui.Clock(ms);
     }
 }

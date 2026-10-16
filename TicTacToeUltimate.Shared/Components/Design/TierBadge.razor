@@ -1,6 +1,6 @@
 @if (Tier is not null)
 {
-    <span class="t-tier @(Large ? "t-tier--lg" : null) @Ui.TierClass(Tier.Tier)"><i aria-hidden="true"></i>@Ui.TierName(Tier)@if (Provisional) {<span class="t-chip">Placement</span>}</span>
+    <span class="t-tier @(Large ? "t-tier--lg" : null) @Ui.TierClass(Tier.Tier)"><i aria-hidden="true"></i>@Ui.TierName(Tier)@if (Provisional) {<span class="t-chip">@L.T("tierBadge.placement")</span>}</span>
 }
 
 @code {

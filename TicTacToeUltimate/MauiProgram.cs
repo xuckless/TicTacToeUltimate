@@ -73,6 +73,7 @@ public static class MauiProgram
         s.Replace(ServiceDescriptor.Singleton<IShareService, MauiShareService>());
         s.Replace(ServiceDescriptor.Singleton<IPushService, PushService>());
         s.Replace(ServiceDescriptor.Singleton<TicTacToeUltimate.Client.Diagnostics.IDeviceDescription, MauiDeviceDescription>());
+        s.AddSingleton<ITextScaleProvider, MauiTextScale>();
         s.AddSingleton<IBannerAds, NativeBannerAds>();   // the native AdMob banner lives under the web view; the HTML slot renders nothing
 #if IOS || ANDROID
         s.AddSingleton<AdMobAdProvider>();

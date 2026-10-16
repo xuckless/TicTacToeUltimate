@@ -1,3 +1,4 @@
+using TicTacToeUltimate.Server.Localization;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Options;
 using TicTacToeUltimate.Contracts;
@@ -64,16 +65,18 @@ public sealed class RetentionNotifier(IPushTokenRepository tokens, IUserReposito
             var dto = StreakRules.ToDto(s, day);
             if (local.Hour == o.StreakReminderHour && dto.AtRisk && dto.Current > 0 && _sent.TryAdd((userId, "streak", day), 0))
             {
-                var line = string.Format(StreakLines[Math.Abs(userId.GetHashCode()) % StreakLines.Length], dto.Current);
-                await push.SendAsync(userId, new NotificationDto(NotificationKind.StreakReminder, "Bert 👻", line, null, "play?tc=Casual"), ct);
+                var locale = await users.GetLocaleAsync(userId, ct);
+                var line = ServerText.Get(locale, $"push.streak.{Math.Abs(userId.GetHashCode()) % StreakLines.Length + 1}", dto.Current);
+                await push.SendAsync(userId, new NotificationDto(NotificationKind.StreakReminder, ServerText.Get(locale, "push.streak.title"), line, null, "play?tc=Casual"), ct);
                 sent++;
                 continue;
             }
             var idleDays = (now - u.LastSeenAt).TotalDays;
             if (local.Hour == o.ComebackHour && idleDays >= o.InactiveDays && _sent.TryAdd((userId, "comeback", day), 0))
             {
-                var line = ComebackLines[Math.Abs(userId.GetHashCode()) % ComebackLines.Length];
-                await push.SendAsync(userId, new NotificationDto(NotificationKind.Challenge, "Bert challenges you", line, null, "play?tc=Casual"), ct);
+                var locale = await users.GetLocaleAsync(userId, ct);
+                var line = ServerText.Get(locale, $"push.comeback.{Math.Abs(userId.GetHashCode()) % ComebackLines.Length + 1}");
+                await push.SendAsync(userId, new NotificationDto(NotificationKind.Challenge, ServerText.Get(locale, "push.comeback.title"), line, null, "play?tc=Casual"), ct);
                 sent++;
             }
         }

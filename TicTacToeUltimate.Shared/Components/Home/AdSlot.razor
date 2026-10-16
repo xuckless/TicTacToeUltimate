@@ -4,12 +4,12 @@
 {
     @if (Services.GetService(typeof(IBannerAds)) is IBannerAds banner && banner.Has(Kind))
     {
-        <div class="ad-slot real @KindClass" role="complementary" aria-label="Advertisement" @ref="_host"></div>
+        <div class="ad-slot real @KindClass" role="complementary" aria-label="@L.T("adOverlayHost.advertisement")" @ref="_host"></div>
     }
     else if (Services.GetService(typeof(IBannerAds)) is null)
     {
         @* Stub placeholder (dev / stub ads). Real ads without a unit for this kind render nothing. *@
-        <div class="ad-slot @KindClass" role="complementary" aria-label="Advertisement">@StubLabel</div>
+        <div class="ad-slot @KindClass" role="complementary" aria-label="@L.T("adOverlayHost.advertisement")">@StubLabel</div>
     }
 }
 
@@ -20,7 +20,7 @@
     [Parameter] public AdSlotKind Kind { get; set; } = AdSlotKind.Banner;
 
     private string KindClass => Kind switch { AdSlotKind.Feed => "ad-feed", AdSlotKind.Rail => "ad-rail", _ => "ad-banner" };
-    private string StubLabel => Kind switch { AdSlotKind.Feed => "In-feed ad", AdSlotKind.Rail => "Rail ad", _ => "Banner ad" };
+    private string StubLabel => Kind switch { AdSlotKind.Feed => L.T("adSlot.in_feed_ad"), AdSlotKind.Rail => L.T("adSlot.rail_ad"), _ => L.T("adSlot.banner_ad") };
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

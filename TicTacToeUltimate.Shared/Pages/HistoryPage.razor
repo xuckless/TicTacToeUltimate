@@ -2,18 +2,18 @@
 @inject ISessionStore Session
 @inject IGameQueries Queries
 
-<PageTitle>History · Tic Tac Toe Ultimate</PageTitle>
-<h1 class="t-title">History</h1>
+<PageTitle>@L.T("history.history_tic_tac_toe_ultimate")</PageTitle>
+<h1 class="t-title">@L.T("appShell.history")</h1>
 
 <section class="t-col" style="padding:0;gap:0">
     @foreach (var (g, i) in _games.Select((g, i) => (g, i))) { <GameRow Game="g" />@if (Ui.FeedAdAfter(i)) { <AdSlot Kind="AdSlotKind.Feed" /> } }
-    @if (_loading && _games.Count == 0) { <BertLoader Text="Loading your games" /> }
-    else if (_error && _games.Count == 0) { <div class="t-empty"><Bert Mood="shocked" Size="64" /><span>Couldn't load your history.</span><Button Variant="secondary" Small="true" OnClick="LoadMore">Retry</Button></div> }
-    else if (!_loading && _games.Count == 0) { <div class="t-empty"><Bert Mood="happy" Size="64" /><span>No games yet. Your first win is waiting!</span></div> }
+    @if (_loading && _games.Count == 0) { <BertLoader Text="@L.T("history.loading_your_games")" /> }
+    else if (_error && _games.Count == 0) { <div class="t-empty"><Bert Mood="shocked" Size="64" /><span>@L.T("history.couldn_t_load_your_history")</span><Button Variant="secondary" Small="true" OnClick="LoadMore">@L.T("authGate.retry")</Button></div> }
+    else if (!_loading && _games.Count == 0) { <div class="t-empty"><Bert Mood="happy" Size="64" /><span>@L.T("recentGames.no_games_yet_your_first")</span></div> }
 </section>
 @if (_more)
 {
-    <Button Variant="secondary" OnClick="LoadMore" Disabled="_loading">Load more</Button>
+    <Button Variant="secondary" OnClick="LoadMore" Disabled="_loading">@L.T("history.load_more")</Button>
 }
 
 @code {
