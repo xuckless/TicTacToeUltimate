@@ -18,7 +18,7 @@ body { min-height: 100dvh; }
 .splash { min-height: 100dvh; display: grid; place-items: center; background: var(--bg); color: var(--primary); font: var(--type-title); }
 
 .home-header { display: flex; align-items: center; justify-content: space-between; }
-.home-header .brand { font: 400 22px/1 var(--font-headline); }
+.home-header .brand { font: 400 21px/1.05 var(--font-headline); text-align: center; }
 .play-hero { display: flex; align-items: center; justify-content: space-between; background: var(--primary-fill); color: var(--on-primary); text-decoration: none;
   border-radius: var(--radius-lg); box-shadow: var(--ledge-primary); padding: 20px; border: 0; width: 100%; cursor: pointer; text-align: left; transition: transform 80ms, box-shadow 80ms; }
 .play-hero:active { transform: translateY(4px); box-shadow: none; }

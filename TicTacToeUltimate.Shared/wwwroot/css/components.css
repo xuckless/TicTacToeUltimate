@@ -227,10 +227,17 @@ h1:focus, h1:focus-visible { outline: none; }
 .t-bounce > span:nth-child(3n+1) { --dy: -0.07em; --rot: -4deg; }
 .t-bounce > span:nth-child(3n+2) { --dy: 0.05em; --rot: 3deg; }
 .t-bounce > span:nth-child(3n) { --dy: -0.02em; --rot: -1deg; }
-.t-bounce.wiggle > span { animation: ttt-letter-bob 1.8s ease-in-out infinite; animation-delay: calc(var(--i) * -0.12s); }
-@keyframes ttt-letter-bob { 50% { transform: translateY(calc(var(--dy, 0) - 0.06em)) rotate(var(--rot, 0deg)); } }
-@media (prefers-reduced-motion: reduce) { .t-bounce.wiggle > span { animation: none; } }
-:root[data-motion="reduce"] .t-bounce.wiggle > span { animation: none; }
+/* Every headline floats in a slow wave: each letter bobs on the same loop, offset by its index. */
+.t-bounce > span { animation: ttt-letter-wave 2.8s ease-in-out infinite; animation-delay: calc(var(--i) * -0.16s); }
+.t-bounce.wiggle > span { animation-duration: 1.4s; animation-delay: calc(var(--i) * -0.09s); }
+@keyframes ttt-letter-wave {
+  0%, 100% { transform: translateY(var(--dy, 0)) rotate(var(--rot, 0deg)); }
+  50% { transform: translateY(calc(var(--dy, 0) - 0.12em)) rotate(calc(var(--rot, 0deg) * -1)); } }
+@media (prefers-reduced-motion: reduce) { .t-bounce > span { animation: none !important; } }
+:root[data-motion="reduce"] .t-bounce > span { animation: none !important; }
+/* Brand: "Tic Tac Toe" in ink, "Ultimate" in gold. */
+.t-bounce.ultimate { color: var(--streak); text-shadow: 0 3px 0 #8a5a00; }
+.splash-logo { font-size: 40px; text-align: center; line-height: 1.1; }
 
 /* Ghosty mascot */
 .ghosty { overflow: visible; flex: none; }
