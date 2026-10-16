@@ -29,7 +29,7 @@
             }
             else
             {
-                <p class="t-small t-muted" style="margin:0">Sent to <strong>@_email.Trim()</strong>. Check spam if it takes a minute.</p>
+                <p class="t-small t-muted" style="margin:0">Sent to <strong>@_email.Trim()</strong>. Type the code, or just tap the link in the email. Check spam if it takes a minute.</p>
                 <TextField Label="6-digit code" Type="text" Value="@_code" ValueChanged="v => _code = new string(v.Where(char.IsDigit).Take(6).ToArray())" Placeholder="123456" MaxLength="6"
                            OnEnter="VerifyCode" />
                 <Button Variant="primary" Block="true" OnClick="VerifyCode" Disabled="@(_busy || _code.Length != 6)" data-testid="code-submit">Sign in</Button>
