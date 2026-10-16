@@ -11,7 +11,7 @@
 
 @if (Session.State.IsGuest)
 {
-    <Card Title="Daily games need an account"><p class="t-small t-muted" style="margin:0">Create an account to play correspondence games with 24 hours per move.</p><Button Variant="primary" Href="signin">Create account</Button></Card>
+    <Card Title="Daily games need an account"><p class="t-small t-muted" style="margin:0">Create an account to play correspondence games with 24 hours per move.</p><AccountCta /></Card>
 }
 else if (_loading)
 {

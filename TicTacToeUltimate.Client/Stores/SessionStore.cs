@@ -186,10 +186,14 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     /// <inheritdoc />
     public async Task SignInGuestAsync() => await CompleteSignInAsync(await _api.GuestTokenAsync(new GuestTokenRequestDto(await DeviceIdAsync())), true);
 
+    private bool IsReviewEmail(string email) =>
+        State.Config?.ReviewEmail is { Length: > 0 } review && string.Equals(email.Trim(), review, StringComparison.OrdinalIgnoreCase);
+
     /// <inheritdoc />
     public async Task<string?> SendCodeAsync(string email)
     {
         if (Supabase() is not { } s) return "Email sign-in isn't available right now.";
+        if (IsReviewEmail(email)) return null;   // the reviewer types the fixed code; no email is sent
         return await _supa.SendCodeAsync(s.Url, s.Key, email.Trim().ToLowerInvariant());
     }
 
@@ -197,6 +201,17 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     public async Task<string?> VerifyCodeAsync(string email, string code)
     {
         if (Supabase() is not { } s) return "Email sign-in isn't available right now.";
+        if (IsReviewEmail(email))
+        {
+            try
+            {
+                var rs = await _api.ReviewSignInAsync(new ReviewSignInDto(email.Trim(), code.Trim()));
+                if (rs is null) return "That code didn't work. Check it and try again.";
+                return await AdoptSupabaseSessionAsync(new SupabaseSession(rs.AccessToken, rs.RefreshToken,
+                    DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + Math.Max(60, rs.ExpiresIn) * 1000L));
+            }
+            catch (TttApiException) { return "That code didn't work. Check it and try again."; }
+        }
         var r = await _supa.VerifyCodeAsync(s.Url, s.Key, email.Trim().ToLowerInvariant(), code.Trim());
         if (r.Session is null) return r.Error ?? "That code didn't work. Check it and try again.";
         return await AdoptSupabaseSessionAsync(r.Session);

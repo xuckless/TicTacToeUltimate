@@ -33,6 +33,8 @@ namespace TicTacToeUltimate.Contracts;
 [JsonSerializable(typeof(TokenResponseDto))]
 [JsonSerializable(typeof(ClaimGuestDto))]
 [JsonSerializable(typeof(ClaimGuestResultDto))]
+[JsonSerializable(typeof(ReviewSignInDto))]
+[JsonSerializable(typeof(ReviewSessionDto))]
 [JsonSerializable(typeof(SetUsernameDto))]
 [JsonSerializable(typeof(UpdateProfileDto))]
 [JsonSerializable(typeof(EmoteDto))]

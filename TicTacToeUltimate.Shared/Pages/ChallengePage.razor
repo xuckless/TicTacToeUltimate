@@ -35,7 +35,7 @@ else
     else
     {
         <Button Variant="primary" Block="true" OnClick="PlayAsGuest" Disabled="_busy">Play as guest</Button>
-        <Button Variant="secondary" Block="true" Href="@($"signin?returnUrl={Uri.EscapeDataString($"/c/{Code}")}")">Sign in</Button>
+        <Button Variant="secondary" Block="true" Href="@($"signin?mode=login&returnUrl={Uri.EscapeDataString($"/c/{Code}")}")">Log in</Button>
     }
 }
 

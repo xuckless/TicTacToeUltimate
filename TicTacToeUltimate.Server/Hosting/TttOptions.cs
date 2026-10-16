@@ -28,6 +28,18 @@ public sealed class AuthOptions
 {
     public DevAuthOptions Dev { get; set; } = new();
     public SupabaseAuthOptions Supabase { get; set; } = new();
+    public ReviewAuthOptions Review { get; set; } = new();
+}
+/// <summary>
+/// App Store / Play reviewer account: <see cref="Email"/> signs in with the fixed <see cref="Code"/> instead of an emailed one.
+/// Code and Password are secrets (Ttt__Auth__Review__Code / __Password); the server keeps the Supabase user's password in sync.
+/// </summary>
+public sealed class ReviewAuthOptions
+{
+    public string Email { get; set; } = "";
+    public string Code { get; set; } = "";
+    public string Password { get; set; } = "";
+    public bool Enabled => Email.Contains('@') && Code.Length >= 6 && Password.Length >= 12;
 }
 public sealed class DevAuthOptions { public bool Enabled { get; set; } public string SigningKey { get; set; } = ""; public int TokenDays { get; set; } = 30; }
 public sealed class SupabaseAuthOptions

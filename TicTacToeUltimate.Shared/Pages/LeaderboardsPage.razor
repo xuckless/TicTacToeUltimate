@@ -12,7 +12,7 @@
 
 @if (Session.State.IsGuest)
 {
-    <Card><p style="margin:0">Leaderboards are for accounts. <a href="signin">Create one</a> to get ranked.</p></Card>
+    <Card><p style="margin:0">Leaderboards are for accounts. <a href="signin?mode=login">Log in</a> or <a href="signin?mode=create">create one</a> to get ranked.</p></Card>
 }
 else if (_error)
 {

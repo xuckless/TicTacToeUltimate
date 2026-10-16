@@ -33,6 +33,8 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
     /// <summary>POST /api/auth/guest.</summary>
     public Task<TokenResponseDto> GuestTokenAsync(GuestTokenRequestDto request) => Send<TokenResponseDto>(HttpMethod.Post, "api/auth/guest", request)!;
     /// <summary>POST /api/auth/claim-guest.</summary>
+    public Task<ReviewSessionDto?> ReviewSignInAsync(ReviewSignInDto request) => Send<ReviewSessionDto>(HttpMethod.Post, "api/auth/review", request);
+    /// <summary>POST /api/auth/claim-guest.</summary>
     public Task<ClaimGuestResultDto?> ClaimGuestAsync(ClaimGuestDto request) => Send<ClaimGuestResultDto>(HttpMethod.Post, "api/auth/claim-guest", request);
     /// <summary>GET /api/me.</summary>
     public Task<MeDto> GetMeAsync() => Get<MeDto>("api/me")!;

@@ -174,7 +174,7 @@ public static class Ui
     /// <summary>One toast line for a server error code (the pages used to swallow these or show a generic failure).</summary>
     public static string ErrorToastText(string? code, string fallback) => code switch
     {
-        ErrorCodes.GuestNotAllowed => "This needs an account. Create one from the Profile tab.",
+        ErrorCodes.GuestNotAllowed => "This needs an account. Log in or create one from the Profile tab.",
         ErrorCodes.UsernameRequired => "Pick a username first (Profile).",
         ErrorCodes.AlreadyInMatch => "Finish your current game first.",
         ErrorCodes.AlreadyInQueue => "You're already in the queue.",

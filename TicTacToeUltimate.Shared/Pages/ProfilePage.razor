@@ -15,7 +15,7 @@
     {
         <ProfileHeader Card="SelfCard(me)" />
         @if (_loading) { <BertLoader Text="Loading profile" /> } else { <p class="t-muted">@(me.Kind == AccountKind.Guest ? "Guest profiles are private. Create an account to get a public profile." : "Profile unavailable.")</p> }
-        @if (me.Kind == AccountKind.Guest) { <Button Href="signin">Create account</Button> }
+        @if (me.Kind == AccountKind.Guest) { <AccountCta /> }
     }
     else
     {
@@ -28,7 +28,7 @@ else
     <ProfileHeader Card="_profile.Card" JoinedAt="_profile.JoinedAt" />
     @if (!IsSelf && Session.State.IsGuest)
     {
-        <Card><p class="t-small t-muted" style="margin:0">Create an account to add friends and challenge players. <a href="signin">Create account</a></p></Card>
+        <Card><p class="t-small t-muted" style="margin:0">Create an account to add friends and challenge players. <a href="signin?mode=login">Log in</a> or <a href="signin?mode=create">create an account</a>.</p></Card>
     }
     else if (!IsSelf)
     {

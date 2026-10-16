@@ -11,7 +11,7 @@
 
 @if (Session.State.IsGuest)
 {
-    <Card><p class="t-small t-muted" style="margin:0">Messages are between mutual friends. <a href="signin">Create an account</a> to chat.</p></Card>
+    <Card><p class="t-small t-muted" style="margin:0">Messages are between mutual friends. <a href="signin?mode=login">Log in</a> or <a href="signin?mode=create">create an account</a> to chat.</p></Card>
 }
 else if (!Social.State.Loaded)
 {

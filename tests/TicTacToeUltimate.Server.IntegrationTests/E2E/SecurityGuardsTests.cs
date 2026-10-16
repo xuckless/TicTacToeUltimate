@@ -41,4 +41,14 @@ public sealed class SecurityGuardsTests : IAsyncLifetime
         Assert.Contains(HttpStatusCode.TooManyRequests, codes);
         Assert.Equal(HttpStatusCode.OK, codes[0]);
     }
+
+    [Fact]
+    public async Task ReviewSignIn_IsOff_WithoutConfig()
+    {
+        using var http = _factory.Http();
+        var res = await http.PostAsJsonAsync("/api/auth/review", new ReviewSignInDto("review@example.com", "123456"), ContractsJsonContext.Default.Options);
+        Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
+        var config = await http.GetFromJsonAsync<AppConfigDto>("/api/config", ContractsJsonContext.Default.Options);
+        Assert.Null(config!.ReviewEmail);
+    }
 }

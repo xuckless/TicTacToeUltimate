@@ -41,6 +41,8 @@ public static class PlatformServiceCollectionExtensions
         services.AddHostedService(sp => sp.GetRequiredService<TicTacToeUltimate.Server.Push.RetentionNotifier>());
         services.AddHttpClient(nameof(SupabaseAdminClient));
         services.AddSingleton<SupabaseAdminClient>();
+        services.AddSingleton<ReviewAccount>();
+        services.AddHostedService(sp => sp.GetRequiredService<ReviewAccount>());
         services.AddSingleton<AccountService>();
         services.AddSingleton<IPlayerCardService, PlayerCardService>();
         services.AddSingleton<PresenceLookup>();

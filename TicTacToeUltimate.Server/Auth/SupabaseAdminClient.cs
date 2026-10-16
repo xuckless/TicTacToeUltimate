@@ -41,4 +41,23 @@ public sealed class SupabaseAdminClient(IHttpClientFactory http, IOptions<TttOpt
             return false;
         }
     }
+
+    /// <summary>Creates an auth user with a password and a confirmed email (the review account). True when created or it already exists.</summary>
+    public async Task<bool> CreateConfirmedUserAsync(string email, string password, CancellationToken ct)
+    {
+        if (!Enabled) { log.LogWarning("Review account needs Ttt:Auth:Supabase:ServiceRoleKey to be created"); return false; }
+        var s = options.Value.Auth.Supabase;
+        using var client = http.CreateClient(nameof(SupabaseAdminClient));
+        using var req = new HttpRequestMessage(HttpMethod.Post, $"{s.Url.TrimEnd('/')}/auth/v1/admin/users")
+        {
+            Content = System.Net.Http.Json.JsonContent.Create(new { email, password, email_confirm = true }),
+        };
+        req.Headers.Add("apikey", s.ServiceRoleKey);
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", s.ServiceRoleKey);
+        using var res = await client.SendAsync(req, ct).ConfigureAwait(false);
+        if (res.IsSuccessStatusCode) return true;
+        // 422 = the email is already registered (then the password differs: set it in the dashboard or delete the user).
+        log.LogWarning("Supabase create user {Email} returned {Status}", email, (int)res.StatusCode);
+        return false;
+    }
 }

@@ -9,30 +9,42 @@
     <h1 class="signin-logo" style="text-align:center;margin:0"><BounceText Text="Tic Tac Toe" Class="sub" /><br /><BounceText Text="Ultimate" Class="ultimate" /></h1>
     <p class="t-muted" style="text-align:center;margin:0">Pieces vanish. Every game ends in a win.</p>
 
-    @if (!Session.State.IsGuest)
+    @if (_step == Step.Landing)
     {
-        <Button Variant="primary" Block="true" OnClick="Guest" Disabled="_busy" data-testid="guest">Play as guest</Button>
+        @* Log in is the main door; creating an account is the same email code, so it is a quiet link (owner decision 2026-10-16). *@
+        @if (EmailAuth)
+        {
+            <Button Variant="primary" Block="true" OnClick="() => Start(create: false)" Disabled="_busy" data-testid="login">Log in</Button>
+        }
+        @if (!Session.State.IsGuest)
+        {
+            <Button Variant="secondary" Block="true" OnClick="Guest" Disabled="_busy" data-testid="guest">Play as guest</Button>
+        }
+        else
+        {
+            <p class="t-small t-muted" style="text-align:center;margin:0" data-testid="guest-keep">Your guest games, streak and quests move into your account when you sign in.</p>
+        }
+        @if (EmailAuth)
+        {
+            <p class="t-small t-muted signin-create" style="text-align:center;margin:0">New here? <button type="button" class="t-link-btn" @onclick="() => Start(create: true)" data-testid="create-account">Create account</button></p>
+        }
     }
-    else
+    else if (EmailAuth)
     {
-        <p class="t-small t-muted" style="text-align:center;margin:0" data-testid="guest-keep">Your guest games, streak and quests move into your account when you sign in.</p>
-    }
-
-    @if (Session.State.Config?.SupabaseAuth == true)
-    {
-        <Card Title="@(_codeSent ? "Enter your code" : "Sign in with email")" Class="email-card">
-            @if (!_codeSent)
+        <Card Title="@CardTitle" Class="email-card">
+            @if (_step == Step.Email)
             {
-                <p class="t-small t-muted" style="margin:0">We email you a 6-digit code. No password to remember. New here? Same thing: the code creates your account.</p>
+                <p class="t-small t-muted" style="margin:0">@(_create ? "Enter your email and we'll send a 6-digit code. Then pick a username and you're in." : "Enter your email and we'll send a 6-digit code. No password to remember.")</p>
                 <TextField Label="Email" Type="email" Value="@_email" ValueChanged="v => _email = v" Placeholder="you@example.com" MaxLength="254" OnEnter="SendCode" />
                 <Button Variant="primary" Block="true" OnClick="SendCode" Disabled="@(_busy || !_email.Contains('@'))" data-testid="email-submit">Send code</Button>
+                <button type="button" class="t-link-btn" @onclick="Back">Back</button>
             }
             else
             {
                 <p class="t-small t-muted" style="margin:0">Sent to <strong>@_email.Trim()</strong>. Type the code, or just tap the link in the email. Check spam if it takes a minute.</p>
                 <TextField Label="6-digit code" Type="text" Value="@_code" ValueChanged="v => _code = new string(v.Where(char.IsDigit).Take(6).ToArray())" Placeholder="123456" MaxLength="6"
                            OnEnter="VerifyCode" />
-                <Button Variant="primary" Block="true" OnClick="VerifyCode" Disabled="@(_busy || _code.Length != 6)" data-testid="code-submit">Sign in</Button>
+                <Button Variant="primary" Block="true" OnClick="VerifyCode" Disabled="@(_busy || _code.Length != 6)" data-testid="code-submit">@(_create ? "Create account" : "Log in")</Button>
                 <div class="t-spread">
                     <button type="button" class="t-link-btn" @onclick="ChangeEmail">Use a different email</button>
                     <button type="button" class="t-link-btn" disabled="@(_resendIn > 0 || _busy)" @onclick="SendCode">@(_resendIn > 0 ? $"Resend in {_resendIn}s" : "Resend code")</button>
@@ -40,6 +52,10 @@
             }
             @if (_info is not null) { <p class="t-small email-info" role="status"><Bert Mood="wink" Size="34" /> @_info</p> }
         </Card>
+        <p class="t-small t-muted" style="text-align:center;margin:0">
+            @if (_create) { <span>Already have an account? <button type="button" class="t-link-btn" @onclick="() => Switch(create: false)">Log in</button></span> }
+            else { <span>New here? <button type="button" class="t-link-btn" @onclick="() => Switch(create: true)">Create account</button></span> }
+        </p>
     }
     @if (Session.State.Config?.DevAuth == true)
     {
@@ -62,9 +78,11 @@
 </div>
 
 @code {
+    private enum Step { Landing, Email, Code }
+    private Step _step = Step.Landing;
+    private bool _create;
     private string _email = "", _code = "";
     private string? _info;
-    private bool _codeSent;
     private int _resendIn;
     private List<DevUserDto> _users = [];
     private string _newName = "";
@@ -72,11 +90,21 @@
     private string? _error;
 
     [SupplyParameterFromQuery(Name = "returnUrl")] private string? ReturnUrl { get; set; }
+    /// <summary>"login" or "create" skips the landing and opens the email step directly.</summary>
+    [SupplyParameterFromQuery(Name = "mode")] private string? Mode { get; set; }
+
+    private bool EmailAuth => Session.State.Config?.SupabaseAuth == true;
+    private string CardTitle => _step == Step.Code ? "Enter your code" : _create ? "Create your account" : "Welcome back";
+
+    private void Start(bool create) { _create = create; _step = Step.Email; _error = null; _info = null; }
+    private void Switch(bool create) { _create = create; if (_step == Step.Code) ChangeEmail(); }
+    private void Back() { _step = Step.Landing; _error = null; _info = null; }
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
         Subscribe(Session);
+        if (Mode is "login" or "create") Start(Mode == "create");
         // Older confirmation links land here with the session in the URL fragment: still honoured.
         var uri = new Uri(Nav.Uri);
         if (uri.Fragment.Contains("access_token=", StringComparison.Ordinal))
@@ -113,7 +141,7 @@
         try
         {
             _error = await Session.SendCodeAsync(_email);
-            if (_error is null) { _codeSent = true; _code = ""; _info = "Code sent! It's valid for 10 minutes."; _ = Countdown(); }
+            if (_error is null) { _step = Step.Code; _code = ""; _info = "Code sent! It's valid for 10 minutes."; _ = Countdown(); }
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _error = "Can't reach the server. Try again."; }
         finally { _busy = false; }
@@ -129,7 +157,7 @@
         }
     }
 
-    private void ChangeEmail() { _codeSent = false; _code = ""; _info = null; _error = null; }
+    private void ChangeEmail() { _step = Step.Email; _code = ""; _info = null; _error = null; }
 
     private async Task VerifyCode()
     {

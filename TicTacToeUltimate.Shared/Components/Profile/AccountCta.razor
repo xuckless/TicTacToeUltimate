@@ -1,0 +1,15 @@
+@* Guest call to action: "Log in" is the main button, creating an account is a quiet link (owner decision 2026-10-16).
+   Both open the same email-code sign-in; only the wording differs. *@
+<div class="account-cta">
+    <Button Variant="@Variant" Block="true" Href="@Href("login")" data-testid="cta-login">Log in</Button>
+    <span class="t-small t-muted">New here? <a href="@Href("create")" data-testid="cta-create">Create account</a></span>
+</div>
+
+@code {
+    /// <summary>Button variant for "Log in".</summary>
+    [Parameter] public string Variant { get; set; } = "primary";
+    /// <summary>Where to return after signing in (an app path starting with '/').</summary>
+    [Parameter] public string? ReturnUrl { get; set; }
+
+    private string Href(string mode) => ReturnUrl is null ? $"signin?mode={mode}" : $"signin?mode={mode}&returnUrl={Uri.EscapeDataString(ReturnUrl)}";
+}
