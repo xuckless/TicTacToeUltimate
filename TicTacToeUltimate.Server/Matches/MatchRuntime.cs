@@ -145,7 +145,7 @@ public static class MatchModes
     public static MatchMode ModeFor(TimeControl tc) => tc switch
     {
         TimeControl.Ranked => MatchMode.Ranked,
-        TimeControl.CasualX2 or TimeControl.CasualX4 => MatchMode.Casual,
+        TimeControl.CasualX2 or TimeControl.CasualX4 or TimeControl.Casual or TimeControl.OldSchool => MatchMode.Casual,
         TimeControl.Unlimited => MatchMode.Unlimited,
         TimeControl.ArenaCasual => MatchMode.Arena,
         TimeControl.ArenaRanked => MatchMode.ArenaRanked,
@@ -178,10 +178,11 @@ public static class MatchModes
     /// <summary>Ruleset for a queue time control.</summary>
     public static RuleSet RulesFor(TttOptions o, TimeControl tc)
         => RuleIds.Parse(Options(o, tc).Rules, tc is TimeControl.Ranked or TimeControl.Daily ? RuleSet.RankedDefault
-            : MoveClock.IsArena(tc) ? ArenaRules.RulesetC.Board : RuleSet.Default);
+            : MoveClock.IsArena(tc) ? ArenaRules.RulesetC.Board : tc == TimeControl.OldSchool ? RuleSet.OldSchool : RuleSet.Default);
 
     /// <summary>True for casual-like controls where guests may fall back into the account pool.</summary>
-    public static bool IsCasualLike(TimeControl tc) => tc is TimeControl.CasualX2 or TimeControl.CasualX4 or TimeControl.Unlimited or TimeControl.ArenaCasual;
+    public static bool IsCasualLike(TimeControl tc) => tc is TimeControl.CasualX2 or TimeControl.CasualX4 or TimeControl.Unlimited or TimeControl.ArenaCasual
+        or TimeControl.Casual or TimeControl.OldSchool;
 
     /// <summary>8 random bytes.</summary>
     public static ulong NewSeed() => BitConverter.ToUInt64(RandomNumberGenerator.GetBytes(8));

@@ -509,7 +509,7 @@ internal sealed class MatchActor
         var seat = SeatOfColor(_state.ToMove);
         if (_state.Ply == 0) { End(Outcome.None, null, EndReason.Aborted, [], "timeout", now); return; }
         // Casual (incl. Casual Arena): auto-move. Ranked / Daily / Arena Ranked Ladder: loss.
-        if (Tc is TimeControl.CasualX2 or TimeControl.CasualX4 or TimeControl.ArenaCasual)
+        if (Tc is TimeControl.CasualX2 or TimeControl.CasualX4 or TimeControl.ArenaCasual or TimeControl.Casual or TimeControl.OldSchool)
         {
             var action = AutoAction(Setup.Seed, _state);
             var step = Step(action, _allowanceMs ?? 0, out var arenaStep);

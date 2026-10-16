@@ -128,12 +128,14 @@ public static class Ui
     /// <summary>Human label for a time control.</summary>
     public static string TimeControlName(Engine.Clocks.TimeControl tc) => tc switch
     {
-        Engine.Clocks.TimeControl.Ranked => "Ranked",
+        Engine.Clocks.TimeControl.Ranked => "Classic Ranked",
         Engine.Clocks.TimeControl.CasualX2 => "Casual x2",
         Engine.Clocks.TimeControl.CasualX4 => "Casual x4",
+        Engine.Clocks.TimeControl.Casual => "Casual",
+        Engine.Clocks.TimeControl.OldSchool => "Old school",
         Engine.Clocks.TimeControl.Unlimited => "Unlimited",
-        Engine.Clocks.TimeControl.ArenaCasual => "Casual Arena",
-        Engine.Clocks.TimeControl.ArenaRanked => "Arena Ranked Ladder",
+        Engine.Clocks.TimeControl.ArenaCasual => "Arena",
+        Engine.Clocks.TimeControl.ArenaRanked => "Ranked",
         _ => "Daily",
     };
 

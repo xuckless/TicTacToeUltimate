@@ -58,6 +58,9 @@ public static class DevFixtures
             var draws = count / 20;
             await ratings.PutAsync(new RatingRecord(id, RatingPool.Ranked, rating, rd, 0.06, count, wins, count - wins - draws, draws, rating + 40,
                 now.AddHours(-3)), ct);
+            // Headline "Ranked" is Arena since the 2026-10-15 restructure; fixtures mirror their classic numbers into it.
+            await ratings.PutAsync(new RatingRecord(id, RatingPools.Headline, rating, rd, 0.06, count, wins, count - wins - draws, draws, rating + 40,
+                now.AddHours(-3)), ct);
         }
         await ratings.PutAsync(new RatingRecord(AliXo, RatingPool.Daily, 1610, 70, 0.06, 58, 33, 22, 3, 1650, now.AddDays(-1)), ct);
 

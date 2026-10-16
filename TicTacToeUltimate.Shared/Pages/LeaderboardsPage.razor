@@ -7,9 +7,8 @@
 
 <Tabs Items="Scopes" Active="@_scope" ActiveChanged="SetScope" Label="Scope" />
 <div class="t-seg" role="group" aria-label="Pool">
-    <button type="button" aria-pressed="@(_pool == RatingPool.Ranked ? "true" : "false")" @onclick="() => SetPool(RatingPool.Ranked)">Ranked</button>
+    <button type="button" aria-pressed="@(_pool == RatingPool.ArenaRanked ? "true" : "false")" @onclick="() => SetPool(RatingPool.ArenaRanked)">Ranked</button>
     <button type="button" aria-pressed="@(_pool == RatingPool.Daily ? "true" : "false")" @onclick="() => SetPool(RatingPool.Daily)">Daily</button>
-    <button type="button" aria-pressed="@(_pool == RatingPool.ArenaRanked ? "true" : "false")" @onclick="() => SetPool(RatingPool.ArenaRanked)">Arena</button>
 </div>
 
 @if (Session.State.IsGuest)
@@ -42,7 +41,7 @@ else
 @code {
     private static readonly string[] Scopes = ["Global", "Friends", "Country", "Master"];
     private string _scope = "Global";
-    private RatingPool _pool = RatingPool.Ranked;
+    private RatingPool _pool = RatingPools.Headline;
     private int _pageNo = 1;
     private LeaderboardPageDto? _page;
 

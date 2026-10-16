@@ -32,7 +32,7 @@ public sealed record LocalGameOptions
     {
         get
         {
-            var r = Preset == LocalRulePreset.Legacy7 ? RuleSet.LegacyFifo7Ghost : RuleSet.Default;
+            var r = Preset switch { LocalRulePreset.Legacy7 => RuleSet.LegacyFifo7Ghost, LocalRulePreset.OldSchool => RuleSet.OldSchool, _ => RuleSet.Default };
             return r with { Opening = Pie ? OpeningRule.PieSwap : OpeningRule.None };
         }
     }
@@ -63,6 +63,8 @@ public enum LocalRulePreset
     Classic = 0,
     /// <summary>Superseded rule: 7 pieces on the board, the oldest vanishes and can't complete a line.</summary>
     Legacy7 = 1,
+    /// <summary>Plain tic-tac-toe: pieces never vanish; a full board is a draw.</summary>
+    OldSchool = 2,
 }
 
 /// <summary>How a local game ended.</summary>

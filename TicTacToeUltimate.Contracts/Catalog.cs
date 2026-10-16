@@ -31,11 +31,15 @@ public static class RatingPools
         TimeControl.Ranked => RatingPool.Ranked, TimeControl.CasualX2 => RatingPool.CasualX2,
         TimeControl.CasualX4 => RatingPool.CasualX4, TimeControl.Unlimited => RatingPool.Unlimited,
         TimeControl.ArenaCasual => RatingPool.ArenaCasual, TimeControl.ArenaRanked => RatingPool.ArenaRanked,
+        // Hidden matchmaking pools for the new casual queues.
+        TimeControl.Casual => RatingPool.CasualX2, TimeControl.OldSchool => RatingPool.CasualX4,
         _ => RatingPool.Daily,
     };
     public static bool IsVisible(RatingPool p) => p is RatingPool.Ranked or RatingPool.Daily or RatingPool.ArenaRanked;
-    /// <summary>Visible pools in display order (Me / profile ratings).</summary>
-    public static readonly RatingPool[] Visible = [RatingPool.Ranked, RatingPool.Daily, RatingPool.ArenaRanked];
+    /// <summary>Visible pools in display order (Me / profile ratings). Classic Ranked is retired from the UI (2026-10-15).</summary>
+    public static readonly RatingPool[] Visible = [RatingPool.ArenaRanked, RatingPool.Daily];
+    /// <summary>The headline "Ranked" rating and tier (Home, Profile, Leaderboards, player cards): Arena.</summary>
+    public const RatingPool Headline = RatingPool.ArenaRanked;
 }
 
 public static class ErrorCodes

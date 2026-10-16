@@ -55,7 +55,7 @@ public sealed class AccountService(IUserRepository users, RatingService ratings,
         foreach (var u in list.Where(u => u.Kind == AccountKind.Account))
         {
             var me = await GetMeAsync(u.Id, ct);
-            var ranked = me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked);
+            var ranked = me?.Ratings.FirstOrDefault(r => r.Pool == RatingPools.Headline);
             result.Add(new DevUserDto(u.Id, u.DisplayName, u.Kind, ranked?.Tier, ranked?.Rating));
         }
         return result.ToArray();

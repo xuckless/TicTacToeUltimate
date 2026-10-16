@@ -96,7 +96,7 @@ public sealed class SocialService(
         var requests = await friends.ListRequestsAsync(me, ct);
         var blocked = await friends.ListBlockedAsync(me, ct);
         var all = friendIds.Concat(requests.SelectMany(r => new[] { r.From, r.To })).Concat(blocked).Append(me).Distinct().ToList();
-        var cardMap = await cards.GetCardsAsync(all, RatingPool.Ranked, ct);
+        var cardMap = await cards.GetCardsAsync(all, RatingPools.Headline, ct);
         var userMap = await users.GetManyAsync(friendIds.ToList(), ct);
         var unread = await chat.UnreadCountsAsync(me, ct);
         var friendDtos = friendIds.Select(f => new FriendDto(cardMap[f], presence.Get(f), unread.GetValueOrDefault(f),
@@ -125,7 +125,7 @@ public sealed class SocialService(
                 var req = (await friends.ListRequestsAsync(target.Id, ct)).LastOrDefault(r => r.From == me && r.To == target.Id);
                 if (req is not null)
                 {
-                    var cardMap = await cards.GetCardsAsync([me, target.Id], RatingPool.Ranked, ct);
+                    var cardMap = await cards.GetCardsAsync([me, target.Id], RatingPools.Headline, ct);
                     var dto = new FriendRequestDto(req.Id, cardMap[me], cardMap[target.Id], FriendRequestDirection.Incoming, req.CreatedAt);
                     await Safe(() => notifier.ToUserAsync(target.Id, c => c.FriendRequestReceived(dto)));
                 }

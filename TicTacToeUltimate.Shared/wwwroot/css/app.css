@@ -175,3 +175,7 @@ body { min-height: 100dvh; }
 .mode-go { color: var(--accent); width: 24px; height: 24px; }
 .mode-watermark { position: absolute; right: 44px; top: 50%; transform: translateY(-50%) rotate(-12deg); font: 400 96px/1 var(--font-headline); color: var(--accent); opacity: .12; pointer-events: none; }
 .friend-invite { display: flex; align-items: center; gap: 12px; }
+.daily-nudge { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 14px; text-decoration: none; color: var(--ink);
+  background: color-mix(in srgb, #ff8a2a 18%, var(--surface)); border: 2px solid color-mix(in srgb, #ff8a2a 55%, var(--line)); font: 500 14px/1.2 var(--font-sans); }
+.daily-nudge > span { flex: 1; }
+.daily-nudge .t-icon { color: #ff8a2a; }

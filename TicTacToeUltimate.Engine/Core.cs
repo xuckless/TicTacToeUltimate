@@ -33,6 +33,8 @@ public sealed record RuleSet(
     public static RuleSet RankedDefault { get; } = Default with { Opening = OpeningRule.PieSwap };
     /// <summary>Superseded launch rule: global FIFO 7, vacated playable, the piece about to vanish cannot win (<c>n3k3-fifo7-v1-w0-none</c>). Still the Arena board.</summary>
     public static RuleSet LegacyFifo7Ghost { get; } = new();
+    /// <summary>"Old school": plain 3x3 tic-tac-toe. Pieces never vanish; a full board with no line is a draw.</summary>
+    public static RuleSet OldSchool { get; } = new(Removal: RemovalKind.None, VanishingPieceCanWin: true);   // Window is ignored for None (parser default 7)
 
     /// <summary>Number of cells (N²).</summary>
     public int CellCount => BoardSize * BoardSize;

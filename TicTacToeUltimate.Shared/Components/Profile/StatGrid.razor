@@ -12,7 +12,7 @@
     /// <summary>Visible ratings.</summary>
     [Parameter] public IReadOnlyList<RatingDto> Ratings { get; set; } = [];
 
-    private RatingDto? Ranked => Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked);
+    private RatingDto? Ranked => Ratings.FirstOrDefault(r => r.Pool == RatingPools.Headline);
     private RatingDto? Daily => Ratings.FirstOrDefault(r => r.Pool == RatingPool.Daily);
     private static string Percent(double v) => $"{Math.Round((v > 1 ? v : v * 100)):0}%";
 }

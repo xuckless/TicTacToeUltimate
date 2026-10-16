@@ -287,3 +287,12 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
   - **Crits are now impossible** (you never hold 5 pieces). The code is kept dormant for a possible 4x4 Arena.
   - A shatter wipes all 3 of the scorer's pieces, which is a built-in comeback mechanic.
   - Vectors were regenerated and cross-checked against the Python sim: 152 positions match. 14 differ only because overtime's conceder-first order isn't modelled in the sim's untimed replay.
+
+### Mode restructure (owner, 2026-10-15)
+- **Ranked = Arena** (health bars, rated, Arena Glicko pool). This is the headline rating and tier shown on Home, Profile and Leaderboards.
+- **Arena (unrated)**: casual Arena queue.
+- **Casual** = normal Tic Tac Toe Ultimate (3 pieces each) on the **sudden-death clock** (15s → 10s at 1:00 → −1s/12s, floor 2s). Unrated; timeout = auto-move.
+- **Unlimited** (no clock) stays. **Daily** (24h/move, rated, own pool) stays. **Friend challenge links** stay.
+- **Casual x4 removed** (and x2) from the UI.
+- **Old school**: plain tic-tac-toe, pieces never vanish, draws possible. Available in the online casual queue, Pass & Play and friend challenges.
+- The classic Ultimate **Ranked** queue/rating is **stubbed in code but retired from the UI**.

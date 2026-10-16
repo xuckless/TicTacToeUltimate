@@ -17,7 +17,8 @@ public sealed class ChallengeService(
     IUserRepository? users = null, IFriendRepository? friends = null, IDailyMatchRepository? daily = null) : IChallengeService
 {
     private const string Alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-    private static readonly TimeControl[] Allowed = [TimeControl.CasualX2, TimeControl.CasualX4, TimeControl.Unlimited, TimeControl.Daily];
+    private static readonly TimeControl[] Allowed = [TimeControl.Casual, TimeControl.OldSchool, TimeControl.ArenaCasual, TimeControl.Unlimited, TimeControl.Daily,
+        TimeControl.CasualX2, TimeControl.CasualX4];
     private readonly ConcurrentDictionary<string, DateTimeOffset> _open = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>New 8-char Crockford base32 code.</summary>
@@ -57,7 +58,7 @@ public sealed class ChallengeService(
         for (var i = 0; i < 5 && rec is null; i++)
         {
             var candidate = new ChallengeRecord(NewCode(), creator.UserId, request.ToUserId, request.TimeControl,
-                MoveClock.IsArena(request.TimeControl) ? MatchModes.RulesFor(options, request.TimeControl).Id : RuleSet.Default.Id,
+                MatchModes.RulesFor(options, request.TimeControl) with { Opening = OpeningRule.None } is var rs ? rs.Id : RuleSet.Default.Id,
                 ChallengeStatus.Open, null, null, now, now.AddHours(options.Challenges.TtlHours));
             if (await repo.CreateAsync(candidate, ct).ConfigureAwait(false)) rec = candidate;
         }

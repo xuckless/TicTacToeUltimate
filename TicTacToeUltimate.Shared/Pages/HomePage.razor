@@ -14,9 +14,12 @@
     <a class="t-iconbtn t-iconbtn--round" href="settings" aria-label="Settings"><Icon Name="settings" /></a>
 </header>
 
-<PlayHero Rating="RankedRating" Guest="IsGuest" Subtitle="@(IsGuest ? "Unrated · 30s per move" : "Placement games")" />
+<PlayHero Rating="RankedRating" Guest="IsGuest" Subtitle="@(IsGuest ? "Unrated · 15s per move" : "Placement games")" />
 <ModeGrid DailyYourTurn="Session.State.DailyYourTurn" Guest="IsGuest" />
-<ArenaCard Guest="IsGuest" Rating="@(Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.ArenaRanked))" />
+@if (!IsGuest && Session.State.DailyYourTurn > 0)
+{
+    <a class="daily-nudge" href="daily"><Icon Name="calendar" /><span><strong>Daily</strong> · @Session.State.DailyYourTurn your move</span><Icon Name="next" /></a>
+}
 <a class="mode-btn local-entry" href="local" data-testid="home-passplay">
     <span class="t-label">Pass &amp; Play</span><span class="sub">2 players · 1 device · works offline</span>
 </a>
@@ -36,7 +39,7 @@ else
 
 @code {
     private bool IsGuest => Session.State.IsGuest;
-    private RatingDto? RankedRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked);
+    private RatingDto? RankedRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPools.Headline);
     private static long NowMs => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
     /// <inheritdoc />

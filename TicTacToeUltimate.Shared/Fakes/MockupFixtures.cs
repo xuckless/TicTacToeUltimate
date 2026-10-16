@@ -35,7 +35,7 @@ public static class MockupFixtures
 
     /// <summary>Me (ali_xo).</summary>
     public static readonly MeDto Me = new(Ali.UserId, AccountKind.Account, "ali_xo", "ali_xo", false, "a1", "CA", "America/Toronto", 1,
-        [new RatingDto(RatingPool.Ranked, 1540, 60, 412, false, GoldII, 38), new RatingDto(RatingPool.Daily, 1610, 80, 40, false, GoldI, 0)]);
+        [new RatingDto(RatingPools.Headline, 1540, 60, 412, false, GoldII, 38), new RatingDto(RatingPool.Daily, 1610, 80, 40, false, GoldI, 0)]);
 
     /// <summary>Signed-in session with 3 daily games waiting.</summary>
     public static SessionState SignedInSession => SessionState.Initial with { Status = SessionStatus.SignedIn, Me = Me, Connection = ConnectionPhase.Online, DailyYourTurn = 3 };
@@ -93,7 +93,7 @@ public static class MockupFixtures
 
     /// <summary>Profile mockup.</summary>
     public static readonly ProfileDto Profile = new(Ali with { Rating = 1552 }, new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero),
-        [new RatingDto(RatingPool.Ranked, 1552, 60, 412, false, GoldII, 38), new RatingDto(RatingPool.Daily, 1610, 80, 40, false, GoldI, 0)],
+        [new RatingDto(RatingPools.Headline, 1552, 60, 412, false, GoldII, 38), new RatingDto(RatingPool.Daily, 1610, 80, 40, false, GoldI, 0)],
         new ProfileStatsDto(412, 239, 170, 3, 0.58, 12, 31, 4), [.. RecentGames], FriendStatus.Self);
 
     private static readonly RuleSetDto RankedRules = new("n3k3-cap3-v0-w1-pie", 3, 3, RemovalKind.PerPlayerCap, 3, false, true, OpeningRule.PieSwap);
@@ -146,7 +146,7 @@ public static class MockupFixtures
             RankedRules, Seats(false), false, [], board, 19, GamePhase.Ended, Color.O, null, [], null,
             new ClockDto(TimeControl.Ranked, null, null, null, 104000, true, null, null, [4000, 4000]), result, 0, 0, !rated, 0);
         var summary = new PostGameSummaryDto(MatchId, result, GameResultForUser.Win,
-            rated ? new RatingChangeDto(RatingPool.Ranked, 1540, 1552, 12, false) : null,
+            rated ? new RatingChangeDto(RatingPools.Headline, 1540, 1552, 12, false) : null,
             rated ? new TierChangeDto(GoldII, GoldII, false, false) : null, 3,
             Progress with { Quests = [.. Progress.Quests.Select(q => q.QuestId == "win3" ? q with { Progress = 3, Completed = true } : q)] },
             true, 1, !rated);

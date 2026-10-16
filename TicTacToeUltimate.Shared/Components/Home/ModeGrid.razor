@@ -1,19 +1,12 @@
 <div class="mode-grid">
-    <a class="mode-btn" href="play?tc=CasualX2"><Icon Name="casual" Class="mode-ico" /><span class="t-label">Casual</span><span class="sub">x2 · x4</span></a>
-    @if (Guest)
-    {
-        <a class="mode-btn" href="signin" aria-label="Daily (account required)"><Icon Name="calendar" Class="mode-ico" /><span class="t-label">Daily</span><span class="sub">Account only</span></a>
-    }
-    else
-    {
-        <a class="mode-btn" href="daily"><Icon Name="calendar" Class="mode-ico" /><span class="t-label">Daily</span><span class="sub">@(DailyYourTurn > 0 ? $"{DailyYourTurn} your move" : "24h per move")</span></a>
-    }
-    <a class="mode-btn" href="play?tc=Unlimited"><Icon Name="unlimited" Class="mode-ico" /><span class="t-label">Unlimited</span><span class="sub">No clock</span></a>
+    <a class="mode-btn" href="play?tc=Casual"><Icon Name="casual" Class="mode-ico" /><span class="t-label">Casual</span><span class="sub">Unrated</span></a>
+    <a class="mode-btn" href="play?tc=ArenaCasual"><Icon Name="arena" Class="mode-ico" /><span class="t-label">Arena</span><span class="sub">Unrated</span></a>
+    <a class="mode-btn" href="play?tc=OldSchool"><Icon Name="play" Class="mode-ico" /><span class="t-label">Old school</span><span class="sub">Classic 3x3</span></a>
 </div>
 
 @code {
-    /// <summary>Daily games waiting on you.</summary>
+    /// <summary>Daily games waiting on you (shown on the Play page now).</summary>
     [Parameter] public int DailyYourTurn { get; set; }
-    /// <summary>Guests cannot play Daily.</summary>
+    /// <summary>Guest variant.</summary>
     [Parameter] public bool Guest { get; set; }
 }

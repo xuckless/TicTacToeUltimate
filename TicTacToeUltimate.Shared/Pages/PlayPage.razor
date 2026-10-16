@@ -25,8 +25,7 @@
                 </span>
                 <span class="mode-side">
                     @if (locked) { <span class="t-chip"><Icon Name="lock" /> Account</span> }
-                    else if (m.Tc == TimeControl.Ranked && RankedRating is not null) { <TierBadge Tier="RankedRating.Tier" /> }
-                    else if (m.Tc == TimeControl.ArenaRanked && ArenaRating is not null) { <TierBadge Tier="ArenaRating.Tier" /> }
+                                        else if (m.Tc == TimeControl.ArenaRanked && ArenaRating is not null) { <TierBadge Tier="ArenaRating.Tier" /> }
                     else { <Icon Name="next" Class="mode-go" /> }
                 </span>
                 <span class="mode-watermark" aria-hidden="true">@m.Glyph</span>
@@ -83,19 +82,18 @@
 
     private static readonly ModeOption[] Modes =
     [
-        new(TimeControl.Ranked, "Ranked", "15s per move · sudden death", false, "Competitive", "ranked", "#7442ef", "X"),
-        new(TimeControl.CasualX2, "Casual x2", "30s per move · unrated", true, "Casual", "casual", "#2f9be0", "O"),
-        new(TimeControl.CasualX4, "Casual x4", "60s per move · unrated", true, "Casual", "clock", "#1fb5a0", "X"),
-        new(TimeControl.Unlimited, "Unlimited", "No clock · take your time", true, "Casual", "unlimited", "#8a6cff", "O"),
-        new(TimeControl.Daily, "Daily", "24h per move · up to 10 games", false, "Competitive", "calendar", "#ff8a2a", "O"),
-        new(TimeControl.ArenaCasual, "Casual Arena", "Health bars · 2:00 round · unrated", true, "Casual", "arena", "#e0457b", "X"),
-        new(TimeControl.ArenaRanked, "Arena Ladder", "Health bars · own rating · timeout loses", false, "Competitive", "crown", "#c2185b", "X"),
+        new(TimeControl.ArenaRanked, "Ranked", "Arena · rated", false, "Competitive", "ranked", "#7442ef", "X"),
+        new(TimeControl.Daily, "Daily", "24h per move · rated", false, "Competitive", "calendar", "#ff8a2a", "O"),
+        new(TimeControl.Casual, "Casual", "Sudden-death clock · unrated", true, "Casual", "casual", "#2f9be0", "O"),
+        new(TimeControl.ArenaCasual, "Arena", "Health bars · unrated", true, "Casual", "arena", "#e0457b", "X"),
+        new(TimeControl.OldSchool, "Old school", "Classic tic-tac-toe", true, "Casual", "play", "#1fb5a0", "X"),
+        new(TimeControl.Unlimited, "Unlimited", "No clock", true, "Casual", "unlimited", "#8a6cff", "O"),
     ];
 
     [SupplyParameterFromQuery(Name = "tc")] private string? Tc { get; set; }
 
     private bool IsGuest => Session.State.IsGuest;
-    private RatingDto? RankedRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked);
+    private RatingDto? RankedRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPools.Headline);
     private RatingDto? ArenaRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.ArenaRanked);
 
     /// <inheritdoc />

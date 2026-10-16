@@ -27,10 +27,10 @@ public sealed class LocalPlayPageTests : IDisposable
     public void Setup_starts_a_session_with_chosen_clock()
     {
         var cut = _ctx.Render<LocalSetupPage>();
-        cut.Find("[data-testid='tc-CasualX2']").Click();
+        cut.Find("[data-testid='tc-Casual']").Click();
         cut.Find("[data-testid='local-start']").Click();
         Assert.NotNull(Session.Current);
-        Assert.Equal(TimeControl.CasualX2, Session.Current!.TimeControl);
+        Assert.Equal(TimeControl.Casual, Session.Current!.TimeControl);
         Assert.Equal("Player 1", Session.Current.NameOf(0));
         Assert.EndsWith("/local/play", _ctx.Services.GetRequiredService<NavigationManager>().Uri, StringComparison.Ordinal);
     }

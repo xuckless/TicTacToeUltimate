@@ -82,12 +82,12 @@ public sealed class SeasonService(ISeasonRepository seasons, IRatingRepository r
         var now = time.GetUtcNow();
         var season = await seasons.GetCurrentAsync(now, ct);
         if (now < season.EndsAt) return false;
-        var page = await ratings.QueryAsync(new LeaderboardQuery(RatingPool.Ranked, LeaderboardScope.MasterSeason, null, Guid.Empty, null, 0,
+        var page = await ratings.QueryAsync(new LeaderboardQuery(RatingPools.Headline, LeaderboardScope.MasterSeason, null, Guid.Empty, null, 0,
             tiers.MasterMin, 1, int.MaxValue / 2), ct);
         var results = page.Rows.Select(r => new MasterSeasonResult(season.Id, r.UserId, r.Rating, r.Rank)).ToList();
         foreach (var r in page.Rows)
         {
-            var rec = await ratings.GetAsync(r.UserId, RatingPool.Ranked, ct);
+            var rec = await ratings.GetAsync(r.UserId, RatingPools.Headline, ct);
             await ratings.PutAsync(rec with { Rating = tiers.MasterMin, Rd = options.Value.Seasons.MasterResetRd }, ct);
         }
         var next = new SeasonRecord(season.Id + 1, season.EndsAt, season.EndsAt.AddDays(Math.Max(1, options.Value.Seasons.LengthDays)));

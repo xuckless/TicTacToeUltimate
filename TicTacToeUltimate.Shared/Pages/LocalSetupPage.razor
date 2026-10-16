@@ -66,6 +66,7 @@
     private static readonly PresetOption[] Presets =
     [
         new(LocalRulePreset.Classic, "Classic", "3 pieces each. Placing a 4th removes your own oldest (you can't replay that cell this turn). Any 3 in a row wins."),
+        new(LocalRulePreset.OldSchool, "Old school", "Classic tic-tac-toe. Pieces stay; a full board is a draw."),
         new(LocalRulePreset.Legacy7, "Legacy 7-piece", "7 pieces on the board, the oldest vanishes. The faded piece can't complete a line."),
     ];
     private LocalRulePreset _preset = LocalRulePreset.Classic;
@@ -73,10 +74,8 @@
     private static readonly ClockOption[] Clocks =
     [
         new(TimeControl.Unlimited, "Unlimited", "No clock"),
-        new(TimeControl.CasualX4, "Casual x4", "60s · timeout auto-moves"),
-        new(TimeControl.CasualX2, "Casual x2", "30s · timeout auto-moves"),
-        new(TimeControl.Ranked, "Sudden death", "15s, shrinking · timeout loses"),
-        new(TimeControl.ArenaCasual, "Arena", "Health bars · 2:00 round"),
+        new(TimeControl.Casual, "Casual", "Sudden-death clock"),
+        new(TimeControl.ArenaCasual, "Arena", "Health bars"),
     ];
 
     private string _p1 = "", _p2 = "";

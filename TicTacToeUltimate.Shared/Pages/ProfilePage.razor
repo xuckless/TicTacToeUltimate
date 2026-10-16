@@ -24,7 +24,7 @@
 }
 else
 {
-    var ranked = _profile.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked);
+    var ranked = _profile.Ratings.FirstOrDefault(r => r.Pool == RatingPools.Headline);
     <ProfileHeader Card="_profile.Card" JoinedAt="_profile.JoinedAt" />
     @if (!IsSelf)
     {
@@ -82,7 +82,7 @@ else
     }
 
     private static PlayerCardDto SelfCard(MeDto me) => new(me.UserId, me.DisplayName, me.AvatarId, me.Country, me.Kind,
-        me.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked)?.Tier, me.Ratings.FirstOrDefault(r => r.Pool == RatingPool.Ranked)?.Rating, false);
+        me.Ratings.FirstOrDefault(r => r.Pool == RatingPools.Headline)?.Tier, me.Ratings.FirstOrDefault(r => r.Pool == RatingPools.Headline)?.Rating, false);
 
     private async Task AddFriend()
     {

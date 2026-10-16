@@ -1,6 +1,8 @@
 namespace TicTacToeUltimate.Engine.Clocks;
 
-public enum TimeControl : byte { Ranked = 0, CasualX2 = 1, CasualX4 = 2, Unlimited = 3, Daily = 4, ArenaCasual = 5, ArenaRanked = 6 }
+/// <summary>Queue time controls. Ranked/CasualX2/CasualX4 are retired from the UI (2026-10-15 mode restructure) but kept for compatibility.
+/// Casual = Ultimate on the sudden-death schedule, unrated, timeout auto-moves. OldSchool = plain tic-tac-toe on the same clock.</summary>
+public enum TimeControl : byte { Ranked = 0, CasualX2 = 1, CasualX4 = 2, Unlimited = 3, Daily = 4, ArenaCasual = 5, ArenaRanked = 6, Casual = 7, OldSchool = 8 }
 
 /// <summary>Pure move-clock schedule (integer tick arithmetic only).</summary>
 public static class MoveClock
@@ -16,10 +18,10 @@ public static class MoveClock
 
     private const long Sec = TimeSpan.TicksPerSecond;
 
-    /// <summary>1 for Ranked, 2 for CasualX2, 4 for CasualX4, 0 otherwise.</summary>
+    /// <summary>1 for Ranked/Casual/OldSchool, 2 for CasualX2, 4 for CasualX4, 0 otherwise.</summary>
     public static int Scale(TimeControl tc) => tc switch
     {
-        TimeControl.Ranked => 1,
+        TimeControl.Ranked or TimeControl.Casual or TimeControl.OldSchool => 1,
         TimeControl.CasualX2 => 2,
         TimeControl.CasualX4 => 4,
         _ => 0,

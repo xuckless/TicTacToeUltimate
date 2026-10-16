@@ -84,7 +84,7 @@ public static class PlatformEndpoints
             var prefix = UsernameRules.Normalize(q);
             if (prefix.Length == 0) return Results.Ok(Array.Empty<PlayerCardDto>());
             var found = (await users.SearchAsync(prefix, 20, ct)).Where(u => u.Kind == AccountKind.Account).Select(u => u.Id).ToList();
-            var map = await cards.GetCardsAsync(found, RatingPool.Ranked, ct);
+            var map = await cards.GetCardsAsync(found, RatingPools.Headline, ct);
             return Results.Ok(found.Select(id => map[id]).ToArray());
         }).RequireAuthorization(Account);
 
@@ -94,7 +94,7 @@ public static class PlatformEndpoints
             var u = await users.GetByUsernameAsync(username, ct);
             if (u is null) return ApiErrors.Problem(404, ErrorCodes.Validation);
             var viewer = http.Me().UserId;
-            var card = await cards.GetCardAsync(u.Id, RatingPool.Ranked, ct);
+            var card = await cards.GetCardAsync(u.Id, RatingPools.Headline, ct);
             var visible = await ratings.VisibleAsync(u.Id, time.GetUtcNow(), ct);
             var list = await games.ListForUserAsync(u.Id, null, 500, ct);
             int wins = 0, losses = 0, draws = 0;
@@ -166,7 +166,7 @@ public static class PlatformEndpoints
                     if (ctry is null) return ApiErrors.Problem(400, ErrorCodes.Validation);
                     break;
                 case LeaderboardScope.MasterSeason:
-                    p = RatingPool.Ranked; minRating = tiers.MasterMin; break;
+                    p = RatingPools.Headline; minRating = tiers.MasterMin; break;
             }
             const int PageSize = 50;
             var pg = Math.Max(1, page ?? 1);
