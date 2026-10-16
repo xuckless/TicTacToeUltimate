@@ -228,11 +228,11 @@ public class MatchActorTests
     {
         var h = new Harness();
         var id = await h.CreateAsync(TimeControl.Unlimited);
-        Assert.True((await h.Gateway.EmoteAsync(id, A, "gg", default)).Ok);
+        Assert.True((await h.Gateway.EmoteAsync(id, A, "bert-gg", default)).Ok);
         Assert.Equal(ErrorCodes.EmoteUnknown, (await h.Gateway.EmoteAsync(id, A, "nope", default)).Error);
-        Assert.True((await h.Gateway.EmoteAsync(id, A, "gg", default)).Ok);
-        Assert.True((await h.Gateway.EmoteAsync(id, A, "gg", default)).Ok);
-        Assert.Equal(ErrorCodes.RateLimited, (await h.Gateway.EmoteAsync(id, A, "gg", default)).Error);
+        Assert.True((await h.Gateway.EmoteAsync(id, A, "bert-gg", default)).Ok);
+        Assert.True((await h.Gateway.EmoteAsync(id, A, "bert-gg", default)).Ok);
+        Assert.Equal(ErrorCodes.RateLimited, (await h.Gateway.EmoteAsync(id, A, "bert-gg", default)).Error);
         h.Time.Advance(TimeSpan.FromSeconds(2));
         Assert.True((await h.Gateway.EmoteAsync(id, A, "wp", default)).Ok);
         await h.FlushAsync(id);

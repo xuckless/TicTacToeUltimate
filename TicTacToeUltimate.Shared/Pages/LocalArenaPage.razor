@@ -21,6 +21,7 @@ else
 {
     var g = _g;
     <div class="match @(g.RedAlert || g.State.Phase == ArenaPhase.Overtime ? "sd" : "arena")" data-testid="local-arena">
+        <ThrownEmote Text="@_thrownText" FromBottom="_thrownFromBottom" Key="_thrownKey" />
         <div class="match-header">
             <span>Pass &amp; Play · Arena</span>
             <span class="t-num" data-testid="local-arena-score">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)</span>
@@ -60,7 +61,7 @@ else
     {
         <div class="t-scrim">
             <div class="t-sheet result-overlay" data-testid="local-arena-over">
-                <Ghosty Mood="cheer" Size="72" />
+                <Bert Mood="cheer" Size="72" />
                 <span class="t-hero"><BounceText Text="@(g.WinnerSeat is int w ? $"{g.NameOf(w)} wins!" : "Draw")" /></span>
                 <span class="t-small t-muted">@EndText(g.State.End)</span>
                 <span class="t-num">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)</span>
@@ -71,9 +72,26 @@ else
         </div>
     }
     <ImpactFrame Kind="@_impactKind" Text="@_impactText" Token="@_impactToken" Trigger="_impactTrigger" DurationMs="_impactMs" />
+    <Confetti Trigger="_confetti" />
+    <EmotePicker Open="@(_emoteSeat is not null)" OnPick="ThrowEmote" OnClose="() => _emoteSeat = null" />
 }
 
 @code {
+    private int? _emoteSeat;
+    private int _confetti;
+    private string? _thrownText;
+    private bool _thrownFromBottom;
+    private int _thrownKey;
+
+    // Pass & Play: seat 0 sits at the bottom, seat 1 at the top; an emote flies at the other player.
+    private void ThrowEmote(string id)
+    {
+        if (_emoteSeat is not int seat) return;
+        _thrownText = EmoteCatalog.All.FirstOrDefault(e => e.Id == id)?.Text ?? id;
+        _thrownFromBottom = seat == 0;
+        _thrownKey++;
+    }
+
     private LocalArenaGame? _g;
     private CancellationTokenSource? _cts;
     private bool _showOverlay, _redAlertShown;
@@ -92,6 +110,7 @@ else
                            Steps="g.Rules.Ramp.Length" Preview="@(active ? 0 : ArenaEngine.NextLineDamage(g.State, piece == Color.X ? Color.O : Color.X))"
                            Hit="@(g.LastHit is { } h && h.Attacker != piece)" HitKey="g.HitKey" />
             </div>
+            <button type="button" class="t-iconbtn t-iconbtn--round seat-emote" aria-label="@($"Emote from {g.NameOf(seat)}")" @onclick="() => _emoteSeat = seat"><Icon Name="emote" /></button>
         </div>
     };
 
@@ -146,6 +165,7 @@ else
         if (!g.IsLive && !_showOverlay)
         {
             var ko = g.State.End == ArenaEnd.Knockout;
+            if (g.WinnerSeat is not null) _confetti++;
             Impact("win", ko ? "K.O.!" : g.WinnerSeat is int w ? $"{g.NameOf(w).ToUpperInvariant()} WINS!" : "DRAW",
                 g.State.Winner == Color.O ? "piece-o" : "piece-x");
             _ = RevealOverlayLater(Settings.State.ImpactFrames ? 1400 : 0);

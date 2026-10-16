@@ -10,7 +10,7 @@
     @if (_created is { } made)
     {
         <div class="invite-made" data-testid="invite-made">
-            <Ghosty Mood="cheer" Size="64" />
+            <Bert Mood="cheer" Size="64" />
             <span class="t-small t-muted">Send this to a friend. It works for 24 hours.</span>
             <span class="invite-code" aria-label="Invite code">@made.Code</span>
             <input class="invite-url" readonly value="@made.Url" aria-label="Invite link" data-testid="invite-url" @onfocus="SelectAll" id="invite-url" />

@@ -218,3 +218,40 @@ body { min-height: 100dvh; }
 .mode-wrap > .mode-card .mode-go { display: none; }
 .mode-wrap > .mode-card + .info-btn.corner { top: 50%; transform: translateY(-50%); right: 14px; }
 .match-shell .match { min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+.bert-grid button { min-height: 72px; display: grid; place-items: center; padding: 4px; }
+.match .emote-bubble.bert-bubble { padding: 2px; top: -34px; background: var(--surface-raised); border-radius: 50%; }
+/* Thrown emotes: an arc across the board, a spin, a squash on landing, then fade. */
+.thrown-emote { position: absolute; left: 50%; z-index: 45; pointer-events: none; transform: translateX(-50%); }
+.thrown-emote.up { bottom: 90px; animation: throw-up 1.5s cubic-bezier(.25, .7, .35, 1) forwards; }
+.thrown-emote.down { top: 90px; animation: throw-down 1.5s cubic-bezier(.25, .7, .35, 1) forwards; }
+.thrown-phrase { display: inline-block; background: var(--surface-raised); border: 2px solid var(--line-strong); border-radius: 16px; padding: 8px 14px;
+  font: 700 16px/1.2 var(--font-sans); white-space: nowrap; box-shadow: var(--ledge-neutral); }
+@keyframes throw-up {
+  0% { transform: translate(-50%, 0) scale(.4) rotate(-30deg); opacity: 0; }
+  12% { opacity: 1; }
+  55% { transform: translate(calc(-50% + 60px), -260px) scale(1.25) rotate(200deg); }
+  70% { transform: translate(calc(-50% + 70px), -330px) scale(1.15, .85) rotate(360deg); }
+  80% { transform: translate(calc(-50% + 70px), -322px) scale(.95, 1.05) rotate(360deg); opacity: 1; }
+  100% { transform: translate(calc(-50% + 70px), -326px) scale(1) rotate(360deg); opacity: 0; } }
+@keyframes throw-down {
+  0% { transform: translate(-50%, 0) scale(.4) rotate(30deg); opacity: 0; }
+  12% { opacity: 1; }
+  55% { transform: translate(calc(-50% - 60px), 260px) scale(1.25) rotate(-200deg); }
+  70% { transform: translate(calc(-50% - 70px), 330px) scale(1.15, .85) rotate(-360deg); }
+  80% { transform: translate(calc(-50% - 70px), 322px) scale(.95, 1.05) rotate(-360deg); opacity: 1; }
+  100% { transform: translate(calc(-50% - 70px), 326px) scale(1) rotate(-360deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .thrown-emote { animation: none; display: none; } }
+:root[data-motion="reduce"] .thrown-emote { display: none; }
+/* Victory confetti */
+.confetti { position: fixed; inset: 0; z-index: 65; pointer-events: none; overflow: hidden; }
+.confetti i { position: absolute; top: -8%; font-style: normal; animation-name: confetti-fall; animation-timing-function: linear; animation-fill-mode: both; will-change: transform; }
+.confetti .c-strip { width: 9px; height: 15px; border-radius: 2px; background: var(--c); }
+.confetti .c-x, .confetti .c-o { font: 400 22px/1 var(--font-headline); color: var(--c); }
+@keyframes confetti-fall {
+  0% { transform: translate(0, 0) rotate(var(--r0)); opacity: 1; }
+  25% { transform: translate(var(--sway), 30vh) rotate(calc(var(--r0) + 180deg)); }
+  50% { transform: translate(calc(var(--sway) * -1), 60vh) rotate(calc(var(--r0) + 360deg)); }
+  85% { opacity: 1; }
+  100% { transform: translate(var(--sway), 112vh) rotate(calc(var(--r0) + 600deg)); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .confetti { display: none; } }
+:root[data-motion="reduce"] .confetti { display: none; }

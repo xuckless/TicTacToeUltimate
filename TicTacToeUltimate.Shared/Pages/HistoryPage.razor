@@ -7,7 +7,7 @@
 
 <section class="t-col" style="padding:0;gap:0">
     @foreach (var g in _games) { <GameRow Game="g" /> }
-    @if (!_loading && _games.Count == 0) { <div class="t-empty"><Ghosty Mood="happy" Size="64" /><span>No games yet. Your first win is waiting!</span></div> }
+    @if (!_loading && _games.Count == 0) { <div class="t-empty"><Bert Mood="happy" Size="64" /><span>No games yet. Your first win is waiting!</span></div> }
 </section>
 @if (_more)
 {

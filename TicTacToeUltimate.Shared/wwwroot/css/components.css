@@ -239,31 +239,31 @@ h1:focus, h1:focus-visible { outline: none; }
 .t-bounce.ultimate { color: var(--streak); text-shadow: 0 3px 0 #8a5a00; }
 .splash-logo { font-size: 40px; text-align: center; line-height: 1.1; }
 
-/* Ghosty mascot */
-.ghosty { overflow: visible; flex: none; }
-.ghosty .g-body { fill: var(--primary-fill); }
-.ghosty .g-shadow { fill: var(--primary-shade); }
-.ghosty .g-shine { fill: #fff; opacity: .28; }
-.ghosty .g-halo { fill: none; stroke: var(--primary); stroke-width: 4; stroke-dasharray: 6 5; opacity: .55; }
-.ghosty .g-eye { fill: #fff; }
-.ghosty .g-pupil { fill: #1b1030; }
-.ghosty .g-glint { fill: #fff; }
-.ghosty .g-mouth { fill: #1b1030; }
-.ghosty .g-cheek { fill: #ff7aa8; opacity: .55; }
-.ghosty .g-line { fill: none; stroke: #1b1030; stroke-width: 3.5; stroke-linecap: round; }
-.ghosty .g-line.thick { stroke-width: 4.5; }
-.ghosty .g-arm { fill: none; stroke: var(--primary-fill); stroke-width: 9; stroke-linecap: round; }
-.ghosty .g-spark { fill: var(--streak); }
-.ghosty .g-tear { fill: var(--piece-x); }
-.ghosty .g-z { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-.ghosty.bob .g-body-wrap { animation: ghosty-bob 2.6s ease-in-out infinite; transform-origin: 60px 100px; }
-.ghosty.bob .g-halo { animation: ghosty-halo 2.6s ease-in-out infinite; }
-.ghosty.mood-cheer.bob .g-body-wrap { animation: ghosty-hop .9s cubic-bezier(.3, 1.6, .5, 1) infinite; }
-@keyframes ghosty-bob { 50% { transform: translateY(-4px) rotate(-2deg); } }
-@keyframes ghosty-halo { 50% { transform: translateY(-6px); opacity: .3; } }
-@keyframes ghosty-hop { 0%, 100% { transform: translateY(0) scale(1, 1); } 40% { transform: translateY(-10px) scale(.96, 1.05); } 70% { transform: translateY(0) scale(1.06, .94); } }
-@media (prefers-reduced-motion: reduce) { .ghosty .g-body-wrap, .ghosty .g-halo { animation: none !important; } }
-:root[data-motion="reduce"] .ghosty .g-body-wrap, :root[data-motion="reduce"] .ghosty .g-halo { animation: none !important; }
+/* Bert mascot */
+.bert { overflow: visible; flex: none; }
+.bert .g-body { fill: var(--primary-fill); }
+.bert .g-shadow { fill: var(--primary-shade); }
+.bert .g-shine { fill: #fff; opacity: .28; }
+.bert .g-halo { fill: none; stroke: var(--primary); stroke-width: 4; stroke-dasharray: 6 5; opacity: .55; }
+.bert .g-eye { fill: #fff; }
+.bert .g-pupil { fill: #1b1030; }
+.bert .g-glint { fill: #fff; }
+.bert .g-mouth { fill: #1b1030; }
+.bert .g-cheek { fill: #ff7aa8; opacity: .55; }
+.bert .g-line { fill: none; stroke: #1b1030; stroke-width: 3.5; stroke-linecap: round; }
+.bert .g-line.thick { stroke-width: 4.5; }
+.bert .g-arm { fill: none; stroke: var(--primary-fill); stroke-width: 9; stroke-linecap: round; }
+.bert .g-spark { fill: var(--streak); }
+.bert .g-tear { fill: var(--piece-x); }
+.bert .g-z { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.bert.bob .g-body-wrap { animation: bert-bob 2.6s ease-in-out infinite; transform-origin: 60px 100px; }
+.bert.bob .g-halo { animation: bert-halo 2.6s ease-in-out infinite; }
+.bert.mood-cheer.bob .g-body-wrap { animation: bert-hop .9s cubic-bezier(.3, 1.6, .5, 1) infinite; }
+@keyframes bert-bob { 50% { transform: translateY(-4px) rotate(-2deg); } }
+@keyframes bert-halo { 50% { transform: translateY(-6px); opacity: .3; } }
+@keyframes bert-hop { 0%, 100% { transform: translateY(0) scale(1, 1); } 40% { transform: translateY(-10px) scale(.96, 1.05); } 70% { transform: translateY(0) scale(1.06, .94); } }
+@media (prefers-reduced-motion: reduce) { .bert .g-body-wrap, .bert .g-halo { animation: none !important; } }
+:root[data-motion="reduce"] .bert .g-body-wrap, :root[data-motion="reduce"] .bert .g-halo { animation: none !important; }
 
 /* Quest card */
 .quest-card { background: var(--surface); border-radius: var(--radius-lg); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); box-shadow: var(--ledge-neutral); }
@@ -295,3 +295,41 @@ h1:focus, h1:focus-visible { outline: none; }
 @keyframes quest-chest-pop { 0% { transform: scale(.6) rotate(-12deg); } 70% { transform: scale(1.15) rotate(6deg); } 100% { transform: scale(1) rotate(0); } }
 @media (prefers-reduced-motion: reduce) { .quest-bar .seg.on, .quest-chest.open { animation: none !important; } }
 .t-empty { display: flex; align-items: center; gap: var(--space-3); color: var(--ink-muted); font: var(--type-body-sm); }
+/* Bert: extra parts + per-mood animations (all off under reduced motion via the .bert rules below) */
+.bert .g-cheek.angry { fill: #ff3b5c; opacity: .75; }
+.bert .g-tongue { fill: #ff7aa8; }
+.bert .g-heart-eye, .bert .g-heart { fill: #ff4f8b; }
+.bert .g-shades { fill: #1b1030; }
+.bert .g-shades-glint { fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: round; opacity: .7; }
+.bert .g-steam { fill: none; stroke: #ffb3c1; stroke-width: 4; stroke-linecap: round; opacity: .8; }
+.bert .g-dot { fill: #fff; opacity: .85; }
+.bert .g-pole { fill: none; stroke: #c9b8f5; stroke-width: 4; stroke-linecap: round; }
+.bert .g-cloth { fill: #fff; }
+.bert .g-tear.stream { opacity: .85; }
+.bert.bob.mood-jumpy .g-body-wrap { animation: bert-jump .5s cubic-bezier(.3, 1.7, .5, 1) infinite; }
+.bert.bob.mood-angry .g-body-wrap { animation: bert-shake .18s linear infinite; }
+.bert.bob.mood-angry .g-steam { animation: bert-steam 1s ease-out infinite; }
+.bert.bob.mood-laugh .g-body-wrap { animation: bert-wobble .45s ease-in-out infinite; }
+.bert.bob.mood-love .g-heart.float { animation: bert-float-heart 1.6s ease-out infinite; transform-box: fill-box; }
+.bert.bob.mood-love .g-heart-eye { animation: bert-pulse .8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.bert.bob.mood-cry .g-tear.stream { animation: bert-drip 1s ease-in infinite; transform-box: fill-box; transform-origin: top; }
+.bert.bob.mood-cool .g-body-wrap { animation: bert-cool 2.4s ease-in-out infinite; }
+.bert.bob.mood-think .g-dot { animation: bert-dots 1.5s ease-in-out infinite; }
+.bert.bob.mood-think .g-dot.d2 { animation-delay: .2s; } .bert.bob.mood-think .g-dot.d3 { animation-delay: .4s; }
+.bert.bob.mood-wave .g-arm.waving, .bert.bob.mood-gg .g-flag { animation: bert-wave .6s ease-in-out infinite alternate; transform-box: view-box; transform-origin: 102px 72px; }
+.bert.bob.mood-shocked .g-body-wrap { animation: bert-jolt .9s ease-out infinite; }
+.bert.bob.mood-sad .g-body-wrap { animation: bert-droop 2.4s ease-in-out infinite; }
+@keyframes bert-jump { 0%, 100% { transform: translateY(0) scale(1.05, .95); } 45% { transform: translateY(-16px) scale(.95, 1.06); } }
+@keyframes bert-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2.5px) rotate(-1.5deg); } 75% { transform: translateX(2.5px) rotate(1.5deg); } }
+@keyframes bert-steam { 0% { transform: translateY(6px); opacity: 0; } 40% { opacity: .9; } 100% { transform: translateY(-10px); opacity: 0; } }
+@keyframes bert-wobble { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg) translateY(-2px); } }
+@keyframes bert-float-heart { 0% { transform: translateY(8px) scale(.6); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-18px) scale(1.1); opacity: 0; } }
+@keyframes bert-pulse { 50% { transform: scale(1.2); } }
+@keyframes bert-drip { 0% { transform: scaleY(.3); opacity: .4; } 60% { transform: scaleY(1); opacity: .9; } 100% { transform: scaleY(1.05) translateY(4px); opacity: 0; } }
+@keyframes bert-cool { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg) translateX(2px); } }
+@keyframes bert-dots { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+@keyframes bert-wave { from { transform: rotate(-12deg); } to { transform: rotate(14deg); } }
+@keyframes bert-jolt { 0%, 60%, 100% { transform: none; } 10% { transform: translateY(-8px) scale(1.06); } 20% { transform: translateY(0) scale(.97); } }
+@keyframes bert-droop { 50% { transform: translateY(3px) rotate(-2deg); } }
+@media (prefers-reduced-motion: reduce) { .bert * { animation: none !important; } }
+:root[data-motion="reduce"] .bert * { animation: none !important; }

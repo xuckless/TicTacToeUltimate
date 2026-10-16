@@ -25,7 +25,7 @@ else
     <div class="result-page">
         <div class="t-result @BannerClass" data-testid="result-banner">
             <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-                <Ghosty Mood="@(YourResult switch { GameResultForUser.Win => "cheer", GameResultForUser.Loss => "sad", _ => "shocked" })" Size="72" />
+                <Bert Mood="@(YourResult switch { GameResultForUser.Win => "cheer", GameResultForUser.Loss => "sad", _ => "shocked" })" Size="72" />
                 <span class="t-label">@Ui.ReasonText(r.Reason)</span>
                 <h1><BounceText Text="@Title" /></h1>
                 <span class="result-sub">vs @(opp?.Player.DisplayName ?? "opponent") · @Ui.Elapsed(_view.Snapshot.Clock?.GameElapsedMsAtTurnStart ?? 0) · @_view.Snapshot.Ply moves</span>

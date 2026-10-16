@@ -73,6 +73,7 @@ else
                     WindowSeconds="@(_clock?.AllowanceMs is int a ? Ui.Seconds(a) : null)" />
 
         @if (sd && !Ended) { <SuddenDeathBar Clock="_clock" /> }
+        <ThrownEmote Text="@_thrownText" FromBottom="_thrownFromMe" Key="_thrownKey" />
         <MatchActions Disabled="_view.IsSpectator" Ended="Ended" OnEmote="() => _emotes = true" OnResign="() => _resign = true" OnMenu="() => _menu = true" />
         <div class="sr-only" aria-live="polite">@Announcement</div>
     </div>
@@ -96,6 +97,7 @@ else
     }
 
     <ImpactFrame Kind="@_impactKind" Text="@_impactText" Token="@_impactToken" Trigger="_impactTrigger" DurationMs="_impactDuration" />
+    <Confetti Trigger="_confetti" />
 }
 
 @code {
@@ -103,6 +105,12 @@ else
     private ClockView? _clock;
     private string? _error;
     private bool _emotes, _resign, _menu, _showOverlay;
+    private int _confetti;
+    private string? _thrownText;
+    private bool _thrownFromMe;
+    private int _thrownKey;
+    private long _lastThrownAt;
+    private bool _emoteBaselineSet;
     private bool? _prevSd;
     private bool _resultHandled, _sawLive;
     private int _impactTrigger;
@@ -155,6 +163,16 @@ else
         if (_view is null) return;
         _clock = Matches.GetClock(Id);
         var sd = InSuddenDeath;
+        // Throw the newest emote across the board (sender's card -> the other side).
+        // Emotes already on screen when the page opened are the baseline and are not re-thrown.
+        var newest = _view.RecentEmotes.LastOrDefault();
+        if (!_emoteBaselineSet) { _emoteBaselineSet = true; _lastThrownAt = newest?.ShownAtMs ?? 0; }
+        else if (newest is { } em && em.ShownAtMs > _lastThrownAt)
+        {
+            _lastThrownAt = em.ShownAtMs;
+            var muted = em.Seat != MySeatNo && Settings.State.MuteOpponentEmotes;
+            if (!muted) { _thrownText = em.Text; _thrownFromMe = em.Seat == MySeatNo || (_view.IsSpectator && em.Seat == 0); _thrownKey++; }
+        }
         var edge = AlertClass;
         Ambience.Set(AmbienceMode.Match, sd || edge.Contains("sd"), Ended ? ClockUrgency.Idle : _clock?.Urgency ?? ClockUrgency.Idle, edge);
         if (_prevSd == false && sd && !Ended) Impact("suddendeath", "SUDDEN DEATH", "alert-fill");
@@ -168,7 +186,7 @@ else
             if (_sawLive && !_view.IsSpectator)
             {
                 var r = MyResult;
-                if (r == GameResultForUser.Win) slammed = Impact("win", "VICTORY!", Winner == Color.O ? "piece-o" : "piece-x");
+                if (r == GameResultForUser.Win) { slammed = Impact("win", "VICTORY!", Winner == Color.O ? "piece-o" : "piece-x"); _confetti++; }
                 else if (r == GameResultForUser.Loss) slammed = Impact("loss", "DEFEAT", "alert-fill");
                 _navCts = new CancellationTokenSource();
                 _ = NavigateToResultLater(_navCts.Token);

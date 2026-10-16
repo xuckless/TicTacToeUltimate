@@ -22,6 +22,7 @@ else
     var clock = g.ClockView;
     var sd = g.SuddenDeath;
     <div class="match @AlertClass" data-testid="local-match">
+        <ThrownEmote Text="@_thrownText" FromBottom="_thrownFromBottom" Key="_thrownKey" />
         <div class="match-header">
             <span>Pass &amp; Play · @Ui.TimeControlName(g.TimeControl)@(g.Options.Preset == LocalRulePreset.Legacy7 ? " · Legacy 7-piece" : "")@(g.Options.Pie ? " · Pie" : "")</span>
             <span class="t-num" data-testid="local-score" aria-label="Session score">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)</span>
@@ -117,9 +118,26 @@ else
     }
 
     <ImpactFrame Kind="@_impactKind" Text="@_impactText" Token="@_impactToken" Trigger="_impactTrigger" />
+    <Confetti Trigger="_confetti" />
+    <EmotePicker Open="@(_emoteSeat is not null)" OnPick="ThrowEmote" OnClose="() => _emoteSeat = null" />
 }
 
 @code {
+    private int? _emoteSeat;
+    private int _confetti;
+    private string? _thrownText;
+    private bool _thrownFromBottom;
+    private int _thrownKey;
+
+    // Pass & Play: seat 0 sits at the bottom, seat 1 at the top; an emote flies at the other player.
+    private void ThrowEmote(string id)
+    {
+        if (_emoteSeat is not int seat) return;
+        _thrownText = EmoteCatalog.All.FirstOrDefault(e => e.Id == id)?.Text ?? id;
+        _thrownFromBottom = seat == 0;
+        _thrownKey++;
+    }
+
     private LocalGameController? _g;
     private bool _resign, _showOverlay;
     private string _announce = "";
@@ -160,6 +178,7 @@ else
                 <PlayerClock RemainingMs="@(active ? clock?.RemainingMs : clock?.AllowanceMs)" Piece="piece" Active="active" SuddenDeath="sd"
                              Urgency="@(active ? g.Urgency : ClockUrgency.Idle)" />
             }
+            <button type="button" class="t-iconbtn t-iconbtn--round seat-emote" aria-label="@($"Emote from {g.NameOf(seat)}")" @onclick="() => _emoteSeat = seat"><Icon Name="emote" /></button>
         </div>
     };
 
@@ -265,6 +284,7 @@ else
                 if (r.WinnerSeat is int w)
                 {
                     Sfx(SoundCue.Win); Haptic(HapticCue.Win);
+                    _confetti++;
                     _ = RevealOverlayLater(Settings.State.ImpactFrames ? 1400 : 0);
                     Impact("win", $"{g.NameOf(w).ToUpperInvariant()} WINS!", r.WinnerColor == Color.O ? "piece-o" : "piece-x");
                     _announce = $"{g.NameOf(w)} wins. {ReasonText(r)}.";

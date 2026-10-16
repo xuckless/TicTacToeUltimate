@@ -296,3 +296,7 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
 - **Casual x4 removed** (and x2) from the UI.
 - **Old school**: plain tic-tac-toe, pieces never vanish, draws possible. Available in the online casual queue, Pass & Play and friend challenges.
 - The classic Ultimate **Ranked** queue/rating is **stubbed in code but retired from the UI**.
+- **Mascot renamed Ghosty → Bert (owner, 2026-10-15).** Bert has 15 moods: happy, laugh, jumpy, love, cool, think, wave, gg, sad, cry, angry, shocked, sleepy, wink, cheer. Each has its own animation, and reduced motion is respected.
+  - **In-game emotes are now Bert emotes** (`EmoteCatalog` ids `bert-<mood>`, Kind `bert`, Text `bert:<mood>`). They replace the emoji emotes; the text phrases are unchanged.
+  - **Emotes are thrown:** they fly in an arc from the sender's card across the board (online matches and Pass & Play/Arena, where each seat has an emote button).
+- **Victory confetti:** brand-coloured strips plus tiny X/O pieces. It plays on your online win and on any local win, and is skipped under reduced motion.

@@ -1,0 +1,56 @@
+@implements IDisposable
+@* Victory confetti: brand-coloured paper strips plus tiny X / O pieces falling with a sway. Replays when Trigger changes. *@
+@if (_visible)
+{
+    <div class="confetti" aria-hidden="true" @key="_shown">
+        @for (var i = 0; i < Count; i++)
+        {
+            var k = i * 7919 % 997;
+            var kind = i % 7 == 0 ? "x" : i % 7 == 3 ? "o" : "strip";
+            <i class="c-@kind" style="@Style(i, k)">@(kind == "x" ? "X" : kind == "o" ? "O" : null)</i>
+        }
+    </div>
+}
+
+@code {
+    private const int Count = 90;
+    private static readonly string[] Colors = ["var(--piece-x)", "var(--piece-o)", "var(--primary)", "var(--streak)", "var(--success)", "#ff7aa8"];
+    private bool _visible;
+    private int _shown;
+    private CancellationTokenSource? _cts;
+
+    /// <summary>Change to fire a burst; 0 = none.</summary>
+    [Parameter] public int Trigger { get; set; }
+
+    private static string Style(int i, int k)
+    {
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        var left = (k * 13 % 1000) / 10.0;
+        var delay = (k % 120) / 100.0;
+        var dur = 2.6 + (k % 70) / 50.0;
+        var sway = 20 + k % 60;
+        var rot = k % 360;
+        return string.Create(inv, $"left:{left:0.0}%;--c:{Colors[i % Colors.Length]};animation-delay:{delay:0.00}s;animation-duration:{dur:0.00}s;--sway:{sway}px;--r0:{rot}deg");
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Trigger == 0 || Trigger == _shown) return;
+        _shown = Trigger;
+        _visible = true;
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        _ = HideLater(_cts.Token);
+    }
+
+    private async Task HideLater(CancellationToken ct)
+    {
+        try { await Task.Delay(5200, ct); } catch (TaskCanceledException) { return; }
+        _visible = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc />
+    public void Dispose() { _cts?.Cancel(); _cts?.Dispose(); }
+}

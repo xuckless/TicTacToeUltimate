@@ -65,14 +65,17 @@ public static class ErrorCodes
     };
 }
 
-public sealed record EmoteDto(string Id, string Kind /* "emote" | "phrase" */, string Text);
+public sealed record EmoteDto(string Id, string Kind /* "bert" | "phrase" (legacy "emote") */, string Text);
 
 public static class EmoteCatalog
 {
     public static readonly IReadOnlyList<EmoteDto> All =
     [
-        new("gg", "emote", "🤝"), new("laugh", "emote", "😂"), new("wow", "emote", "😮"), new("think", "emote", "🤔"),
-        new("fire", "emote", "🔥"), new("cry", "emote", "😭"), new("angry", "emote", "😤"), new("cool", "emote", "😎"),
+        // Bert (mascot) emotes. Text is "bert:<mood>": clients render the animated Bert; bots/tools see a readable token.
+        new("bert-happy", "bert", "bert:happy"), new("bert-laugh", "bert", "bert:laugh"), new("bert-jumpy", "bert", "bert:jumpy"),
+        new("bert-love", "bert", "bert:love"), new("bert-cool", "bert", "bert:cool"), new("bert-think", "bert", "bert:think"),
+        new("bert-wave", "bert", "bert:wave"), new("bert-gg", "bert", "bert:gg"), new("bert-sad", "bert", "bert:sad"),
+        new("bert-cry", "bert", "bert:cry"), new("bert-angry", "bert", "bert:angry"), new("bert-shocked", "bert", "bert:shocked"),
         new("hi", "phrase", "Hi!"), new("glhf", "phrase", "Good luck!"), new("wp", "phrase", "Well played!"),
         new("nice", "phrase", "Nice move!"), new("oops", "phrase", "Oops!"), new("thanks", "phrase", "Thanks!"),
         new("hurry", "phrase", "Tick tock…"), new("rematch", "phrase", "Rematch?"),

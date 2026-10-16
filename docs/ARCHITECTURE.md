@@ -498,6 +498,7 @@ public static class EmoteCatalog
 {
     public static readonly IReadOnlyList<EmoteDto> All =
     [
+        // 2026-10-15: emoji emotes replaced by Bert (mascot) emotes "bert-<mood>" (Kind "bert", Text "bert:<mood>"); see Contracts/Catalog.cs.
         new("gg", "emote", "🤝"), new("laugh", "emote", "😂"), new("wow", "emote", "😮"), new("think", "emote", "🤔"),
         new("fire", "emote", "🔥"), new("cry", "emote", "😭"), new("angry", "emote", "😤"), new("cool", "emote", "😎"),
         new("hi", "phrase", "Hi!"), new("glhf", "phrase", "Good luck!"), new("wp", "phrase", "Well played!"),

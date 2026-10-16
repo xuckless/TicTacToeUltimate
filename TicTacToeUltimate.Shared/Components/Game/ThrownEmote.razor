@@ -1,0 +1,24 @@
+@* A thrown emote: flies in an arc from the sender's player card across the board and lands on the other side.
+   Re-renders (and replays) whenever Key changes. Bert emotes ("bert:<mood>") fly as Bert; phrases fly as a bubble. *@
+@if (Text is not null && Key > 0)
+{
+    <div class="thrown-emote @(FromBottom ? "up" : "down")" @key="Key" aria-hidden="true">
+        @if (Text.StartsWith("bert:", StringComparison.Ordinal))
+        {
+            <Bert Mood="@Text[5..]" Size="88" />
+        }
+        else
+        {
+            <span class="thrown-phrase">@Text</span>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Emote text ("bert:laugh" or a phrase).</summary>
+    [Parameter] public string? Text { get; set; }
+    /// <summary>True when thrown from the bottom card (you) toward the top (opponent).</summary>
+    [Parameter] public bool FromBottom { get; set; }
+    /// <summary>Changes to replay the throw.</summary>
+    [Parameter] public int Key { get; set; }
+}

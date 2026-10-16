@@ -10,7 +10,14 @@
     }
     @if (Emote is not null)
     {
-        <span class="emote-bubble" role="status">@Emote</span>
+        @if (Emote.StartsWith("bert:", StringComparison.Ordinal))
+        {
+            <span class="emote-bubble bert-bubble" role="status" aria-label="@($"Bert {Emote[5..]}")"><Bert Mood="@Emote[5..]" Size="56" /></span>
+        }
+        else
+        {
+            <span class="emote-bubble" role="status">@Emote</span>
+        }
     }
 </div>
 

@@ -1,8 +1,9 @@
 <Sheet Open="Open" Title="Emotes" OnClose="OnClose">
-    <div class="emote-grid">
-        @foreach (var e in (Emotes ?? EmoteCatalog.All).Where(e => e.Kind == "emote"))
+    <div class="emote-grid bert-grid">
+        @foreach (var e in (Emotes ?? EmoteCatalog.All).Where(e => e.Kind == "bert"))
         {
-            <button type="button" aria-label="@e.Id" @onclick="() => Pick(e.Id)">@e.Text</button>
+            var mood = e.Text.StartsWith("bert:", StringComparison.Ordinal) ? e.Text[5..] : "happy";
+            <button type="button" aria-label="@($"Bert {mood}")" title="@mood" @onclick="() => Pick(e.Id)"><Bert Mood="@mood" Size="52" /></button>
         }
     </div>
     <div class="emote-grid">
