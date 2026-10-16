@@ -1,6 +1,6 @@
 @* Daily quests: Ghosty reacts to progress; each quest has an illustrated badge, a chunky segmented bar
    (one segment per win, bounces when the quest completes) and a reward chest that opens when done. *@
-<section class="quest-card" aria-labelledby="quest-title">
+<section class="quest-card perch-o" aria-labelledby="quest-title">
     <header class="quest-head">
         <Bert Mood="@GhostMood" Size="58" />
         <div class="quest-head-text">
@@ -11,7 +11,7 @@
     </header>
     @if (Progress is null)
     {
-        <span class="t-muted t-small">Loading quests…</span>
+        <BertLoader Text="Loading quests" Mood="sleepy" />
     }
     else
     {
@@ -31,6 +31,7 @@
                             }
                         </div>
                     </div>
+                    <LocalBurst Trigger="@(_burstId == q.QuestId ? _burst : 0)" Text="QUEST COMPLETE!" Color="var(--badge, var(--streak))" />
                     <span class="quest-chest @(q.Completed ? "open" : null)" title="@(q.Completed ? "Reward earned" : "Reward")">
                         <Icon Name="@(q.Completed ? "gift" : "chest")" />
                         @if (q.Completed) { <span class="quest-check"><Icon Name="check" /></span> }
@@ -52,6 +53,20 @@
     [Parameter] public long NowMs { get; set; }
     /// <summary>Rewarded extra quest.</summary>
     [Parameter] public EventCallback OnExtraQuest { get; set; }
+
+    private HashSet<string>? _completed;
+    private string? _burstId;
+    private int _burst;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // A quest that flips to completed while the card is on screen gets a localised impact frame.
+        if (Progress is null) return;
+        var now = Progress.Quests.Where(q => q.Completed).Select(q => q.QuestId).ToHashSet();
+        if (_completed is not null && now.FirstOrDefault(id => !_completed.Contains(id)) is { } fresh) { _burstId = fresh; _burst++; }
+        _completed = now;
+    }
 
     private int Done => Progress?.Quests.Count(q => q.Completed) ?? 0;
     private int Total => Progress?.Quests.Length ?? 0;

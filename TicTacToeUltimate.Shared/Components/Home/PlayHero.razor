@@ -1,4 +1,5 @@
-<a class="play-hero" href="@Href">
+<a class="play-hero perch-x perch-o" href="@Href" @onclick="Go" @onclick:preventDefault="true">
+    <LocalBurst Trigger="_burst" Color="#fff" />
     <span class="txt">
         <span class="t-label" style="opacity:.9">@Kicker</span>
         <span class="big"><BounceText Text="@Title" /></span>
@@ -30,7 +31,20 @@
     </svg>
 </a>
 
+@inject NavigationManager Nav
+
 @code {
+    private int _burst;
+
+    // Localised impact frame on press, then go (the burst gets ~350ms to play).
+    private async Task Go()
+    {
+        _burst++;
+        StateHasChanged();
+        await Task.Delay(350);
+        Nav.NavigateTo(Href);
+    }
+
     /// <summary>Ranked rating (tier + number).</summary>
     [Parameter] public RatingDto? Rating { get; set; }
     /// <summary>Guest variant.</summary>

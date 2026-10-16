@@ -259,3 +259,70 @@ body { min-height: 100dvh; }
 @media (prefers-reduced-motion: reduce) { .confetti { display: none; } }
 :root[data-motion="reduce"] .confetti { display: none; }
 .title-row { display: flex; align-items: center; gap: 10px; }
+/* BertLoader */
+.bert-loader { display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--ink-muted); font: 600 15px/1.2 var(--font-sans); }
+.bert-loader.inline { padding: 18px 0; }
+.bert-loader.splash { min-height: 100dvh; justify-content: center; gap: 16px; font-size: 18px; color: var(--ink); }
+.bl-stage { position: relative; display: flex; align-items: flex-end; gap: 10px; padding-bottom: 8px; }
+.bl-bert { display: block; animation: bl-bounce .7s cubic-bezier(.3, 0, .5, 1) infinite alternate; }
+.bl-shadow { position: absolute; bottom: 0; left: 50%; width: 46px; height: 8px; margin-left: -23px; border-radius: 50%; background: rgb(0 0 0 / .35); animation: bl-shadow .7s cubic-bezier(.3, 0, .5, 1) infinite alternate; }
+.bert-loader.splash .bl-shadow { width: 80px; margin-left: -40px; height: 12px; }
+.bl-piece { font: 400 22px/1 var(--font-headline); animation: bl-swap 1.4s ease-in-out infinite; }
+.bert-loader.splash .bl-piece { font-size: 34px; }
+.bl-piece.x { color: var(--piece-x); } .bl-piece.o { color: var(--piece-o); animation-delay: -.7s; }
+.bl-dots i { font-style: normal; animation: bl-dot 1.2s infinite; opacity: .2; }
+.bl-dots i:nth-child(2) { animation-delay: .2s; } .bl-dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes bl-bounce { from { transform: translateY(0) scale(1.06, .94); } to { transform: translateY(-22px) scale(.97, 1.04); } }
+@keyframes bl-shadow { from { transform: scaleX(1); opacity: .45; } to { transform: scaleX(.55); opacity: .2; } }
+@keyframes bl-swap { 0%, 100% { transform: translateY(0) rotate(-10deg); } 50% { transform: translateY(-10px) rotate(12deg) scale(1.15); } }
+@keyframes bl-dot { 0%, 60%, 100% { opacity: .2; } 30% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .bert-loader * { animation: none !important; } }
+:root[data-motion="reduce"] .bert-loader * { animation: none !important; }
+
+/* Trinkets: little X / O pieces resting on top of buttons and cards like platforms.
+   .perch-x puts an X on the left of the top edge, .perch-o an O on the right; .perch-mid centres a single piece.
+   Host must not clip (wrap clipped cards in .mode-wrap and put the class there). */
+.perch-x, .perch-o { position: relative; }
+.perch-x::before, .perch-o::after { position: absolute; bottom: calc(100% - 12px); z-index: 3; pointer-events: none;
+  font: 400 30px/1 var(--font-headline); -webkit-text-stroke: 2px rgb(0 0 0 / .45); paint-order: stroke fill; text-shadow: 0 3px 0 rgb(0 0 0 / .35); animation: perch-bob 3.2s ease-in-out infinite; transform-origin: 50% 100%; }
+.perch-x::before { content: "X"; left: 22px; color: var(--piece-x); --tilt: -14deg; }
+.perch-o::after { content: "O"; right: 26px; color: var(--piece-o); --tilt: 12deg; animation-delay: -1.6s; }
+.perch-mid.perch-x::before { left: 50%; margin-left: -8px; }
+.perch-mid.perch-o::after { right: auto; left: 50%; margin-left: -9px; }
+.perch-sm.perch-x::before, .perch-sm.perch-o::after { font-size: 24px; bottom: calc(100% - 10px); }
+.perch-x:hover::before, .perch-o:hover::after, .perch-x:active::before, .perch-o:active::after { animation: perch-hop .55s cubic-bezier(.3, 1.8, .5, 1); }
+@keyframes perch-bob { 0%, 100% { transform: translateY(0) rotate(var(--tilt)) scale(1, 1); } 45% { transform: translateY(-3px) rotate(calc(var(--tilt) * -.4)); } 55% { transform: translateY(0) rotate(var(--tilt)) scale(1.08, .92); } }
+@keyframes perch-hop { 0% { transform: translateY(0) rotate(var(--tilt)) scale(1.1, .9); } 40% { transform: translateY(-16px) rotate(calc(var(--tilt) + 180deg)); } 100% { transform: translateY(0) rotate(calc(var(--tilt) + 360deg)) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .perch-x::before, .perch-o::after { animation: none !important; } }
+:root[data-motion="reduce"] .perch-x::before, :root[data-motion="reduce"] .perch-o::after { animation: none !important; }
+/* Ambient Bert flyby */
+.bert-fly { position: fixed; top: var(--y); z-index: 28; border: 0; background: none; padding: 0; cursor: pointer; filter: drop-shadow(0 6px 8px rgb(0 0 0 / .35)); }
+.bert-fly.ltr { left: -90px; animation: fly-ltr 6.5s cubic-bezier(.45, .05, .55, .95) forwards; }
+.bert-fly.rtl { right: -90px; animation: fly-rtl 6.5s cubic-bezier(.45, .05, .55, .95) forwards; }
+.bert-fly.peek { right: -80px; top: auto; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); animation: fly-peek 5s ease-in-out forwards; }
+.bert-fly.booped .bert { animation: bert-boop .6s cubic-bezier(.3, 1.8, .5, 1); }
+@keyframes fly-ltr { 0% { transform: translate(0, 0) rotate(10deg); } 25% { transform: translate(30vw, -60px) rotate(-8deg); } 50% { transform: translate(55vw, 10px) rotate(8deg); }
+  75% { transform: translate(80vw, -50px) rotate(-6deg); } 100% { transform: translate(calc(100vw + 180px), 0) rotate(12deg); } }
+@keyframes fly-rtl { 0% { transform: translate(0, 0) rotate(-10deg) scaleX(-1); } 25% { transform: translate(-30vw, -60px) rotate(8deg) scaleX(-1); } 50% { transform: translate(-55vw, 10px) rotate(-8deg) scaleX(-1); }
+  75% { transform: translate(-80vw, -50px) rotate(6deg) scaleX(-1); } 100% { transform: translate(calc(-100vw - 180px), 0) rotate(-12deg) scaleX(-1); } }
+@keyframes fly-peek { 0% { transform: translateX(0) rotate(0); } 18%, 70% { transform: translateX(-72px) rotate(-14deg); } 40% { transform: translateX(-78px) rotate(-6deg); } 100% { transform: translateX(0) rotate(0); } }
+@keyframes bert-boop { 0% { transform: scale(1); } 40% { transform: scale(1.35) rotate(-20deg); } 100% { transform: scale(1) rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .bert-fly { display: none; } }
+:root[data-motion="reduce"] .bert-fly { display: none; }
+/* LocalBurst: element-scoped impact frame */
+.lburst { position: absolute; inset: 0; pointer-events: none; z-index: 20; display: grid; place-items: center; }
+.lb-flash { position: absolute; inset: 0; border-radius: inherit; background: var(--burst); mix-blend-mode: screen; animation: lb-flash .45s ease-out forwards; }
+.lb-ring { position: absolute; width: 40px; height: 40px; border-radius: 50%; border: 5px solid var(--burst); animation: lb-ring .6s ease-out forwards; }
+.lb-ray { position: absolute; width: 4px; height: 26px; border-radius: 4px; background: var(--burst); transform: rotate(var(--a)) translateY(-30px); animation: lb-ray .55s ease-out forwards; }
+.lb-spark { position: absolute; font: 400 18px/1 var(--font-headline); transform: rotate(var(--a)) translateY(0); animation: lb-spark .7s cubic-bezier(.2, .8, .3, 1) forwards; text-shadow: 0 2px 0 rgb(0 0 0 / .4); }
+.lb-spark.x { color: var(--piece-x); } .lb-spark.o { color: var(--piece-o); }
+.lb-text { position: absolute; font-size: 26px; color: #fff; -webkit-text-stroke: 1.5px #000; paint-order: stroke fill; text-shadow: 0 4px 0 #000; white-space: nowrap; animation: lb-text 1.3s cubic-bezier(.2, 1.6, .4, 1) forwards; }
+@keyframes lb-flash { 0% { opacity: .75; } 100% { opacity: 0; } }
+@keyframes lb-ring { 0% { transform: scale(.3); opacity: 1; } 100% { transform: scale(5); opacity: 0; } }
+@keyframes lb-ray { 0% { transform: rotate(var(--a)) translateY(-20px) scaleY(.3); opacity: 1; } 100% { transform: rotate(var(--a)) translateY(-90px) scaleY(1); opacity: 0; } }
+@keyframes lb-spark { 0% { transform: rotate(var(--a)) translateY(0) scale(.4); opacity: 1; } 100% { transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(1.1) rotate(220deg); opacity: 0; } }
+@keyframes lb-text { 0% { transform: scale(1.8) rotate(-8deg); opacity: 0; } 18% { transform: scale(1) rotate(-4deg); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-14px) rotate(-4deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .lburst > * { animation-duration: .01s !important; } .lb-text { animation: none; opacity: 1; } }
+.lburst.card-burst { border-radius: 18px; overflow: visible; }
+.play-hero { position: relative; }
+.quest { position: relative; }

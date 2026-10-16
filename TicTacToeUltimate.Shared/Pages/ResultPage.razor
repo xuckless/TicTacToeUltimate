@@ -13,7 +13,7 @@
 @if (_view?.Result is null)
 {
     <div class="t-col" style="align-items:center">
-        <p class="t-muted">@(_loading ? "Loading result…" : "Result not available.")</p>
+        @if (_loading) { <BertLoader Text="Tallying the result" Mood="think" /> } else { <p class="t-muted">Result not available.</p> }
         <Button Href="">Home</Button>
     </div>
 }
@@ -37,7 +37,8 @@ else
             <Card>
                 <div class="t-spread" style="align-items:center">
                     @if (s.Tier is not null) { <TierBadge Tier="s.Tier.After" Large="true" Provisional="rc.Provisional" /> }
-                    <span class="t-delta" aria-label="@($"Rating {rc.Before} to {rc.After}, {Ui.Delta(rc.Delta)}")">
+                    <span class="t-delta" style="position:relative" aria-label="@($"Rating {rc.Before} to {rc.After}, {Ui.Delta(rc.Delta)}")">
+                        <LocalBurst Trigger="_gainBurst" Color="var(--success)" />
                         <span aria-hidden="true">@rc.Before → @_shownRating <span class="@(rc.Delta >= 0 ? "up" : "down")">@Ui.Delta(rc.Delta)</span></span>
                     </span>
                 </div>
@@ -89,7 +90,7 @@ else
 @code {
     private MatchView? _view;
     private bool _loading = true, _busy, _completedReported;
-    private int _shownRating, _promoTrigger;
+    private int _shownRating, _promoTrigger, _gainBurst;
     private CancellationTokenSource _cts = new();
 
     /// <summary>Match id.</summary>
@@ -166,6 +167,8 @@ else
             _shownRating = from + (to - from) * i / steps;
             await InvokeAsync(StateHasChanged);
         }
+        // Rating gain lands: localised impact frame on the number.
+        if (to > from) { _gainBurst++; await InvokeAsync(StateHasChanged); }
     }
 
     private async Task UnlockAnalysis()

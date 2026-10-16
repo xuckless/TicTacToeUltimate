@@ -18,7 +18,7 @@ else if (_error is not null && Session.State.Status == SessionStatus.Initializin
 }
 else if (Session.State.Status == SessionStatus.Initializing || RedirectTarget() is not null)
 {
-    <div class="splash" role="status"><span class="splash-logo"><BounceText Text="Tic Tac Toe" /> <BounceText Text="Ultimate" Class="ultimate" /></span></div>
+    <div class="splash" role="status" style="flex-direction:column;gap:6px"><span class="splash-logo"><BounceText Text="Tic Tac Toe" /> <BounceText Text="Ultimate" Class="ultimate" /></span><BertLoader Text="Warming up" Mood="jumpy" /></div>
 }
 else
 {

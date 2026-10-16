@@ -9,7 +9,7 @@
 
 @if (_loading)
 {
-    <p class="t-muted">Loading challenge…</p>
+    <BertLoader Text="Loading challenge" Mood="wave" />
 }
 else if (_challenge is null || _challenge.Status != ChallengeStatus.Open)
 {

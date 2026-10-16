@@ -1,0 +1,55 @@
+@implements IDisposable
+@* Localised impact frame: a flash ring, radiating rays and X/O sparks bursting out of the host element, with an
+   optional slammed caption. Place inside a position:relative host; replays when Trigger changes. *@
+@if (_visible)
+{
+    <span class="lburst @Class" style="--burst:@Color" @key="_shown" aria-hidden="true">
+        <span class="lb-flash"></span>
+        <span class="lb-ring"></span>
+        @for (var i = 0; i < 12; i++)
+        {
+            <span class="lb-ray" style="--a:@(i * 30)deg"></span>
+        }
+        @for (var i = 0; i < 8; i++)
+        {
+            <span class="lb-spark @(i % 2 == 0 ? "x" : "o")" style="--a:@(i * 45 + 20)deg;--d:@(60 + i % 3 * 18)px">@(i % 2 == 0 ? "X" : "O")</span>
+        }
+        @if (Text is not null) { <span class="lb-text"><BounceText Text="@Text" /></span> }
+    </span>
+}
+
+@code {
+    private bool _visible;
+    private int _shown;
+    private CancellationTokenSource? _cts;
+
+    /// <summary>Change to fire; 0 = idle.</summary>
+    [Parameter] public int Trigger { get; set; }
+    /// <summary>Optional caption ("QUEST COMPLETE!").</summary>
+    [Parameter] public string? Text { get; set; }
+    /// <summary>Burst colour (CSS value).</summary>
+    [Parameter] public string Color { get; set; } = "var(--streak)";
+    /// <summary>Extra classes.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Trigger == 0 || Trigger == _shown) return;
+        _shown = Trigger;
+        _visible = true;
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        _ = HideLater(_cts.Token);
+    }
+
+    private async Task HideLater(CancellationToken ct)
+    {
+        try { await Task.Delay(Text is null ? 700 : 1300, ct); } catch (TaskCanceledException) { return; }
+        _visible = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc />
+    public void Dispose() { _cts?.Cancel(); _cts?.Dispose(); }
+}

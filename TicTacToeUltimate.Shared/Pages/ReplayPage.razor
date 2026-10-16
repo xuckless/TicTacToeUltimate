@@ -8,7 +8,7 @@
 
 @if (_game is null)
 {
-    <p class="t-muted">@(_loading ? "Loading game…" : "Game not found.")</p>
+    @if (_loading) { <BertLoader Text="Loading game" Mood="think" /> } else { <p class="t-muted">Game not found.</p> }
 }
 else
 {

@@ -12,7 +12,7 @@
         <div class="invite-made" data-testid="invite-made">
             <Bert Mood="cheer" Size="64" />
             <span class="t-small t-muted">Send this to a friend. It works for 24 hours.</span>
-            <span class="invite-code" aria-label="Invite code">@made.Code</span>
+            <span class="invite-code" style="position:relative" aria-label="Invite code">@made.Code<LocalBurst Trigger="_madeBurst" Color="var(--streak)" /></span>
             <input class="invite-url" readonly value="@made.Url" aria-label="Invite link" data-testid="invite-url" @onfocus="SelectAll" id="invite-url" />
             <div class="invite-actions">
                 <Button Variant="primary" OnClick="Copy" data-testid="invite-copy"><Icon Name="link" /> @(_copied ? "Copied!" : "Copy link")</Button>
@@ -45,6 +45,7 @@
 @code {
     private bool _busy, _picking, _copied;
     private ChallengeDto? _created;
+    private int _madeBurst;
     private TimeControl _tc = TimeControl.Casual;
 
     private sealed record LobbyMode(TimeControl Tc, string Name, string Sub, string Icon, string Guide, bool AccountOnly);
@@ -84,6 +85,7 @@
             // Keep the sheet open and show the link: never rely on a system share sheet the user may dismiss.
             _created = c;
             _copied = false;
+            _madeBurst++;
         }
         finally { _busy = false; }
     }

@@ -300,3 +300,19 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
   - **In-game emotes are now Bert emotes** (`EmoteCatalog` ids `bert-<mood>`, Kind `bert`, Text `bert:<mood>`). They replace the emoji emotes; the text phrases are unchanged.
   - **Emotes are thrown:** they fly in an arc from the sender's card across the board (online matches and Pass & Play/Arena, where each seat has an emote button).
 - **Victory confetti:** brand-coloured strips plus tiny X/O pieces. It plays on your online win and on any local win, and is skipped under reduced motion.
+- **UI polish round (2026-10-15):**
+  - **Audit fixes:**
+    - Cold deep-link `play?tc=…` now queues once the realtime connection is online. Previously it silently did nothing.
+    - The hero "Start" button had no fill and looked disabled.
+    - The Play-hero kicker overlapped the headline.
+    - Option-grid (?) collisions are gone, and an odd last item now spans the row.
+    - Switches and sliders are themed.
+    - Desktop page top padding added.
+  - **Flair:**
+    - **X/O trinkets** perch on buttons and cards (`.perch-x` / `.perch-o` / `.perch-sm` / `.perch-mid`). They bob, and hop on hover or press.
+    - **Bert flybys** in menus: random arc or edge-peek every 22–45s, and tapping him triggers a reaction.
+    - **BertLoader** on every loading state, plus CSS pre-boot loaders on web and MAUI.
+    - **LocalBurst** element-scoped impact frames: Play-hero press, mode-card press, quest completed ("QUEST COMPLETE!"), rating gain, invite created.
+    - **GO!** impact frame at match start.
+    - Staggered page-entrance animation.
+  - All of it respects reduced motion.

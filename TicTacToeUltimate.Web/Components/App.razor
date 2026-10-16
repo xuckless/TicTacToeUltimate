@@ -31,9 +31,19 @@
         #ttt-splash.gone { opacity: 0; pointer-events: none; }
     </style>
     <HeadOutlet @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
+    <style>
+        .ttt-preboot { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; gap: 14px; background: #120a22; z-index: -1;
+            font: 400 40px/1 "Luckiest Guy", system-ui, sans-serif; }
+        .ttt-preboot span { display: inline-block; animation: ttt-pre .9s ease-in-out infinite alternate; }
+        .ttt-preboot span:nth-child(odd) { color: #38d6ff; } .ttt-preboot span:nth-child(even) { color: #ff9f3a; animation-delay: .3s; }
+        .ttt-preboot span:nth-child(3) { animation-delay: .6s; }
+        @@keyframes ttt-pre { from { transform: translateY(0) rotate(-10deg); } to { transform: translateY(-18px) rotate(10deg); } }
+    </style>
 </head>
 <body>
     <div id="ttt-splash" aria-hidden="true"><div class="mark">X O X</div></div>
+    @* Shown until the WebAssembly app renders over it. *@
+    <div class="ttt-preboot" aria-hidden="true"><span>X</span><span>O</span><span>X</span></div>
     <Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
     <script src="_framework/blazor.web.js" autostart="false"></script>
     <script>

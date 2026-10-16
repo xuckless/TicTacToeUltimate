@@ -34,7 +34,7 @@ else
     }
 
     <section class="t-col" style="padding:0;gap:0" aria-label="Friends">
-        @if (!Social.State.Loaded) { <p class="t-muted">Loading…</p> }
+        @if (!Social.State.Loaded) { <BertLoader Text="Finding your friends" Mood="wave" /> }
         else if (Social.State.Friends.Length == 0) { <div class="t-empty"><Bert Mood="wink" Size="56" /><span>No friends yet. Search above or send an invite link.</span></div> }
         @foreach (var f in SortedFriends)
         {

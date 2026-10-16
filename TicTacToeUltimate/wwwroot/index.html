@@ -24,11 +24,16 @@
         /* Safe areas are handled by the shared layout CSS (shell/match/nav), not by padding the body. */
         body { padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
                box-sizing: border-box; min-height: 100vh; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
-        #app > .ttt-loading { min-height: 100vh; display: grid; place-items: center; color: #fff; font: 800 32px/1 system-ui, sans-serif; }
+        /* Pre-boot loader (before Blazor starts): three bouncing pieces. */
+        #app > .ttt-loading { min-height: 100vh; display: flex; align-items: center; justify-content: center; gap: 14px; font: 900 40px/1 "Luckiest Guy", system-ui, sans-serif; }
+        .ttt-loading span { display: inline-block; animation: ttt-pre 0.9s ease-in-out infinite alternate; }
+        .ttt-loading span:nth-child(odd) { color: #38d6ff; } .ttt-loading span:nth-child(even) { color: #ff9f3a; animation-delay: .3s; }
+        .ttt-loading span:nth-child(3) { animation-delay: .6s; }
+        @keyframes ttt-pre { from { transform: translateY(0) rotate(-10deg); } to { transform: translateY(-18px) rotate(10deg); } }
     </style>
 </head>
 <body>
-    <div id="app"><div class="ttt-loading">X O X</div></div>
+    <div id="app"><div class="ttt-loading" role="status" aria-label="Loading"><span>X</span><span>O</span><span>X</span></div></div>
     <script src="_framework/blazor.webview.js" autostart="false"></script>
 </body>
 </html>

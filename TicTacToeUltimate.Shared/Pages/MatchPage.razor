@@ -12,7 +12,7 @@
 
 @if (_view is null)
 {
-    <div class="splash" role="status">@(_error ?? "Loading match…")</div>
+    @if (_error is not null) { <div class="splash" role="status">@_error</div> } else { <BertLoader Text="Loading match" Splash="true" Mood="jumpy" /> }
     @if (_error is not null) { <div style="display:grid;place-items:center"><Button Href="">Home</Button></div> }
 }
 else
@@ -140,6 +140,8 @@ else
             if (_view is null) _error ??= "Match not found.";
         }
         _sawLive = _view is { Result: null };
+        // Fresh match (nobody has moved yet): kick it off with a GO! impact frame.
+        if (_view is { Result: null, IsSpectator: false } v && v.Snapshot.Ply == 0) Impact("start", "GO!", "primary-fill", 900);
         Derive();
     }
 

@@ -1,0 +1,23 @@
+@* In-between loading animation: Bert bouncing on a squashing shadow, an X and O swapping places beside him,
+   and the label with animated dots. Inline (small) or Splash (full screen). *@
+<div class="bert-loader @(Splash ? "splash" : "inline")" role="status" aria-live="polite">
+    <div class="bl-stage" aria-hidden="true">
+        <span class="bl-piece x">X</span>
+        <span class="bl-bert"><Bert Mood="@Mood" Size="@(Splash ? 96 : 52)" Bob="false" /></span>
+        <span class="bl-piece o">O</span>
+        <span class="bl-shadow"></span>
+    </div>
+    @if (Text is not null)
+    {
+        <span class="bl-text">@Text<span class="bl-dots"><i>.</i><i>.</i><i>.</i></span></span>
+    }
+</div>
+
+@code {
+    /// <summary>Label without trailing dots ("Loading match").</summary>
+    [Parameter] public string? Text { get; set; } = "Loading";
+    /// <summary>Full-screen splash variant.</summary>
+    [Parameter] public bool Splash { get; set; }
+    /// <summary>Bert's mood while waiting.</summary>
+    [Parameter] public string Mood { get; set; } = "happy";
+}

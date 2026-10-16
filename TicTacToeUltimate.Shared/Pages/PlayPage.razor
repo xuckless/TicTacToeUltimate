@@ -16,9 +16,9 @@
         @foreach (var m in Modes.Where(x => x.Group == group))
         {
             var locked = IsGuest && !m.Guests;
-            <div class="mode-wrap">
+            <div class="mode-wrap perch-sm @(m.Glyph == "X" ? "perch-x" : "perch-o")">
             <button type="button" class="mode-card" style="--accent:@m.Accent" disabled="@locked"
-                    @onclick="() => Enter(m.Tc)" aria-label="@($"{m.Name}{(locked ? ", account required" : "")}")">
+                    @onclick="() => Press(m.Tc)" aria-label="@($"{m.Name}{(locked ? ", account required" : "")}")">
                 <span class="mode-art" aria-hidden="true"><Icon Name="@m.Icon" /></span>
                 <span class="mode-text">
                     <span class="mode-name">@m.Name</span>
@@ -32,6 +32,7 @@
                 <span class="mode-watermark" aria-hidden="true">@m.Glyph</span>
             </button>
             <InfoButton Key="@m.Guide" Class="corner" />
+            <LocalBurst Trigger="@(_burstTc == m.Tc ? _burst : 0)" Color="@m.Accent" Class="card-burst" />
             </div>
         }
         @if (group == "Offline")
@@ -68,13 +69,14 @@
         }
         else
         {
+            <BertLoader Text="@null" Mood="jumpy" />
             <span class="t-num" style="font:var(--type-clock)" role="timer">@Ui.Elapsed(Queue.State.Status?.WaitedMs ?? 0)</span>
             <span class="t-small t-muted">
                 @if (Queue.State.Status is { } st)
                 {
                     @(st.GuestPool ? "Guest pool" : $"Rating window ±{st.RatingWindow}")
                 }
-                else { <span>Joining queue…</span> }
+                else { <BertLoader Text="Joining queue" Mood="jumpy" /> }
             </span>
         }
         @if (Queue.State.Error is not null) { <span class="t-alert t-small" role="alert">@Queue.State.Error</span> }
@@ -103,6 +105,18 @@
     private RatingDto? ArenaRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.ArenaRanked);
 
     private TimeControl? _autoEnter;
+    private TimeControl? _burstTc;
+    private int _burst;
+
+    // Localised impact frame on the chosen card, then queue.
+    private async Task Press(TimeControl tc)
+    {
+        _burstTc = tc;
+        _burst++;
+        StateHasChanged();
+        await Task.Delay(300);
+        await Enter(tc);
+    }
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()

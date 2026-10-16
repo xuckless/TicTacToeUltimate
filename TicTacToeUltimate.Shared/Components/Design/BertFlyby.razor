@@ -1,0 +1,49 @@
+@implements IDisposable
+@* Ambient Bert: every so often he flies across the screen in an arc (random side, height and mood) or peeks in from
+   an edge. Tap him for a reaction. Menus only (placed in AppShell). Hidden under reduced motion. *@
+@if (_run > 0)
+{
+    <button type="button" class="bert-fly @_path @(_booped ? "booped" : null)" style="--y:@(_y)%" @key="_run" aria-label="Bert" title="Boop Bert" @onclick="Boop">
+        <Bert Mood="@(_booped ? "love" : _mood)" Size="@(_path == "peek" ? 74 : 62)" />
+    </button>
+}
+
+@code {
+    private static readonly string[] FlyMoods = ["wave", "jumpy", "love", "laugh", "happy", "cool"];
+    private static readonly string[] Paths = ["ltr", "rtl", "ltr", "rtl", "peek"];
+    private CancellationTokenSource? _cts;
+    private int _run, _y;
+    private string _mood = "wave", _path = "ltr";
+    private bool _booped;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _cts = new CancellationTokenSource();
+        _ = Loop(_cts.Token);
+    }
+
+    private async Task Loop(CancellationToken ct)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(6), ct);
+            while (!ct.IsCancellationRequested)
+            {
+                _mood = FlyMoods[Random.Shared.Next(FlyMoods.Length)];
+                _path = Paths[Random.Shared.Next(Paths.Length)];
+                _y = Random.Shared.Next(18, 70);
+                _booped = false;
+                _run++;
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(TimeSpan.FromSeconds(Random.Shared.Next(22, 45)), ct);
+            }
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    private void Boop() => _booped = true;
+
+    /// <inheritdoc />
+    public void Dispose() { _cts?.Cancel(); _cts?.Dispose(); }
+}

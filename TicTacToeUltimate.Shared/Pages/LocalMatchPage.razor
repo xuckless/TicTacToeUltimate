@@ -14,7 +14,7 @@
 
 @if (_g is null)
 {
-    <div class="splash" role="status">Starting…</div>
+    <BertLoader Text="Starting" Splash="true" Mood="jumpy" />
 }
 else
 {
@@ -152,6 +152,7 @@ else
         _g = Local.Current;
         if (_g is null) { Nav.NavigateTo("local", replace: true); return; }
         _g.Event += OnEvent;
+        if (_g.State.Ply == 0 && _g.IsLive) Impact("start", "GO!", "primary-fill");
         _g.Changed += OnChanged;
         _showOverlay = _g.Result is not null;
         if (_g.HasClock)
