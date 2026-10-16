@@ -12,7 +12,7 @@ public sealed class QueueStore : StoreBase<QueueState>, IQueueStore
     private bool _wasOnline;
 
     /// <summary>Creates the store.</summary>
-    public QueueStore(IRealtimeTransport rt, ISoundService sound, IHaptics haptics) : base(QueueState.Idle)
+    public QueueStore(IRealtimeTransport rt, ISoundService sound, IHaptics haptics, ISettingsStore settings) : base(QueueState.Idle)
     {
         _rt = rt;
         rt.QueueStatusReceived += status => Update(s => s.Phase is QueuePhase.Searching or QueuePhase.Entering
@@ -27,8 +27,8 @@ public sealed class QueueStore : StoreBase<QueueState>, IQueueStore
         rt.MatchFoundReceived += found =>
         {
             Update(s => s with { Phase = QueuePhase.Found, Found = found, Error = null });
-            sound.Play(SoundCue.MatchFound);
-            haptics.Play(HapticCue.Promotion);
+            if (settings.State.Sfx) sound.Play(SoundCue.MatchFound);
+            if (settings.State.Haptics) haptics.Play(HapticCue.Promotion);
         };
     }
 
@@ -51,8 +51,10 @@ public sealed class QueueStore : StoreBase<QueueState>, IQueueStore
         try
         {
             var ticket = await _rt.EnterQueue(new Contracts.QueueRequestDto(timeControl));
-            Update(s => s.Phase == QueuePhase.Found ? s : ticket.Accepted
-                ? s with { Phase = QueuePhase.Searching }
+            // AlreadyInQueue (double tap, quick re-entry): the server still has us, so keep searching instead of showing Idle.
+            var accepted = ticket.Accepted || ticket.Error == Contracts.ErrorCodes.AlreadyInQueue;
+            Update(s => s.Phase == QueuePhase.Found ? s : accepted
+                ? s with { Phase = QueuePhase.Searching, Error = null }
                 : QueueState.Idle with { TimeControl = timeControl, Error = ticket.Error });
         }
         catch (Exception ex)

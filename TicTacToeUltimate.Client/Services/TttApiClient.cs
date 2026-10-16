@@ -94,6 +94,8 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
     public Task<ChallengeDto?> GetChallengeAsync(string code) => GetOrNull<ChallengeDto>($"api/challenges/{Uri.EscapeDataString(code)}");
     /// <summary>GET /api/daily; empty when the endpoint is missing.</summary>
     public async Task<IReadOnlyList<DailyGameDto>> GetDailyGamesAsync() => await GetOrNull<DailyGameDto[]>("api/daily") ?? [];
+    /// <summary>GET /api/me/matches: the caller's unfinished games (live + Daily).</summary>
+    public async Task<IReadOnlyList<ActiveMatchDto>> GetActiveMatchesAsync() => await GetOrNull<ActiveMatchDto[]>("api/me/matches") ?? [];
     /// <summary>GET /api/live?friends=true (§6.5); empty when the endpoint is missing.</summary>
     public async Task<IReadOnlyList<LiveMatchDto>> GetLiveFriendMatchesAsync() => await GetOrNull<LiveMatchDto[]>("api/live?friends=true") ?? [];
 

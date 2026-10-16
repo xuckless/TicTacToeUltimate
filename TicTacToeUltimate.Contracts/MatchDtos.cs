@@ -70,3 +70,6 @@ public sealed record ServerHelloDto(MeDto Me, long ServerNowMs, Guid[] ActiveMat
 
 public sealed record DailyGameDto(Guid MatchId, PlayerCardDto Opponent, Color YourColor, bool YourTurn, long? DeadlineAtMs, int Ply);
 public sealed record LiveMatchDto(Guid MatchId, TimeControl TimeControl, PlayerCardDto[] Players, int Ply, int SpectatorCount);
+/// <summary>One of the caller's unfinished games (live or Daily), for the "Active games" list and the resume banner.</summary>
+public sealed record ActiveMatchDto(Guid MatchId, MatchMode Mode, TimeControl TimeControl, PlayerCardDto Opponent, Color YourColor,
+    bool YourTurn, int Ply, long? DeadlineAtMs, bool Daily);

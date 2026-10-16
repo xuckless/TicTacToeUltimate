@@ -7,11 +7,13 @@
     @* Pass & Play works with no server and no session. *@
     @ChildContent
 }
-else if (_error is not null && Session.State.Status == SessionStatus.Initializing)
+else if ((_error is not null || Session.State.Error == "offline") && Session.State is { Status: SessionStatus.Initializing or SessionStatus.SignedOut, Config: null })
 {
-    <div class="splash" style="flex-direction:column;gap:16px;text-align:center;padding:16px">
+    @* Config never loaded: the server is unreachable (or down). Offer Pass & Play instead of a sign-in page that cannot work. *@
+    <div class="splash" style="flex-direction:column;gap:16px;text-align:center;padding:16px" data-testid="offline-splash">
+        <Bert Mood="sleepy" Size="72" />
         <span>Can't reach the server</span>
-        <span class="t-small t-muted">@_error</span>
+        <span class="t-small t-muted">@(_error ?? "Check your connection, or play offline for now.")</span>
         <Button OnClick="Init">Retry</Button>
         <Button Variant="secondary" Href="local">Play offline · Pass &amp; Play</Button>
     </div>
@@ -78,9 +80,9 @@ else
         if (s.Status == SessionStatus.SignedOut)
         {
             if (path == "signin" || path.StartsWith("c/", StringComparison.Ordinal)) return null;
-            var query = Nav.Uri.Contains('?', StringComparison.Ordinal) ? Nav.Uri[Nav.Uri.IndexOf('?', StringComparison.Ordinal)..] : "";
-            var returnUrl = Uri.EscapeDataString("/" + Nav.ToBaseRelativePath(Nav.Uri).Split('?')[0]);
-            return "signin" + (query.Length > 0 ? query + "&" : "?") + "returnUrl=" + returnUrl;
+            // The whole relative URL (path + query, e.g. play?tc=ArenaRanked) comes back after sign-in.
+            var returnUrl = Uri.EscapeDataString("/" + Nav.ToBaseRelativePath(Nav.Uri).Split('#')[0]);
+            return "signin?returnUrl=" + returnUrl;
         }
         if (s.Status == SessionStatus.SignedIn && s.Me is { Kind: AccountKind.Account, NeedsUsername: true } && path != "onboarding")
             return "onboarding";

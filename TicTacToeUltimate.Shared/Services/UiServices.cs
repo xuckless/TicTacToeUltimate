@@ -168,6 +168,28 @@ public static class Ui
         _ => "Couldn't give the reward. Try again.",
     };
 
+    /// <summary>One toast line for a server error code (the pages used to swallow these or show a generic failure).</summary>
+    public static string ErrorToastText(string? code, string fallback) => code switch
+    {
+        ErrorCodes.GuestNotAllowed => "This needs an account. Create one from the Profile tab.",
+        ErrorCodes.UsernameRequired => "Pick a username first (Profile).",
+        ErrorCodes.AlreadyInMatch => "Finish your current game first.",
+        ErrorCodes.AlreadyInQueue => "You're already in the queue.",
+        ErrorCodes.DailyLimit => "You already have 10 Daily games going.",
+        ErrorCodes.NotFriends => "You can only do that with friends.",
+        ErrorCodes.Blocked => "That player isn't available.",
+        ErrorCodes.CannotChallengeSelf => "You can't challenge yourself.",
+        ErrorCodes.ChallengeExpired => "That challenge expired.",
+        ErrorCodes.ChallengeTaken => "Someone else already accepted that challenge.",
+        ErrorCodes.RateLimited => "Slow down a little and try again.",
+        ErrorCodes.ServerUpdating => ServerUpdatingText,
+        "offline" => "Can't reach the server. Check your connection.",
+        _ => fallback,
+    };
+
+    /// <summary>Reason line with the viewer's perspective: "Opponent left" is wrong when you were the one who left.</summary>
+    public static string ReasonText(EndReason r, GameResultForUser? mine) => r == EndReason.Abandoned && mine == GameResultForUser.Loss ? "You left the game" : ReasonText(r);
+
     public static string ReasonText(EndReason r) => r switch
     {
         EndReason.Line => "Three in a row",

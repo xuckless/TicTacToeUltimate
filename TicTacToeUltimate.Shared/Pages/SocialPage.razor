@@ -43,6 +43,8 @@ else
     </section>
 
     <InviteLinkButton CreateLink="CreateLink" Guest="@Session.State.IsGuest" />
+    <p class="t-small t-muted" style="margin:10px 0 4px">Got a code from a friend?</p>
+    <JoinCodeBox />
     <div class="t-row"><Button Variant="ghost" Href="leaderboards">Leaderboards</Button></div>
 }
 
@@ -74,7 +76,7 @@ else
 
     private Task Decline(ChallengeDto c) => Social.DeclineChallengeAsync(c.Code);
 
-    private async Task Challenge(FriendDto f) => await CreateFor(f, TimeControl.CasualX2);
+    private async Task Challenge(FriendDto f) => await CreateFor(f, TimeControl.Casual);
     private async Task Daily(FriendDto f) => await CreateFor(f, TimeControl.Daily);
 
     private async Task CreateFor(FriendDto f, TimeControl tc)
@@ -84,7 +86,7 @@ else
             await Social.CreateChallengeAsync(new CreateChallengeDto(tc, f.Player.UserId));
             Toasts.Show($"Challenge sent to {f.Player.DisplayName}", ToastKind.Success);
         }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't send the challenge.", ToastKind.Error); }
+        catch (Exception ex) { Toasts.Show(Ui.ErrorToastText(ErrorText.Code(ex), "Couldn't send the challenge."), ToastKind.Error); }
     }
 
     private void Watch(FriendDto f)

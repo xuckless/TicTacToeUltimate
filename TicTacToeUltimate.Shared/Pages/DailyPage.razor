@@ -11,6 +11,10 @@
 {
     <BertLoader Text="Loading daily games" />
 }
+else if (_error)
+{
+    <Card><div class="t-empty"><Bert Mood="shocked" Size="64" /><span>Couldn't load your daily games.</span><Button Variant="secondary" Small="true" OnClick="Load">Retry</Button></div></Card>
+}
 else if (_games.Count == 0)
 {
     <Card><div class="t-empty"><Bert Mood="sleepy" Size="64" /><span>No daily games yet. Start one and play at your own pace.</span></div></Card>
@@ -33,17 +37,20 @@ else
 
 @code {
     private List<DailyGameDto> _games = [];
-    private bool _loading = true;
+    private bool _loading = true, _error;
 
     /// <inheritdoc />
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => Load();
+
+    private async Task Load()
     {
+        _loading = true; _error = false;
         try
         {
             var all = await Queries.GetDailyGamesAsync();
             _games = all.OrderByDescending(g => g.YourTurn).ThenBy(g => g.DeadlineAtMs ?? long.MaxValue).ToList();
         }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { _error = true; }
         _loading = false;
     }
 
@@ -51,7 +58,7 @@ else
     {
         if (g.DeadlineAtMs is not long d) return "";
         var left = TimeSpan.FromMilliseconds(Math.Max(0, d - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
-        return $" · {(int)left.TotalHours}h left";
+        return left.TotalHours >= 1 ? $" · {(int)left.TotalHours}h left" : $" · {Math.Max(1, (int)left.TotalMinutes)}m left";
     }
 
     private async Task NewGame()

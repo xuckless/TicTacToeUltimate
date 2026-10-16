@@ -36,7 +36,10 @@
 </Card>
 
 <Card Title="Gameplay">
-    <label class="t-toggle"><span>Guided mode <InfoButton Key="guided" /></span><input type="checkbox" checked="@S.ThreatHints" @onchange="e => Update(s => s with { ThreatHints = On(e) })" /></label>
+    <div style="display:flex;align-items:center;gap:8px">
+        <label class="t-toggle" style="flex:1"><span>Guided mode</span><input type="checkbox" checked="@S.ThreatHints" @onchange="e => Update(s => s with { ThreatHints = On(e) })" /></label>
+        <InfoButton Key="guided" />
+    </div>
     <label class="t-toggle"><span>Mute opponent emotes</span><input type="checkbox" checked="@S.MuteOpponentEmotes" @onchange="e => Update(s => s with { MuteOpponentEmotes = On(e) })" /></label>
 </Card>
 

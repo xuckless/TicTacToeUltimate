@@ -54,6 +54,19 @@ public sealed class MatchStore : StoreBase<MatchesState>, IMatchStore, IDisposab
         rt.Connected += reconnect => { if (reconnect) ReopenAll(); };
     }
 
+    /// <summary>Bubbles used to stay forever: drop emotes about 3.5 s after they were shown (the thrown animation has finished by then).</summary>
+    private void ScheduleEmoteExpiry(Guid matchId, long shownAtMs)
+    {
+        ITimer? t = null;
+        t = _time.CreateTimer(_ =>
+        {
+            t?.Dispose();
+            Update(s => s.Matches.TryGetValue(matchId, out var v) && v.RecentEmotes.Any(e => e.ShownAtMs <= shownAtMs)
+                ? s with { Matches = s.Matches.SetItem(matchId, v with { RecentEmotes = [.. v.RecentEmotes.Where(e => e.ShownAtMs > shownAtMs)] }) }
+                : s);
+        }, null, TimeSpan.FromMilliseconds(3500), Timeout.InfiniteTimeSpan);
+    }
+
     /// <summary>Heartbeat bpm for sudden death on your turn: 70 + 10·(10 − allowanceSeconds), clamped to [70, 150].</summary>
     public static int HeartbeatBpm(int allowanceSeconds) => Math.Clamp(70 + 10 * (10 - allowanceSeconds), 70, 150);
 
@@ -381,6 +394,7 @@ public sealed class MatchStore : StoreBase<MatchesState>, IMatchStore, IDisposab
                     if (emotes.Length > MaxEmotes) emotes = emotes.RemoveRange(0, emotes.Length - MaxEmotes);
                     v = v with { RecentEmotes = emotes };
                     effects.Add(() => Sfx(SoundCue.Emote));
+                    ScheduleEmoteExpiry(v.MatchId, env.ServerTimeMs);
                 }
                 break;
             }

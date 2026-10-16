@@ -41,6 +41,16 @@ else
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't load messages.", ToastKind.Error); }
     }
 
+    private int _seen;
+
+    /// <inheritdoc />
+    protected override void OnStoresChanged()
+    {
+        // Messages arriving while this thread is on screen are read: keep the unread badge at 0.
+        var count = Messages.Count;
+        if (count != _seen) { _seen = count; if (Friend is { UnreadMessages: > 0 }) _ = Social.MarkReadAsync(UserId); }
+    }
+
     private async Task<bool> Send(string body)
     {
         var ack = await Social.SendMessageAsync(UserId, body);

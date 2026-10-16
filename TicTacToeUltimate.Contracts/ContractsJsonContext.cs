@@ -96,6 +96,8 @@ namespace TicTacToeUltimate.Contracts;
 [JsonSerializable(typeof(CreateChallengeDto))]
 [JsonSerializable(typeof(ChallengeDto))]
 [JsonSerializable(typeof(AcceptChallengeResultDto))]
+[JsonSerializable(typeof(ActiveMatchDto))]
+[JsonSerializable(typeof(ActiveMatchDto[]))]
 [JsonSerializable(typeof(RewardNonceRequestDto))]
 [JsonSerializable(typeof(RewardNonceDto))]
 [JsonSerializable(typeof(RewardClaimDto))]

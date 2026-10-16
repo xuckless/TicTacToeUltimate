@@ -130,6 +130,15 @@ public sealed class FakeSocialStore() : FakeStore<SocialState>(MockupFixtures.So
     public Task DeclineChallengeAsync(string code) { Calls.Add($"Decline:{code}"); return Task.CompletedTask; }
 }
 
+/// <summary>Fake <see cref="IActiveMatchesStore"/> (no active games unless a test sets some).</summary>
+public sealed class FakeActiveMatchesStore() : FakeStore<ActiveMatchesState>(ActiveMatchesState.Empty with { Loaded = true }), IActiveMatchesStore
+{
+    /// <inheritdoc />
+    public Task RefreshAsync() => Task.CompletedTask;
+    /// <inheritdoc />
+    public void Forget(Guid matchId) => Set(State with { Matches = [.. State.Matches.Where(m => m.MatchId != matchId)] });
+}
+
 /// <summary>Fake <see cref="IProgressStore"/>.</summary>
 public sealed class FakeProgressStore() : FakeStore<ProgressState>(new ProgressState(MockupFixtures.Progress, true)), IProgressStore
 {
@@ -199,6 +208,7 @@ public static class FakeServiceCollectionExtensions
         services.TryAddSingleton<FakeMatchStore>(); services.TryAddSingleton<IMatchStore>(sp => sp.GetRequiredService<FakeMatchStore>());
         services.TryAddSingleton<FakeSocialStore>(); services.TryAddSingleton<ISocialStore>(sp => sp.GetRequiredService<FakeSocialStore>());
         services.TryAddSingleton<FakeProgressStore>(); services.TryAddSingleton<IProgressStore>(sp => sp.GetRequiredService<FakeProgressStore>());
+        services.TryAddSingleton<FakeActiveMatchesStore>(); services.TryAddSingleton<IActiveMatchesStore>(sp => sp.GetRequiredService<FakeActiveMatchesStore>());
         services.TryAddSingleton<FakeSettingsStore>(); services.TryAddSingleton<ISettingsStore>(sp => sp.GetRequiredService<FakeSettingsStore>());
         services.TryAddSingleton<FakeAdCoordinator>(); services.TryAddSingleton<IAdCoordinator>(sp => sp.GetRequiredService<FakeAdCoordinator>());
         services.TryAddSingleton<IGameQueries, FakeGameQueries>();

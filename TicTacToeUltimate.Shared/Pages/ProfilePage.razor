@@ -87,14 +87,18 @@ else
     private async Task AddFriend()
     {
         var ack = await Social.SendRequestAsync(_profile!.Card.DisplayName);
-        Toasts.Show(ack.Ok ? "Request sent" : "Couldn't send the request.", ack.Ok ? ToastKind.Success : ToastKind.Error);
+        Toasts.Show(ack.Ok ? "Request sent" : Ui.ErrorToastText(ack.Error, "Couldn't send the request."), ack.Ok ? ToastKind.Success : ToastKind.Error);
         if (ack.Ok) _profile = _profile with { FriendStatus = FriendStatus.RequestSent };
     }
 
     private async Task ChallengeFriend()
     {
-        await Social.CreateChallengeAsync(new CreateChallengeDto(TimeControl.CasualX2, _profile!.Card.UserId));
-        Toasts.Show("Challenge sent", ToastKind.Success);
+        try
+        {
+            await Social.CreateChallengeAsync(new CreateChallengeDto(TimeControl.Casual, _profile!.Card.UserId));
+            Toasts.Show("Challenge sent", ToastKind.Success);
+        }
+        catch (Exception ex) { Toasts.Show(Ui.ErrorToastText(ErrorText.Code(ex), "Couldn't send the challenge."), ToastKind.Error); }
     }
 
     private async Task Block()

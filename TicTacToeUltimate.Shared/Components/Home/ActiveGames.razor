@@ -1,0 +1,38 @@
+@inherits StoreComponent
+@inject IActiveMatchesStore Active
+@inject ISessionStore Session
+
+@* The signed-in player's unfinished games (live + Daily): one tap resumes. Hidden when there are none. *@
+@if (Session.State.Status == SessionStatus.SignedIn && Active.State.Matches.Length > 0)
+{
+    <section class="t-card active-games" aria-label="Active games" data-testid="active-games" style="padding:4px 16px">
+        <div class="t-spread" style="padding:10px 0 4px"><h2 class="t-heading" style="margin:0">Your games</h2><span class="t-small t-muted">@Active.State.Matches.Length in progress</span></div>
+        @foreach (var g in Active.State.Matches)
+        {
+            <a class="t-listrow" href="@($"match/{g.MatchId}")" style="color:inherit;text-decoration:none" data-testid="active-game">
+                <Avatar Name="@g.Opponent.DisplayName" AvatarId="@g.Opponent.AvatarId" />
+                <div class="who">
+                    <div class="name">@g.Opponent.DisplayName <BotBadge Kind="g.Opponent.Kind" /></div>
+                    <div class="meta">@Ui.ModeLabel(g.Mode, g.TimeControl) · you play <PieceGlyph Color="g.YourColor" /> · move @(g.Ply + 1)@Deadline(g)</div>
+                </div>
+                @if (g.YourTurn) { <span class="t-chip" style="color:var(--success)">Your move</span> } else { <span class="t-small t-muted">@(g.Daily ? "Waiting" : "Live")</span> }
+            </a>
+        }
+    </section>
+}
+
+@code {
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Active, Session);
+        await Active.RefreshAsync();
+    }
+
+    private static string Deadline(ActiveMatchDto g)
+    {
+        if (!g.Daily || g.DeadlineAtMs is not long d) return "";
+        var left = TimeSpan.FromMilliseconds(Math.Max(0, d - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+        return left.TotalHours >= 1 ? $" · {(int)left.TotalHours}h left" : $" · {Math.Max(1, (int)left.TotalMinutes)}m left";
+    }
+}

@@ -108,6 +108,17 @@ public interface ISocialStore : IStore<SocialState>
     Task DeclineChallengeAsync(string code);
 }
 
+/// <summary>The signed-in player's unfinished games.</summary>
+public sealed record ActiveMatchesState(ImmutableArray<ActiveMatchDto> Matches, bool Loaded)
+{ public static ActiveMatchesState Empty { get; } = new([], false); }
+public interface IActiveMatchesStore : IStore<ActiveMatchesState>
+{
+    /// <summary>Reloads from the server (debounced by the store).</summary>
+    Task RefreshAsync();
+    /// <summary>Forgets a game the user just finished or left (optimistic; a refresh follows).</summary>
+    void Forget(Guid matchId);
+}
+
 public sealed record ProgressState(ProgressDto? Progress, bool Loaded)
 { public static ProgressState Empty { get; } = new(null, false); }
 public interface IProgressStore : IStore<ProgressState>

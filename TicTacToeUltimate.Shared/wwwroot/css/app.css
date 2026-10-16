@@ -197,6 +197,12 @@ body { min-height: 100dvh; }
   background: color-mix(in srgb, #ff8a2a 18%, var(--surface)); border: 2px solid color-mix(in srgb, #ff8a2a 55%, var(--line)); font: 500 14px/1.2 var(--font-sans); }
 .daily-nudge > span { flex: 1; }
 .daily-nudge .t-icon { color: #ff8a2a; }
+.resume-banner { background: color-mix(in srgb, var(--primary) 22%, var(--surface)); border-color: color-mix(in srgb, var(--primary) 60%, var(--line)); margin-bottom: 10px; }
+.resume-banner .t-icon { color: var(--primary); }
+.resume-banner .t-chip { background: var(--primary); color: #fff; }
+.active-games .t-listrow .meta .t-icon { width: 14px; height: 14px; vertical-align: -2px; }
+.join-code { display: flex; gap: 8px; align-items: stretch; }
+.join-code-input { flex: 1; min-width: 0; text-transform: uppercase; letter-spacing: .14em; font-family: var(--font-clock, var(--font-sans)); font-weight: 700; }
 
 /* (?) info buttons + guide sheet */
 .info-btn { width: 26px; height: 26px; min-width: 26px; border-radius: 50%; border: 2px solid var(--line-strong); background: var(--surface-raised); color: var(--ink-muted);
