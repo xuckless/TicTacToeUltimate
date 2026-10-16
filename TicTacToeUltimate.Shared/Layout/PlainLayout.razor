@@ -1,0 +1,11 @@
+@inherits LayoutComponentBase
+
+@* Sign-in / onboarding: wallpaper and the centered page column only. No tabs, sidebar, banners or resume banner. *@
+<Wallpaper />
+<div class="shell plain-shell">
+    <div class="shell-main">
+        <CascadingValue Name="AdsAllowed" Value="false" IsFixed="true">
+            <main id="main" class="page">@Body</main>
+        </CascadingValue>
+    </div>
+</div>

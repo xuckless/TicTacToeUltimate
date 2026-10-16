@@ -5,6 +5,8 @@ body { min-height: 100dvh; }
 .shell .t-side { display: none; }
 /* Phone: the tab bar is pinned to the real screen edge (incl. the home-indicator area) and content scrolls under a
    status-bar backdrop, so iOS overscroll never shows a floating nav or text behind the Dynamic Island. */
+.plain-shell { display: block; }
+.plain-shell .shell-main { padding-bottom: env(safe-area-inset-bottom, 0px); }
 .shell .t-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; }
 .shell-main { min-width: 0; display: flex; flex-direction: column;
   padding-top: env(safe-area-inset-top, 0px); padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
