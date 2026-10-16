@@ -3,6 +3,7 @@
 @inject IProgressStore Progress
 @inject IWalletStore Wallet
 @inject ToastService Toasts
+@implements IDisposable
 
 <PageTitle>Replay · Tic Tac Toe Ultimate</PageTitle>
 <h1 class="t-title">Replay</h1>
@@ -22,7 +23,17 @@ else
         <Board Size="_game.Rules.BoardSize" Cells="@frame.Board" Ghost="@(final ? null : frame.Ghost)" LastPlaced="frame.LastPlaced"
                WinLine="@(final ? _game.Result.WinLine : null)" Winner="Winner" Interactive="false" />
     </div>
-    <ReplayScrubber Ply="_ply" Max="_frames.Count - 1" PlyChanged="p => _ply = p" />
+    <ReplayScrubber Ply="_ply" Max="_frames.Count - 1" PlyChanged="p => Seek(p)" />
+    <div class="replay-controls" aria-label="Playback">
+        <Button Variant="@(_playing ? "secondary" : "primary")" Small="true" OnClick="TogglePlay" data-testid="replay-play"><Icon Name="@(_playing ? "close" : "play")" /> @(_playing ? "Pause" : _ply >= _frames.Count - 1 ? "Replay from start" : "Play")</Button>
+        <div class="t-seg" role="group" aria-label="Speed">
+            @foreach (var sp in new[] { 1, 2, 4, 8 })
+            {
+                <button type="button" aria-pressed="@(_speed == sp ? "true" : "false")" @onclick="() => _speed = sp">@(sp)×</button>
+            }
+        </div>
+        <span class="t-small t-muted">@(_ply > 0 && _ply <= _frames.Count - 1 ? $"thought {Ui.Elapsed(_frames[_ply].ThinkMs)}" : "as it happened")</span>
+    </div>
     @if (_analysis is null && AnalysisPossible)
     {
         <Card Title="Perfect-play review">
@@ -47,7 +58,36 @@ else
     private GameAnalysisDto? _analysis;
     private string? _analysisError;
     private int _ply;
-    private bool _loading = true, _busy, _unlocked;
+    private bool _loading = true, _busy, _unlocked, _playing;
+    private int _speed = 1;
+    private CancellationTokenSource? _playCts;
+
+    /// <summary>Clash-Royale-style playback: each move appears after the time the player actually took (capped at 8 s, divided by the speed).</summary>
+    private async Task TogglePlay()
+    {
+        if (_playing) { Stop(); return; }
+        if (_ply >= _frames.Count - 1) _ply = 0;
+        _playing = true;
+        var cts = _playCts = new CancellationTokenSource();
+        try
+        {
+            while (_ply < _frames.Count - 1 && !cts.IsCancellationRequested)
+            {
+                var wait = Math.Clamp(_frames[_ply + 1].ThinkMs, 400, 8000) / _speed;
+                await Task.Delay(wait, cts.Token);
+                _ply++;
+                StateHasChanged();
+            }
+        }
+        catch (TaskCanceledException) { }
+        if (ReferenceEquals(_playCts, cts)) { _playing = false; StateHasChanged(); }
+    }
+
+    private void Stop() { _playCts?.Cancel(); _playCts = null; _playing = false; }
+    private void Seek(int p) { Stop(); _ply = p; }
+
+    /// <inheritdoc />
+    public void Dispose() => Stop();
 
     /// <summary>The tablebase covers classic 3x3 games only: not Arena (scoring layer), not Old school, not aborted games.</summary>
     private bool AnalysisPossible => _game is not null && _game.Result.Reason != EndReason.Aborted && _game.Actions.Length > 0

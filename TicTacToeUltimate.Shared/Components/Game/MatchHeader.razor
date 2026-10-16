@@ -21,9 +21,11 @@
     [Parameter] public int Spectators { get; set; }
 
     /// <summary>"Game 0:41 · move 15s" or "Game 1:31 · window 8s → 7s in 5s".</summary>
-    public string Info
+    public string Info => InfoText(TimeControl, Clock, Spectators);
+
+    /// <summary>Same text for the phone layout, where it sits inside the opponent's card.</summary>
+    public static string InfoText(TimeControl TimeControl, ClockView? Clock, int Spectators)
     {
-        get
         {
             var spect = Spectators > 0 ? $" · {Spectators} watching" : "";
             if (Clock is null || Clock.AllowanceMs is null)

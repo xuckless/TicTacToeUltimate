@@ -124,7 +124,8 @@ public static class PlatformEndpoints
             var stats = new ProfileStatsDto(played, wins, losses, draws, played == 0 ? 0 : Math.Round((double)wins / played, 4), streak.Current, streak.Best,
                 (await daily.ListActiveForUserAsync(u.Id, ct)).Count);
             var recent = await views.SummariesAsync(u.Id, list.Take(10).ToList(), ct);
-            return Results.Ok(new ProfileDto(card, u.CreatedAt, visible, stats, recent, await social.StatusAsync(viewer, u.Id, ct)));
+            var presence = u.Kind == AccountKind.Account ? http.RequestServices.GetService<PresenceLookup>()?.Get(u.Id) : null;
+            return Results.Ok(new ProfileDto(card, u.CreatedAt, visible, stats, recent, await social.StatusAsync(viewer, u.Id, ct)) { Presence = presence });
         }).RequireAuthorization();
 
         api.MapGet("/players/{userId:guid}/games", async (Guid userId, DateTimeOffset? before, int? take, HttpContext http, IGameRepository games, GameViews views, CancellationToken ct) =>
@@ -228,6 +229,14 @@ public static class PlatformEndpoints
         // ---- progress / rewards ----
         api.MapGet("/progress", async (HttpContext http, ProgressService p, CancellationToken ct) => Results.Ok(await p.GetAsync(http.Me().UserId, ct)))
             .RequireAuthorization();
+        // ---- push ----
+        api.MapPost("/push/register", async (RegisterPushDto req, HttpContext http, TicTacToeUltimate.Server.Push.IPushTokenRepository tokens, TimeProvider time, CancellationToken ct) =>
+        {
+            if (req.Platform is not ("ios" or "android") || string.IsNullOrWhiteSpace(req.Token) || req.Token.Length > 512) return ApiErrors.Problem(400, ErrorCodes.Validation);
+            await tokens.UpsertAsync(new TicTacToeUltimate.Server.Push.PushTokenRecord(http.Me().UserId, req.Platform, req.Token.Trim(), time.GetUtcNow()), ct);
+            return Results.NoContent();
+        }).RequireAuthorization();
+
         // ---- store / wallet ----
         api.MapGet("/wallet", async (HttpContext http, TicTacToeUltimate.Server.Economy.WalletService w, CancellationToken ct) => Results.Ok(await w.GetAsync(http.Me().UserId, ct)))
             .RequireAuthorization();

@@ -112,7 +112,13 @@ else
         }
 
         <div class="result-actions">
-            <Button Variant="primary" Block="true" OnClick="NewMatch">New @Ui.TimeControlName(_view.Snapshot.TimeControl).ToLowerInvariant() match</Button>
+            @if (!_view.IsSpectator)
+            {
+                <button type="button" class="play-again" @onclick="NewMatch" data-testid="play-again">
+                    <span class="play-again-title"><BounceText Text="Play again" /></span>
+                    <span class="play-again-sub">@(_view.Snapshot.TimeControl == TimeControl.Daily ? "Start another daily game" : $"Find a new {Ui.TimeControlName(_view.Snapshot.TimeControl).ToLowerInvariant()} opponent")</span>
+                </button>
+            }
             @if (RematchAllowed && opp?.Player.Kind == AccountKind.Bot)
             {
                 <div class="t-small t-muted" style="text-align:center">Bots don't take rematches. Start a new match for another opponent.</div>
@@ -303,12 +309,15 @@ else
         finally { _busy = false; }
     }
 
-    private async Task NewMatch()
+    private Task NewMatch()
     {
         var tc = _view!.Snapshot.TimeControl;
         // Retired / unlisted time controls (CasualX2 challenges, legacy Ranked) fall back to the Play page.
         var listed = tc is TimeControl.Casual or TimeControl.ArenaCasual or TimeControl.ArenaRanked or TimeControl.OldSchool or TimeControl.Unlimited;
-        await Leave(tc == TimeControl.Daily ? "daily" : listed ? $"play?tc={tc}" : "play");
+        // Owner decision: no interstitial on "Play again" (or rematch); the break comes when the player returns to the menu.
+        _completedReported = true;
+        Nav.NavigateTo(tc == TimeControl.Daily ? "daily" : listed ? $"play?tc={tc}" : "play");
+        return Task.CompletedTask;
     }
 
     private async Task Rematch()

@@ -4,13 +4,14 @@ using TicTacToeUltimate.Engine.Arena;
 
 namespace TicTacToeUltimate.Shared.Services;
 
-/// <summary>One replay position.</summary>
-public sealed record ReplayFrame(int Ply, string Board, int? Ghost, int? LastPlaced);
+/// <summary>One replay position. <c>ThinkMs</c> is how long the mover took before this position appeared (drives timed playback).</summary>
+public sealed record ReplayFrame(int Ply, string Board, int? Ghost, int? LastPlaced, int ThinkMs = 0, bool Swapped = false);
 
 /// <summary>
-/// Rebuilds read-only replay positions from a recorded action log. The server recorded each placement's colour and vanished cell,
-/// so no rules evaluation is needed; the ghost (next to vanish) is the oldest piece once a FIFO window is full, or, under a
-/// per-player cap, the next placer's own oldest piece once they hold the cap.
+/// Replay positions rebuilt by the real engine from the recorded action log, so the replay is exactly what the players saw:
+/// the same board, the same faded "next to vanish" piece, the same colours after a pie swap. (The previous version repainted
+/// the board from recorded colours and vanish cells, which drifted from the engine in edge cases.) Arena games go through
+/// the arena engine, which re-derives shatters from the think times.
 /// </summary>
 public static class ReplayFrames
 {
@@ -20,42 +21,26 @@ public static class ReplayFrames
         ArgumentNullException.ThrowIfNull(rules);
         ArgumentNullException.ThrowIfNull(actions);
         if (arena is not null) return BuildArena(arena, actions);
-        var n = rules.BoardSize * rules.BoardSize;
-        var board = new char[n];
-        Array.Fill(board, '.');
-        var order = new List<int>();
-        Color? lastPlacer = null;
-        var frames = new List<ReplayFrame>(actions.Count + 1) { new(0, new string(board), null, null) };
+        var rs = rules.ToEngine();
+        var state = Rules.Initial(rs);
+        var frames = new List<ReplayFrame>(actions.Count + 1) { new(0, Notation.Board(state), Rules.NextToVanish(state), null) };
         foreach (var a in actions)
         {
-            int? placed = null;
-            if (a.Kind == ActionKind.Place && a.Cell is int cell && cell >= 0 && cell < n)
+            var action = a.Kind switch
             {
-                if (a.VanishedCell is int v && v >= 0 && v < n)
-                {
-                    board[v] = '.';
-                    order.Remove(v);
-                }
-                board[cell] = a.Color == Color.O ? 'O' : 'X';
-                order.Add(cell);
-                placed = cell;
-                lastPlacer = a.Color;
-            }
-            int? ghost = rules.Removal switch
-            {
-                RemovalKind.GlobalFifo => order.Count >= rules.Window && order.Count > 0 ? order[0] : null,
-                RemovalKind.PerPlayerCap when lastPlacer is Color lp => CapGhost(board, order, lp == Color.X ? 'O' : 'X', rules.Window),
-                _ => null,
+                ActionKind.Place when a.Cell is int c => GameAction.Place(c),
+                ActionKind.Swap => GameAction.Swap,
+                ActionKind.KeepSides => GameAction.KeepSides,
+                _ => (GameAction?)null,
             };
-            frames.Add(new ReplayFrame(a.Ply + 1, new string(board), ghost, placed));
+            if (action is null) break;
+            var step = Rules.Apply(state, action.Value);
+            if (!step.Ok) break;   // a corrupt log: stop at the last consistent position instead of inventing one
+            state = step.State;
+            frames.Add(new ReplayFrame(a.Ply + 1, Notation.Board(state), state.Phase == GamePhase.Ended ? null : Rules.NextToVanish(state),
+                a.Kind == ActionKind.Place ? a.Cell : null, a.ThinkMs, state.Swapped));
         }
         return frames;
-    }
-
-    private static int? CapGhost(char[] board, List<int> order, char next, int window)
-    {
-        var mine = order.Where(c => board[c] == next).ToList();
-        return mine.Count >= window ? mine[0] : null;
     }
 
     /// <summary>Arena replay: shatters are not in the action log, so the arena engine re-derives them (think times drive red alert).</summary>
@@ -69,7 +54,7 @@ public static class ReplayFrames
             var step = ArenaEngine.Apply(s, cell, a.ThinkMs);
             if (!step.Ok) break;
             s = step.State;
-            frames.Add(new ReplayFrame(a.Ply + 1, ArenaEngine.Board(s), ArenaEngine.NextToVanish(s), cell));
+            frames.Add(new ReplayFrame(a.Ply + 1, ArenaEngine.Board(s), ArenaEngine.NextToVanish(s), cell, a.ThinkMs));
         }
         return frames;
     }

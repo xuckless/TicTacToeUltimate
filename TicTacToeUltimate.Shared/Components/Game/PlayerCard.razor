@@ -1,6 +1,7 @@
 <div class="t-player @ActiveClass" aria-label="@($"{Name}, {Piece}")">
     <Avatar Name="@Seat?.Player.DisplayName" AvatarId="@Seat?.Player.AvatarId" />
     <div class="who">
+        @if (Tag is not null) { <div class="tag t-small t-muted">@Tag</div> }
         <div class="name">@Name <BotBadge Kind="@(Seat?.Player.Kind ?? AccountKind.Account)" /> <PieceGlyph Color="Piece" /></div>
         <div class="meta @MetaClass">@MetaText</div>
     </div>
@@ -46,6 +47,8 @@
     [Parameter] public string? Emote { get; set; }
     /// <summary>Game over: no "your move".</summary>
     [Parameter] public bool Ended { get; set; }
+    /// <summary>Phones: the match info line ("Casual · Game 0:41 · move 15s") lives inside the top card instead of its own header row.</summary>
+    [Parameter] public string? Tag { get; set; }
 
     private string Name => IsMe ? "You" : Seat?.Player.DisplayName ?? "Opponent";
     private string? ActiveClass => !Active || !IsMe || Ended ? null : SuddenDeath ? "active-sd" : Piece == Color.X ? "active-x" : "active-o";

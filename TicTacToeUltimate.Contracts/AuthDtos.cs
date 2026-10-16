@@ -10,3 +10,5 @@ public sealed record GuestTokenRequestDto(string DeviceId);                     
 public sealed record TokenResponseDto(string AccessToken, long ExpiresAtMs, MeDto Me);
 public sealed record SetUsernameDto(string Username, bool AcceptTos);
 public sealed record UpdateProfileDto(string? AvatarId, string? Country, string? TimeZone);
+/// <summary>Device push token ("ios" | "android").</summary>
+public sealed record RegisterPushDto(string Platform, string Token);

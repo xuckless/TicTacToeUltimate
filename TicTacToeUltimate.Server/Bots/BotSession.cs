@@ -173,7 +173,7 @@ public sealed class BotSession : IMatchObserver, IBotSeeker
     private static string? IdOf(BotClientMessage m) => m switch
     {
         BotSeek s => s.Id, BotUnseek u => u.Id, BotAcceptChallenge c => c.Id, BotAction a => a.Id,
-        BotResign r => r.Id, BotGetState g => g.Id, _ => null,
+        BotResign r => r.Id, BotGetState g => g.Id, BotEmote e => e.Id, _ => null,
     };
 
     /// <summary>Handles one parsed client message (exposed for tests).</summary>
@@ -212,6 +212,13 @@ public sealed class BotSession : IMatchObserver, IBotSeeker
                 break;
             case BotResign resign:
                 await ResignAsync(resign, ct).ConfigureAwait(false);
+                break;
+            case BotEmote emote:
+                if (_gateway is TicTacToeUltimate.Server.Matches.MatchGateway gw && _matches.ContainsKey(emote.MatchId))
+                {
+                    var ack = await gw.EmoteAsync(emote.MatchId, _bot.UserId, emote.EmoteId, ct).ConfigureAwait(false);
+                    if (emote.Id is not null) Send(ack.Ok ? new BotAck(emote.Id, emote.MatchId, null) : new BotError(emote.Id, emote.MatchId, ack.Error ?? ErrorCodes.Validation, "Emote refused"));
+                }
                 break;
             case BotGetState get:
                 if (!_matches.TryGetValue(get.MatchId, out var m))
@@ -472,6 +479,9 @@ public sealed class BotSession : IMatchObserver, IBotSeeker
                     Ply = t.Ply; ToMove = t.ToMove; ToMoveSeat = t.ToMoveSeat; Phase = t.Phase; Legal = t.LegalCells;
                     DeadlineAtMs = t.Clock?.DeadlineAtMs; AllowanceMs = t.Clock?.AllowanceMs;
                     send(ToState(nowMs));
+                    break;
+                case EmoteShown em when em.Seat != Seat:
+                    send(new BotOpponentEmote(MatchId, em.Seat, em.EmoteId));
                     break;
                 case MatchEnded e:
                     EmitEnd(e.Result, send, nowMs);

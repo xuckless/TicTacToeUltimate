@@ -1,0 +1,56 @@
+@page "/social/messages"
+@inherits StoreComponent
+@inject ISessionStore Session
+@inject ISocialStore Social
+
+<PageTitle>Messages · Tic Tac Toe Ultimate</PageTitle>
+<div class="t-row" style="flex-wrap:nowrap">
+    <a class="t-iconbtn t-iconbtn--round" href="social" aria-label="Back"><Icon Name="back" /></a>
+    <h1 class="t-heading">Messages</h1>
+</div>
+
+@if (Session.State.IsGuest)
+{
+    <Card><p class="t-small t-muted" style="margin:0">Messages are between mutual friends. <a href="signin">Create an account</a> to chat.</p></Card>
+}
+else if (!Social.State.Loaded)
+{
+    <BertLoader Text="Opening your inbox" Mood="wave" />
+}
+else if (Social.State.Friends.Length == 0)
+{
+    <div class="t-empty"><Bert Mood="wink" Size="56" /><span>No friends yet. Add some from Social, then chat here.</span></div>
+}
+else
+{
+    <section class="t-card" style="padding:4px 16px" aria-label="Conversations">
+        @foreach (var f in Threads)
+        {
+            <a class="t-listrow" href="@($"social/chat/{f.Player.UserId}")" style="color:inherit;text-decoration:none" data-testid="thread">
+                <Avatar Name="@f.Player.DisplayName" AvatarId="@f.Player.AvatarId" Presence="f.Presence.Status" />
+                <div class="who">
+                    <div class="name">@f.Player.DisplayName</div>
+                    <div class="meta">@(Social.State.Threads.TryGetValue(f.Player.UserId, out var t) && !t.IsEmpty ? Preview(t[^1]) : PresenceDot.Text(f.Presence.Status))</div>
+                </div>
+                @if (f.UnreadMessages > 0) { <span class="t-chip unread" aria-label="@($"{f.UnreadMessages} unread")">@f.UnreadMessages</span> }
+                else { <Icon Name="next" Class="t-muted" /> }
+            </a>
+        }
+    </section>
+}
+
+@code {
+    private IEnumerable<FriendDto> Threads => Social.State.Friends
+        .OrderByDescending(f => f.UnreadMessages > 0)
+        .ThenByDescending(f => Social.State.Threads.TryGetValue(f.Player.UserId, out var t) && !t.IsEmpty ? t[^1].Id : 0)
+        .ThenBy(f => f.Player.DisplayName, StringComparer.OrdinalIgnoreCase);
+
+    private string Preview(DirectMessageDto m) => (m.From == Session.State.Me?.UserId ? "You: " : "") + (m.Body.Length > 60 ? m.Body[..57] + "…" : m.Body);
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Session, Social);
+        if (!Session.State.IsGuest && !Social.State.Loaded) { try { await Social.LoadAsync(); } catch (Exception) { } }
+    }
+}

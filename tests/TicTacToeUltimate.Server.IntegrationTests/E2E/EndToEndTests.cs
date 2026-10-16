@@ -131,11 +131,11 @@ public sealed class EndToEndTests
         Assert.False(snapA.Rated);
         var (first, second) = snapA.YourSeat == 0 ? (a, b) : (b, a);
 
-        // spectators: friend allowed, stranger refused
+        // spectators: any account may watch (owner decision 2026-10-16: "Watch live" from profiles); friend and stranger both attach as spectators
         var spec = await friend.InvokeAsync<MatchSnapshotDto>(nameof(IGameHub.JoinMatch), matchId);
         Assert.Null(spec.YourSeat);
-        var refused = await Assert.ThrowsAsync<HubException>(() => stranger.InvokeAsync<MatchSnapshotDto>(nameof(IGameHub.JoinMatch), matchId));
-        Assert.Contains(ErrorCodes.SpectateNotAllowed, refused.Message, StringComparison.Ordinal);
+        var strangerSpec = await stranger.InvokeAsync<MatchSnapshotDto>(nameof(IGameHub.JoinMatch), matchId);
+        Assert.Null(strangerSpec.YourSeat);
 
         Assert.True((await Play(first, matchId, 0, ActionKind.Place, 4)).Accepted);
         await TttAppFactory.WaitUntilAsync(() => friend.EventsFor(matchId).Any(e => e.Event is ActionApplied));

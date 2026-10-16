@@ -50,6 +50,8 @@ public sealed partial class GameHub
             try { pending = await services.GetRequiredService<ChallengeService>().PendingForAsync(me.UserId, ct); }
             catch (Exception ex) when (ex is not OperationCanceledException) { logger.LogWarning(ex, "Pending challenges failed"); }
         }
+        services.GetService<TicTacToeUltimate.Server.Matchmaking.PlayerPopulation>()
+            ?.Record(me.UserId, meDto.Ratings.FirstOrDefault(r => r.Pool == RatingPools.Headline)?.Rating ?? 1200);
         return new ServerHelloDto(meDto, NowMs, [.. gw.ActiveMatchesFor(me.UserId)], daily.Count(d => d.YourTurn), pending);
     }
 

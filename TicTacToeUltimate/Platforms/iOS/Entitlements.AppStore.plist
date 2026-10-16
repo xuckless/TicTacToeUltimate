@@ -4,6 +4,8 @@
 <dict>
 	<!-- Universal links for https://tictactoeultimate.alidirect.dev/c/{code}. Requires the Associated Domains capability on the App ID
 	     and the AASA file (deploy/web/static/.well-known/apple-app-site-association) carrying the Team ID. -->
+	<key>aps-environment</key>
+	<string>production</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:tictactoeultimate.alidirect.dev</string>

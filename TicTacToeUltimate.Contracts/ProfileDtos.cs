@@ -26,7 +26,11 @@ public sealed record MeDto(Guid UserId, AccountKind Kind, string DisplayName, st
 public sealed record ProfileStatsDto(int GamesPlayed, int Wins, int Losses, int Draws, double WinRate,
     int CurrentStreak, int BestStreak, int DailyInProgress);
 public sealed record ProfileDto(PlayerCardDto Card, DateTimeOffset JoinedAt, RatingDto[] Ratings, ProfileStatsDto Stats,
-    GameSummaryDto[] RecentGames, FriendStatus FriendStatus);
+    GameSummaryDto[] RecentGames, FriendStatus FriendStatus)
+{
+    /// <summary>Live presence (Online / InGame with the match id to spectate).</summary>
+    public PresenceDto? Presence { get; init; }
+}
 
 public sealed record StreakDto(int Current, int Best, int FreezesBanked, bool SecuredToday, bool AtRisk);
 public sealed record QuestDto(string QuestId /* "win1"|"win3"|"win5"|"bonus" */, string Title, int Progress, int Target, bool Completed, bool Bonus);

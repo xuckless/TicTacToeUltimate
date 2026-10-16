@@ -7,7 +7,8 @@
 <Wallpaper />
 <div class="sd-edge @Ambience.Edge" aria-hidden="true"></div>
 <div class="match-shell">
-    <CascadingValue Name="AdsAllowed" Value="false" IsFixed="true">
+    @* Owner decision 2026-10-16: a banner is fine during play; interstitials never. *@
+    <CascadingValue Name="AdsAllowed" Value="true" IsFixed="true">
         @Body
     </CascadingValue>
 </div>

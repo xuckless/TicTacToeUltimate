@@ -19,6 +19,11 @@ public sealed partial class GameHub
             logger.LogDebug("DM rejected: {Code}", error);
             throw new HubException(error);
         }
+        // Recipient: in-app notification when connected, push when not.
+        var preview = request.Body.Length > 80 ? request.Body[..77] + "…" : request.Body;
+        var n = new NotificationDto(NotificationKind.Message, me.DisplayName, preview, null, $"social/chat/{me.UserId}");
+        if (PresenceTracker.IsOnline(request.ToUserId)) _ = services.GetRequiredService<TicTacToeUltimate.Server.Abstractions.IUserNotifier>().ToUserAsync(request.ToUserId, c => c.Notification(n));
+        else _ = services.GetRequiredService<TicTacToeUltimate.Server.Abstractions.IPushSender>().SendAsync(request.ToUserId, n, CancellationToken.None);
         return message!;
     }
 

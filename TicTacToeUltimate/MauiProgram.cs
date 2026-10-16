@@ -71,7 +71,8 @@ public static class MauiProgram
         s.Replace(ServiceDescriptor.Singleton<IAppLifecycle>(sp => sp.GetRequiredService<MauiLifecycle>()));
         s.Replace(ServiceDescriptor.Singleton<IDeepLinkSource>(sp => sp.GetRequiredService<MauiDeepLinkSource>()));
         s.Replace(ServiceDescriptor.Singleton<IShareService, MauiShareService>());
-        s.Replace(ServiceDescriptor.Singleton<IPushService, StubPushService>());
+        s.Replace(ServiceDescriptor.Singleton<IPushService, PushService>());
+        s.AddSingleton<IBannerAds, NativeBannerAds>();   // the native AdMob banner lives under the web view; the HTML slot renders nothing
 #if IOS || ANDROID
         s.AddSingleton<AdMobAdProvider>();
         s.Replace(ServiceDescriptor.Singleton<IAdProvider>(sp => sp.GetRequiredService<AdMobAdProvider>()));
@@ -119,8 +120,10 @@ public static class MauiProgram
         var platform = DeviceInfo.Platform == DevicePlatform.Android ? "Android" : "iOS";
         var interstitial = ReadSetting("Ads", "AdMob", platform, "Interstitial");
         var rewarded = ReadSetting("Ads", "AdMob", platform, "Rewarded");
+        var banner = ReadSetting("Ads", "AdMob", platform, "Banner");
         Plugin.AdMob.Configuration.AdConfig.DefaultInterstitialAdUnitId = interstitial;
         Plugin.AdMob.Configuration.AdConfig.DefaultRewardedAdUnitId = rewarded;
+        Plugin.AdMob.Configuration.AdConfig.DefaultBannerAdUnitId = banner;
 #if DEBUG
         Plugin.AdMob.Configuration.AdConfig.UseTestAdUnitIds = true;
 #else

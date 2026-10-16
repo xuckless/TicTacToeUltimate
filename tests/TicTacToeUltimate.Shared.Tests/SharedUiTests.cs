@@ -275,15 +275,18 @@ public sealed class SharedUiTests : IDisposable
     [Fact]
     public void ReplayFrames_rebuild_board_and_ghost()
     {
+        // Frames come from the real engine now, so the sequence must be a legal game: X0 O4 X1 O3 X7 O2 X8 O6 (O wins 2-4-6 after X0 vanishes).
         var rules = new RuleSetDto("n3k3-fifo7-v1-w0-none", 3, 3, RemovalKind.GlobalFifo, 7, true, false, OpeningRule.None);
-        var cells = new[] { 0, 1, 2, 3, 4, 5, 6 };
-        var actions = cells.Select((c, i) => new ActionDto(i, i % 2, ActionKind.Place, c, i % 2 == 0 ? Color.X : Color.O, null, 1000, false)).ToList();
-        actions.Add(new ActionDto(7, 1, ActionKind.Place, 8, Color.O, 0, 1000, false));
+        var cells = new[] { 0, 4, 1, 3, 7, 2, 8, 6 };
+        var actions = cells.Select((c, i) => new ActionDto(i, i % 2, ActionKind.Place, c, i % 2 == 0 ? Color.X : Color.O, i == 7 ? 0 : null, 1000, false)).ToList();
         var frames = ReplayFrames.Build(rules, actions);
         Assert.Equal(9, frames.Count);
-        Assert.Equal("XOXOXOX..", frames[7].Board);
-        Assert.Equal(0, frames[7].Ghost);
-        Assert.Equal(".OXOXOX.O", frames[8].Board);
+        Assert.Equal("XXOOO..XX", frames[7].Board);
+        Assert.Equal(0, frames[7].Ghost);   // window full: X's first piece fades next
+        var engine = TicTacToeUltimate.Engine.Rules.Replay(rules.ToEngine(), cells.Select(TicTacToeUltimate.Engine.GameAction.Place));
+        Assert.Equal(TicTacToeUltimate.Engine.Notation.Board(engine), frames[8].Board);
+        Assert.Equal('.', frames[8].Board[0]);
+        Assert.Equal(1000, frames[8].ThinkMs);
     }
 
     // ---------- Tokens ----------

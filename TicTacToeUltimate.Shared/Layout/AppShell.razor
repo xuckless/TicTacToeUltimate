@@ -1,5 +1,6 @@
 @inherits LayoutComponentBase
 @inject ISessionStore Session
+@inject ISocialStore Social
 @implements IDisposable
 
 <Wallpaper />
@@ -30,7 +31,7 @@
     <nav class="t-nav" aria-label="Main">
         @foreach (var item in Primary)
         {
-            <NavLink href="@item.Href" Match="@item.Match"><Icon Name="@item.Icon" />@item.Label</NavLink>
+            <NavLink href="@item.Href" Match="@item.Match"><span class="nav-ico"><Icon Name="@item.Icon" />@if (item.Href == "social" && Unread > 0) { <span class="badge">@Unread</span> }</span>@item.Label</NavLink>
         }
     </nav>
 </div>
@@ -47,9 +48,17 @@
         new("profile", "Profile", "profile", NavLinkMatch.Prefix),
     ];
 
+    private int Unread => Session.State.IsGuest ? 0 : Social.State.Friends.Sum(f => f.UnreadMessages);
+
     /// <inheritdoc />
-    protected override void OnInitialized() => Session.Changed += OnChanged;
+    protected override void OnInitialized()
+    {
+        Session.Changed += OnChanged;
+        Social.Changed += OnChanged;
+        // Unread badge on the tab needs the friends list even before Social is opened.
+        if (Session.State is { Status: SessionStatus.SignedIn, IsGuest: false } && !Social.State.Loaded) _ = Social.LoadAsync();
+    }
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);
     /// <inheritdoc />
-    public void Dispose() => Session.Changed -= OnChanged;
+    public void Dispose() { Session.Changed -= OnChanged; Social.Changed -= OnChanged; }
 }

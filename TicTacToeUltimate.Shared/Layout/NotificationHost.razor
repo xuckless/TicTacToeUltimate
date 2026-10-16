@@ -1,0 +1,41 @@
+@inject IRealtimeTransport Rt
+@inject ISessionStore Session
+@inject NavigationManager Nav
+@inject ToastService Toasts
+@implements IDisposable
+
+@* Server notifications (promotion, daily turn, a new DM while you're elsewhere, Bert's nudges) as tappable toasts. *@
+
+@code {
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        Rt.NotificationReceived += OnNotification;
+        Rt.DirectMessageReceived += OnMessage;
+    }
+
+    private void OnNotification(NotificationDto n) => _ = InvokeAsync(() =>
+    {
+        if (n.Kind == NotificationKind.Message && OnChatWith(n.Link)) return;   // the open thread shows it already
+        Toasts.Show($"{n.Title}: {n.Body}", ToastKind.Info, 5000);
+    });
+
+    private void OnMessage(DirectMessageDto m)
+    {
+        // Covered by the Message notification from the server; kept for older servers that only push the DM event.
+    }
+
+    private bool OnChatWith(string? link)
+    {
+        if (link is null) return false;
+        var path = Nav.ToBaseRelativePath(Nav.Uri).Split('?')[0].TrimEnd('/');
+        return string.Equals(path, link.TrimEnd('/'), StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Rt.NotificationReceived -= OnNotification;
+        Rt.DirectMessageReceived -= OnMessage;
+    }
+}

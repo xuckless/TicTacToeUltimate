@@ -9,7 +9,10 @@ namespace TicTacToeUltimate.Contracts.Bot;
 [JsonDerivedType(typeof(BotHello), "hello")] [JsonDerivedType(typeof(BotGameStart), "gameStart")]
 [JsonDerivedType(typeof(BotState), "state")] [JsonDerivedType(typeof(BotGameEnd), "gameEnd")]
 [JsonDerivedType(typeof(BotAck), "ack")] [JsonDerivedType(typeof(BotError), "error")] [JsonDerivedType(typeof(BotPing), "ping")]
+[JsonDerivedType(typeof(BotOpponentEmote), "opponentEmote")]
 public abstract record BotServerMessage;
+/// <summary>The opponent sent an emote (bots may answer with <see cref="BotEmote"/>).</summary>
+public sealed record BotOpponentEmote(Guid MatchId, int Seat, string EmoteId) : BotServerMessage;
 public sealed record BotHello(int Protocol, Guid BotId, string BotName, long ServerTimeMs) : BotServerMessage;
 public sealed record BotGameStart(Guid MatchId, MatchMode Mode, TimeControl TimeControl, RuleSetDto Rules, int Seat, Color You,
     PlayerCardDto Opponent) : BotServerMessage;
@@ -25,7 +28,10 @@ public sealed record BotPing(long T) : BotServerMessage;
 [JsonDerivedType(typeof(BotSeek), "seek")] [JsonDerivedType(typeof(BotUnseek), "unseek")]
 [JsonDerivedType(typeof(BotAcceptChallenge), "acceptChallenge")] [JsonDerivedType(typeof(BotAction), "action")]
 [JsonDerivedType(typeof(BotResign), "resign")] [JsonDerivedType(typeof(BotGetState), "getState")] [JsonDerivedType(typeof(BotPong), "pong")]
+[JsonDerivedType(typeof(BotEmote), "emote")]
 public abstract record BotClientMessage;
+/// <summary>Bot emote (EmoteCatalog id); rate-limited like a player's.</summary>
+public sealed record BotEmote(string? Id, Guid MatchId, string EmoteId) : BotClientMessage;
 public sealed record BotSeek(string? Id, TimeControl[] TimeControls, int MaxConcurrentGames) : BotClientMessage;
 public sealed record BotUnseek(string? Id) : BotClientMessage;
 public sealed record BotAcceptChallenge(string Id, string Code) : BotClientMessage;

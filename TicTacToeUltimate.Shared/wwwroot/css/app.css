@@ -64,6 +64,27 @@ body { min-height: 100dvh; }
 .match-hint { font: var(--type-body-sm); color: var(--ink-muted); text-align: center; min-height: 20px; }
 .match-hint-blocked { color: var(--alert); font-weight: 600; }
 .match-hint-sub { opacity: .8; }
+.t-player .tag { font: 600 11px/14px var(--font-sans); letter-spacing: .02em; color: var(--ink-muted); display: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Phones: everything fits one screen. Header info moves into the top card, the board shrinks to the space left, hints stay one line,
+   the BLOCK IT! callout floats over the board instead of pushing it down. */
+@media (max-width: 899px) {
+  :root { --match-chrome: 356px; }
+  .match { gap: 8px; padding: 6px 12px 8px; min-height: 100dvh; justify-content: space-between; }
+  .match-shell .match { min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+  .match .match-header { display: none; }
+  .t-player .tag { display: block; }
+  .match .t-player { padding: 8px 12px; gap: 10px; }
+  .match .t-player .name { font-size: 14px; line-height: 18px; }
+  .match .t-player .meta { font-size: 12px; line-height: 16px; }
+  .match .t-clock { font-size: 24px; padding: 6px 12px; min-width: 84px; }
+  .match-board { gap: 6px; position: relative; flex: 1; min-height: 0; }
+  .match .t-board { width: min(var(--board), calc(100dvh - var(--match-chrome) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 100%); height: auto; }
+  .match .t-cell { font-size: calc(min(var(--board), 100dvh - var(--match-chrome)) * .17); }
+  .match-hint { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; min-height: 18px; font-size: 12px; line-height: 18px; }
+  .threat-callout { position: absolute; top: -4px; left: 50%; transform: translateX(-50%); z-index: 3; font-size: 22px; pointer-events: none; }
+  .match-actions { gap: 10px; }
+  .match .ad-slot { height: 50px; margin-top: 0; }
+}
 .threat-callout { font: 400 28px/1 var(--font-headline); color: var(--alert); letter-spacing: .02em; }
 .match-actions { display: flex; gap: 12px; justify-content: center; }
 .match .emote-bubble { position: absolute; right: 12px; top: -14px; background: var(--surface-raised); border-radius: var(--radius-md); padding: 4px 10px; font-weight: 800; box-shadow: var(--ledge-neutral); z-index: 2; }
@@ -94,6 +115,16 @@ body { min-height: 100dvh; }
 .at-title .t-icon { width: 22px; height: 22px; color: var(--primary); }
 .at-blunders { font: 700 12px/1 var(--font-sans); padding: 5px 10px; border-radius: 999px; color: #ff6b81; background: color-mix(in srgb, #ff6b81 16%, transparent); }
 .result-actions { display: flex; flex-direction: column; gap: var(--space-3); margin-top: auto; }
+.badge { position: absolute; top: -6px; right: -10px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--alert); color: #fff; font: 800 11px/18px var(--font-sans); text-align: center; }
+.nav-ico { position: relative; display: inline-grid; }
+.inbox-btn { position: relative; }
+.t-chip.unread { background: var(--alert); color: #fff; }
+.replay-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.play-again { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; padding: 16px 18px 14px; border: 0; border-radius: 20px; cursor: pointer;
+  background: var(--primary-fill); color: var(--on-primary); box-shadow: var(--ledge-primary, 0 6px 0 #4a24a8); }
+.play-again:active { transform: translateY(3px); box-shadow: none; }
+.play-again-title { font: 400 30px/1 var(--font-headline); letter-spacing: .02em; }
+.play-again-sub { font: 600 13px/16px var(--font-sans); opacity: .85; }
 .result-social { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 8px; padding: 6px 4px 0; }
 .result-social .rs-player { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 72px; }
 .result-social .rs-player:last-child { }

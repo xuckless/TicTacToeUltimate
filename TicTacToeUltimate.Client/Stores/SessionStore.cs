@@ -37,11 +37,15 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     public event Action<ServerHelloDto>? HelloReceived;
 
     /// <summary>Creates the store.</summary>
+    private readonly IPushService? _push;
+    private bool _pushRegistered;
+
     public SessionStore(TttApiClient api, IRealtimeTransport rt, TokenStore tokens, IKeyValueStore kv, ClientOptions options, ILogger<SessionStore> logger,
-        SupabaseAuthClient? supa = null)
+        SupabaseAuthClient? supa = null, IPushService? push = null)
         : base(SessionState.Initial)
     {
         _supa = supa ?? new SupabaseAuthClient(new HttpClient());
+        _push = push;
         _api = api; _rt = rt; _tokens = tokens; _kv = kv; _options = options; _logger = logger;
         _rt.Handshake = HelloAsync;
         _rt.PhaseChanged += () => Update(s => s with { Connection = _rt.Phase, ReconnectAttempt = _rt.ReconnectAttempt });
@@ -146,6 +150,27 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
             DailyYourTurn = hello.DailyYourTurn, Error = null,
         });
         HelloReceived?.Invoke(hello);
+        if (!_pushRegistered) { _pushRegistered = true; _ = RegisterPushAsync(); }
+    }
+
+    /// <summary>
+    /// Push: ask once (from the 2nd launch on, so the first thing a new player sees is the game, not a permission prompt),
+    /// then send the device token so Bert can nudge about streaks, challenges and messages.
+    /// </summary>
+    private async Task RegisterPushAsync()
+    {
+        if (_push is null || _options.Platform is ClientPlatform.Web or ClientPlatform.MacCatalyst) return;
+        try
+        {
+            var launches = int.TryParse(await _kv.GetAsync("ttt.launches"), out var n) ? n + 1 : 1;
+            await _kv.SetAsync("ttt.launches", launches.ToString(CultureInfo.InvariantCulture));
+            if (launches < 2) return;
+            if (!await _push.RequestPermissionAsync()) return;
+            var token = await _push.GetTokenAsync();
+            if (string.IsNullOrEmpty(token)) return;
+            await _api.RegisterPushAsync(new RegisterPushDto(_options.Platform == ClientPlatform.Android ? "android" : "ios", token));
+        }
+        catch (Exception ex) { _logger.LogDebug(ex, "Push registration skipped"); }
     }
 
     /// <inheritdoc />
