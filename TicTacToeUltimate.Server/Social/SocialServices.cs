@@ -7,6 +7,19 @@ using TicTacToeUltimate.Server.Ratings;
 namespace TicTacToeUltimate.Server.Social;
 
 /// <summary>IPlayerCardService backed by users + ratings. Rating/tier are shown only for visible pools.</summary>
+/// <summary>
+/// Bots carry no BOT badge (owner decision 2026-10-16; the Terms say opponents may be AI): public DTOs show them as
+/// ordinary accounts with a stable, plausible rating. Internally (seats, matchmaking, ratings, admin) they stay bots.
+/// </summary>
+public static class BotPersona
+{
+    /// <summary>The kind other players see.</summary>
+    public static AccountKind PublicKind(AccountKind k) => k == AccountKind.Bot ? AccountKind.Account : k;
+
+    /// <summary>A stable rating in 1150..1650 from the bot's id.</summary>
+    public static int Rating(Guid botId) => 1150 + (int)(BitConverter.ToUInt32(botId.ToByteArray(), 0) % 501);
+}
+
 public sealed class PlayerCardService(IUserRepository users, IRatingRepository ratings, RatingService ratingService, TierCalculator tiers) : IPlayerCardService
 {
     public async Task<PlayerCardDto> GetCardAsync(Guid userId, RatingPool pool, CancellationToken ct)
@@ -22,14 +35,19 @@ public sealed class PlayerCardService(IUserRepository users, IRatingRepository r
         {
             if (!map.TryGetValue(id, out var u)) { result[id] = new PlayerCardDto(id, "Player", "a1", null, AccountKind.Account, null, null, false); continue; }
             TierDto? tier = null; int? rating = null; var provisional = false;
-            if (visible && u.Kind != AccountKind.Guest)
+            if (visible && u.Kind == AccountKind.Bot)
+            {
+                rating = BotPersona.Rating(id);
+                tier = tiers.For(rating.Value);
+            }
+            else if (visible && u.Kind != AccountKind.Guest)
             {
                 var r = await ratings.GetAsync(id, pool, ct);
                 rating = (int)Math.Round(r.Rating);
                 provisional = ratingService.IsProvisional(r);
                 tier = tiers.For(r.Rating);
             }
-            result[id] = new PlayerCardDto(id, u.DisplayName, u.AvatarId, u.Country, u.Kind, tier, rating, provisional);
+            result[id] = new PlayerCardDto(id, u.DisplayName, u.AvatarId, u.Country, BotPersona.PublicKind(u.Kind), tier, rating, provisional);
         }
         return result;
     }

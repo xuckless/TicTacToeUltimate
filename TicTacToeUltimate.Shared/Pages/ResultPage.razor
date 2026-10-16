@@ -122,11 +122,7 @@ else
                     <span class="play-again-sub">@(_view.Snapshot.TimeControl == TimeControl.Daily ? "Start another daily game" : $"Find a new {Ui.TimeControlName(_view.Snapshot.TimeControl).ToLowerInvariant()} opponent")</span>
                 </button>
             }
-            @if (RematchAllowed && opp?.Player.Kind == AccountKind.Bot)
-            {
-                <div class="t-small t-muted" style="text-align:center">Bots don't take rematches. Start a new match for another opponent.</div>
-            }
-            else if (RematchAllowed)
+            @if (RematchAllowed)
             {
                 <Button Variant="secondary" Block="true" OnClick="Rematch" Disabled="@(_view.RematchOfferedByMe || _rematchExpired)" data-testid="rematch">
                     @(_rematchExpired ? "No answer to the rematch" : _view.RematchOfferedByMe ? $"Rematch offered… {_rematchLeft}s" : _view.RematchOfferedByOpponent ? "Accept rematch" : "Rematch")

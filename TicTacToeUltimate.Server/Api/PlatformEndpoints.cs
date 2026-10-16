@@ -114,6 +114,8 @@ public static class PlatformEndpoints
             var card = await cards.GetCardAsync(u.Id, RatingPools.Headline, ct);
             var visible = await ratings.VisibleAsync(u.Id, time.GetUtcNow(), ct);
             var list = await games.ListForUserAsync(u.Id, null, 500, ct);
+            if (u.Kind == AccountKind.Bot && card is { Rating: int botRating, Tier: { } botTier })
+                visible = [new RatingDto(RatingPools.Headline, botRating, 60, Math.Max(list.Count, 40), false, botTier, 0)];
             int wins = 0, losses = 0, draws = 0;
             foreach (var g in list)
             {

@@ -186,7 +186,8 @@ public sealed class EndToEndTests
         Assert.True(ticket.Accepted, ticket.Error);
         await f.PumpUntilAsync(() => !human.Found.IsEmpty, Tick, 200);   // BotFallbackSeconds = 20
         human.Found.TryPeek(out var found);
-        Assert.Equal(AccountKind.Bot, found!.Opponent.Kind);
+        // Bots carry no BOT badge (owner decision 2026-10-16): the human sees an ordinary account.
+        Assert.Equal(AccountKind.Account, found!.Opponent.Kind);
         var matchId = found.MatchId;
         await human.InvokeAsync<MatchSnapshotDto>(nameof(IGameHub.JoinMatch), matchId);
 

@@ -8,8 +8,14 @@ namespace TicTacToeUltimate.Server.Moderation;
 /// <summary>Player-facing moderation: standing (penalties in force), appeals, reports.</summary>
 public static class ModerationEndpoints
 {
-    public static IServiceCollection AddTttModeration(this IServiceCollection services)
+    public static IServiceCollection AddTttModeration(this IServiceCollection services, IConfiguration cfg)
     {
+        services.Configure<AntiCheatOptions>(cfg.GetSection("Ttt:AntiCheat"));
+        services.AddSingleton<CheatScorer>();
+        if (string.Equals(cfg["Ttt:Persistence:Provider"], "Postgres", StringComparison.OrdinalIgnoreCase))
+            services.AddSingleton<IGameMetricsRepository, PgGameMetricsRepository>();
+        else
+            services.AddSingleton<IGameMetricsRepository, InMemoryGameMetricsRepository>();
         services.AddSingleton<ModerationService>();
         services.AddSingleton(_ => new ChatFilter());   // not the IEnumerable<string> ctor (DI would pass an empty list)
         services.AddSingleton<AiModerator>();

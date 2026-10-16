@@ -88,7 +88,8 @@ public static partial class BotKeyEndpoints
         var session = new BotSession(socket, botUser, sp.GetService<IMatchGateway>(), sp.GetService<IChallengeService>(),
             sp.GetRequiredService<BotPool>(), sp.GetRequiredService<TimeProvider>(),
             sp.GetRequiredService<ILoggerFactory>().CreateLogger<BotSession>(), sp.GetService<BotSessionSettings>(),
-            trusted: sp.GetRequiredService<BotKeyResolver>().IsTrusted(botUser.UserId));
+            trusted: sp.GetRequiredService<BotKeyResolver>().IsTrusted(botUser.UserId),
+            isShadow: sp.GetService<TicTacToeUltimate.Server.Moderation.ModerationService>() is { } mod ? mod.IsShadowCached : null);
         // Closes with the request, or when a deploy's drain ends (botd reconnects to the next server).
         var closeAll = sp.GetService<TicTacToeUltimate.Server.Matches.ServerDrain>()?.CloseAll ?? CancellationToken.None;
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(http.RequestAborted, closeAll);

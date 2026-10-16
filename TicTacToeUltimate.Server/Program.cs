@@ -12,7 +12,7 @@ builder.Services.AddTttPlatform(cfg, builder.Environment);   // WP3: auth, persi
 builder.Services.AddTttAnalysis(cfg);                        // WP1: tablebase cache, analysis
 builder.Services.AddTttMatches(cfg);                         // WP2: actors, registry, matchmaking, challenges, presence
 builder.Services.AddTttBots(cfg);                            // WP4: bot gateway
-builder.Services.AddTttModeration();                         // moderation: penalties, bans, reports
+builder.Services.AddTttModeration(cfg);                         // moderation: penalties, bans, reports
 builder.Services.AddTttCore(cfg, builder.Environment);       // WP0: MUST BE LAST (options, TimeProvider, SignalR, CORS, TryAdd null fallbacks)
 
 var app = builder.Build();

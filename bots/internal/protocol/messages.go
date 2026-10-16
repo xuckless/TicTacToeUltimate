@@ -33,6 +33,8 @@ type GameStart struct {
 	Seat        int      `json:"seat"`
 	You         string   `json:"you"`
 	Opponent    Opponent `json:"opponent"`
+	// OpponentShadow: the opponent is in the anti-cheat shadow pool (play at full strength, see brain.ShadowTarget).
+	OpponentShadow bool `json:"opponentShadow"`
 }
 
 // State from the server.

@@ -51,9 +51,12 @@ public sealed class BotSession : IMatchObserver, IBotSeeker
     private CancellationTokenSource? _cts;
 
     /// <summary>Creates a session for an authenticated bot socket.</summary>
+    private readonly Func<Guid, bool>? _isShadow;
+
     public BotSession(WebSocket socket, TttUser bot, IMatchGateway? gateway, IChallengeService? challenges, BotPool pool,
-        TimeProvider time, ILogger log, BotSessionSettings? settings = null, bool trusted = false)
+        TimeProvider time, ILogger log, BotSessionSettings? settings = null, bool trusted = false, Func<Guid, bool>? isShadow = null)
     {
+        _isShadow = isShadow;
         _socket = socket; _bot = bot; _gateway = gateway; _challenges = challenges; _pool = pool; _time = time; _log = log;
         _settings = settings ?? BotSessionSettings.Default;
         Trusted = trusted;
@@ -286,7 +289,7 @@ public sealed class BotSession : IMatchObserver, IBotSeeker
         {
             match.Subscription = attached.Subscription;
             match.Init(s, seat);
-            Send(new BotGameStart(matchId, s.Mode, s.TimeControl, s.Rules, seat, match.You, opponent));
+            Send(new BotGameStart(matchId, s.Mode, s.TimeControl, s.Rules, seat, match.You, opponent, _isShadow?.Invoke(opponent.UserId) == true));
             Send(match.ToState(NowMs));
             if (s.Result is not null) match.EmitEnd(s.Result, Send);
             match.Ready = true;
