@@ -6,7 +6,7 @@
 @inject NavigationManager Nav
 @inject ToastService Toasts
 
-<PageTitle>Play · TTT Ultimate</PageTitle>
+<PageTitle>Play · Tic Tac Toe Ultimate</PageTitle>
 <h1 class="play-title"><BounceText Text="Play" /></h1>
 
 @foreach (var group in Groups)
@@ -102,6 +102,8 @@
     private RatingDto? RankedRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPools.Headline);
     private RatingDto? ArenaRating => Session.State.Me?.Ratings.FirstOrDefault(r => r.Pool == RatingPool.ArenaRanked);
 
+    private TimeControl? _autoEnter;
+
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
@@ -110,12 +112,24 @@
         if (Queue.State.Phase == QueuePhase.Idle && Enum.TryParse<TimeControl>(Tc, true, out var tc))
         {
             if (tc == TimeControl.Daily) { Nav.NavigateTo("daily"); return; }
-            if (!(IsGuest && Modes.First(m => m.Tc == tc).Guests == false)) await Enter(tc);
+            var mode = Modes.FirstOrDefault(m => m.Tc == tc);
+            if (mode is null || (IsGuest && !mode.Guests)) return;
+            // On a cold load (deep link / refresh) the realtime connection isn't up yet: queue as soon as it is.
+            if (Session.State.Connection == ConnectionPhase.Online) await Enter(tc);
+            else _autoEnter = tc;
         }
     }
 
     /// <inheritdoc />
-    protected override void OnStoresChanged() => CheckFound();
+    protected override void OnStoresChanged()
+    {
+        if (CheckFound()) return;
+        if (_autoEnter is { } tc && Session.State.Connection == ConnectionPhase.Online && Queue.State.Phase == QueuePhase.Idle)
+        {
+            _autoEnter = null;
+            _ = InvokeAsync(() => Enter(tc));
+        }
+    }
 
     private bool CheckFound()
     {

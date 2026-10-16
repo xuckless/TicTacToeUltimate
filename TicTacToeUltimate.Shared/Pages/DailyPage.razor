@@ -3,7 +3,7 @@
 @inject IQueueStore Queue
 @inject NavigationManager Nav
 
-<PageTitle>Daily · TTT Ultimate</PageTitle>
+<PageTitle>Daily · Tic Tac Toe Ultimate</PageTitle>
 <div class="t-spread"><h1 class="t-title">Daily</h1><Button Variant="primary" Small="true" OnClick="NewGame" Disabled="@(_games.Count >= 10)">New game</Button></div>
 <p class="t-small t-muted" style="margin:0">24 hours per move. Up to 10 games at once.</p>
 
@@ -13,7 +13,7 @@
 }
 else if (_games.Count == 0)
 {
-    <Card><p style="margin:0">No daily games yet. Start one and play at your own pace.</p></Card>
+    <Card><div class="t-empty"><Bert Mood="sleepy" Size="64" /><span>No daily games yet. Start one and play at your own pace.</span></div></Card>
 }
 else
 {

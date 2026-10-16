@@ -18,7 +18,7 @@ body { min-height: 100dvh; }
   .shell-main { padding-bottom: 0; }
   .shell .t-side { display: flex; position: sticky; top: 0; height: 100dvh; }
   .shell .t-nav { display: none; }
-  .page { padding: var(--space-6) var(--space-4); }
+  .page { padding: var(--space-8) var(--space-4) var(--space-6); }
 }
 /* Board snaps to fixed sizes by viewport height (never vw/vh-scaled), so it looks identical at any resolution or zoom. */
 @media (max-height: 700px), (max-width: 380px) { :root { --board: 300px; } }
@@ -31,7 +31,7 @@ body { min-height: 100dvh; }
   border-radius: var(--radius-lg); box-shadow: var(--ledge-primary); padding: 20px; border: 0; width: 100%; cursor: pointer; text-align: left; transition: transform 80ms, box-shadow 80ms; }
 .play-hero:active { transform: translateY(4px); box-shadow: none; }
 .play-hero .txt { display: flex; flex-direction: column; gap: 4px; }
-.play-hero .big { font: 400 40px/1.05 var(--font-headline); letter-spacing: .01em; text-shadow: 0 3px 0 var(--primary-shade); }
+.play-hero .big { font: 400 40px/1.15 var(--font-headline); letter-spacing: .01em; text-shadow: 0 3px 0 var(--primary-shade); margin-top: 6px; }
 .play-hero .tierline { display: flex; align-items: center; gap: 8px; font: var(--type-body-sm); }
 .mode-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .mode-btn { background: var(--surface); border: 2px solid var(--line-strong); border-radius: var(--radius-md); box-shadow: var(--ledge-neutral); color: var(--ink);
@@ -114,7 +114,10 @@ body { min-height: 100dvh; }
 /* ---- Pass & Play (offline, one device) ---- */
 .local-entry { flex-direction: row; justify-content: space-between; align-items: center; padding: 14px 16px; text-decoration: none; }
 .local-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.local-opt { min-width: 0; }
+.local-opt { min-width: 0; padding: 14px 34px 12px 12px; }
+.local-options > .mode-wrap:last-child:nth-child(odd) { grid-column: span 2; }
+.local-options .info-btn.corner, .lobby-modes .info-btn.corner { top: 6px; right: 6px; width: 22px; height: 22px; min-width: 22px; font-size: 12px; }
+.local-opt .t-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .local-opt.on { outline: 3px solid var(--primary); outline-offset: 0; }
 .local-toggle { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
 .local-toggle input { width: 22px; height: 22px; margin-top: 2px; flex: none; }
@@ -255,3 +258,4 @@ body { min-height: 100dvh; }
   100% { transform: translate(var(--sway), 112vh) rotate(calc(var(--r0) + 600deg)); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .confetti { display: none; } }
 :root[data-motion="reduce"] .confetti { display: none; }
+.title-row { display: flex; align-items: center; gap: 10px; }
