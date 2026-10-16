@@ -68,7 +68,7 @@
     <PropertyGroup Condition="'$(Configuration)'=='Release' And '$(TTT_IOS_CODESIGN_KEY)'!=''">
         <CodesignKey>$(TTT_IOS_CODESIGN_KEY)</CodesignKey>
         <CodesignProvision>$(TTT_IOS_PROVISIONING_PROFILE)</CodesignProvision>
-        <CodesignEntitlements>Platforms\iOS\Entitlements.plist</CodesignEntitlements>
+        <CodesignEntitlements>Platforms\iOS\Entitlements.AppStore.plist</CodesignEntitlements>
         <ArchiveOnBuild>true</ArchiveOnBuild>
     </PropertyGroup>
     <!-- Apple privacy manifest (required reason APIs + AdMob tracking). Missing manifest = ITMS-91053 at upload. -->
