@@ -5,7 +5,7 @@
 Tic Tac Toe Ultimate
 
 ## Subtitle (iOS)
-Tres en raya que se desvanece
+Tres en raya sin empates
 
 ## Short description (Google Play)
 Tres en raya donde tu pieza más vieja desaparece. Siempre hay un ganador.

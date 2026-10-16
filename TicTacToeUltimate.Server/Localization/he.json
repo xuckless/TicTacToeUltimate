@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "תורך",
+ "push.your_move.body": "תורך נגד {0}.",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "הרצף שלך של {0} ימים נגמר בחצות. משחק אחד ישמור עליו!",
+ "push.streak.2": "כאן Bert. {0} ימים ברצף… אל תיתן לזה להיעלם כמו כלי ותיק.",
+ "push.streak.3": "פססט — הרצף שלך של {0} ימים מחכה. משחק קצר?",
+ "push.comeback.title": "Bert מאתגר אותך",
+ "push.comeback.1": "Bert מאתגר אותך למשחק. חושב שעוד יש לך את זה?",
+ "push.comeback.2": "הלוח מתגעגע אליך. משחק קליל לוקח 90 שניות.",
+ "push.comeback.3": "יריבים חדשים מחוברים עכשיו. קופץ?",
+ "notify.promoted": "עלית דרגה!",
+ "notify.demoted": "ירדת דרגה",
+ "notify.emote": "שלח לך אימוט",
+ "tier.Bronze": "ארד",
+ "tier.Silver": "כסף",
+ "tier.Gold": "זהב",
+ "tier.Platinum": "פלטינה",
+ "tier.Diamond": "יהלום",
+ "tier.Master": "מאסטר"
+}

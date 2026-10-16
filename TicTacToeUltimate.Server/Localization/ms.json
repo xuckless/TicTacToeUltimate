@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "Giliran anda",
+ "push.your_move.body": "Giliran anda menentang {0}.",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "Streak {0} hari anda tamat tengah malam. Satu permainan cukup untuk kekalkannya!",
+ "push.streak.2": "Bert di sini. {0} hari berturut… jangan biar ia pudar macam buah lama.",
+ "push.streak.3": "Psst — streak {0} hari anda sedang menunggu. Satu permainan pantas?",
+ "push.comeback.title": "Bert mencabar anda",
+ "push.comeback.1": "Bert cabar anda bermain. Rasa masih hebat?",
+ "push.comeback.2": "Papan rindukan anda. Permainan kasual cuma 90 saat.",
+ "push.comeback.3": "Lawan baharu sedang dalam talian sekarang. Jom masuk?",
+ "notify.promoted": "Naik tahap!",
+ "notify.demoted": "Turun tahap",
+ "notify.emote": "hantar emote kepada anda",
+ "tier.Bronze": "Gangsa",
+ "tier.Silver": "Perak",
+ "tier.Gold": "Emas",
+ "tier.Platinum": "Platinum",
+ "tier.Diamond": "Berlian",
+ "tier.Master": "Master"
+}

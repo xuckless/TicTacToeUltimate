@@ -242,7 +242,7 @@
  "friendsOnlineRow.no_friends_online_right_now": "Inga vänner online just nu.",
  "friendsOnlineRow.see_all": "Visa alla",
  "gameRow.a": "A",
- "gameRow.d": "O",
+ "gameRow.d": "=",
  "gameRow.l": "F",
  "gameRow.vs": "mot {0} · {1}",
  "gameRow.vs_timeout": "mot {0} · {1} · tiden ute",

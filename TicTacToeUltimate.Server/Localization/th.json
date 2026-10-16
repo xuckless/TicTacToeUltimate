@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "ตาคุณแล้ว",
+ "push.your_move.body": "ถึงตาคุณเล่นกับ {0} แล้ว",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "สตรีค {0} วันของคุณจะขาดตอนเที่ยงคืน เล่นแค่เกมเดียวก็รอด!",
+ "push.streak.2": "Bert เองนะ {0} วันติดแล้ว… อย่าปล่อยให้จางหายเหมือนหมากเก่าล่ะ",
+ "push.streak.3": "ชู่ว — สตรีค {0} วันรอคุณอยู่ เล่นสักเกมเร็วๆ ไหม?",
+ "push.comeback.title": "Bert ท้าคุณ",
+ "push.comeback.1": "Bert ท้าคุณเล่นหนึ่งเกม ยังเก่งเหมือนเดิมไหม?",
+ "push.comeback.2": "กระดานคิดถึงคุณ เกมแคชชวลใช้แค่ 90 วินาที",
+ "push.comeback.3": "มีคู่แข่งใหม่ออนไลน์อยู่ตอนนี้ ลุยเลยไหม?",
+ "notify.promoted": "เลื่อนระดับ!",
+ "notify.demoted": "ตกระดับ",
+ "notify.emote": "ส่งอีโมตถึงคุณ",
+ "tier.Bronze": "บรอนซ์",
+ "tier.Silver": "ซิลเวอร์",
+ "tier.Gold": "โกลด์",
+ "tier.Platinum": "แพลทินัม",
+ "tier.Diamond": "ไดมอนด์",
+ "tier.Master": "มาสเตอร์"
+}

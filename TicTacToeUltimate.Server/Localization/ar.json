@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "دورك",
+ "push.your_move.body": "حان دورك ضد {0}.",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "سلسلتك ذات {0} يوم تنتهي منتصف الليل. مباراة واحدة تبقيها حيّة!",
+ "push.streak.2": "معك Bert. {0} يوم من القوة… لا تدعها تختفي مثل قطعة قديمة.",
+ "push.streak.3": "مرحبًا — سلسلتك ذات {0} يوم بانتظارك. مباراة سريعة؟",
+ "push.comeback.title": "Bert يتحدّاك",
+ "push.comeback.1": "Bert يتحدّاك في مباراة. تظن أنك ما زلت قويًا؟",
+ "push.comeback.2": "اللوحة تفتقدك. المباراة العادية تستغرق 90 ثانية.",
+ "push.comeback.3": "خصوم جدد متصلون الآن. تنضم؟",
+ "notify.promoted": "ترقية!",
+ "notify.demoted": "تراجع المستوى",
+ "notify.emote": "أرسل إليك تعبيرًا",
+ "tier.Bronze": "برونزي",
+ "tier.Silver": "فضي",
+ "tier.Gold": "ذهبي",
+ "tier.Platinum": "بلاتيني",
+ "tier.Diamond": "ماسي",
+ "tier.Master": "أستاذ"
+}

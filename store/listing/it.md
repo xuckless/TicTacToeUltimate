@@ -5,7 +5,7 @@
 Tic Tac Toe Ultimate
 
 ## Subtitle (iOS)
-Il tris dove i pezzi spariscono
+Tris dove i pezzi spariscono
 
 ## Short description (Google Play)
 Il tris dove il tuo pezzo più vecchio sparisce. Ogni partita ha un vincitore.
@@ -14,7 +14,7 @@ Il tris dove il tuo pezzo più vecchio sparisce. Ogni partita ha un vincitore.
 tris,filetto,tic tac toe,xo,strategia,puzzle,gioco da tavolo,pvp,multigiocatore,arena,amici,logica
 
 ## Promotional text (iOS)
-Novità: modalità Arena con barre della vita, scala classificata, missioni giornaliere e Bert, il tuo fantasma preferito. Sfida gli amici con un link o gioca in pochi secondi.
+Novità: Arena con barre della vita, scala classificata, missioni giornaliere e Bert, il tuo fantasma preferito. Sfida gli amici con un link o gioca in pochi secondi.
 
 ## Description
 Il tris classico finisce in pareggio. Questo mai.

@@ -575,3 +575,5 @@ body { min-height: 100dvh; }
 }
 :root[data-contrast="high"] :focus-visible { outline: 3px solid var(--line-strong); outline-offset: 3px; }
 :root[data-contrast="high"] .t-card, :root[data-contrast="high"] .t-sheet { border: 2px solid var(--line); }
+/* The wordmark is a Latin brand lockup: it reads left to right even on right-to-left pages. */
+.brand, .signin-logo, .splash-logo, .home-header .brand { direction: ltr; unicode-bidi: isolate; }
