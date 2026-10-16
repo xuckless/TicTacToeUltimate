@@ -84,7 +84,8 @@ public sealed class ChatRateLimiter(TimeProvider time, double perSecond = 1, int
 /// <summary>Friends, blocks and DMs (§6.7 Social).</summary>
 public sealed class SocialService(
     IUserRepository users, IFriendRepository friends, IChatRepository chat, IPlayerCardService cards, PresenceLookup presence,
-    IUserNotifier notifier, ProfanityFilter profanity, ChatRateLimiter limiter, TimeProvider time, ILogger<SocialService> logger)
+    IUserNotifier notifier, ProfanityFilter profanity, ChatRateLimiter limiter, TimeProvider time, ILogger<SocialService> logger,
+    TicTacToeUltimate.Server.Moderation.ModerationService? moderation = null)
 {
     /// <summary>Max DM length.</summary>
     public const int MaxBody = 500;
@@ -182,6 +183,7 @@ public sealed class SocialService(
         if (await friends.IsBlockedEitherWayAsync(me, to, ct)) return (null, ErrorCodes.Blocked);
         if (!await friends.AreFriendsAsync(me, to, ct)) return (null, ErrorCodes.NotFriends);
         if (!limiter.TryTake(me)) return (null, ErrorCodes.RateLimited);
+        if (moderation is not null && await moderation.ChatMuteAsync(me, ct) is not null) return (null, ErrorCodes.ChatMuted);
         var rec = await chat.AppendAsync(me, to, profanity.Mask(text), time.GetUtcNow(), ct);
         var dto = ToDto(rec);
         await Safe(() => notifier.ToUsersAsync([to, me], c => c.DirectMessage(dto)));

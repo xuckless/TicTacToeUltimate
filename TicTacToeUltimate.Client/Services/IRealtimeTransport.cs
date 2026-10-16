@@ -47,4 +47,8 @@ public interface IRealtimeTransport : IGameHub
     event Action<DirectMessageDto>? DirectMessageReceived;
     /// <summary>Server pushes.</summary>
     event Action<NotificationDto>? NotificationReceived;
+    /// <summary>Server pushes: a moderation penalty on this account.</summary>
+    event Action<PenaltyDto>? PenaltyReceived;
+    /// <summary>Server pushes: a DM was removed by moderation.</summary>
+    event Action<MessageHiddenDto>? MessageHiddenReceived;
 }

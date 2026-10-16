@@ -1,0 +1,53 @@
+@inject IModerationStore Moderation
+
+@* What happened, why, until when, and a one-time appeal (owner decision 2026-10-16). *@
+<div class="penalty-notice" data-testid="penalty-notice">
+    <Bert Mood="@(Penalty.Kind == "warn" ? "think" : "sad")" Size="72" />
+    <h2 class="t-heading">@Title</h2>
+    <p class="t-muted" style="margin:0">@Penalty.Reason</p>
+    @if (Until is { } until) { <p class="t-small" style="margin:0" data-testid="penalty-until">Until @until</p> }
+    else if (Penalty.Kind == "ban") { <p class="t-small" style="margin:0">This ban is permanent.</p> }
+    @if (Penalty.Kind == "warn") { <p class="t-small t-muted" style="margin:0">Further breaks of the chat rules mute your chat for longer.</p> }
+
+    @if (Penalty.AppealStatus is { } status)
+    {
+        <p class="t-small penalty-appeal-status" role="status">@(status switch { "approved" => "Your appeal was approved.", "denied" => "Your appeal was reviewed and denied.", _ => "Appeal sent. We'll review it soon." })</p>
+    }
+    else if (Penalty.CanAppeal)
+    {
+        @if (!_appealing) { <Button Variant="secondary" Small="true" OnClick="() => _appealing = true" data-testid="appeal-open">Appeal</Button> }
+        else
+        {
+            <div class="t-field" style="width:100%">
+                <label class="t-label" for="appeal-text">Tell us why this was a mistake</label>
+                <textarea id="appeal-text" class="t-input" rows="4" maxlength="1000" @bind="_text" @bind:event="oninput"></textarea>
+            </div>
+            <Button Variant="primary" Block="true" OnClick="Send" Disabled="@(_busy || string.IsNullOrWhiteSpace(_text))" data-testid="appeal-send">Send appeal</Button>
+            @if (_error is not null) { <p class="t-alert" role="alert">@_error</p> }
+        }
+    }
+    @ChildContent
+</div>
+
+@code {
+    private bool _appealing, _busy;
+    private string _text = "";
+    private string? _error;
+
+    /// <summary>The penalty shown.</summary>
+    [Parameter, EditorRequired] public PenaltyDto Penalty { get; set; } = default!;
+    /// <summary>Extra actions under the notice.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string Title => Penalty.Kind switch { "ban" => "Your account is banned", "chat_mute" => "Your chat is muted", _ => "Warning" };
+    private string? Until => Penalty.EndsAtMs is { } ms ? DateTimeOffset.FromUnixTimeMilliseconds(ms).ToLocalTime().ToString("g") : null;
+
+    private async Task Send()
+    {
+        _busy = true; _error = null;
+        var err = await Moderation.AppealAsync(Penalty.Id, _text.Trim());
+        _busy = false;
+        if (err is null) { _appealing = false; Penalty = Penalty with { CanAppeal = false, AppealStatus = "open" }; }
+        else _error = err == ErrorCodes.AlreadyAppealed ? "You already appealed this." : "Couldn't send the appeal. Try again.";
+    }
+}

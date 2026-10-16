@@ -54,7 +54,7 @@ else
     private async Task<bool> Send(string body)
     {
         var ack = await Social.SendMessageAsync(UserId, body);
-        if (!ack.Ok) Toasts.Show(ack.Error == ErrorCodes.NotFriends ? "You can only message mutual friends." : "Message not sent.", ToastKind.Error);
+        if (!ack.Ok) Toasts.Show(ack.Error == ErrorCodes.NotFriends ? "You can only message mutual friends." : Ui.ErrorToastText(ack.Error, "Message not sent."), ToastKind.Error);
         return ack.Ok;
     }
 }

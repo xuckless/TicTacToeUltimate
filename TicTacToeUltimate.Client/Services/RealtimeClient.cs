@@ -68,6 +68,10 @@ public sealed class RealtimeClient : IRealtimeTransport, IAsyncDisposable
     public event Action<DirectMessageDto>? DirectMessageReceived;
     /// <inheritdoc />
     public event Action<NotificationDto>? NotificationReceived;
+    /// <inheritdoc />
+    public event Action<PenaltyDto>? PenaltyReceived;
+    /// <inheritdoc />
+    public event Action<MessageHiddenDto>? MessageHiddenReceived;
 
     /// <inheritdoc />
     public Task StartAsync()
@@ -116,7 +120,9 @@ public sealed class RealtimeClient : IRealtimeTransport, IAsyncDisposable
     private HubConnection Build()
     {
         var conn = new HubConnectionBuilder()
-            .WithUrl(new Uri(_options.BackendBaseUrl, HubRoutes.Game), o => o.AccessTokenProvider = () => Task.FromResult(_tokens.Token))
+            // ?device= : browsers can't set headers on the WebSocket, and bans cover devices.
+            .WithUrl(new Uri(_options.BackendBaseUrl, HubRoutes.Game + (_tokens.DeviceId is { Length: > 0 } d ? "?device=" + Uri.EscapeDataString(d) : "")),
+                o => o.AccessTokenProvider = () => Task.FromResult(_tokens.Token))
             .WithAutomaticReconnect(_retry)
             .AddJsonProtocol(o => ClientJson.Configure(o.PayloadSerializerOptions))
             .Build();
@@ -133,6 +139,8 @@ public sealed class RealtimeClient : IRealtimeTransport, IAsyncDisposable
         conn.On(nameof(IGameClient.FriendsChanged), () => { SafeInvoke(() => FriendsChanged?.Invoke()); return Task.CompletedTask; });
         conn.On<DirectMessageDto>(nameof(IGameClient.DirectMessage), x => Raise(DirectMessageReceived, x));
         conn.On<NotificationDto>(nameof(IGameClient.Notification), x => Raise(NotificationReceived, x));
+        conn.On<PenaltyDto>(nameof(IGameClient.PenaltyApplied), x => Raise(PenaltyReceived, x));
+        conn.On<MessageHiddenDto>(nameof(IGameClient.MessageHidden), x => Raise(MessageHiddenReceived, x));
 
         conn.Reconnecting += _ =>
         {

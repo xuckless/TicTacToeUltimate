@@ -7,9 +7,11 @@ using TicTacToeUltimate.Contracts;
 namespace TicTacToeUltimate.Client.Services;
 
 /// <summary>REST failure with HTTP status and the ProblemDetails <c>code</c> extension.</summary>
-public sealed class TttApiException(HttpStatusCode status, string? code)
+public sealed class TttApiException(HttpStatusCode status, string? code, PenaltyDto? penalty = null)
     : Exception($"API error {(int)status}: {code}")
 {
+    /// <summary>The ban behind a 403 <c>banned</c>.</summary>
+    public PenaltyDto? Penalty { get; } = penalty;
     /// <summary>HTTP status.</summary>
     public HttpStatusCode Status { get; } = status;
     /// <summary>Error code from <see cref="ErrorCodes"/>, if any.</summary>
@@ -21,6 +23,8 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
 {
     /// <summary>Raised after a 401 response.</summary>
     public event Action? Unauthorized;
+    /// <summary>Raised when the server refuses this account or device with 403 <c>banned</c>.</summary>
+    public event Action<PenaltyDto>? Banned;
 
     private static readonly JsonSerializerOptions Json = ClientJson.Options;
 
@@ -32,6 +36,12 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
     public Task<TokenResponseDto> DevTokenAsync(DevTokenRequestDto request) => Send<TokenResponseDto>(HttpMethod.Post, "api/auth/dev/token", request)!;
     /// <summary>POST /api/auth/guest.</summary>
     public Task<TokenResponseDto> GuestTokenAsync(GuestTokenRequestDto request) => Send<TokenResponseDto>(HttpMethod.Post, "api/auth/guest", request)!;
+    /// <summary>GET /api/me/standing.</summary>
+    public Task<StandingDto?> GetStandingAsync() => Get<StandingDto>("api/me/standing");
+    /// <summary>POST /api/appeals.</summary>
+    public Task AppealAsync(AppealRequestDto request) => Send<object>(HttpMethod.Post, "api/appeals", request);
+    /// <summary>POST /api/reports.</summary>
+    public Task<ReportResultDto?> ReportAsync(ReportRequestDto request) => Send<ReportResultDto>(HttpMethod.Post, "api/reports", request);
     /// <summary>POST /api/auth/claim-guest.</summary>
     public Task<ReviewSessionDto?> ReviewSignInAsync(ReviewSignInDto request) => Send<ReviewSessionDto>(HttpMethod.Post, "api/auth/review", request);
     /// <summary>POST /api/auth/claim-guest.</summary>
@@ -117,26 +127,38 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
     {
         using var req = new HttpRequestMessage(method, path);
         if (tokens.Token is { Length: > 0 } token) req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        if (tokens.DeviceId is { Length: > 0 } device) req.Headers.TryAddWithoutValidation("X-Ttt-Device", device);
         if (body is not null) req.Content = JsonContent.Create(body, body.GetType(), options: Json);
         using var res = await http.SendAsync(req, ct).ConfigureAwait(false);
         if (res.StatusCode == HttpStatusCode.Unauthorized) Unauthorized?.Invoke();
-        if (!res.IsSuccessStatusCode) throw new TttApiException(res.StatusCode, await ReadCode(res, ct).ConfigureAwait(false));
+        if (!res.IsSuccessStatusCode)
+        {
+            var (code, penalty) = await ReadProblem(res, ct).ConfigureAwait(false);
+            if (code == ErrorCodes.Banned && penalty is not null) Banned?.Invoke(penalty);
+            throw new TttApiException(res.StatusCode, code, penalty);
+        }
         if (typeof(T) == typeof(object) || res.StatusCode == HttpStatusCode.NoContent || res.Content.Headers.ContentLength == 0) return default;
         return await res.Content.ReadFromJsonAsync<T>(Json, ct).ConfigureAwait(false);
     }
 
-    private static async Task<string?> ReadCode(HttpResponseMessage res, CancellationToken ct)
+    private static async Task<string?> ReadCode(HttpResponseMessage res, CancellationToken ct) => (await ReadProblem(res, ct).ConfigureAwait(false)).Code;
+
+    private static async Task<(string? Code, PenaltyDto? Penalty)> ReadProblem(HttpResponseMessage res, CancellationToken ct)
     {
         try
         {
             var text = await res.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(text)) return DefaultCode(res.StatusCode);
+            if (string.IsNullOrWhiteSpace(text)) return (DefaultCode(res.StatusCode), null);
             using var doc = JsonDocument.Parse(text);
             if (doc.RootElement.ValueKind == JsonValueKind.Object && doc.RootElement.TryGetProperty("code", out var c) && c.ValueKind == JsonValueKind.String)
-                return c.GetString();
+            {
+                PenaltyDto? penalty = null;
+                if (doc.RootElement.TryGetProperty("penalty", out var p) && p.ValueKind == JsonValueKind.Object) penalty = p.Deserialize<PenaltyDto>(Json);
+                return (c.GetString(), penalty);
+            }
         }
         catch (JsonException) { }
-        return DefaultCode(res.StatusCode);
+        return (DefaultCode(res.StatusCode), null);
     }
 
     private static string DefaultCode(HttpStatusCode status) => status switch

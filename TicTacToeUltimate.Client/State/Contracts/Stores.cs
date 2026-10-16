@@ -50,6 +50,21 @@ public interface ISessionStore : IStore<SessionState>
     Task<CommandAckDto> UpdateProfileAsync(UpdateProfileDto patch);
 }
 
+/// <summary>Moderation as this player sees it: a ban (blocks the app), a notice to show once (warning or mute), standing.</summary>
+public sealed record ModerationState(PenaltyDto? Ban, PenaltyDto? Notice, StandingDto? Standing)
+{ public static ModerationState Empty { get; } = new(null, null, null); }
+public interface IModerationStore : IStore<ModerationState>
+{
+    /// <summary>Reports a player (chat message, profile or cheating). Returns an error code or null.</summary>
+    Task<string?> ReportAsync(ReportRequestDto report);
+    /// <summary>Appeals a ban or mute (once per penalty). Returns an error code or null.</summary>
+    Task<string?> AppealAsync(long penaltyId, string text);
+    /// <summary>Reloads penalties in force.</summary>
+    Task LoadStandingAsync();
+    /// <summary>The player has seen the notice.</summary>
+    void DismissNotice();
+}
+
 public enum QueuePhase { Idle, Entering, Searching, Found }
 public sealed record QueueState(QueuePhase Phase, TimeControl? TimeControl, QueueStatusDto? Status, MatchFoundDto? Found, string? Error)
 { public static QueueState Idle { get; } = new(QueuePhase.Idle, null, null, null, null); }

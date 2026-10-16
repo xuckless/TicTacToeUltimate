@@ -66,6 +66,7 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
         // The server can be restarting (deploy, VM reboot). Keep trying for up to a minute, showing a "waking up"
         // buffer, before falling back to offline mode.
         var started = DateTime.UtcNow;
+        _tokens.DeviceId ??= await DeviceIdAsync();
         for (var attempt = 0; ; attempt++)
         {
             try
@@ -128,6 +129,11 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
         catch (TttApiException e) when (e.Status == HttpStatusCode.Unauthorized)
         {
             // OnUnauthorized handles guest re-mint / sign-out.
+        }
+        catch (TttApiException e) when (e.Code == ErrorCodes.Banned)
+        {
+            // The moderation store shows the ban notice; nothing else may run (no hub connection).
+            Update(s => s with { Status = SessionStatus.SignedIn });
         }
         catch (Exception ex)
         {

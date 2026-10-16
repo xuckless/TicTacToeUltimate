@@ -186,6 +186,10 @@ public static class Ui
         ErrorCodes.ChallengeTaken => "Someone else already accepted that challenge.",
         ErrorCodes.RateLimited => "Slow down a little and try again.",
         ErrorCodes.ServerUpdating => ServerUpdatingText,
+        ErrorCodes.ChatMuted => "Your chat is muted for now.",
+        ErrorCodes.MessageBlocked => "Message not sent: it breaks the chat rules.",
+        ErrorCodes.UsernameBlocked => "That username isn't allowed. Try another.",
+        ErrorCodes.Banned => "Your account is banned.",
         "offline" => "Can't reach the server. Check your connection.",
         _ => fallback,
     };

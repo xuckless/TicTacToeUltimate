@@ -22,6 +22,26 @@ public sealed class TttOptions
     public ShutdownOptions Shutdown { get; set; } = new();
     public CorsOptions Cors { get; set; } = new();
     public WebOptions Web { get; set; } = new();
+    public ModerationOptions Moderation { get; set; } = new();
+}
+
+/// <summary>Ttt:Moderation. Strike ladder (owner decision 2026-10-16): warn, then chat mutes of 1 h / 24 h / 7 d; bans only by an admin.</summary>
+public sealed class ModerationOptions
+{
+    /// <summary>Strikes count within this window.</summary>
+    public int StrikeWindowDays { get; set; } = 30;
+    /// <summary>Mute length in minutes for strike 2, 3, 4+ (strike 1 is a warning).</summary>
+    public int[] MuteMinutes { get; set; } = [60, 24 * 60, 7 * 24 * 60];
+    /// <summary>Salt for device id hashes (secret in production; falls back to the dev signing key).</summary>
+    public string DeviceSalt { get; set; } = "";
+    public AnthropicModerationOptions Anthropic { get; set; } = new();
+}
+/// <summary>Ttt:Moderation:Anthropic. Without an ApiKey the AI check is off (the word filter still runs).</summary>
+public sealed class AnthropicModerationOptions
+{
+    public string ApiKey { get; set; } = "";
+    public string Model { get; set; } = "claude-haiku-5-5";
+    public int TimeoutMs { get; set; } = 3000;
 }
 
 public sealed class AuthOptions

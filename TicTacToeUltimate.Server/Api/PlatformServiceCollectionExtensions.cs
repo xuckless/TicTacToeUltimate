@@ -79,6 +79,7 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<ISeasonRepository, PgSeasonRepository>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.PgGuestMergeStore>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IAccountDeletionStore, TicTacToeUltimate.Server.Persistence.PgAccountDeletionStore>();
+            services.AddSingleton<TicTacToeUltimate.Server.Persistence.IModerationRepository, TicTacToeUltimate.Server.Persistence.PgModerationRepository>();
         }
         else
         {
@@ -97,6 +98,7 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<ISeasonRepository, InMemorySeasonRepository>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.InMemoryGuestMergeStore>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IAccountDeletionStore, TicTacToeUltimate.Server.Persistence.InMemoryAccountDeletionStore>();
+            services.AddSingleton<TicTacToeUltimate.Server.Persistence.IModerationRepository, TicTacToeUltimate.Server.Persistence.InMemoryModerationRepository>();
             services.AddHostedService<FixtureSeeder>();
         }
         return services;

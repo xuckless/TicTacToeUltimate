@@ -1,0 +1,72 @@
+@inject IModerationStore Moderation
+@inject ToastService Toasts
+
+@* Report a chat message, a profile, or cheating after a match (owner decision 2026-10-16). *@
+<Sheet Open="Open" Title="@Title" OnClose="Close">
+    <div class="t-col" style="padding:0;gap:12px">
+        <p class="t-small t-muted" style="margin:0">@Intro</p>
+        <div class="report-reasons" role="radiogroup" aria-label="Reason">
+            @foreach (var r in Reasons)
+            {
+                <button type="button" role="radio" aria-checked="@(_reason == r ? "true" : "false")" class="t-chip @(_reason == r ? "on" : "")"
+                        @onclick="() => _reason = r" data-testid="@($"reason-{r}")">@ReasonText(r)</button>
+            }
+        </div>
+        <div class="t-field">
+            <label class="t-label" for="report-note">Anything else? (optional)</label>
+            <textarea id="report-note" class="t-input" rows="3" maxlength="500" @bind="_note" @bind:event="oninput"></textarea>
+        </div>
+        <Button Variant="primary" Block="true" OnClick="Send" Disabled="@(_busy || _reason is null)" data-testid="report-send">Send report</Button>
+        <p class="t-small t-muted" style="margin:0">Reports are private. The player isn't told who reported them.</p>
+    </div>
+</Sheet>
+
+@code {
+    private string? _reason;
+    private string _note = "";
+    private bool _busy;
+
+    /// <summary>Visible.</summary>
+    [Parameter] public bool Open { get; set; }
+    /// <summary>Close requested.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+    /// <summary>The reported player.</summary>
+    [Parameter] public Guid Target { get; set; }
+    /// <summary>The reported player's name (for the title).</summary>
+    [Parameter] public string TargetName { get; set; } = "";
+    /// <summary>chat | profile | cheating.</summary>
+    [Parameter] public string Kind { get; set; } = ReportKinds.Profile;
+    /// <summary>Reported message (chat).</summary>
+    [Parameter] public long? MessageId { get; set; }
+    /// <summary>Game (cheating).</summary>
+    [Parameter] public Guid? GameId { get; set; }
+
+    private string[] Reasons => ReportKinds.Reasons.TryGetValue(Kind, out var r) ? r : [];
+    private string Title => Kind switch { ReportKinds.Chat => "Report message", ReportKinds.Cheating => "Report cheating", _ => $"Report {TargetName}" };
+    private string Intro => Kind switch
+    {
+        ReportKinds.Chat => "We'll review this message. Blocking the player also stops their messages.",
+        ReportKinds.Cheating => "Think this opponent used an engine or outside help? We check the game against perfect play.",
+        _ => "What's wrong with this player's profile or behaviour?",
+    };
+
+    /// <summary>Reason id → text.</summary>
+    public static string ReasonText(string id) => id switch
+    {
+        "harassment" => "Harassment or bullying", "hate" => "Hate speech", "sexual" => "Sexual content", "spam" => "Spam or scams",
+        "threats" => "Threats", "personal_info" => "Sharing personal info", "offensive_name" => "Offensive name",
+        "impersonation" => "Impersonation", "engine" => "Used an engine or help", "multiple_accounts" => "Multiple accounts", _ => "Something else",
+    };
+
+    private async Task Send()
+    {
+        if (_reason is null) return;
+        _busy = true;
+        var err = await Moderation.ReportAsync(new ReportRequestDto(Target, Kind, _reason, string.IsNullOrWhiteSpace(_note) ? null : _note.Trim(), MessageId, GameId));
+        _busy = false;
+        if (err is null) { Toasts.Show("Thanks. We'll take a look.", ToastKind.Success); await Close(); }
+        else Toasts.Show(err == ErrorCodes.RateLimited ? "You've sent a lot of reports. Try again later." : "Couldn't send the report. Try again.", ToastKind.Error);
+    }
+
+    private async Task Close() { _reason = null; _note = ""; await OnClose.InvokeAsync(); }
+}

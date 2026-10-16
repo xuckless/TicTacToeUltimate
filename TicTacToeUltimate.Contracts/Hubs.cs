@@ -46,4 +46,6 @@ public interface IGameClient
     Task FriendsChanged();
     Task DirectMessage(DirectMessageDto message);
     Task Notification(NotificationDto notification);
+    Task PenaltyApplied(PenaltyDto penalty);
+    Task MessageHidden(MessageHiddenDto hidden);
 }

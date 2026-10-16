@@ -45,6 +45,8 @@ public static class ClientServiceCollectionExtensions
         services.AddSingleton<IActiveMatchesStore>(sp => sp.GetRequiredService<ActiveMatchesStore>());
         services.AddSingleton<ProgressStore>();
         services.AddSingleton<IProgressStore>(sp => sp.GetRequiredService<ProgressStore>());
+        services.AddSingleton<ModerationStore>();
+        services.AddSingleton<IModerationStore>(sp => sp.GetRequiredService<ModerationStore>());
         services.AddSingleton<IGameQueries, GameQueries>();
         services.AddSingleton<AdCoordinator>();
         services.AddSingleton<IAdCoordinator>(sp => sp.GetRequiredService<AdCoordinator>());

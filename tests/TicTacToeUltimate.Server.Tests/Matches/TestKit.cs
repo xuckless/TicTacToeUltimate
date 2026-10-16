@@ -172,6 +172,8 @@ public sealed class RecordingNotifier : IUserNotifier
         public Task FriendsChanged() => L(nameof(FriendsChanged), null);
         public Task DirectMessage(DirectMessageDto message) => L(nameof(DirectMessage), message);
         public Task Notification(NotificationDto notification) => L(nameof(Notification), notification);
+        public Task PenaltyApplied(PenaltyDto penalty) => L(nameof(PenaltyApplied), penalty);
+        public Task MessageHidden(MessageHiddenDto hidden) => L(nameof(MessageHidden), hidden);
     }
 }
 

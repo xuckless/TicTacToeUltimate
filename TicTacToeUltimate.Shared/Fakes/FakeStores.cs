@@ -55,6 +55,19 @@ public sealed class FakeSessionStore() : FakeStore<SessionState>(MockupFixtures.
     public Task<CommandAckDto> UpdateProfileAsync(UpdateProfileDto patch) { Calls.Add("UpdateProfile"); return Task.FromResult(new CommandAckDto(true, null)); }
 }
 
+/// <summary>Fake <see cref="IModerationStore"/>.</summary>
+public sealed class FakeModerationStore() : FakeStore<ModerationState>(ModerationState.Empty), IModerationStore
+{
+    /// <inheritdoc />
+    public Task<string?> ReportAsync(ReportRequestDto report) { Calls.Add($"Report:{report.Kind}:{report.Reason}"); return Task.FromResult<string?>(null); }
+    /// <inheritdoc />
+    public Task<string?> AppealAsync(long penaltyId, string text) { Calls.Add($"Appeal:{penaltyId}"); return Task.FromResult<string?>(null); }
+    /// <inheritdoc />
+    public Task LoadStandingAsync() { Calls.Add("LoadStanding"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public void DismissNotice() => Set(State with { Notice = null });
+}
+
 /// <summary>Fake <see cref="IQueueStore"/>.</summary>
 public sealed class FakeQueueStore() : FakeStore<QueueState>(QueueState.Idle), IQueueStore
 {
@@ -254,6 +267,7 @@ public static class FakeServiceCollectionExtensions
         services.TryAddSingleton<FakeProgressStore>(); services.TryAddSingleton<IProgressStore>(sp => sp.GetRequiredService<FakeProgressStore>());
         services.TryAddSingleton<FakeWalletStore>(); services.TryAddSingleton<IWalletStore>(sp => sp.GetRequiredService<FakeWalletStore>());
         services.TryAddSingleton<FakeActiveMatchesStore>(); services.TryAddSingleton<IActiveMatchesStore>(sp => sp.GetRequiredService<FakeActiveMatchesStore>());
+        services.TryAddSingleton<FakeModerationStore>(); services.TryAddSingleton<IModerationStore>(sp => sp.GetRequiredService<FakeModerationStore>());
         services.TryAddSingleton<FakeSettingsStore>(); services.TryAddSingleton<ISettingsStore>(sp => sp.GetRequiredService<FakeSettingsStore>());
         services.TryAddSingleton<FakeAdCoordinator>(); services.TryAddSingleton<IAdCoordinator>(sp => sp.GetRequiredService<FakeAdCoordinator>());
         services.TryAddSingleton<IGameQueries, FakeGameQueries>();

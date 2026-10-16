@@ -56,6 +56,16 @@ public sealed class ServerDrain
     /// <summary>Stops tracking a hub connection.</summary>
     public void Untrack(string connectionId) => _hubs.TryRemove(connectionId, out _);
 
+    /// <summary>Open hub connections.</summary>
+    public int ConnectionCount => _hubs.Count;
+
+    /// <summary>Closes one user's connections (a ban): the reconnect is refused by the moderation gate.</summary>
+    public void CloseUser(Guid userId)
+    {
+        var id = userId.ToString();
+        foreach (var ctx in _hubs.Values) if (string.Equals(ctx.UserIdentifier, id, StringComparison.OrdinalIgnoreCase)) ctx.Abort();
+    }
+
     /// <summary>Closes every tracked connection; clients reconnect to the next server.</summary>
     public void CloseConnections()
     {
