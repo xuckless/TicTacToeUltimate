@@ -45,8 +45,9 @@ public enum ArenaEnd : byte
 /// </summary>
 public sealed record ArenaRules
 {
-    /// <summary>Board rules (must be GlobalFifo, no opening rule). Ghost rule = <see cref="RuleSet.VanishingPieceCanWin"/> false.</summary>
-    public RuleSet Board { get; init; } = RuleSet.LegacyFifo7Ghost;
+    /// <summary>Board rules (no opening rule). Default = the classic rule, 3 pieces each (owner 2026-10-15; re-tuned in
+    /// tools/arena-sim "cap3"). Under it a crit (2 lines in one move) is impossible: you never hold 5 pieces.</summary>
+    public RuleSet Board { get; init; } = RuleSet.Default;
     /// <summary>Starting HP per player.</summary>
     public int Hp { get; init; } = 125;
     /// <summary>Line damage by combo step (1st, 2nd, 3rd+ unanswered line).</summary>
@@ -91,7 +92,7 @@ public sealed record ArenaRules
     public IReadOnlyList<string> Validate()
     {
         var errors = new List<string>(Board.Validate());
-        if (Board.Removal != RemovalKind.GlobalFifo) errors.Add("Arena needs GlobalFifo removal.");
+        if (Board.Removal == RemovalKind.None) errors.Add("Arena needs a removal rule (pieces must vanish).");
         if (Board.Opening != OpeningRule.None) errors.Add("Arena has no opening rule.");
         if (Hp <= 0) errors.Add("Hp must be positive.");
         if (Ramp.IsDefaultOrEmpty || Ramp.Any(d => d < 0)) errors.Add("Ramp must be non-empty and non-negative.");

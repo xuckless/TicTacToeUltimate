@@ -6,8 +6,9 @@ namespace TicTacToeUltimate.Engine.Tests;
 public class ArenaTests
 {
     /// <summary>The simulator's default Rules(): 100 HP, 25→35→50, crit +15, consecutive combo, no red-alert multiplier.</summary>
-    private static readonly ArenaRules Draft = new() { Hp = 100, Combo = ComboKind.Consecutive, RedAlertMultiplier = 1, Id = "draft" };
-    private static readonly ArenaRules C = ArenaRules.RulesetC;
+    // These cases were derived on the legacy 7-piece ghost board (tools/arena-sim default) and stay as regression tests for it.
+    private static readonly ArenaRules Draft = new() { Board = RuleSet.LegacyFifo7Ghost, Hp = 100, Combo = ComboKind.Consecutive, RedAlertMultiplier = 1, Id = "draft" };
+    private static readonly ArenaRules C = ArenaRules.RulesetC with { Board = RuleSet.LegacyFifo7Ghost };
 
     private static ArenaRules W(ArenaRules r, int window) => r with { Board = r.Board with { Window = window } };
 
@@ -191,7 +192,8 @@ public class ArenaTests
     [Fact]
     public void Invariant_NoCountedLineLeftAfterMove()
     {
-        ArenaRules[] configs = [Draft, Draft with { Board = Draft.Board with { VanishingPieceCanWin = true } }, W(Draft, 9), C, ArenaRules.RulesetB];
+        ArenaRules[] configs = [Draft, Draft with { Board = Draft.Board with { VanishingPieceCanWin = true } }, W(Draft, 9), C,
+            ArenaRules.RulesetB with { Board = RuleSet.LegacyFifo7Ghost }, ArenaRules.RulesetC, ArenaRules.RulesetB];
         foreach (var cfg in configs)
         {
             var rules = cfg with { Hp = 1_000_000, RoundMs = int.MaxValue };
@@ -210,7 +212,7 @@ public class ArenaTests
                     var mine = s.Pieces.Where(p => p.Color == mover && p.Cell != ghost).Select(p => p.Cell).ToHashSet();
                     Assert.DoesNotContain(lines, l => l.All(mine.Contains));
                     Assert.Equal(s.Pieces.Length, s.Pieces.Select(p => p.Cell).Distinct().Count());
-                    Assert.True(s.Pieces.Length <= rules.Board.Window);
+                    Assert.True(s.Pieces.Length <= (rules.Board.Removal == RemovalKind.PerPlayerCap ? 2 * rules.Board.Window : rules.Board.Window));
                 }
             }
         }
@@ -224,8 +226,8 @@ public class ArenaTests
         Assert.True(ArenaRules.TryParse("arena-c", out var c));
         Assert.Equal((125, 2, 15, ComboKind.Unanswered, 120_000, 30_000, 5_000), (c.Hp, c.RedAlertMultiplier, c.CritBonus, c.Combo, c.RoundMs, c.RedAlertMs, c.MoveMs));
         Assert.Equal(new[] { 25, 35, 50 }, c.Ramp);
-        Assert.False(c.Board.VanishingPieceCanWin);     // ghost rule stays on
-        Assert.Equal(7, c.Board.Window);
+        Assert.Equal(RuleSet.Default, c.Board);          // 3 pieces each, no ghost (owner 2026-10-15)
+        Assert.Equal(RuleSet.Default, ArenaRules.RulesetB.Board);
         Assert.Equal(OvertimeStarter.Conceder, c.OvertimeStarter);
         Assert.True(ArenaRules.TryParse("arena-b", out var b));
         Assert.Equal((100, 1, ComboKind.Unanswered), (b.Hp, b.RedAlertMultiplier, b.Combo));
@@ -334,6 +336,61 @@ public class ArenaTests
         var s = ArenaEngine.Replay(C, [(0, 1000), (4, 1000), (1, 1000), (8, 1000), (2, 1000)]);
         Assert.Equal(100, s.HpO);
         Assert.Throws<InvalidActionException>(() => ArenaEngine.Replay(C, [(4, 0), (4, 0)]));
+    }
+}
+
+/// <summary>Arena on the default "3 pieces each" board.</summary>
+public class ArenaCap3Tests
+{
+    private static ArenaState Play(ArenaRules r, params int[] cells)
+    {
+        var s = ArenaEngine.Initial(r);
+        foreach (var c in cells)
+        {
+            var st = ArenaEngine.Apply(s, c, 1000);
+            Assert.True(st.Ok, $"cell {c}: {st.Error}");
+            s = st.State;
+        }
+        return s;
+    }
+
+    [Fact]
+    public void Visible_line_scores_and_shatters_all_three_pieces()
+    {
+        var s = Play(ArenaRules.RulesetC, 0, 3, 1, 4, 2);
+        Assert.Equal(25, s.LastHit!.Damage);
+        Assert.Equal(new[] { 0, 1, 2 }, s.LastHit.Shattered);
+        Assert.DoesNotContain(s.Pieces, p => p.Color == Color.X);   // the scorer rebuilds from zero
+        Assert.Equal(2, s.Pieces.Count(p => p.Color == Color.O));
+    }
+
+    [Fact]
+    public void Fourth_piece_removes_own_oldest_and_blocks_that_cell()
+    {
+        var s = Play(ArenaRules.RulesetC, 0, 4, 1, 8, 5, 3);   // X: 0,1,5  O: 4,8,3 (no lines)
+        Assert.Equal(0, ArenaEngine.NextToVanish(s));
+        Assert.DoesNotContain(0, ArenaEngine.LegalCells(s));
+        Assert.Equal(MoveError.CellJustVacated, ArenaEngine.Apply(s, 0, 1000).Error);
+        var after = ArenaEngine.Apply(s, 6, 1000).State;        // X places 6, X's 0 vanishes
+        Assert.DoesNotContain(after.Pieces, p => p.Cell == 0);
+        Assert.Equal(3, after.Pieces.Count(p => p.Color == Color.X));
+    }
+
+    [Fact]
+    public void Crit_is_impossible_with_three_pieces()
+    {
+        var rng = new Random(11);
+        for (int g = 0; g < 400; g++)
+        {
+            var s = ArenaEngine.Initial(ArenaRules.RulesetC);
+            for (int ply = 0; ply < 80 && !s.IsOver; ply++)
+            {
+                var legal = ArenaEngine.LegalCells(s);
+                var st = ArenaEngine.Apply(s, legal[rng.Next(legal.Length)], 1500);
+                Assert.False(st.Hit?.Crit ?? false);
+                s = st.State;
+            }
+        }
     }
 }
 

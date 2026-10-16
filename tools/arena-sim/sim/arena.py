@@ -25,7 +25,13 @@ WIN = 100000
 
 class Rules:
     def __init__(self, n=3, k=3, W=7, ghost=True, hp=100, ramp=(25, 35, 50),
-                 crit_bonus=15, vacated=True, combo="consecutive", knockback=0):
+                 crit_bonus=15, vacated=True, combo="consecutive", knockback=0, cap=0):
+        # cap: per-player piece cap (owner's 2026-10-15 rule "3 pieces each"). When > 0 the global FIFO
+        # is unused: placing your (cap+1)-th piece first removes YOUR OWN oldest piece, the vacated cell
+        # is not playable this turn, and there is no ghost exception.
+        self.cap = cap
+        if cap:
+            W, ghost, vacated = 10 ** 6, False, False
         # combo: "consecutive" = scored on each of your consecutive own turns (spec);
         #        "unanswered" = your lines in a row with no opponent line in between
         #        (own blank turns do not reset; an opponent line resets it).
@@ -51,7 +57,7 @@ class Rules:
         self.line_cells = [(L, [c for c in range(self.cells) if (L >> c) & 1]) for L in lines]
 
     def key(self):
-        return dict(n=self.n, k=self.k, W=self.W, ghost=int(self.ghost), hp=self.hp,
+        return dict(n=self.n, k=self.k, W=self.W if not self.cap else 0, cap=self.cap, ghost=int(self.ghost), hp=self.hp,
                     ramp="-".join(map(str, self.ramp)), crit_bonus=self.crit_bonus,
                     vacated=int(self.vacated), combo=self.combo, knockback=self.knockback)
 
@@ -76,7 +82,17 @@ def popcount(v):
 def apply(R, s, c):
     """Return (new_state, nlines, damage, shattered_mask)."""
     x, o, q, h0, h1, s0, s1, m = s
-    if len(q) == R.W:
+    if R.cap:
+        own = x if m == 0 else o
+        mine_q = [i for i in q if (own >> i) & 1]
+        if len(mine_q) >= R.cap:
+            f = mine_q[0]
+            assert c != f, "vacated cell not playable"
+            b = ~(1 << f)
+            x &= b
+            o &= b
+            q = tuple(i for i in q if i != f)
+    elif len(q) == R.W:
         f = q[0]
         b = ~(1 << f)
         x &= b

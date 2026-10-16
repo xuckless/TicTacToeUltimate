@@ -357,6 +357,20 @@ FINAL3 = {
 }
 
 
+CAP3 = dict(n=3, k=3, cap=3, hp=125, ramp=(25, 35, 50), crit_bonus=15, combo="unanswered")
+FINAL_CAP = {
+    "C cap3 (HP125, red x2)": (dict(CAP3), 120.0, {"red_mult": 2.0}),
+    "C cap3 HP100": (dict(CAP3, hp=100), 120.0, {"red_mult": 2.0}),
+    "C cap3 HP150": (dict(CAP3, hp=150), 120.0, {"red_mult": 2.0}),
+    "C cap3 steep 25-50-75": (dict(CAP3, ramp=(25, 50, 75)), 120.0, {"red_mult": 2.0}),
+    "B cap3 (HP100, no red)": (dict(CAP3, hp=100), 120.0, {}),
+}
+
+
+def exp_cap3():
+    return exp_final(n=1500, table=FINAL_CAP, out="cap3_raw", seed0=90000)
+
+
 def exp_final3():
     return exp_final(table=FINAL3, out="final3_raw", seed0=80000)
 

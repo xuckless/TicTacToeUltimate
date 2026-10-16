@@ -277,3 +277,13 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
   - **Sudden death:** a pulsing red glow around the whole viewport edge (web and mobile). The falling pieces turn red and speed up as the window shrinks.
   - Everything respects reduced motion.
 - **Bug:** the VICTORY/DEFEAT text appears twice in the impact frame. Fix it.
+- **Arena board switched to "3 pieces each" (owner, 2026-10-15).** Arena now uses `RuleSet.Default` (n3k3-cap3-v0-w1), so there is no ghost anywhere in the game.
+  - Re-tuned in `tools/arena-sim` (new `cap=3` mode; `experiments.py cap3`, 1,500+ games per pairing per seat). Ruleset C numbers are unchanged.
+  - Results vs the legacy board:
+    - Overtime 10–29% (was 19–38%).
+    - X/O within 49–51%.
+    - The stronger player wins 71–88% (was 62–73%).
+    - Comebacks from 2 lines down: 7–8%.
+  - **Crits are now impossible** (you never hold 5 pieces). The code is kept dormant for a possible 4x4 Arena.
+  - A shatter wipes all 3 of the scorer's pieces, which is a built-in comeback mechanic.
+  - Vectors were regenerated and cross-checked against the Python sim: 152 positions match. 14 differ only because overtime's conceder-first order isn't modelled in the sim's untimed replay.

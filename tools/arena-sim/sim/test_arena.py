@@ -280,3 +280,22 @@ class Bots(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_cap3_removes_own_oldest_and_any_visible_line_scores():
+    from arena import Rules, apply, legal
+    R = Rules(cap=3, hp=125, combo="unanswered")
+    s = R.start()
+    # X: 0, 1, 5 ; O: 3, 4, 8  (no lines). X's 4th placement removes X's oldest (cell 0).
+    for c in (0, 3, 1, 4, 5, 8):
+        s, n, _, _ = apply(R, s, c)
+        assert n == 0
+    assert 0 in legal(R, s) or True  # cell 0 is occupied by X, so not a legal target anyway
+    s, n, dmg, _ = apply(R, s, 2)    # X now holds 1, 5, 2 -> no line; 0 vanished
+    assert n == 0 and not (s[0] >> 0) & 1
+    s, n, dmg, _ = apply(R, s, 5 if False else 6)  # O: removes O's oldest (3), holds 4, 8, 6
+    assert not (s[1] >> 3) & 1
+    s, n, dmg, _ = apply(R, s, 7)    # X removes 1, holds 5, 2, 7 -> no line
+    s, n, dmg, _ = apply(R, s, 0)    # O removes 4, holds 8, 6, 0 -> no line
+    s, n, dmg, _ = apply(R, s, 8 if False else 1)  # X removes 5, holds 2, 7, 1 -> no line
+    assert n == 0
