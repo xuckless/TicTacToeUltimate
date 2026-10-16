@@ -18,7 +18,7 @@ PROJ=TicTacToeUltimate/TicTacToeUltimate.csproj
 APPID=com.wedirectsoftwares.tictactoeultimate
 DEV_KEY="${TTT_IOS_DEV_KEY:-$(security find-identity -v -p codesigning | grep -o '"Apple Development: [^"]*"' | head -1 | tr -d '"')}"
 DIST_KEY="${TTT_IOS_CODESIGN_KEY:-$(security find-identity -v -p codesigning | grep -o '"Apple Distribution: [^"]*"' | head -1 | tr -d '"')}"
-UDID="${TTT_IOS_UDID:-$(xcrun devicectl list devices 2>/dev/null | awk '/physical/ {print $3}' | head -1)}"
+UDID="${TTT_IOS_UDID:-$(xcrun devicectl list devices 2>/dev/null | grep physical | grep -oE '[0-9A-F]{8}-[0-9A-F]{16}' | head -1)}"
 
 profiles() {
   find ~/Library/MobileDevice/Provisioning\ Profiles ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles -name '*.mobileprovision' 2>/dev/null
@@ -48,7 +48,9 @@ case "${1:-}" in
     PROFILE=$(profile_named development)
     [[ -n "$PROFILE" ]] || { echo "No Development provisioning profile for $APPID. Follow the one-time setup at the top of this script (device UDID: $UDID)."; exit 1; }
     echo "Signing with: $DEV_KEY / $PROFILE → device $UDID"
-    dotnet build "$PROJ" -f net10.0-ios -r ios-arm64 -c Debug -t:Run \
+    # Build first, then install + launch (the Run target alone cannot compute the mlaunch arguments).
+    dotnet build "$PROJ" -f net10.0-ios -r ios-arm64 -c Debug -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE"
+    dotnet build "$PROJ" -f net10.0-ios -r ios-arm64 -c Debug -t:Run --no-restore \
       -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE" -p:_DeviceName="$UDID"
     ;;
   archive)
