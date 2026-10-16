@@ -17,7 +17,11 @@ public sealed record LeaderboardPageDto(RatingPool Pool, LeaderboardScope Scope,
     int TotalCount, LeaderboardRowDto[] Rows, LeaderboardRowDto? Me);
 
 public sealed record PresenceDto(Guid UserId, PresenceStatus Status, Guid? MatchId);
-public sealed record FriendDto(PlayerCardDto Player, PresenceDto Presence, int UnreadMessages, DateTimeOffset? LastSeenAt);
+public sealed record FriendDto(PlayerCardDto Player, PresenceDto Presence, int UnreadMessages, DateTimeOffset? LastSeenAt)
+{
+    /// <summary>Newest message in this thread (inbox ordering + preview).</summary>
+    public DirectMessageDto? LastMessage { get; init; }
+}
 public sealed record FriendRequestDto(Guid RequestId, PlayerCardDto From, PlayerCardDto To, FriendRequestDirection Direction, DateTimeOffset CreatedAt);
 public sealed record FriendsOverviewDto(FriendDto[] Friends, FriendRequestDto[] Requests, PlayerCardDto[] Blocked);
 /// <summary>By username, or by user id (e.g. the opponent on the result screen, whose card carries no username).</summary>

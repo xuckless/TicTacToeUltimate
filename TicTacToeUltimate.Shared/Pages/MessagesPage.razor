@@ -30,22 +30,37 @@ else
                 <Avatar Name="@f.Player.DisplayName" AvatarId="@f.Player.AvatarId" Presence="f.Presence.Status" />
                 <div class="who">
                     <div class="name">@f.Player.DisplayName</div>
-                    <div class="meta">@(Social.State.Threads.TryGetValue(f.Player.UserId, out var t) && !t.IsEmpty ? Preview(t[^1]) : PresenceDot.Text(f.Presence.Status))</div>
+                    <div class="meta @(f.UnreadMessages > 0 ? "unread-preview" : null)">@(Last(f) is { } lm ? Preview(lm) : PresenceDot.Text(f.Presence.Status))</div>
                 </div>
-                @if (f.UnreadMessages > 0) { <span class="t-chip unread" aria-label="@($"{f.UnreadMessages} unread")">@f.UnreadMessages</span> }
-                else { <Icon Name="next" Class="t-muted" /> }
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+                    @if (Last(f) is { } ts) { <span class="t-small t-muted">@Ago(ts.SentAt)</span> }
+                    @if (f.UnreadMessages > 0) { <span class="t-chip unread" aria-label="@($"{f.UnreadMessages} unread")">@f.UnreadMessages</span> }
+                </div>
             </a>
         }
     </section>
 }
 
 @code {
+    private DirectMessageDto? Last(FriendDto f) =>
+        Social.State.Threads.TryGetValue(f.Player.UserId, out var t) && !t.IsEmpty && (f.LastMessage is null || t[^1].Id >= f.LastMessage.Id) ? t[^1] : f.LastMessage;
+
+    /// <summary>Most recent conversation first (like Instagram); friends you never messaged come last, alphabetically.</summary>
     private IEnumerable<FriendDto> Threads => Social.State.Friends
-        .OrderByDescending(f => f.UnreadMessages > 0)
-        .ThenByDescending(f => Social.State.Threads.TryGetValue(f.Player.UserId, out var t) && !t.IsEmpty ? t[^1].Id : 0)
+        .OrderByDescending(f => Last(f)?.SentAt ?? DateTimeOffset.MinValue)
         .ThenBy(f => f.Player.DisplayName, StringComparer.OrdinalIgnoreCase);
 
-    private string Preview(DirectMessageDto m) => (m.From == Session.State.Me?.UserId ? "You: " : "") + (m.Body.Length > 60 ? m.Body[..57] + "…" : m.Body);
+    private static string Ago(DateTimeOffset at)
+    {
+        var d = DateTimeOffset.UtcNow - at;
+        return d.TotalMinutes < 1 ? "now" : d.TotalMinutes < 60 ? $"{(int)d.TotalMinutes}m" : d.TotalHours < 24 ? $"{(int)d.TotalHours}h" : d.TotalDays < 7 ? $"{(int)d.TotalDays}d" : at.ToString("MMM d", CultureInfo.InvariantCulture);
+    }
+
+    private string Preview(DirectMessageDto m)
+    {
+        var body = m.Body.StartsWith("emote:", StringComparison.Ordinal) ? "sent an emote" : m.Body;
+        return (m.From == Session.State.Me?.UserId ? "You: " : "") + (body.Length > 60 ? body[..57] + "…" : body);
+    }
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()

@@ -17,7 +17,8 @@
     private void OnNotification(NotificationDto n) => _ = InvokeAsync(() =>
     {
         if (n.Kind == NotificationKind.Message && OnChatWith(n.Link)) return;   // the open thread shows it already
-        Toasts.Show($"{n.Title}: {n.Body}", ToastKind.Info, 5000);
+        var body = n.Body.StartsWith("emote:", StringComparison.Ordinal) ? "sent you an emote" : n.Body;
+        Toasts.Show($"{n.Title}: {body}", ToastKind.Info, 5000);
     });
 
     private void OnMessage(DirectMessageDto m)
