@@ -52,8 +52,27 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
     </PropertyGroup>
 
+    <!-- Store builds. Android: signed AAB when TTT_ANDROID_KEYSTORE is set (see DEPLOYMENT_GUIDE.md). -->
+    <PropertyGroup Condition="'$(Configuration)'=='Release' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+        <AndroidPackageFormat>aab</AndroidPackageFormat>
+        <AndroidLinkTool>r8</AndroidLinkTool>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)'=='Release' And '$(TTT_ANDROID_KEYSTORE)'!=''">
+        <AndroidKeyStore>true</AndroidKeyStore>
+        <AndroidSigningKeyStore>$(TTT_ANDROID_KEYSTORE)</AndroidSigningKeyStore>
+        <AndroidSigningKeyAlias>$(TTT_ANDROID_KEY_ALIAS)</AndroidSigningKeyAlias>
+        <AndroidSigningStorePass>env:TTT_ANDROID_STORE_PASS</AndroidSigningStorePass>
+        <AndroidSigningKeyPass>env:TTT_ANDROID_STORE_PASS</AndroidSigningKeyPass>
+    </PropertyGroup>
+    <!-- iOS: device/App Store builds sign with these when set (Apple Developer account required). -->
+    <PropertyGroup Condition="'$(Configuration)'=='Release' And '$(TTT_IOS_CODESIGN_KEY)'!=''">
+        <CodesignKey>$(TTT_IOS_CODESIGN_KEY)</CodesignKey>
+        <CodesignProvision>$(TTT_IOS_PROVISIONING_PROFILE)</CodesignProvision>
+        <ArchiveOnBuild>true</ArchiveOnBuild>
+    </PropertyGroup>
+
     <!-- macOS store rule: both archs or x64 only -->
-    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <PropertyGroup Condition="'$(Configuration)'=='Release' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
         <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
     </PropertyGroup>
 

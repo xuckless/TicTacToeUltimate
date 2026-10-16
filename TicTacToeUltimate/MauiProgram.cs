@@ -37,7 +37,11 @@ public static class MauiProgram
         var options = new ClientOptions
         {
             BackendBaseUrl = new Uri(ReadBackendBaseUrl() ?? DefaultBackendUrl()),
+#if DEBUG
             WebBaseUrl = new Uri("http://localhost:5028"),
+#else
+            WebBaseUrl = new Uri(ProductionUrl),
+#endif
             Platform = CurrentPlatform(),
 #if DEBUG
             IsDevelopment = true,
@@ -64,8 +68,16 @@ public static class MauiProgram
         return builder.Build();
     }
 
+    /// <summary>Production site; it also proxies the game API (/api, /hubs).</summary>
+    private const string ProductionUrl = "https://tictactoeultimate.alidirect.dev";
+
+    // Debug talks to the local dev server; Release builds (store/TestFlight) talk to production.
     private static string DefaultBackendUrl()
+#if DEBUG
         => DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5091" : "http://localhost:5091";
+#else
+        => ProductionUrl;
+#endif
 
     internal static ClientPlatform CurrentPlatform()
     {
