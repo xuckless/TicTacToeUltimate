@@ -6,7 +6,15 @@
 @inject ToastService Toasts
 
 <PageTitle>Social · Tic Tac Toe Ultimate</PageTitle>
-<h1 class="t-title">Social</h1>
+<div class="t-spread" style="align-items:center">
+    <h1 class="t-title" style="margin:0">Social</h1>
+    @if (!Session.State.IsGuest)
+    {
+        <a class="t-iconbtn t-iconbtn--round inbox-btn" href="social/messages" aria-label="@($"Messages{(Unread > 0 ? $", {Unread} unread" : "")}")" data-testid="inbox">
+            <Icon Name="chat" />@if (Unread > 0) { <span class="badge">@Unread</span> }
+        </a>
+    }
+</div>
 
 @if (Session.State.IsGuest)
 {
@@ -63,6 +71,7 @@ else
 
 @code {
     private int OnlineCount => Social.State.Friends.Count(f => f.Presence.Status != PresenceStatus.Offline);
+    private int Unread => Social.State.Friends.Sum(f => f.UnreadMessages);
     private List<FriendRequestDto> IncomingRequests => Social.State.Requests.Where(r => r.Direction == FriendRequestDirection.Incoming).ToList();
     private IEnumerable<FriendDto> SortedFriends => Social.State.Friends
         .OrderBy(f => f.Presence.Status == PresenceStatus.Offline ? 1 : 0)

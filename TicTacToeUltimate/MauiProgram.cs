@@ -29,7 +29,14 @@ public static class MauiProgram
             handler.PlatformView.ScrollView.Bounces = false;
             handler.PlatformView.Opaque = false;
             handler.PlatformView.BackgroundColor = UIKit.UIColor.FromRGB(0x12, 0x0a, 0x22);
+            // iOS edge swipe = back. Blazor uses pushState history, which WKWebView's gesture navigates.
+            handler.PlatformView.AllowsBackForwardNavigationGestures = true;
         });
+#endif
+#if ANDROID
+        // Hardware/gesture back goes back in the app's history before leaving the app (MainActivity.OnBackPressed).
+        Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("BackHistory", (handler, _) =>
+            TicTacToeUltimate.Platforms.Android.BackNavigation.WebView = handler.PlatformView);
 #endif
 
 #if DEBUG
@@ -41,7 +48,7 @@ public static class MauiProgram
         {
             BackendBaseUrl = new Uri(ReadBackendBaseUrl() ?? DefaultBackendUrl()),
 #if DEBUG
-            WebBaseUrl = new Uri("http://localhost:5028"),
+            WebBaseUrl = new Uri(DeviceInfo.DeviceType == DeviceType.Physical ? ProductionUrl : "http://localhost:5028"),
 #else
             WebBaseUrl = new Uri(ProductionUrl),
 #endif
@@ -64,7 +71,8 @@ public static class MauiProgram
         s.Replace(ServiceDescriptor.Singleton<IAppLifecycle>(sp => sp.GetRequiredService<MauiLifecycle>()));
         s.Replace(ServiceDescriptor.Singleton<IDeepLinkSource>(sp => sp.GetRequiredService<MauiDeepLinkSource>()));
         s.Replace(ServiceDescriptor.Singleton<IShareService, MauiShareService>());
-        s.Replace(ServiceDescriptor.Singleton<IPushService, StubPushService>());
+        s.Replace(ServiceDescriptor.Singleton<IPushService, PushService>());
+        s.AddSingleton<IBannerAds, NativeBannerAds>();   // the native AdMob banner lives under the web view; the HTML slot renders nothing
 #if IOS || ANDROID
         s.AddSingleton<AdMobAdProvider>();
         s.Replace(ServiceDescriptor.Singleton<IAdProvider>(sp => sp.GetRequiredService<AdMobAdProvider>()));
@@ -85,10 +93,12 @@ public static class MauiProgram
     /// <summary>Production site; it also proxies the game API (/api, /hubs).</summary>
     private const string ProductionUrl = "https://tictactoeultimate.alidirect.dev";
 
-    // Debug talks to the local dev server; Release builds (store/TestFlight) talk to production.
+    // Debug on a simulator/emulator talks to the local dev server; Debug on a real phone (no "localhost" there) and every
+    // Release build talk to production. Override with Backend.BaseUrl in Resources/Raw/appsettings.json.
     private static string DefaultBackendUrl()
 #if DEBUG
-        => DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5091" : "http://localhost:5091";
+        => DeviceInfo.DeviceType == DeviceType.Physical ? ProductionUrl
+            : DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5091" : "http://localhost:5091";
 #else
         => ProductionUrl;
 #endif
@@ -110,8 +120,10 @@ public static class MauiProgram
         var platform = DeviceInfo.Platform == DevicePlatform.Android ? "Android" : "iOS";
         var interstitial = ReadSetting("Ads", "AdMob", platform, "Interstitial");
         var rewarded = ReadSetting("Ads", "AdMob", platform, "Rewarded");
+        var banner = ReadSetting("Ads", "AdMob", platform, "Banner");
         Plugin.AdMob.Configuration.AdConfig.DefaultInterstitialAdUnitId = interstitial;
         Plugin.AdMob.Configuration.AdConfig.DefaultRewardedAdUnitId = rewarded;
+        Plugin.AdMob.Configuration.AdConfig.DefaultBannerAdUnitId = banner;
 #if DEBUG
         Plugin.AdMob.Configuration.AdConfig.UseTestAdUnitIds = true;
 #else

@@ -66,6 +66,26 @@ func Run(ctx context.Context, d Deps, p Persona, req Request) (res Result, err e
 		return res, err
 	}
 	rng := rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), uint64(len(p.Name))))
+	banter := Banter{T: temperamentOf(p.Name), rng: rng}
+	emoteN := 0
+	emote := func(matchID, id string, delay time.Duration) {
+		if id == "" {
+			return
+		}
+		emoteN++
+		msg := protocol.Emote{Type: "emote", ID: fmt.Sprintf("e-%d", emoteN), MatchID: matchID, EmoteID: id}
+		if delay <= 0 {
+			_ = send(msg)
+			return
+		}
+		go func() {
+			select {
+			case <-time.After(delay):
+				_ = send(msg)
+			case <-ctx.Done():
+			}
+		}()
+	}
 	seekDeadline := time.Now().Add(d.SeekTimeout)
 	var (
 		game     *protocol.GameStart
@@ -119,10 +139,22 @@ func Run(ctx context.Context, d Deps, p Persona, req Request) (res Result, err e
 			skill = d.Tracker.Skill(opponent, rating)
 			_ = send(protocol.Simple{Type: "unseek", ID: "s2"}) // one game per session
 			log.Info("game start", "match", gs.MatchID, "vs", gs.Opponent.DisplayName, "rating", rating, "skill", fmt.Sprintf("%.2f", skill), "arena", arena)
+			emote(gs.MatchID, banter.OnStart(), time.Duration(800+rng.IntN(1500))*time.Millisecond)
+		case "opponentEmote":
+			var oe protocol.OpponentEmote
+			if json.Unmarshal(raw, &oe) == nil && game != nil {
+				emote(oe.MatchID, banter.OnOpponentEmote(oe.EmoteID), time.Duration(1200+rng.IntN(2000))*time.Millisecond)
+			}
 		case "state":
 			var st protocol.State
 			if json.Unmarshal(raw, &st) != nil || game == nil || !st.YourTurn || st.Phase == "Ended" {
 				continue
+			}
+			if !arena && st.Ply > 0 {
+				// The human just moved: did they hand us a win? (Perfect-play check against the tablebase, independent of our skill dial.)
+				if s, err := engine.Replay(rules, st.Actions); err == nil {
+					emote(st.MatchID, banter.OnOpponentMove(canWinNow(s)), time.Duration(600+rng.IntN(900))*time.Millisecond)
+				}
 			}
 			think(ctx, st, arena, rng)
 			actionN++
@@ -141,6 +173,9 @@ func Run(ctx context.Context, d Deps, p Persona, req Request) (res Result, err e
 			if err := send(act); err != nil {
 				return res, err
 			}
+			if act.Kind == "Place" {
+				emote(st.MatchID, banter.OnMyMove(false), time.Duration(900+rng.IntN(1500))*time.Millisecond)
+			}
 		case "gameEnd":
 			var ge protocol.GameEnd
 			_ = json.Unmarshal(raw, &ge)
@@ -150,6 +185,12 @@ func Run(ctx context.Context, d Deps, p Persona, req Request) (res Result, err e
 			res.BotLost = decided && !ge.YouWon
 			d.Tracker.Record(opponent, res.BotWon, res.BotLost)
 			log.Info("game end", "outcome", ge.Outcome, "reason", ge.Reason, "botWon", ge.YouWon)
+			// The match actor lingers after the end, so a closing emote lands on the result screen.
+			if id := banter.OnEnd(res.BotWon, decided); id != "" {
+				time.Sleep(time.Duration(700+rng.IntN(1200)) * time.Millisecond)
+				emote(ge.MatchID, id, 0)
+				time.Sleep(300 * time.Millisecond)
+			}
 			conn.Close(websocket.StatusNormalClosure, "game over")
 			return res, nil
 		case "error":

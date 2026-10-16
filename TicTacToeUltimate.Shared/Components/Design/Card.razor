@@ -1,4 +1,4 @@
-<section class="t-card @Class" aria-label="@Label">
+<section class="t-card @Class" aria-label="@Label" @attributes="Extra">
     @if (Title is not null || Aside is not null)
     {
         <div class="t-spread">
@@ -20,4 +20,6 @@
     [Parameter] public string? Class { get; set; }
     /// <summary>Content.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    /// <summary>Anything else (data-testid, style, …). An unknown attribute on a component throws at render time and, in Blazor Hybrid, that froze the whole app.</summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? Extra { get; set; }
 }

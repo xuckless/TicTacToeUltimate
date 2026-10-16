@@ -1,4 +1,5 @@
 @page "/signin"
+@layout PlainLayout
 @inherits StoreComponent
 @inject ISessionStore Session
 @inject NavigationManager Nav
@@ -8,16 +9,6 @@
     <h1 class="signin-logo" style="text-align:center;margin:0"><BounceText Text="Tic Tac Toe" Class="sub" /><br /><BounceText Text="Ultimate" Class="ultimate" /></h1>
     <p class="t-muted" style="text-align:center;margin:0">Pieces vanish. Every game ends in a win.</p>
 
-    @if (_recovery)
-    {
-        <Card Title="Set a new password">
-            <TextField Label="New password" Type="password" Value="@_password" ValueChanged="v => _password = v" OnEnter="SetPassword" MaxLength="72"
-                       Hint="At least 8 characters." />
-            <Button Variant="primary" Block="true" OnClick="SetPassword" Disabled="@(_busy || _password.Length < 8)">Save password</Button>
-        </Card>
-    }
-    else
-    {
     @if (!Session.State.IsGuest)
     {
         <Button Variant="primary" Block="true" OnClick="Guest" Disabled="_busy" data-testid="guest">Play as guest</Button>
@@ -29,28 +20,27 @@
 
     @if (Session.State.Config?.SupabaseAuth == true)
     {
-        <Card Title="@(_mode == "Create account" ? "Create your account" : _mode == "Forgot" ? "Reset your password" : "Sign in")" Class="email-card">
-            @if (_mode != "Forgot")
+        <Card Title="@(_codeSent ? "Enter your code" : "Sign in with email")" Class="email-card">
+            @if (!_codeSent)
             {
-                <Tabs Items="EmailModes" Active="@_mode" ActiveChanged="SetMode" Label="Sign in or create an account" />
+                <p class="t-small t-muted" style="margin:0">We email you a 6-digit code. No password to remember. New here? Same thing: the code creates your account.</p>
+                <TextField Label="Email" Type="email" Value="@_email" ValueChanged="v => _email = v" Placeholder="you@example.com" MaxLength="254" OnEnter="SendCode" />
+                <Button Variant="primary" Block="true" OnClick="SendCode" Disabled="@(_busy || !_email.Contains('@'))" data-testid="email-submit">Send code</Button>
             }
-            <TextField Label="Email" Type="email" Value="@_email" ValueChanged="v => _email = v" Placeholder="you@example.com" MaxLength="254"
-                       OnEnter="SubmitEmail" />
-            @if (_mode != "Forgot")
+            else
             {
-                <TextField Label="Password" Type="password" Value="@_password" ValueChanged="v => _password = v" OnEnter="SubmitEmail" MaxLength="72"
-                           Hint="@(_mode == "Create account" ? "At least 8 characters." : null)" />
+                <p class="t-small t-muted" style="margin:0">Sent to <strong>@_email.Trim()</strong>. Type the code, or just tap the link in the email. Check spam if it takes a minute.</p>
+                <TextField Label="6-digit code" Type="text" Value="@_code" ValueChanged="v => _code = new string(v.Where(char.IsDigit).Take(6).ToArray())" Placeholder="123456" MaxLength="6"
+                           OnEnter="VerifyCode" />
+                <Button Variant="primary" Block="true" OnClick="VerifyCode" Disabled="@(_busy || _code.Length != 6)" data-testid="code-submit">Sign in</Button>
+                <div class="t-spread">
+                    <button type="button" class="t-link-btn" @onclick="ChangeEmail">Use a different email</button>
+                    <button type="button" class="t-link-btn" disabled="@(_resendIn > 0 || _busy)" @onclick="SendCode">@(_resendIn > 0 ? $"Resend in {_resendIn}s" : "Resend code")</button>
+                </div>
             }
-            <Button Variant="primary" Block="true" OnClick="SubmitEmail" Disabled="@(_busy || !EmailReady)" data-testid="email-submit">
-                @(_mode == "Create account" ? "Create account" : _mode == "Forgot" ? "Send reset link" : "Sign in")
-            </Button>
-            @if (_mode == "Sign in") { <button type="button" class="t-link-btn" @onclick="@(() => SetMode("Forgot"))">Forgot password?</button> }
-            @if (_mode == "Forgot") { <button type="button" class="t-link-btn" @onclick="@(() => SetMode("Sign in"))">Back to sign in</button> }
             @if (_info is not null) { <p class="t-small email-info" role="status"><Bert Mood="wink" Size="34" /> @_info</p> }
         </Card>
     }
-    }
-
     @if (Session.State.Config?.DevAuth == true)
     {
         <Card Title="Dev sign-in">
@@ -72,10 +62,10 @@
 </div>
 
 @code {
-    private static readonly string[] EmailModes = ["Sign in", "Create account"];
-    private string _mode = "Sign in", _email = "", _password = "";
+    private string _email = "", _code = "";
     private string? _info;
-    private bool _recovery;
+    private bool _codeSent;
+    private int _resendIn;
     private List<DevUserDto> _users = [];
     private string _newName = "";
     private bool _busy, _loading = true;
@@ -87,21 +77,20 @@
     protected override async Task OnInitializedAsync()
     {
         Subscribe(Session);
-        // Email confirmation / password recovery links land here with the session in the URL fragment.
+        // Older confirmation links land here with the session in the URL fragment: still honoured.
         var uri = new Uri(Nav.Uri);
         if (uri.Fragment.Contains("access_token=", StringComparison.Ordinal))
         {
-            _recovery = uri.Fragment.Contains("type=recovery", StringComparison.Ordinal);
             _busy = true;
             var ok = await Session.CompleteRedirectAsync(uri.Fragment);
             _busy = false;
             Nav.NavigateTo(Nav.Uri.Split('#')[0], replace: true);
-            if (!ok) { _recovery = false; _error = "That link has expired. Sign in, or ask for a new link."; }
-            else if (!_recovery) { Done(); return; }
+            if (!ok) _error = "That link has expired. Sign in with a code instead.";
+            else { Done(); return; }
         }
         else if (uri.Fragment.Contains("error_description=", StringComparison.Ordinal))
         {
-            _error = "That link has expired or was already used. Sign in, or ask for a new link.";
+            _error = "That link has expired or was already used. Sign in with a code instead.";
         }
         if (Session.State.Config?.DevAuth == true)
         {
@@ -114,47 +103,42 @@
     /// <inheritdoc />
     protected override void OnStoresChanged()
     {
-        if (Session.State.Status == SessionStatus.SignedIn && !Session.State.IsGuest && !_busy && !_recovery) Done();
+        if (Session.State.Status == SessionStatus.SignedIn && !Session.State.IsGuest && !_busy) Done();
     }
 
-    private void SetMode(string mode) { _mode = mode; _error = null; _info = null; }
-
-    private bool EmailReady => _email.Contains('@') && (_mode == "Forgot" || _password.Length >= (_mode == "Create account" ? 8 : 1));
-
-    private async Task SubmitEmail()
+    private async Task SendCode()
     {
-        if (!EmailReady || _busy) return;
+        if (!_email.Contains('@') || _busy || _resendIn > 0) return;
         _busy = true; _error = null; _info = null;
         try
         {
-            switch (_mode)
-            {
-                case "Forgot":
-                    _error = await Session.ResetPasswordAsync(_email);
-                    if (_error is null) _info = "Check your inbox for a reset link.";
-                    break;
-                case "Create account":
-                    var (confirm, err) = await Session.SignUpEmailAsync(_email, _password);
-                    _error = err;
-                    if (err is null && confirm) { _info = $"Almost there! We sent a confirmation link to {_email.Trim()}. Open it to finish."; _mode = "Sign in"; }
-                    break;
-                default:
-                    _error = await Session.SignInEmailAsync(_email, _password);
-                    break;
-            }
+            _error = await Session.SendCodeAsync(_email);
+            if (_error is null) { _codeSent = true; _code = ""; _info = "Code sent! It's valid for 10 minutes."; _ = Countdown(); }
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _error = "Can't reach the server. Try again."; }
         finally { _busy = false; }
-        if (_error is null && Session.State.Status == SessionStatus.SignedIn && !Session.State.IsGuest) Done();
     }
 
-    private async Task SetPassword()
+    private async Task Countdown()
     {
-        if (_password.Length < 8 || _busy) return;
-        _busy = true;
-        _error = await Session.SetPasswordAsync(_password);
-        _busy = false;
-        if (_error is null) { _recovery = false; Done(); }
+        for (_resendIn = 30; _resendIn > 0; _resendIn--)
+        {
+            await Task.Delay(1000);
+            if (IsDisposed) return;
+            StateHasChanged();
+        }
+    }
+
+    private void ChangeEmail() { _codeSent = false; _code = ""; _info = null; _error = null; }
+
+    private async Task VerifyCode()
+    {
+        if (_code.Length != 6 || _busy) return;
+        _busy = true; _error = null; _info = null;
+        try { _error = await Session.VerifyCodeAsync(_email, _code); }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _error = "Can't reach the server. Try again."; }
+        finally { _busy = false; }
+        if (_error is null && Session.State.Status == SessionStatus.SignedIn && !Session.State.IsGuest) Done();
     }
 
     private Task Guest() => Run(Session.SignInGuestAsync);

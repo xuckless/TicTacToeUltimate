@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using TicTacToeUltimate.Platforms.Android;
 using TicTacToeUltimate.Services;
 
 namespace TicTacToeUltimate;
@@ -21,6 +22,13 @@ public class MainActivity : MauiAppCompatActivity
     {
         base.OnCreate(savedInstanceState);
         MauiDeepLinkSource.Current?.Publish(Intent?.DataString);
+    }
+
+    /// <summary>Back = web history first (Blazor routes), then the default (leave the app).</summary>
+    public override void OnBackPressed()
+    {
+        if (BackNavigation.WebView is { } web && web.CanGoBack()) { web.GoBack(); return; }
+        base.OnBackPressed();
     }
 
     protected override void OnNewIntent(Intent? intent)

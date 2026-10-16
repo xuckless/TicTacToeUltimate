@@ -5,7 +5,17 @@
     }
     @foreach (var m in Messages)
     {
-        <div class="msg @(m.From == MeId ? "mine" : null)">@m.Body</div>
+        @if (EmoteOf(m.Body) is { } e)
+        {
+            <div class="msg emote @(m.From == MeId ? "mine" : null)" aria-label="@($"Emote: {e.Text}")">
+                @if (e.Text.StartsWith("bert:", StringComparison.Ordinal)) { <Bert Mood="@e.Text[5..]" Size="96" Bob="false" /> }
+                else { <span class="thrown-phrase">@e.Text</span> }
+            </div>
+        }
+        else
+        {
+            <div class="msg @(m.From == MeId ? "mine" : null)">@m.Body</div>
+        }
     }
 </div>
 
@@ -14,4 +24,7 @@
     [Parameter] public IReadOnlyList<DirectMessageDto> Messages { get; set; } = [];
     /// <summary>Local user id.</summary>
     [Parameter] public Guid MeId { get; set; }
+
+    private static EmoteDto? EmoteOf(string body) =>
+        body.StartsWith("emote:", StringComparison.Ordinal) ? EmoteCatalog.All.FirstOrDefault(e => e.Id == body["emote:".Length..]) : null;
 }

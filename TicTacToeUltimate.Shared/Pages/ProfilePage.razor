@@ -33,6 +33,10 @@ else
     else if (!IsSelf)
     {
         <ChallengeModePicker Open="_picking" TargetName="@_profile.Card.DisplayName" Busy="_sending" OnPick="SendChallenge" OnClose="() => _picking = false" />
+        @if (_profile.Presence is { Status: PresenceStatus.InGame, MatchId: Guid live })
+        {
+            <a class="daily-nudge" href="@($"match/{live}")" data-testid="watch-live"><Icon Name="eye" /><span><strong>Playing right now</strong> · watch the game live</span><span class="t-chip">Watch</span></a>
+        }
         <div class="t-row">
             @switch (_profile.FriendStatus)
             {

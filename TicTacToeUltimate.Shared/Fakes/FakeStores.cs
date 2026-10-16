@@ -38,6 +38,10 @@ public sealed class FakeSessionStore() : FakeStore<SessionState>(MockupFixtures.
     public Task SignInGuestAsync() { Calls.Add("SignInGuest"); Set(MockupFixtures.GuestSession); return Task.CompletedTask; }
     public Task<string?> SignInEmailAsync(string email, string password) { Calls.Add("SignInEmail:" + email); return Task.FromResult<string?>(null); }
     public Task<(bool NeedsConfirmation, string? Error)> SignUpEmailAsync(string email, string password) { Calls.Add("SignUpEmail:" + email); return Task.FromResult((true, (string?)null)); }
+    /// <inheritdoc />
+    public Task<string?> SendCodeAsync(string email) { Calls.Add("SendCode:" + email); return Task.FromResult<string?>(null); }
+    /// <inheritdoc />
+    public Task<string?> VerifyCodeAsync(string email, string code) { Calls.Add("VerifyCode:" + code); return Task.FromResult<string?>(code == "123456" ? null : "That code didn't work. Check it and try again."); }
     public Task<string?> ResetPasswordAsync(string email) { Calls.Add("Reset:" + email); return Task.FromResult<string?>(null); }
     public Task<bool> CompleteRedirectAsync(string fragment) => Task.FromResult(false);
     public Task<string?> SetPasswordAsync(string password) => Task.FromResult<string?>(null);
@@ -121,7 +125,14 @@ public sealed class FakeSocialStore() : FakeStore<SocialState>(MockupFixtures.So
     /// <inheritdoc />
     public Task MarkReadAsync(Guid friendId) => Task.CompletedTask;
     /// <inheritdoc />
-    public Task<ChallengeDto> CreateChallengeAsync(CreateChallengeDto request) { Calls.Add($"Challenge:{request.TimeControl}"); return Task.FromResult(MockupFixtures.Challenge); }
+    public Task<ChallengeDto> CreateChallengeAsync(CreateChallengeDto request)
+    {
+        Calls.Add($"Challenge:{request.TimeControl}");
+        // Mirror the real store: a targeted challenge shows up as "waiting" until the friend answers.
+        var c = MockupFixtures.Challenge with { Code = "WAIT01", ToUserId = request.ToUserId, TimeControl = request.TimeControl, From = MockupFixtures.Ali };
+        if (request.ToUserId is not null) Set(State with { OutgoingChallenges = [.. State.OutgoingChallenges.Where(x => x.Code != c.Code), c] });
+        return Task.FromResult(c);
+    }
     /// <inheritdoc />
     public Task<ChallengeDto?> GetChallengeAsync(string code) => Task.FromResult<ChallengeDto?>(MockupFixtures.Challenge with { Code = code });
     /// <inheritdoc />

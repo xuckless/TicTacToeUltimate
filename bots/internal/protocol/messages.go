@@ -88,6 +88,21 @@ type Action struct {
 	Cell    *int   `json:"cell,omitempty"`
 }
 
+// Emote (bot → server).
+type Emote struct {
+	Type    string `json:"type"`
+	ID      string `json:"id,omitempty"`
+	MatchID string `json:"matchId"`
+	EmoteID string `json:"emoteId"`
+}
+
+// OpponentEmote from the server.
+type OpponentEmote struct {
+	MatchID string `json:"matchId"`
+	Seat    int    `json:"seat"`
+	EmoteID string `json:"emoteId"`
+}
+
 // Simple (bot → server): unseek, pong.
 type Simple struct {
 	Type string `json:"type"`

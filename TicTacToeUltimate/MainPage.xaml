@@ -9,9 +9,13 @@
     SafeAreaEdges="None"
     BackgroundColor="#120a22">
 
-    <BlazorWebView x:Name="BlazorWebView" HostPage="wwwroot/index.html">
-        <BlazorWebView.RootComponents>
-            <RootComponent Selector="#app" ComponentType="{x:Type shared:Routes}" />
-        </BlazorWebView.RootComponents>
-    </BlazorWebView>
+    <Grid RowDefinitions="*,Auto">
+        <BlazorWebView x:Name="BlazorWebView" HostPage="wwwroot/index.html" Grid.Row="0">
+            <BlazorWebView.RootComponents>
+                <RootComponent Selector="#app" ComponentType="{x:Type shared:Routes}" />
+            </BlazorWebView.RootComponents>
+        </BlazorWebView>
+        <!-- Native AdMob banner (iOS/Android), added from code-behind so Mac Catalyst and Debug-without-ads stay clean. -->
+        <ContentView x:Name="BannerHost" Grid.Row="1" IsVisible="False" BackgroundColor="#120a22" />
+    </Grid>
 </ContentPage>

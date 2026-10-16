@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="supported-color-schemes" content="dark light">
+  <title>Your Tic Tac Toe Ultimate code</title>
+  <!--[if mso]><style>table,td{font-family:Arial,sans-serif!important}</style><![endif]-->
+  <style>
+    @media (max-width: 480px) { .wrap { padding: 20px 12px !important; } .code { font-size: 34px !important; letter-spacing: .22em !important; } }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#120a22;">
+  <!-- Preheader (inbox preview) -->
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#120a22;">Your sign-in code is {{ .Token }}. It works for 10 minutes.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#120a22;">
+    <tr><td align="center" class="wrap" style="padding:36px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
+
+        <!-- Brand -->
+        <tr><td align="center" style="padding:0 0 22px;">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+            <td style="padding-right:12px;"><img src="https://tictactoeultimate.alidirect.dev/apple-touch-icon.png" width="44" height="44" alt="" style="display:block;border-radius:12px;"></td>
+            <td style="font:800 22px/1.05 'Fredoka','Trebuchet MS',Arial,sans-serif;color:#f3eefe;letter-spacing:.01em;">
+              TIC TAC TOE<br><span style="color:#ffc93c;">ULTIMATE</span>
+            </td>
+          </tr></table>
+        </td></tr>
+
+        <!-- Card -->
+        <tr><td style="background:#1d1236;border:2px solid #3a2a63;border-radius:22px;padding:28px 24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="font:700 24px/1.25 'Fredoka','Trebuchet MS',Arial,sans-serif;color:#f3eefe;padding-bottom:6px;">Your sign-in code</td></tr>
+            <tr><td style="font:400 15px/1.5 'Fredoka','Trebuchet MS',Arial,sans-serif;color:#b8aad8;padding-bottom:22px;">
+              Type it in the app or on the website. It works for <strong style="color:#f3eefe;">10 minutes</strong>.
+            </td></tr>
+
+            <!-- Code -->
+            <tr><td align="center" style="padding-bottom:22px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
+                <td align="center" class="code" style="background:#120a22;border:2px solid #7442ef;border-radius:18px;padding:20px 12px;font:700 40px/1 'Chakra Petch','SF Mono','Menlo',Consolas,monospace;letter-spacing:.3em;color:#f3eefe;box-shadow:0 6px 0 #4a24a8;">
+                  {{ .Token }}
+                </td>
+              </tr></table>
+            </td></tr>
+
+            <!-- Mini board: X cyan, O orange -->
+            <tr><td align="center" style="padding-bottom:18px;">
+              <table role="presentation" cellpadding="0" cellspacing="3" style="background:#2a1d4d;border-radius:12px;padding:4px;">
+                <tr>
+                  <td width="26" height="26" align="center" style="background:#1d1236;border-radius:6px;font:800 15px/1 Arial,sans-serif;color:#38d6ff;">X</td>
+                  <td width="26" height="26" align="center" style="background:#1d1236;border-radius:6px;font:800 15px/1 Arial,sans-serif;color:#3a2a63;">O</td>
+                  <td width="26" height="26" align="center" style="background:#1d1236;border-radius:6px;"></td>
+                </tr>
+                <tr>
+                  <td width="26" height="26" align="center" style="background:#1d1236;border-radius:6px;"></td>
+                  <td width="26" height="26" align="center" style="background:#1d1236;border-radius:6px;font:800 15px/1 Arial,sans-serif;color:#ff9f3a;">O</td>
+                  <td width="26" height="26" align="center" style="background:#1d1236;border-radius:6px;font:800 15px/1 Arial,sans-serif;color:#3a2a63;">X</td>
+                </tr>
+                <tr>
+                  <td width="26" height="26" align="center" style="background:#1d1236;border-radius:6px;font:800 15px/1 Arial,sans-serif;color:#38d6ff;">X</td>
+                  <td width="26" height="26" align="center" style="background:#1d1236;border-radius:6px;"></td>
+                  <td width="26" height="26" align="center" style="background:#1d1236;border-radius:6px;font:800 15px/1 Arial,sans-serif;color:#ff9f3a;">O</td>
+                </tr>
+              </table>
+            </td></tr>
+
+            <tr><td style="font:400 13px/1.55 'Fredoka','Trebuchet MS',Arial,sans-serif;color:#b8aad8;border-top:1px solid #3a2a63;padding-top:16px;">
+              Didn't ask for this? Ignore the email; nobody can sign in without the code.<br>
+              Need help? Write to <a href="mailto:email@alidirect.dev" style="color:#c4b0ff;">email@alidirect.dev</a>. — Bert 👻
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td align="center" style="font:400 12px/1.5 'Fredoka','Trebuchet MS',Arial,sans-serif;color:#7d6fa3;padding:18px 8px 0;">
+          Tic Tac Toe Ultimate · pieces vanish, every game ends in a win<br>
+          <a href="https://tictactoeultimate.alidirect.dev/" style="color:#7d6fa3;">tictactoeultimate.alidirect.dev</a> ·
+          <a href="https://tictactoeultimate.alidirect.dev/privacy/" style="color:#7d6fa3;">Privacy</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

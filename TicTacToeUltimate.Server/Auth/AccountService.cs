@@ -54,6 +54,8 @@ public sealed class AccountService(IUserRepository users, RatingService ratings,
                 catch (Exception ex) when (ex is not OperationCanceledException) { log.LogWarning(ex, "Resign on delete failed for {Match}", matchId); }
             }
         await deletion.DeleteAsync(userId, ct);
+        if (services.GetService(typeof(TicTacToeUltimate.Server.Push.IPushTokenRepository)) is TicTacToeUltimate.Server.Push.IPushTokenRepository pushTokens)
+            await pushTokens.RemoveUserAsync(userId, ct);
         if (u.Kind == AccountKind.Account) await supabaseAdmin.DeleteUserAsync(userId, ct);
         log.LogInformation("Account {User} deleted", userId);
         return new(true, null);

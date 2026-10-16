@@ -34,6 +34,11 @@ public static class PlatformServiceCollectionExtensions
 
         services.AddSingleton(_ => new ProfanityFilter());
         services.AddSingleton<UsernameRules>();
+        services.AddOptions<TicTacToeUltimate.Server.Push.PushOptions>().Bind(cfg.GetSection("Ttt:Push"));
+        services.AddHttpClient(nameof(TicTacToeUltimate.Server.Push.ApnsPushSender));
+        services.AddSingleton<IPushSender, TicTacToeUltimate.Server.Push.ApnsPushSender>();
+        services.AddSingleton<TicTacToeUltimate.Server.Push.RetentionNotifier>();
+        services.AddHostedService(sp => sp.GetRequiredService<TicTacToeUltimate.Server.Push.RetentionNotifier>());
         services.AddHttpClient(nameof(SupabaseAdminClient));
         services.AddSingleton<SupabaseAdminClient>();
         services.AddSingleton<AccountService>();
@@ -68,6 +73,7 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<IBotKeyRepository, PgBotKeyRepository>();
             services.AddSingleton<IRewardLedger, PgRewardLedger>();
             services.AddSingleton<IWalletRepository, TicTacToeUltimate.Server.Persistence.PgWalletRepository>();
+            services.AddSingleton<TicTacToeUltimate.Server.Push.IPushTokenRepository, TicTacToeUltimate.Server.Push.PgPushTokenRepository>();
             services.AddSingleton<ISeasonRepository, PgSeasonRepository>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.PgGuestMergeStore>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IAccountDeletionStore, TicTacToeUltimate.Server.Persistence.PgAccountDeletionStore>();
@@ -85,6 +91,7 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<IBotKeyRepository, InMemoryBotKeyRepository>();
             services.AddSingleton<IRewardLedger, InMemoryRewardLedger>();
             services.AddSingleton<IWalletRepository, TicTacToeUltimate.Server.Persistence.InMemoryWalletRepository>();
+            services.AddSingleton<TicTacToeUltimate.Server.Push.IPushTokenRepository, TicTacToeUltimate.Server.Push.InMemoryPushTokenRepository>();
             services.AddSingleton<ISeasonRepository, InMemorySeasonRepository>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.InMemoryGuestMergeStore>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IAccountDeletionStore, TicTacToeUltimate.Server.Persistence.InMemoryAccountDeletionStore>();

@@ -70,3 +70,7 @@ cd bots && go test ./...                   # Go rules port vs shared vectors, bo
 - `AGENTS.md`: product decisions and their history.
 - `docs/ARCHITECTURE.md`: implementation spec.
 - `docs/DEPLOY.md`: how production is deployed.
+
+## License
+
+Copyright (c) 2025-2026 Syed Ali (xuckless). All rights reserved. This is proprietary software; see [LICENSE](LICENSE). No use, copying or distribution without written permission.

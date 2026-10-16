@@ -33,6 +33,7 @@ public static class MatchesServiceCollectionExtensions
         services.AddSingleton(sp => new PresenceTracker(sp.GetRequiredService<TimeProvider>(), sp.GetRequiredService<IPresenceSink>(),
             sp.GetRequiredService<UserActivityRegistry>(), sp.GetRequiredService<ILogger<PresenceTracker>>()));
         services.AddSingleton<IPresenceTracker>(sp => sp.GetRequiredService<PresenceTracker>());
+        services.AddSingleton(sp => new PlayerPopulation(sp.GetRequiredService<IPresenceTracker>()));
         services.AddSingleton(sp => new RttTracker(sp.GetRequiredService<TimeProvider>(), sp.GetRequiredService<IOptions<TttOptions>>()));
         services.AddHostedService(sp => new RttPinger(sp.GetRequiredService<PresenceTracker>(), sp.GetRequiredService<RttTracker>(),
             sp.GetRequiredService<MatchGateway>(), sp.GetRequiredService<IUserNotifier>(), sp.GetRequiredService<TimeProvider>(),
@@ -41,7 +42,7 @@ public static class MatchesServiceCollectionExtensions
         services.AddSingleton(sp => new Matchmaker(sp.GetRequiredService<IMatchGateway>(), sp.GetRequiredService<UserActivityRegistry>(),
             sp.GetRequiredService<IUserNotifier>(), sp.GetRequiredService<IPlayerCardService>(), sp.GetRequiredService<IBotPool>(),
             sp.GetRequiredService<TimeProvider>(), sp.GetRequiredService<TttOptions>(), sp.GetRequiredService<ILogger<Matchmaker>>(), sp.GetService<TicTacToeUltimate.Server.Bots.IBotDispatcher>(),
-            sp.GetService<ServerDrain>()));
+            sp.GetService<ServerDrain>(), sp.GetService<PlayerPopulation>()));
         services.AddHostedService(sp => sp.GetRequiredService<Matchmaker>());
 
         services.AddSingleton(sp => new ChallengeService(sp.GetRequiredService<IChallengeRepository>(), sp.GetRequiredService<IMatchGateway>(),

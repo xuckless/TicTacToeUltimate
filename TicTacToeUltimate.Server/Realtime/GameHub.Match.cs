@@ -17,15 +17,8 @@ public sealed partial class GameHub
         var actor = await gw.GetOrActivateAsync(matchId) ?? throw new HubException(ErrorCodes.MatchNotFound);
         var setup = actor.Setup;
         var spectator = me.UserId != setup.SeatA.UserId && me.UserId != setup.SeatB.UserId;
-        if (spectator)
-        {
-            if (me.Kind != AccountKind.Account) throw new HubException(ErrorCodes.SpectateNotAllowed);
-            var friends = services.GetService<IFriendRepository>();
-            var ct = Context.ConnectionAborted;
-            if (friends is null || !(await friends.AreFriendsAsync(me.UserId, setup.SeatA.UserId, ct)
-                                     || await friends.AreFriendsAsync(me.UserId, setup.SeatB.UserId, ct)))
-                throw new HubException(ErrorCodes.SpectateNotAllowed);
-        }
+        // Spectating: accounts may watch any live game (profile "Watch live", friends' games). Guests may not.
+        if (spectator && me.Kind != AccountKind.Account) throw new HubException(ErrorCodes.SpectateNotAllowed);
         try { return await gw.AttachConnectionAsync(matchId, me.UserId, Context.ConnectionId, spectator, Context.ConnectionAborted); }
         catch (MatchAccessException e) { throw new HubException(e.Code); }
     }

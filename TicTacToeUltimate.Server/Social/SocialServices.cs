@@ -99,12 +99,17 @@ public sealed class SocialService(
         var cardMap = await cards.GetCardsAsync(all, RatingPools.Headline, ct);
         var userMap = await users.GetManyAsync(friendIds.ToList(), ct);
         var unread = await chat.UnreadCountsAsync(me, ct);
-        var friendDtos = friendIds.Select(f => new FriendDto(cardMap[f], presence.Get(f), unread.GetValueOrDefault(f),
-                userMap.TryGetValue(f, out var u) ? u.LastSeenAt : null))
-            .OrderByDescending(f => f.Presence.Status).ThenBy(f => f.Player.DisplayName, StringComparer.OrdinalIgnoreCase).ToArray();
+        var friendDtos = new List<FriendDto>();
+        foreach (var f in friendIds)
+        {
+            var last = (await chat.PageAsync(me, f, null, 1, ct)).FirstOrDefault();
+            friendDtos.Add(new FriendDto(cardMap[f], presence.Get(f), unread.GetValueOrDefault(f), userMap.TryGetValue(f, out var u) ? u.LastSeenAt : null)
+            { LastMessage = last is null ? null : new DirectMessageDto(last.Id, last.From, last.To, last.Body, last.SentAt, last.ReadAt) });
+        }
+        friendDtos = friendDtos.OrderByDescending(f => f.Presence.Status).ThenBy(f => f.Player.DisplayName, StringComparer.OrdinalIgnoreCase).ToList();
         var reqDtos = requests.Select(r => new FriendRequestDto(r.Id, cardMap[r.From], cardMap[r.To],
             r.To == me ? FriendRequestDirection.Incoming : FriendRequestDirection.Outgoing, r.CreatedAt)).ToArray();
-        return new FriendsOverviewDto(friendDtos, reqDtos, blocked.Select(b => cardMap[b]).ToArray());
+        return new FriendsOverviewDto(friendDtos.ToArray(), reqDtos, blocked.Select(b => cardMap[b]).ToArray());
     }
 
     /// <summary>Sends a friend request by username.</summary>
@@ -172,6 +177,8 @@ public sealed class SocialService(
     {
         var text = (body ?? "").Trim();
         if (text.Length is 0 or > MaxBody) return (null, ErrorCodes.Validation);
+        // Game emotes in chat: "emote:<EmoteCatalog id>"; anything else with that prefix is refused.
+        if (text.StartsWith("emote:", StringComparison.Ordinal) && !EmoteCatalog.IsKnown(text["emote:".Length..])) return (null, ErrorCodes.EmoteUnknown);
         if (await friends.IsBlockedEitherWayAsync(me, to, ct)) return (null, ErrorCodes.Blocked);
         if (!await friends.AreFriendsAsync(me, to, ct)) return (null, ErrorCodes.NotFriends);
         if (!limiter.TryTake(me)) return (null, ErrorCodes.RateLimited);

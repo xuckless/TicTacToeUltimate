@@ -25,6 +25,26 @@ enable_anonymous_sign_ins = false
 [auth.email]
 enable_signup = true
 enable_confirmations = true
+# Sign-in is "email → 6-digit code" (owner decision 2026-10-16). The magic-link template carries the code.
+otp_length = 6
+otp_expiry = 600
+max_frequency = "30s"
+
+# Outgoing auth email through Resend (domain alidirect.dev verified in Resend; the key lives in .env as RESEND_API_KEY and is
+# passed to `supabase config push` from the environment, never committed). Sent from the mail.alidirect.dev subdomain (verified in Resend);
+# the root domain stays with iCloud. Replies are not routed: the template points people to email@alidirect.dev.
+[auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_API_KEY)"
+admin_email = "no-reply@mail.alidirect.dev"
+sender_name = "Tic Tac Toe Ultimate"
+
+[auth.email.template.magic_link]
+subject = "Your Tic Tac Toe Ultimate code: {{ .Token }}"
+content_path = "./supabase/templates/code.html"
 
 [auth.external.google]
 enabled = false

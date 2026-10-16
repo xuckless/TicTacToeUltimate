@@ -49,9 +49,13 @@ case "${1:-}" in
     [[ -n "$PROFILE" ]] || { echo "No Development provisioning profile for $APPID. Follow the one-time setup at the top of this script (device UDID: $UDID)."; exit 1; }
     echo "Signing with: $DEV_KEY / $PROFILE → device $UDID"
     # Build first, then install + launch (the Run target alone cannot compute the mlaunch arguments).
-    dotnet build "$PROJ" -f net10.0-ios -r ios-arm64 -c Debug -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE"
+    # TTT_IOS_PUSH=1 signs with the development entitlements (push + universal links). The Development profile must then include
+    # the Push Notifications capability (App ID → Capabilities → Push Notifications, regenerate the profile), or signing fails.
+    ENT=()
+    if [[ "${TTT_IOS_PUSH:-0}" == "1" ]]; then ENT=(-p:CodesignEntitlements="Platforms/iOS/Entitlements.Development.plist"); fi
+    dotnet build "$PROJ" -f net10.0-ios -r ios-arm64 -c Debug -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE" ${ENT[@]+"${ENT[@]}"}
     dotnet build "$PROJ" -f net10.0-ios -r ios-arm64 -c Debug -t:Run --no-restore \
-      -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE" -p:_DeviceName="$UDID"
+      -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE" -p:_DeviceName="$UDID" ${ENT[@]+"${ENT[@]}"}
     ;;
   archive)
     PROFILE=$(profile_named appstore)

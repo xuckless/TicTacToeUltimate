@@ -19,7 +19,7 @@ public enum ChallengeStatus { Open, Accepted, Declined, Cancelled, Expired }
 public enum FriendRequestDirection { Incoming, Outgoing }
 public enum FriendStatus { Self, None, Friends, RequestSent, RequestReceived, Blocked }
 public enum GameResultForUser { Win, Loss, Draw, Aborted }
-public enum NotificationKind { DailyYourTurn, Promotion, Demotion, ChallengeExpired, Info }
+public enum NotificationKind { DailyYourTurn, Promotion, Demotion, ChallengeExpired, Info, Message, StreakReminder, Challenge }
 
 public static class ProtocolInfo { public const int Version = 1; }
 

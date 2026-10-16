@@ -45,7 +45,8 @@ else
         }
 
         <PlayerCard Seat="opp" Piece="@(opp?.Color ?? Color.O)" Active="@IsActive(opp)" SuddenDeath="sd" Urgency="UrgencyFor(opp)"
-                    ClockMs="ClockFor(opp)" ShowClock="HasClock" LongClock="IsDaily" Ended="Ended" Emote="@EmoteFor(opp)" />
+                    ClockMs="ClockFor(opp)" ShowClock="HasClock" LongClock="IsDaily" Ended="Ended" Emote="@EmoteFor(opp)"
+                    Tag="@($"{(sd ? "SUDDEN DEATH" : Ui.ModeLabel(snap.Mode, snap.TimeControl))} · {MatchHeader.InfoText(snap.TimeControl, _clock, snap.SpectatorCount)}")" />
         @if (IsArena && opp is not null) { <HealthBar @key="@($"hp{opp.Seat}")" Hp="HpOf(opp.Seat)" Max="ArenaRulesDto!.Hp" TickEvery="TickEvery" Piece="opp.Color" Label="@opp.Player.DisplayName"
                                                       Preview="PreviewOn(opp.Seat)" Streak="StreakOf(opp.Seat)" Steps="ArenaRulesDto.Ramp.Length"
                                                       ComboBroken="@(_brokenSeat == opp.Seat)" Hit="@(HitOn(opp.Seat))" HitKey="_hitKey" /> }
@@ -71,7 +72,7 @@ else
                 {
                     var (mover, waiting) = HintText;
                     if (mover is not null) { <span>@mover</span> }
-                    if (mover is not null && waiting is not null) { <br /> }
+                    if (mover is not null && waiting is not null) { <span class="match-hint-sep"> · </span> }
                     if (waiting is not null) { <span class="match-hint-sub">@waiting</span> }
                 }
             </div>
@@ -88,6 +89,7 @@ else
         @if (sd && !Ended) { <SuddenDeathBar Clock="_clock" /> }
         <ThrownEmote Text="@_thrownText" FromBottom="_thrownFromMe" Key="_thrownKey" />
         <MatchActions Disabled="_view.IsSpectator" Ended="Ended" OnEmote="() => _emotes = true" OnResign="() => _resign = true" OnMenu="() => _menu = true" />
+        <AdSlot />
         <div class="sr-only" aria-live="polite">@Announcement</div>
     </div>
 

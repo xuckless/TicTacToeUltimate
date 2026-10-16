@@ -68,6 +68,10 @@ public sealed class MatchmakingOptions
     public int GuestFallbackSeconds { get; set; } = 10;
     public int BotFallbackSeconds { get; set; } = 20;
     public int DisconnectGraceSeconds { get; set; } = 5;
+    /// <summary>Fewer than this many online players within ±ThinBandWindow of a queued player = "thin band": request a bot immediately and pair after QuickBotSeconds.</summary>
+    public int MinNearbyPlayers { get; set; } = 3;
+    public int ThinBandWindow { get; set; } = 200;
+    public int QuickBotSeconds { get; set; } = 3;
 }
 public sealed class ChallengesOptions { public int TtlHours { get; set; } = 24; }
 public sealed class RematchOptions { public int WindowSeconds { get; set; } = 60; }

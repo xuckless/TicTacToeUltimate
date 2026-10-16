@@ -7,12 +7,14 @@
 <Wallpaper />
 <div class="sd-edge @Ambience.Edge" aria-hidden="true"></div>
 <div class="match-shell">
-    <CascadingValue Name="AdsAllowed" Value="false" IsFixed="true">
-        @Body
+    @* Owner decision 2026-10-16: a banner is fine during play; interstitials never. *@
+    <CascadingValue Name="AdsAllowed" Value="true" IsFixed="true">
+        <ErrorBoundary @ref="_errors"><ChildContent>@Body</ChildContent><ErrorContent Context="ex"><CrashPanel Exception="ex" OnRecover="() => _errors?.Recover()" /></ErrorContent></ErrorBoundary>
     </CascadingValue>
 </div>
 
 @code {
+    private ErrorBoundary? _errors;
     private IAdCoordinator? Ads => Services.GetService(typeof(IAdCoordinator)) as IAdCoordinator;
 
     /// <inheritdoc />

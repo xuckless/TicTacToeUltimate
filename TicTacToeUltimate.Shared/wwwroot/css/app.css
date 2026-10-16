@@ -5,6 +5,8 @@ body { min-height: 100dvh; }
 .shell .t-side { display: none; }
 /* Phone: the tab bar is pinned to the real screen edge (incl. the home-indicator area) and content scrolls under a
    status-bar backdrop, so iOS overscroll never shows a floating nav or text behind the Dynamic Island. */
+.plain-shell { display: block; }
+.plain-shell .shell-main { padding-bottom: env(safe-area-inset-bottom, 0px); }
 .shell .t-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; }
 .shell-main { min-width: 0; display: flex; flex-direction: column;
   padding-top: env(safe-area-inset-top, 0px); padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
@@ -25,7 +27,16 @@ body { min-height: 100dvh; }
 @media (min-height: 860px) and (min-width: 400px) { :root { --board: 372px; } }
 .splash { min-height: 100dvh; display: grid; place-items: center; background: var(--bg); color: var(--primary); font: var(--type-title); }
 
-.home-header { display: flex; align-items: center; justify-content: space-between; }
+/* Three columns so the wordmark stays centered whatever sits left (streak + diamonds) and right (settings). */
+.home-header { display: grid; grid-template-columns: 1fr auto 1fr; grid-template-areas: "pills brand settings"; align-items: center; gap: 8px; }
+.home-header > :first-child { grid-area: pills; justify-self: start; min-width: 0; }
+.home-header > .brand { grid-area: brand; white-space: nowrap; }
+.home-header > :last-child { grid-area: settings; justify-self: end; }
+/* Phones: the pills (streak + freezes + diamonds) are too wide to share a row with the wordmark, so the wordmark gets its own row. */
+@media (max-width: 520px) {
+  .home-header { grid-template-columns: 1fr auto; grid-template-areas: "brand brand" "pills settings"; row-gap: 10px; }
+  .home-header > .brand { justify-self: center; }
+}
 .home-header .brand { font: 400 21px/1.05 var(--font-headline); text-align: center; }
 .play-hero { display: flex; align-items: center; justify-content: space-between; background: var(--primary-fill); color: var(--on-primary); text-decoration: none;
   border-radius: var(--radius-lg); box-shadow: var(--ledge-primary); padding: 20px; border: 0; width: 100%; cursor: pointer; text-align: left; transition: transform 80ms, box-shadow 80ms; }
@@ -53,6 +64,27 @@ body { min-height: 100dvh; }
 .match-hint { font: var(--type-body-sm); color: var(--ink-muted); text-align: center; min-height: 20px; }
 .match-hint-blocked { color: var(--alert); font-weight: 600; }
 .match-hint-sub { opacity: .8; }
+.t-player .tag { font: 600 11px/14px var(--font-sans); letter-spacing: .02em; color: var(--ink-muted); display: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Phones: everything fits one screen. Header info moves into the top card, the board shrinks to the space left, hints stay one line,
+   the BLOCK IT! callout floats over the board instead of pushing it down. */
+@media (max-width: 899px) {
+  :root { --match-chrome: 356px; }
+  .match { gap: 8px; padding: 6px 12px 8px; min-height: 100dvh; justify-content: space-between; }
+  .match-shell .match { min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+  .match .match-header { display: none; }
+  .t-player .tag { display: block; }
+  .match .t-player { padding: 8px 12px; gap: 10px; }
+  .match .t-player .name { font-size: 14px; line-height: 18px; }
+  .match .t-player .meta { font-size: 12px; line-height: 16px; }
+  .match .t-clock { font-size: 24px; padding: 6px 12px; min-width: 84px; }
+  .match-board { gap: 6px; position: relative; flex: 1; min-height: 0; }
+  .match .t-board { width: min(var(--board), calc(100dvh - var(--match-chrome) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)), 100%); height: auto; }
+  .match .t-cell { font-size: calc(min(var(--board), 100dvh - var(--match-chrome)) * .17); }
+  .match-hint { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; min-height: 18px; font-size: 12px; line-height: 18px; }
+  .threat-callout { position: absolute; top: -4px; left: 50%; transform: translateX(-50%); z-index: 3; font-size: 22px; pointer-events: none; }
+  .match-actions { gap: 10px; }
+  .match .ad-slot { height: 50px; margin-top: 0; }
+}
 .threat-callout { font: 400 28px/1 var(--font-headline); color: var(--alert); letter-spacing: .02em; }
 .match-actions { display: flex; gap: 12px; justify-content: center; }
 .match .emote-bubble { position: absolute; right: 12px; top: -14px; background: var(--surface-raised); border-radius: var(--radius-md); padding: 4px 10px; font-weight: 800; box-shadow: var(--ledge-neutral); z-index: 2; }
@@ -83,6 +115,20 @@ body { min-height: 100dvh; }
 .at-title .t-icon { width: 22px; height: 22px; color: var(--primary); }
 .at-blunders { font: 700 12px/1 var(--font-sans); padding: 5px 10px; border-radius: 999px; color: #ff6b81; background: color-mix(in srgb, #ff6b81 16%, transparent); }
 .result-actions { display: flex; flex-direction: column; gap: var(--space-3); margin-top: auto; }
+.chat .msg.emote { background: none; padding: 0; box-shadow: none; display: flex; }
+.chat .msg.emote.mine { justify-content: flex-end; }
+.badge { position: absolute; top: -6px; right: -10px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--alert); color: #fff; font: 800 11px/18px var(--font-sans); text-align: center; }
+.nav-ico { position: relative; display: inline-grid; }
+.inbox-btn { position: relative; }
+.t-chip.unread { background: var(--alert); color: #fff; }
+.unread-preview { color: var(--ink); font-weight: 700; }
+.crash-panel { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; margin: 24px auto; max-width: 360px; }
+.replay-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.play-again { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; padding: 16px 18px 14px; border: 0; border-radius: 20px; cursor: pointer;
+  background: var(--primary-fill); color: var(--on-primary); box-shadow: var(--ledge-primary, 0 6px 0 #4a24a8); }
+.play-again:active { transform: translateY(3px); box-shadow: none; }
+.play-again-title { font: 400 30px/1 var(--font-headline); letter-spacing: .02em; }
+.play-again-sub { font: 600 13px/16px var(--font-sans); opacity: .85; }
 .result-social { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 8px; padding: 6px 4px 0; }
 .result-social .rs-player { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 72px; }
 .result-social .rs-player:last-child { }
@@ -259,27 +305,22 @@ body { min-height: 100dvh; }
 .bert-grid button { min-height: 72px; display: grid; place-items: center; padding: 4px; }
 .match .emote-bubble.bert-bubble { padding: 2px; top: -34px; background: var(--surface-raised); border-radius: 50%; }
 /* Thrown emotes: an arc across the board, a spin, a squash on landing, then fade. */
-.thrown-emote { position: absolute; left: 50%; z-index: 45; pointer-events: none; transform: translateX(-50%); }
-.thrown-emote.up { bottom: 90px; animation: throw-up 1.5s cubic-bezier(.25, .7, .35, 1) forwards; }
-.thrown-emote.down { top: 90px; animation: throw-down 1.5s cubic-bezier(.25, .7, .35, 1) forwards; }
-.thrown-phrase { display: inline-block; background: var(--surface-raised); border: 2px solid var(--line-strong); border-radius: 16px; padding: 8px 14px;
-  font: 700 16px/1.2 var(--font-sans); white-space: nowrap; box-shadow: var(--ledge-neutral); }
-@keyframes throw-up {
-  0% { transform: translate(-50%, 0) scale(.4) rotate(-30deg); opacity: 0; }
-  12% { opacity: 1; }
-  55% { transform: translate(calc(-50% + 60px), -260px) scale(1.25) rotate(200deg); }
-  70% { transform: translate(calc(-50% + 70px), -330px) scale(1.15, .85) rotate(360deg); }
-  80% { transform: translate(calc(-50% + 70px), -322px) scale(.95, 1.05) rotate(360deg); opacity: 1; }
-  100% { transform: translate(calc(-50% + 70px), -326px) scale(1) rotate(360deg); opacity: 0; } }
-@keyframes throw-down {
-  0% { transform: translate(-50%, 0) scale(.4) rotate(30deg); opacity: 0; }
-  12% { opacity: 1; }
-  55% { transform: translate(calc(-50% - 60px), 260px) scale(1.25) rotate(-200deg); }
-  70% { transform: translate(calc(-50% - 70px), 330px) scale(1.15, .85) rotate(-360deg); }
-  80% { transform: translate(calc(-50% - 70px), 322px) scale(.95, 1.05) rotate(-360deg); opacity: 1; }
-  100% { transform: translate(calc(-50% - 70px), 326px) scale(1) rotate(-360deg); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .thrown-emote { animation: none; display: none; } }
-:root[data-motion="reduce"] .thrown-emote { display: none; }
+/* Emotes (Clash Royale style): a big still that pops in beside the sender's card, holds, then fades. No travel, no spin. */
+.thrown-emote { position: absolute; z-index: 45; pointer-events: none; transform-origin: center bottom; filter: drop-shadow(0 6px 10px rgb(0 0 0 / .35)); }
+.thrown-emote.up { right: 12px; bottom: 150px; transform-origin: right bottom; animation: emote-pop 2.6s cubic-bezier(.2, 1.4, .4, 1) forwards; }
+.thrown-emote.down { left: 12px; top: 96px; transform-origin: left top; animation: emote-pop 2.6s cubic-bezier(.2, 1.4, .4, 1) forwards; }
+.thrown-phrase { display: inline-block; background: var(--surface-raised); border: 3px solid var(--line-strong); border-radius: 18px; padding: 12px 18px;
+  font: 700 20px/1.2 var(--font-sans); white-space: nowrap; box-shadow: var(--ledge-neutral); }
+@keyframes emote-pop {
+  0% { transform: scale(.3); opacity: 0; }
+  10% { transform: scale(1.15); opacity: 1; }
+  16% { transform: scale(.96); }
+  22% { transform: scale(1); }
+  80% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(.9); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .thrown-emote { animation: emote-pop-still 2.4s linear forwards; } }
+@keyframes emote-pop-still { 0%, 85% { opacity: 1; } 100% { opacity: 0; } }
+:root[data-motion="reduce"] .thrown-emote { animation: emote-pop-still 2.4s linear forwards; }
 /* Victory confetti */
 .confetti { position: fixed; inset: 0; z-index: 65; pointer-events: none; overflow: hidden; }
 .confetti i { position: absolute; top: -8%; font-style: normal; animation-name: confetti-fall; animation-timing-function: linear; animation-fill-mode: both; will-change: transform; }

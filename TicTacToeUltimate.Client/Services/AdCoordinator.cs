@@ -21,7 +21,7 @@ public sealed class AdCoordinator(IAdProvider provider, ISessionStore session, I
     public AdPolicyState PolicyState { get { lock (_gate) return _state; } }
 
     /// <inheritdoc />
-    public bool BannersAllowed => !_matchRoute && queue.State.Phase == QueuePhase.Idle;
+    public bool BannersAllowed => queue.State.Phase == QueuePhase.Idle;   // banners during play are allowed; none while matchmaking
 
     /// <inheritdoc />
     public void SetMatchRouteActive(bool active) => _matchRoute = active;
