@@ -53,9 +53,9 @@ case "${1:-}" in
     # the Push Notifications capability (App ID → Capabilities → Push Notifications, regenerate the profile), or signing fails.
     ENT=()
     if [[ "${TTT_IOS_PUSH:-0}" == "1" ]]; then ENT=(-p:CodesignEntitlements="Platforms/iOS/Entitlements.Development.plist"); fi
-    dotnet build "$PROJ" -f net10.0-ios -r ios-arm64 -c Debug -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE" "${ENT[@]}"
+    dotnet build "$PROJ" -f net10.0-ios -r ios-arm64 -c Debug -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE" ${ENT[@]+"${ENT[@]}"}
     dotnet build "$PROJ" -f net10.0-ios -r ios-arm64 -c Debug -t:Run --no-restore \
-      -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE" -p:_DeviceName="$UDID" "${ENT[@]}"
+      -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE" -p:_DeviceName="$UDID" ${ENT[@]+"${ENT[@]}"}
     ;;
   archive)
     PROFILE=$(profile_named appstore)
