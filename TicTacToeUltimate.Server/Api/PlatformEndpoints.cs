@@ -53,7 +53,7 @@ public static class PlatformEndpoints
     public static WebApplication MapPlatformEndpoints(this WebApplication app)
     {
         var opts = app.Services.GetRequiredService<IOptions<TttOptions>>().Value;
-        var api = app.MapGroup("/api");
+        var api = app.MapGroup("/api").RequireRateLimiting(RateLimits.Api);
         const string Account = TttPolicies.Account;
 
         api.MapGet("/config", (IOptions<TttOptions> o, TierCalculator t) => Results.Ok(BuildConfig(o.Value, t))).AllowAnonymous();
@@ -61,10 +61,12 @@ public static class PlatformEndpoints
         if (opts.Auth.Dev.Enabled)
         {
             api.MapGet("/auth/dev/users", async (AccountService a, CancellationToken ct) => Results.Ok(await a.DevUsersAsync(ct))).AllowAnonymous();
-            api.MapPost("/auth/dev/token", async (DevTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.DevTokenAsync(req, ct))).AllowAnonymous();
+            api.MapPost("/auth/dev/token", async (DevTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.DevTokenAsync(req, ct)))
+                .AllowAnonymous().RequireRateLimiting(RateLimits.Auth);
         }
         // Guests (device-bound, server-signed tokens) exist in every environment.
-        api.MapPost("/auth/guest", async (GuestTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.GuestTokenAsync(req, ct))).AllowAnonymous();
+        api.MapPost("/auth/guest", async (GuestTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.GuestTokenAsync(req, ct)))
+            .AllowAnonymous().RequireRateLimiting(RateLimits.Auth);
         // After an email sign-in: move the device's guest history into the account (the guest token proves ownership).
         api.MapPost("/auth/claim-guest", async (ClaimGuestDto req, HttpContext http, AccountService a, CancellationToken ct) =>
             From(await a.ClaimGuestAsync(http.Me().UserId, req.GuestToken, ct))).RequireAuthorization(Account);
@@ -187,7 +189,7 @@ public static class PlatformEndpoints
         api.MapGet("/friends", async (HttpContext http, SocialService s, CancellationToken ct) => Results.Ok(await s.OverviewAsync(http.Me().UserId, ct)))
             .RequireAuthorization(Account);
         api.MapPost("/friends/requests", async (SendFriendRequestDto req, HttpContext http, SocialService s, CancellationToken ct) =>
-            Results.Ok(await s.RequestAsync(http.Me().UserId, req.Username, ct))).RequireAuthorization(Account);
+            Results.Ok(await s.RequestAsync(http.Me().UserId, req.Username, ct))).RequireAuthorization(Account).RequireRateLimiting(RateLimits.Social);
         api.MapPost("/friends/requests/{id:guid}/accept", async (Guid id, HttpContext http, SocialService s, CancellationToken ct) =>
             Results.Ok(await s.RespondAsync(http.Me().UserId, id, true, ct))).RequireAuthorization(Account);
         api.MapPost("/friends/requests/{id:guid}/decline", async (Guid id, HttpContext http, SocialService s, CancellationToken ct) =>
@@ -217,8 +219,10 @@ public static class PlatformEndpoints
         // ---- progress / rewards ----
         api.MapGet("/progress", async (HttpContext http, ProgressService p, CancellationToken ct) => Results.Ok(await p.GetAsync(http.Me().UserId, ct)))
             .RequireAuthorization();
+        api.MapPost("/rewards/nonce", async (RewardNonceRequestDto req, HttpContext http, RewardService r, CancellationToken ct) =>
+            Results.Ok(await r.IssueNonceAsync(http.Me().UserId, req, ct))).RequireAuthorization().RequireRateLimiting(RateLimits.Rewards);
         api.MapPost("/rewards/claim", async (RewardClaimDto req, HttpContext http, RewardService r, CancellationToken ct) =>
-            Results.Ok(await r.ClaimAsync(http.Me().UserId, req, ct))).RequireAuthorization();
+            Results.Ok(await r.ClaimAsync(http.Me().UserId, req, ct))).RequireAuthorization().RequireRateLimiting(RateLimits.Rewards);
 
         return app;
     }

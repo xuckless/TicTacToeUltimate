@@ -12,6 +12,8 @@ public interface IBotSeeker
     Guid BotUserId { get; }
     /// <summary>Bot display name.</summary>
     string BotName { get; }
+    /// <summary>True for the server's own personas (configured keys). Only trusted bots are handed matchmaking fallback games.</summary>
+    bool Trusted { get; }
     /// <summary>Atomically reserves a slot if the bot seeks <paramref name="timeControl"/> and has capacity.</summary>
     bool TryReserveSlot(TimeControl timeControl);
     /// <summary>Returns a reserved slot that never turned into a match.</summary>
@@ -40,6 +42,7 @@ public sealed class BotPool(ILogger<BotPool> log) : IBotPool
     {
         foreach (var seeker in _seekers.Values)
         {
+            if (!seeker.Trusted) continue;   // a user-made bot in the fallback pool could feed rated wins to its owner
             if (!seeker.TryReserveSlot(timeControl)) continue;
             reservation = new BotReservation(seeker.BotUserId, seeker.BotName);
             return true;

@@ -103,7 +103,6 @@ public sealed class PgUserRepository(PgDb db) : IUserRepository
         {
             await c.ExecuteAsync("""
                 update players set username = @key, display_name = @key,
-                  kind = case when kind = 'guest' then 'account' else kind end,
                   renames_left = renames_left - @dec, tos_accepted_at = coalesce(tos_accepted_at, @tos)
                 where id = @id
                 """, new { id, key, dec = (short)(first ? 0 : 1), tos = PgDb.Utc(tosAcceptedAt) }, tx);

@@ -18,18 +18,16 @@ public static class MatchEndpoints
         app.MapGet("/api/daily", async (HttpContext http, MatchGateway gateway, CancellationToken ct) =>
             Results.Ok(await DailyGamesAsync(http.User.ToTttUser().UserId, gateway, ct))).RequireAuthorization();
 
-        app.MapGet("/api/live", async (HttpContext http, MatchGateway gateway, bool? friends, CancellationToken ct) =>
+        // Friends' live games only (D16): listing every live match leaked ids and player cards to any guest.
+        app.MapGet("/api/live", async (HttpContext http, MatchGateway gateway, CancellationToken ct) =>
         {
             var me = http.User.ToTttUser();
-            var list = gateway.LiveMatches().Where(i => i.Setup.TimeControl != TimeControl.Daily);
-            if (friends != false)
-            {
-                var repo = http.RequestServices.GetService<IFriendRepository>();
-                var ids = repo is null ? new HashSet<Guid>() : (await repo.ListFriendsAsync(me.UserId, ct)).ToHashSet();
-                list = list.Where(i => ids.Contains(i.Setup.SeatA.UserId) || ids.Contains(i.Setup.SeatB.UserId));
-            }
+            var repo = http.RequestServices.GetService<IFriendRepository>();
+            var ids = repo is null ? new HashSet<Guid>() : (await repo.ListFriendsAsync(me.UserId, ct)).ToHashSet();
+            var list = gateway.LiveMatches().Where(i => i.Setup.TimeControl != TimeControl.Daily
+                && (ids.Contains(i.Setup.SeatA.UserId) || ids.Contains(i.Setup.SeatB.UserId)));
             return Results.Ok(list.Select(i => new LiveMatchDto(i.Setup.MatchId, i.Setup.TimeControl, i.Cards, i.Ply, i.SpectatorCount)).ToArray());
-        }).RequireAuthorization();
+        }).RequireAuthorization(TttPolicies.Account);
         return app;
     }
 

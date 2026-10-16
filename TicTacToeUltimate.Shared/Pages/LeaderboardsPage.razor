@@ -8,7 +8,6 @@
 <Tabs Items="Scopes" Active="@_scope" ActiveChanged="SetScope" Label="Scope" />
 <div class="t-seg" role="group" aria-label="Pool">
     <button type="button" aria-pressed="@(_pool == RatingPool.ArenaRanked ? "true" : "false")" @onclick="() => SetPool(RatingPool.ArenaRanked)">Ranked</button>
-    <button type="button" aria-pressed="@(_pool == RatingPool.Daily ? "true" : "false")" @onclick="() => SetPool(RatingPool.Daily)">Daily</button>
 </div>
 
 @if (Session.State.IsGuest)

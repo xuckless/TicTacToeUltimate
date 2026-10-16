@@ -28,6 +28,10 @@ public static partial class BotKeyEndpoints
 
         group.MapPost("/", async (HttpContext http, CreateBotKeyDto request, TimeProvider time, CancellationToken ct) =>
         {
+            // Public bot keys are off until the bot API launches with its own review (Bots:AllowUserKeys). Even then, user bots
+            // never enter the matchmaking fallback pool (BotPool: trusted personas only).
+            if (!http.RequestServices.GetRequiredService<Microsoft.Extensions.Options.IOptions<Hosting.TttOptions>>().Value.Bots.AllowUserKeys)
+                return Results.Problem(statusCode: 403, title: ErrorCodes.Forbidden, detail: "Bot API keys are not open yet.");
             if (http.RequestServices.GetService<IBotKeyRepository>() is not { } keys ||
                 http.RequestServices.GetService<IUserRepository>() is not { } users)
                 return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
@@ -80,9 +84,11 @@ public static partial class BotKeyEndpoints
             await CloseAsync(socket, BotCloseCodes.ProtocolMismatch, "protocol_mismatch").ConfigureAwait(false);
             return;
         }
-        var session = new BotSession(socket, auth.Principal.ToTttUser(), sp.GetService<IMatchGateway>(), sp.GetService<IChallengeService>(),
+        var botUser = auth.Principal.ToTttUser();
+        var session = new BotSession(socket, botUser, sp.GetService<IMatchGateway>(), sp.GetService<IChallengeService>(),
             sp.GetRequiredService<BotPool>(), sp.GetRequiredService<TimeProvider>(),
-            sp.GetRequiredService<ILoggerFactory>().CreateLogger<BotSession>(), sp.GetService<BotSessionSettings>());
+            sp.GetRequiredService<ILoggerFactory>().CreateLogger<BotSession>(), sp.GetService<BotSessionSettings>(),
+            trusted: sp.GetRequiredService<BotKeyResolver>().IsTrusted(botUser.UserId));
         // Closes with the request, or when a deploy's drain ends (botd reconnects to the next server).
         var closeAll = sp.GetService<TicTacToeUltimate.Server.Matches.ServerDrain>()?.CloseAll ?? CancellationToken.None;
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(http.RequestAborted, closeAll);

@@ -35,9 +35,10 @@ public static class RatingPools
         TimeControl.Casual => RatingPool.CasualX2, TimeControl.OldSchool => RatingPool.CasualX4,
         _ => RatingPool.Daily,
     };
-    public static bool IsVisible(RatingPool p) => p is RatingPool.Ranked or RatingPool.Daily or RatingPool.ArenaRanked;
+    /// <summary>Daily is unrated since 2026-10-16 (24 h per move in a solved game is a solver contest).</summary>
+    public static bool IsVisible(RatingPool p) => p is RatingPool.Ranked or RatingPool.ArenaRanked;
     /// <summary>Visible pools in display order (Me / profile ratings). Classic Ranked is retired from the UI (2026-10-15).</summary>
-    public static readonly RatingPool[] Visible = [RatingPool.ArenaRanked, RatingPool.Daily];
+    public static readonly RatingPool[] Visible = [RatingPool.ArenaRanked];
     /// <summary>The headline "Ranked" rating and tier (Home, Profile, Leaderboards, player cards): Arena.</summary>
     public const RatingPool Headline = RatingPool.ArenaRanked;
 }
@@ -55,7 +56,8 @@ public static class ErrorCodes
         NoRenamesLeft = "no_renames_left", TosRequired = "tos_required", AnalysisWarming = "analysis_warming",
         AnalysisUnavailable = "analysis_unavailable", RewardRequired = "reward_required", AdBlocked = "ad_blocked", ServerUpdating = "server_updating", RewardInvalid = "reward_invalid",
         RewardCapped = "reward_capped", RematchNotAllowed = "rematch_not_allowed", EmoteUnknown = "emote_unknown",
-        Timeout = "timeout", ProtocolVersion = "protocol_version", Validation = "validation", Internal = "internal";
+        Timeout = "timeout", ProtocolVersion = "protocol_version", Validation = "validation", Internal = "internal",
+        Forbidden = "forbidden";
 
     public static string FromMoveError(MoveError e) => e switch
     {

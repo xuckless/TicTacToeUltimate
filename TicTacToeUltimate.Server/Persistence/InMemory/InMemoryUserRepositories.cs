@@ -81,7 +81,6 @@ public sealed class InMemoryUserRepository : IUserRepository
             _byId[id] = u with
             {
                 Username = key, DisplayName = key,
-                Kind = u.Kind == AccountKind.Guest ? AccountKind.Account : u.Kind,
                 RenamesLeft = first ? u.RenamesLeft : u.RenamesLeft - 1,
                 TosAcceptedAt = u.TosAcceptedAt ?? tosAcceptedAt,
             };

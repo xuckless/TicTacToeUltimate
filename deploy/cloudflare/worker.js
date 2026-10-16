@@ -1,6 +1,7 @@
 // Serves the static web build and proxies the game API to the game server, so the site and the API share one origin
 // (no CORS, SignalR WebSockets included, origin IP stays behind Cloudflare). ORIGIN is a wrangler var; ORIGIN_SECRET a wrangler secret the origin's Caddy requires.
-const API = [/^\/api\//, /^\/hubs\//, /^\/bot\//, /^\/health$/];
+// /bot/ is deliberately not proxied: bots run on the VM's private network; a public bot API comes later behind its own review.
+const API = [/^\/api\//, /^\/hubs\//, /^\/health$/];
 
 export default {
   async fetch(request, env) {

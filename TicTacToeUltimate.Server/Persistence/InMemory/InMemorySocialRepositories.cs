@@ -277,4 +277,9 @@ public sealed class InMemoryRewardLedger : IRewardLedger
     {
         lock (_gate) return Task.FromResult(_map.Values.Any(g => g.UserId == userId && g.Kind == kind && g.GameId == gameId));
     }
+
+    public Task<int> CountSinceAsync(Guid userId, RewardKind kind, DateTimeOffset since, CancellationToken ct)
+    {
+        lock (_gate) return Task.FromResult(_map.Values.Count(g => g.UserId == userId && g.Kind == kind && g.GrantedAt >= since));
+    }
 }

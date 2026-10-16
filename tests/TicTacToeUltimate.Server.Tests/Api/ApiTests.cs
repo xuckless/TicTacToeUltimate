@@ -116,7 +116,8 @@ public class RestTests
         http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
         var me = await http.GetFromJsonAsync<MeDto>("/api/me", J);
         Assert.Equal("ali_xo", me!.Username);
-        Assert.Contains(me.Ratings, r => r.Pool == RatingPool.Daily && r.Rating == 1610);
+        Assert.Contains(me.Ratings, r => r.Pool == RatingPool.ArenaRanked && r.Rating == 1552);
+        Assert.DoesNotContain(me.Ratings, r => r.Pool == RatingPool.Daily);   // Daily is unrated / hidden since 2026-10-16
 
         var friends = await http.GetFromJsonAsync<FriendsOverviewDto>("/api/friends", J);
         Assert.Equal(4, friends!.Friends.Length);
@@ -137,9 +138,11 @@ public class RestTests
         var guest = (await (await guestHttp.PostAsJsonAsync("/api/auth/guest", new GuestTokenRequestDto(Guid.NewGuid().ToString()), J)).Content.ReadFromJsonAsync<TokenResponseDto>(J))!;
         guestHttp.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", guest.AccessToken);
         Assert.Equal(HttpStatusCode.Forbidden, (await guestHttp.GetAsync("/api/friends")).StatusCode);
+        // A guest cannot become an account by picking a username (that used to mint unlimited accounts); still a guest afterwards.
         var upgraded = await guestHttp.PutAsJsonAsync("/api/me/username", new SetUsernameDto("guest_up_" + Random.Shared.Next(1000, 9999), true), J);
-        Assert.Equal(HttpStatusCode.OK, upgraded.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await guestHttp.GetAsync("/api/friends")).StatusCode);   // same token, kind refreshed
+        Assert.Equal(HttpStatusCode.Forbidden, upgraded.StatusCode);
+        Assert.Contains(ErrorCodes.GuestNotAllowed, await upgraded.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.Forbidden, (await guestHttp.GetAsync("/api/friends")).StatusCode);
         Assert.Equal(guest.Me.UserId, (await guestHttp.GetFromJsonAsync<MeDto>("/api/me", J))!.UserId);
 
         var cfg = await http.GetFromJsonAsync<AppConfigDto>("/api/config", J);

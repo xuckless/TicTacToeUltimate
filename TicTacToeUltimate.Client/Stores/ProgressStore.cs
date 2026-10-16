@@ -40,15 +40,24 @@ public sealed class ProgressStore : StoreBase<ProgressState>, IProgressStore
     /// <inheritdoc />
     public async Task<RewardClaimResultDto> ClaimRewardAsync(RewardKind kind, Guid? gameId = null)
     {
+        // 1) Ask the server for a single-use nonce. It also checks eligibility, so a capped reward is refused BEFORE the ad plays.
+        RewardNonceDto nonce;
+        try { nonce = await _api.RequestRewardNonceAsync(new RewardNonceRequestDto(kind, gameId)); }
+        catch (Exception ex) { return new RewardClaimResultDto(false, ErrorText.Code(ex), State.Progress); }
+        if (nonce.Nonce is null) return new RewardClaimResultDto(false, nonce.Error ?? ErrorCodes.RewardInvalid, State.Progress);
+
+        // 2) Show the ad.
         RewardedAdResult ad = await _ads.ShowRewardedAsync(kind);
-        if (!ad.Earned || ad.Receipt is null)
+        if (!ad.Earned)
         {
             var blocked = _adBlock is not null && await _adBlock.IsBlockedAsync();
             return new RewardClaimResultDto(false, blocked ? ErrorCodes.AdBlocked : ErrorCodes.RewardRequired, State.Progress);
         }
+
+        // 3) Redeem the nonce (the provider receipt is informational until AdMob SSV lands).
         try
         {
-            var result = await _api.ClaimRewardAsync(new RewardClaimDto(kind, gameId, ad.Receipt));
+            var result = await _api.ClaimRewardAsync(new RewardClaimDto(kind, gameId, nonce.Nonce));
             if (result.Progress is { } p) Update(_ => new ProgressState(p, true));
             return result;
         }

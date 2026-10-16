@@ -49,7 +49,7 @@ public class AuthTests
     }
 
     [Fact]
-    public async Task GuestTokenIsStablePerDevice_UpgradeKeepsId()
+    public async Task GuestTokenIsStablePerDevice_CannotUpgradeByUsername()
     {
         using var p = new TestPlatform();
         var accounts = p.Get<AccountService>();
@@ -61,14 +61,10 @@ public class AuthTests
         Assert.Matches("^Guest#[0-9]{4}$", g1.Me.DisplayName);
         Assert.Empty(g1.Me.Ratings);
 
-        Assert.Equal(ErrorCodes.TosRequired, (await accounts.SetUsernameAsync(g1.Me.UserId, new SetUsernameDto(N("up_"), false), default)).Error);
-        var name = N("up_");
-        var up = await accounts.SetUsernameAsync(g1.Me.UserId, new SetUsernameDto(name.ToUpperInvariant(), true), default);
-        Assert.True(up.Ok);
-        Assert.Equal(g1.Me.UserId, up.Value!.UserId);
-        Assert.Equal(AccountKind.Account, up.Value.Kind);
-        Assert.Equal(name, up.Value.Username);
-        Assert.Equal(RatingPools.Visible.Length, up.Value.Ratings.Length);   // Ranked, Daily, Arena Ranked Ladder
+        // A device id is not an identity: picking a username must NOT turn the guest into an account (that minted unlimited accounts).
+        var up = await accounts.SetUsernameAsync(g1.Me.UserId, new SetUsernameDto(N("up_"), true), default);
+        Assert.Equal((ErrorCodes.GuestNotAllowed, 403), (up.Error, up.Status));
+        Assert.Equal(AccountKind.Guest, (await accounts.GetMeAsync(g1.Me.UserId, default))!.Kind);
     }
 
     [Theory]
@@ -112,9 +108,9 @@ public class AuthTests
         var acct = (await tx.TransformAsync(new ClaimsPrincipal(email))).ToTttUser();
         Assert.Equal((AccountKind.Account, "jane.doe"), (acct.Kind, acct.DisplayName));
 
-        // Stale guest claim is refreshed from the store after an upgrade.
+        // Setting a username never changes the kind; a stale claim is refreshed from the store (still a guest here).
         await p.Get<IUserRepository>().SetUsernameAsync(sub, N("sb_"), TestPlatform.Start, default);
-        var stale = new ClaimsIdentity([new Claim("sub", sub.ToString()), new Claim(TttClaims.Kind, "guest")], "Dev");
-        Assert.Equal(AccountKind.Account, (await tx.TransformAsync(new ClaimsPrincipal(stale))).ToTttUser().Kind);
+        var stale = new ClaimsIdentity([new Claim("sub", sub.ToString()), new Claim(TttClaims.Kind, "account")], "Dev");
+        Assert.Equal(AccountKind.Guest, (await tx.TransformAsync(new ClaimsPrincipal(stale))).ToTttUser().Kind);
     }
 }

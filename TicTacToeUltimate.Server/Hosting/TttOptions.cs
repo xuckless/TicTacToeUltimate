@@ -75,6 +75,8 @@ public sealed class BotsOptions
     public bool Enabled { get; set; } = true;
     public bool Ranked { get; set; }
     public bool AllowQueryKey { get; set; }
+    /// <summary>Let accounts create their own bot API keys (off: 403). Default off until the public bot API is reviewed.</summary>
+    public bool AllowUserKeys { get; set; }
     public List<BotDevKeyOptions> DevKeys { get; set; } = [];
     /// <summary>External bot service (bots/, Go). Empty Url = no dispatch.</summary>
     public BotServiceOptions Service { get; set; } = new();

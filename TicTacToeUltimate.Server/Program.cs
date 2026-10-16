@@ -17,6 +17,7 @@ var app = builder.Build();
 app.UseTttCore();                 // WP0: exception handler/ProblemDetails, CORS, WebSockets
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();             // after auth so per-user partitions see the principal
 app.MapTttPlatform();             // WP3
 app.MapTttMatches();              // WP2
 app.MapTttBots();                 // WP4

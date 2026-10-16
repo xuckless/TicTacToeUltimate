@@ -49,6 +49,7 @@ public sealed class BotPoolTests
         public List<Guid> Started { get; } = [];
         public Guid BotUserId { get; } = id;
         public string BotName => "fake";
+        public bool Trusted => true;
         public bool TryReserveSlot(TimeControl timeControl)
         {
             if (timeControl != tc || Reserved >= capacity) return false;

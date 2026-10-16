@@ -42,8 +42,7 @@ public static class PlatformServiceCollectionExtensions
         services.AddSingleton<SocialService>();
         services.AddSingleton<GameViews>();
 
-        if (string.Equals(cfg["Ttt:Ads:Provider"], "AdSense", StringComparison.OrdinalIgnoreCase)) services.AddSingleton<IRewardVerifier, AdSenseRewardVerifier>();
-        else services.AddSingleton<IRewardVerifier, StubRewardVerifier>();
+        services.AddSingleton<RewardNonceService>();   // server-minted single-use nonces; Ttt:Ads:Provider only steers the client
         services.AddSingleton<RewardService>();
         return services;
     }

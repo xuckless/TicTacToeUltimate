@@ -134,6 +134,8 @@ public interface IRewardLedger
 {
     Task<bool> TryGrantAsync(RewardGrantRecord grant, CancellationToken ct);           // false if nonce already used
     Task<bool> HasGrantAsync(Guid userId, RewardKind kind, Guid? gameId, CancellationToken ct);
+    /// <summary>Grants of <paramref name="kind"/> for the user at or after <paramref name="since"/> (daily caps).</summary>
+    Task<int> CountSinceAsync(Guid userId, RewardKind kind, DateTimeOffset since, CancellationToken ct);
 }
 
 public sealed record SeasonRecord(int Id, DateTimeOffset StartsAt, DateTimeOffset EndsAt);

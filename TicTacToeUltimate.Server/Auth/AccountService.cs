@@ -130,11 +130,14 @@ public sealed class AccountService(IUserRepository users, RatingService ratings,
         return new TokenResponseDto(token, exp, (await GetMeAsync(u.Id, ct))!);
     }
 
-    /// <summary>PUT /api/me/username (guest = upgrade, same id).</summary>
+    /// <summary>PUT /api/me/username (accounts only; guests upgrade through Supabase sign-in + claim-guest).</summary>
     public async Task<OpResult<MeDto>> SetUsernameAsync(Guid userId, SetUsernameDto req, CancellationToken ct)
     {
         var u = await users.GetAsync(userId, ct);
         if (u is null || u.Kind == AccountKind.Bot) return OpResult<MeDto>.Fail(ErrorCodes.Validation, 400);
+        // A guest token proves only possession of a device id. Accounts come from a verified Supabase sign-in (then claim-guest);
+        // letting a guest pick a username used to mint unlimited "accounts" with ranked/social/bot-key access.
+        if (u.Kind == AccountKind.Guest) return OpResult<MeDto>.Fail(ErrorCodes.GuestNotAllowed, 403);
         var name = UsernameRules.Normalize(req.Username);
         if (!rules.IsValid(name)) return OpResult<MeDto>.Fail(ErrorCodes.UsernameInvalid, 400);
         if (u.Username is null && u.TosAcceptedAt is null && !req.AcceptTos) return OpResult<MeDto>.Fail(ErrorCodes.TosRequired, 400);
