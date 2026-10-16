@@ -6,7 +6,8 @@ using TicTacToeUltimate.Contracts;
 namespace TicTacToeUltimate.Client.Services;
 
 /// <summary>Applies <see cref="AdPolicy"/> and talks to the <see cref="IAdProvider"/>.</summary>
-public sealed class AdCoordinator(IAdProvider provider, ISessionStore session, IQueueStore queue, ILogger<AdCoordinator> logger) : IAdCoordinator
+public sealed class AdCoordinator(IAdProvider provider, ISessionStore session, IQueueStore queue, ILogger<AdCoordinator> logger,
+    TicTacToeUltimate.Client.Diagnostics.Telemetry? telemetry = null) : IAdCoordinator
 {
     private static readonly AdConfigDto DefaultConfig = new(2, true, 120, 2);
     private readonly Lock _gate = new();
@@ -38,7 +39,11 @@ public sealed class AdCoordinator(IAdProvider provider, ISessionStore session, I
                 DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
         }
         if (!show) return;
-        try { await provider.ShowInterstitialAsync(CancellationToken.None); }
+        try
+        {
+            var shown = await provider.ShowInterstitialAsync(CancellationToken.None);
+            telemetry?.Track(TelemetryKinds.Ad, shown ? "interstitial_shown" : "interstitial_nofill");
+        }
         catch (Exception ex) { logger.LogWarning(ex, "Interstitial failed"); }
     }
 
@@ -46,7 +51,12 @@ public sealed class AdCoordinator(IAdProvider provider, ISessionStore session, I
     public async Task<RewardedAdResult> ShowRewardedAsync(RewardKind kind)
     {
         if (!provider.IsAvailable) return new RewardedAdResult(false, null);
-        try { return await provider.ShowRewardedAsync(kind, CancellationToken.None); }
+        try
+        {
+            var r = await provider.ShowRewardedAsync(kind, CancellationToken.None);
+            telemetry?.Track(TelemetryKinds.Ad, r.Earned ? "rewarded_earned" : "rewarded_nofill", ("reward", kind.ToString()));
+            return r;
+        }
         catch (Exception ex) { logger.LogWarning(ex, "Rewarded ad failed"); return new RewardedAdResult(false, null); }
     }
 }

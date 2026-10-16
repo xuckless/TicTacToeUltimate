@@ -28,6 +28,7 @@ public static class ClientServiceCollectionExtensions
         services.AddSingleton<TicTacToeUltimate.Client.Diagnostics.RingLoggerProvider>();
         services.AddSingleton<ILoggerProvider>(sp => sp.GetRequiredService<TicTacToeUltimate.Client.Diagnostics.RingLoggerProvider>());
         services.AddSingleton<TicTacToeUltimate.Client.Diagnostics.CrashReporter>();
+        services.AddSingleton<TicTacToeUltimate.Client.Diagnostics.Telemetry>();
         services.AddSingleton(sp => new TttApiClient(new HttpClient { BaseAddress = options.BackendBaseUrl }, sp.GetRequiredService<TokenStore>(),
             sp.GetRequiredService<TicTacToeUltimate.Client.Diagnostics.DiagnosticsTrail>()));
         services.AddSingleton<RealtimeClient>(sp => new RealtimeClient(options, sp.GetRequiredService<TokenStore>(),

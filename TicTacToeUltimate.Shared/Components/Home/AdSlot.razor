@@ -26,7 +26,10 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && Visible && Services.GetService(typeof(IBannerAds)) is IBannerAds banner && banner.Has(Kind))
+        {
             await banner.RenderAsync(_host, Kind);
+            (Services.GetService(typeof(TicTacToeUltimate.Client.Diagnostics.Telemetry)) as TicTacToeUltimate.Client.Diagnostics.Telemetry)?.Track(TelemetryKinds.Ad, Kind switch { AdSlotKind.Feed => "feed_request", AdSlotKind.Rail => "rail_request", _ => "banner_request" });
+        }
     }
 
     /// <summary>Cascaded by the layouts; false hides the slot.</summary>

@@ -20,6 +20,11 @@ public sealed class GitHubOptions
     public string Repo { get; set; } = "xuckless/TicTacToeUltimate";
     /// <summary>A crash group seen by this many players within 24 h is filed automatically.</summary>
     public int AutoFileUsers { get; set; } = 5;
+    /// <summary>
+    /// Copy the player's own bug description into the issue. Off by default: the repository is public, so issues carry
+    /// only technical data (stack, route, trail, logs) and the admin site keeps the player's words.
+    /// </summary>
+    public bool IncludePlayerText { get; set; }
 }
 
 /// <summary>Bug screenshots: Supabase Storage (private bucket) when configured, else memory (dev).</summary>
@@ -155,11 +160,11 @@ public sealed partial class DiagnosticsService(ICrashRepository repo, IScreensho
         if (github.Value.Token.Length == 0) return (null, "github_not_configured");
         var reports = await repo.ListReportsAsync(fingerprint, 20, ct);
         var users24 = await repo.DistinctUsersSinceAsync(fingerprint, time.GetUtcNow().AddHours(-24), ct);
-        var body = IssueBody(g, reports, users24, auto);
+        var body = IssueBody(g, reports, users24, auto, github.Value.IncludePlayerText);
         using var client = http.CreateClient(nameof(DiagnosticsService));
         using var req = new HttpRequestMessage(HttpMethod.Post, $"https://api.github.com/repos/{github.Value.Repo}/issues")
         {
-            Content = JsonContent.Create(new { title = Cut(g.Title, 240), body, labels = new[] { g.Kind, "agent-ready" } }),
+            Content = JsonContent.Create(new { title = Cut(g.Kind == "bug" && !github.Value.IncludePlayerText ? $"Bug report {g.Fingerprint}" : g.Title, 240), body, labels = new[] { g.Kind, "agent-ready" } }),
         };
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", github.Value.Token);
         req.Headers.UserAgent.Add(new ProductInfoHeaderValue("ttt-server", "1.0"));
@@ -177,7 +182,7 @@ public sealed partial class DiagnosticsService(ICrashRepository repo, IScreensho
     }
 
     /// <summary>The issue text: everything an agent needs to reproduce and fix it, plus acceptance criteria.</summary>
-    public static string IssueBody(CrashGroupRecord g, IReadOnlyList<CrashReportRecord> reports, int users24, bool auto)
+    public static string IssueBody(CrashGroupRecord g, IReadOnlyList<CrashReportRecord> reports, int users24, bool auto, bool includePlayerText = false)
     {
         var r = reports.FirstOrDefault();
         var sb = new StringBuilder();
@@ -190,7 +195,8 @@ public sealed partial class DiagnosticsService(ICrashRepository repo, IScreensho
         sb.AppendLine().AppendLine("## Environment (latest report)");
         sb.AppendLine($"- App {r.AppVersion} on {r.Platform} · {r.Os} · {r.Device} · {r.Browser}");
         sb.AppendLine($"- Locale {r.Locale} · screen {r.Screen} · route `{r.Route}`");
-        if (r.Description is { Length: > 0 } d) sb.AppendLine().AppendLine("## Player's description").AppendLine("> " + d.ReplaceLineEndings("\n> "));
+        if (r.Description is { Length: > 0 } d)
+            sb.AppendLine().AppendLine("## Player's description").AppendLine(includePlayerText ? "> " + d.ReplaceLineEndings("\n> ") : "_In the admin site (Bugs) — kept out of public issues._");
         if (r.ExceptionType is not null)
         {
             sb.AppendLine().AppendLine("## Exception");

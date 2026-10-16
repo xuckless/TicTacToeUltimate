@@ -4,6 +4,7 @@
 @inject DiagnosticsTrail Trail
 @inject CrashReporter Reporter
 @inject CurrentRoute Route
+@inject Telemetry Telemetry
 @implements IDisposable
 
 @* App-wide: feeds the recent-actions trail (navigation, taps), reports uncaught JS errors, sends crash reports saved offline. *@
@@ -16,6 +17,9 @@
     {
         Route.Route = Path(Nav.Uri);
         Trail.Add("nav", Route.Route ?? "/");
+        // A campaign short link lands on /?c=<slug> (web); remembered once, sent with analytics.
+        var c = System.Web.HttpUtility.ParseQueryString(new Uri(Nav.Uri).Query)["c"];
+        _ = StartTelemetryAsync(c);
         Nav.LocationChanged += OnLocation;
     }
 
@@ -28,12 +32,20 @@
         _ = Reporter.FlushAsync();
     }
 
+    private async Task StartTelemetryAsync(string? campaign)
+    {
+        await Telemetry.StartAsync();
+        await Telemetry.SetCampaignAsync(campaign);
+        Telemetry.PageView(Route.Route ?? "/");
+    }
+
     private string Path(string uri) => "/" + Nav.ToBaseRelativePath(uri).Split('?', '#')[0];
 
     private void OnLocation(object? sender, LocationChangedEventArgs e)
     {
         Route.Route = Path(e.Location);
         Trail.Add("nav", Route.Route);
+        Telemetry.PageView(Route.Route);
     }
 
     /// <summary>JS: a tap (label only).</summary>

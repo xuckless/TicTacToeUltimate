@@ -1,4 +1,5 @@
 using TicTacToeUltimate.Server.Analysis;
+using TicTacToeUltimate.Server.Analytics;
 using TicTacToeUltimate.Server.Bots;
 using TicTacToeUltimate.Server.Diagnostics;
 using TicTacToeUltimate.Server.Hosting;
@@ -15,6 +16,7 @@ builder.Services.AddTttMatches(cfg);                         // WP2: actors, reg
 builder.Services.AddTttBots(cfg);                            // WP4: bot gateway
 builder.Services.AddTttModeration(cfg);                         // moderation: penalties, bans, reports
 builder.Services.AddTttDiagnostics(cfg);                        // crash + bug reports, GitHub issues
+builder.Services.AddTttAnalytics(cfg);                          // first-party analytics, campaign links
 builder.Services.AddTttCore(cfg, builder.Environment);       // WP0: MUST BE LAST (options, TimeProvider, SignalR, CORS, TryAdd null fallbacks)
 
 var app = builder.Build();
@@ -28,6 +30,7 @@ app.MapTttMatches();              // WP2
 app.MapTttBots();                 // WP4
 app.MapTttModeration();           // standing, appeals, reports
 app.MapTttDiagnostics();          // crash + bug reports
+app.MapTttAnalytics();            // telemetry, campaign redirects
 app.MapTttCore();                 // WP0: hub at HubRoutes.Game, GET /health, OpenAPI in Development
 app.Run();
 
