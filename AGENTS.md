@@ -356,3 +356,15 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
 - Real-time spectating: the existing friend spectating over SignalR (match actors live in memory; there's no DB involvement).
 - Deployment: web → **Vercel** (static); game server → Cloud Run with 1 instance or the workstation; bots → same, or Docker + Tailscale Funnel. Vercel can't host the C# server (no .NET runtime, no long-lived WebSockets). Full guide: `docs/DEPLOY.md`.
 - Ads: web uses **AdSense**, with the Ad Placement API for interstitials and rewarded ads plus a display unit for the menu banner. It activates only when `Ads:AdSenseClient` is set and falls back to "no ad" after 5 s. The server's `Ttt:Ads:Provider=AdSense` accepts one-time `web:` nonces.
+
+### UI round (owner, 2026-10-15)
+- Pass & Play setup redesigned:
+  - Players as an X-vs-O "versus" card.
+  - Mode and rules as coloured illustrated tiles, with a check and a burst on select.
+  - Pie rule as a themed switch.
+  - A "Let's play!" hero button.
+- Result sheets (Pass & Play, Pass & Play Arena) use the sports-style `Scoreboard`: avatars on either side with their piece, the reason pill over a big bold score, and a crown plus glow on the winner.
+- Online result page:
+  - The perfect-play card shows the final board greyed and rotated in the background (no more squashed mini board).
+  - Quests show the Home `QuestCard`, which bursts quests completed by this win.
+- Perched X/O trinkets removed everywhere (too distracting). Flybys now rotate Bert, X, O and an X+O duo (`PieceBuddy`: 2D X/O characters with faces, gloved hands, shoes; moods happy/wave/cheer), and come more often (every 14–30 s).

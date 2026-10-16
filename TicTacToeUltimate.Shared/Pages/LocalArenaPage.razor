@@ -63,8 +63,8 @@ else
             <div class="t-sheet result-overlay" data-testid="local-arena-over">
                 <Bert Mood="cheer" Size="72" />
                 <span class="t-hero"><BounceText Text="@(g.WinnerSeat is int w ? $"{g.NameOf(w)} wins!" : "Draw")" /></span>
-                <span class="t-small t-muted">@EndText(g.State.End)</span>
-                <span class="t-num">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)</span>
+                <Scoreboard Name0="@g.NameOf(0)" Name1="@g.NameOf(1)" Score0="g.Score[0]" Score1="g.Score[1]" Color0="g.ColorOf(0)" Color1="g.ColorOf(1)"
+                            Winner="g.WinnerSeat" Reason="@EndText(g.State.End)" />
                 <Button OnClick="Rematch">Rematch · swap colours</Button>
                 <Button Variant="secondary" OnClick="() => _showOverlay = false">View board</Button>
                 <Button Variant="ghost" Href="local">New setup</Button>

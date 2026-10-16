@@ -1,6 +1,6 @@
 @* Daily quests: Ghosty reacts to progress; each quest has an illustrated badge, a chunky segmented bar
    (one segment per win, bounces when the quest completes) and a reward chest that opens when done. *@
-<section class="quest-card perch-o" aria-labelledby="quest-title">
+<section class="quest-card" aria-labelledby="quest-title">
     <header class="quest-head">
         <Bert Mood="@GhostMood" Size="58" />
         <div class="quest-head-text">
@@ -51,6 +51,8 @@
     [Parameter] public ProgressDto? Progress { get; set; }
     /// <summary>Current server time in ms (for "Resets in 6h").</summary>
     [Parameter] public long NowMs { get; set; }
+    /// <summary>Quests finished by the game that just ended (result page): celebrated once after the card appears.</summary>
+    [Parameter] public IReadOnlyCollection<string>? JustCompleted { get; set; }
     /// <summary>Rewarded extra quest.</summary>
     [Parameter] public EventCallback OnExtraQuest { get; set; }
 
@@ -66,6 +68,19 @@
         var now = Progress.Quests.Where(q => q.Completed).Select(q => q.QuestId).ToHashSet();
         if (_completed is not null && now.FirstOrDefault(id => !_completed.Contains(id)) is { } fresh) { _burstId = fresh; _burst++; }
         _completed = now;
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || JustCompleted is not { Count: > 0 }) return;
+        foreach (var id in JustCompleted)
+        {
+            await Task.Delay(500);
+            _burstId = id;
+            _burst++;
+            StateHasChanged();
+        }
     }
 
     private int Done => Progress?.Quests.Count(q => q.Completed) ?? 0;

@@ -1,10 +1,10 @@
 @if (Href is not null && !Disabled)
 {
-    <a class="t-btn t-btn--@Variant @(Block ? "t-btn--block" : null) @(Variant == "hero" ? "perch-x perch-o" : null) @(Small ? "t-btn--sm" : null) @Class" href="@Href" @attributes="Attributes">@ChildContent</a>
+    <a class="t-btn t-btn--@Variant @(Block ? "t-btn--block" : null) @(Small ? "t-btn--sm" : null) @Class" href="@Href" @attributes="Attributes">@ChildContent</a>
 }
 else
 {
-    <button type="@Type" class="t-btn t-btn--@Variant @(Block ? "t-btn--block" : null) @(Variant == "hero" ? "perch-x perch-o" : null) @(Small ? "t-btn--sm" : null) @Class" disabled="@Disabled"
+    <button type="@Type" class="t-btn t-btn--@Variant @(Block ? "t-btn--block" : null) @(Small ? "t-btn--sm" : null) @Class" disabled="@Disabled"
             @onclick="OnClick" @attributes="Attributes">@ChildContent</button>
 }
 

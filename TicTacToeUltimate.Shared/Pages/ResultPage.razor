@@ -55,21 +55,22 @@ else
 
         @if (s?.AnalysisAvailable == true)
         {
-            <Card Class="analysis-teaser" Label="Perfect-play review">
+            <Card Label="Perfect-play review">
                 <div class="analysis-teaser">
-                    <MiniBoard Size="_view.Snapshot.Rules.BoardSize" Cells="@_view.Snapshot.Board" />
-                    <div class="t-col" style="padding:0;gap:4px;flex:1;min-width:0">
-                        <span style="font-weight:800">Perfect-play review</span>
-                        <span class="t-small t-muted">See every winning and losing move.@(s.YourBlunders is int b ? $" {b} blunder{(b == 1 ? "" : "s")} found." : "")</span>
-                        <Button Variant="ghost" Small="true" OnClick="UnlockAnalysis" Disabled="_busy" Style="justify-content:flex-start;padding-left:0">Watch ad to unlock</Button>
+                    <div class="at-board" aria-hidden="true"><MiniBoard Size="_view.Snapshot.Rules.BoardSize" Cells="@_view.Snapshot.Board" /></div>
+                    <div class="at-text">
+                        <span class="at-title"><Icon Name="chart" /> Perfect-play review</span>
+                        <span class="t-small t-muted">See every winning and losing move.</span>
+                        @if (s.YourBlunders is int b) { <span class="at-blunders">@b blunder@(b == 1 ? "" : "s") found</span> }
+                        <Button Variant="primary" Small="true" OnClick="UnlockAnalysis" Disabled="_busy"><Icon Name="ad" /> Watch ad to unlock</Button>
                     </div>
                 </div>
             </Card>
         }
 
-        @foreach (var q in CompletedQuests)
+        @if (s?.Progress is { } progress && progress.Quests.Length > 0)
         {
-            <div class="t-card" style="flex-direction:row;justify-content:space-between;padding:12px 16px"><span class="t-small t-success">✓ @q.Title</span></div>
+            <QuestCard Progress="progress" NowMs="DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()" JustCompleted="JustCompleted" />
         }
 
         <div class="result-actions">
@@ -125,7 +126,10 @@ else
         }
     }
 
-    private IEnumerable<QuestDto> CompletedQuests => _view?.Summary?.Progress?.Quests.Where(q => q.Completed) ?? [];
+    // Win quests advance by one per win, so a quest sitting exactly on its target after a win was finished by this game.
+    private string[] JustCompleted => YourResult == GameResultForUser.Win
+        ? (_view?.Summary?.Progress?.Quests.Where(q => q.Completed && q.Progress == q.Target).Select(q => q.QuestId).ToArray() ?? [])
+        : [];
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()

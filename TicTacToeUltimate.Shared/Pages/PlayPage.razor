@@ -16,7 +16,7 @@
         @foreach (var m in Modes.Where(x => x.Group == group))
         {
             var locked = IsGuest && !m.Guests;
-            <div class="mode-wrap perch-sm @(m.Glyph == "X" ? "perch-x" : "perch-o")">
+            <div class="mode-wrap @(m.Glyph == "X" ? "" : "")">
             <button type="button" class="mode-card" style="--accent:@m.Accent" disabled="@locked"
                     @onclick="() => Press(m.Tc)" aria-label="@($"{m.Name}{(locked ? ", account required" : "")}")">
                 <span class="mode-art" aria-hidden="true"><Icon Name="@m.Icon" /></span>

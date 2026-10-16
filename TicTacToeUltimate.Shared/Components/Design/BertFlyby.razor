@@ -3,14 +3,26 @@
    an edge. Tap him for a reaction. Menus only (placed in AppShell). Hidden under reduced motion. *@
 @if (_run > 0)
 {
-    <button type="button" class="bert-fly @_path @(_booped ? "booped" : null)" style="--y:@(_y)%" @key="_run" aria-label="Bert" title="Boop Bert" @onclick="Boop">
-        <Bert Mood="@(_booped ? "love" : _mood)" Size="@(_path == "peek" ? 74 : 62)" />
+    <button type="button" class="bert-fly @_path @(_booped ? "booped" : null)" style="--y:@(_y)%" @key="_run" aria-label="@(_cast == "bert" ? "Bert" : "X and O")" title="Boop!" @onclick="Boop">
+        @switch (_cast)
+        {
+            case "x": <PieceBuddy Kind="Color.X" Mood="@(_booped ? "cheer" : _buddyMood)" Size="@(_path == "peek" ? 70 : 58)" /> break;
+            case "o": <PieceBuddy Kind="Color.O" Mood="@(_booped ? "cheer" : _buddyMood)" Size="@(_path == "peek" ? 70 : 58)" /> break;
+            case "duo":
+                <span class="duo"><PieceBuddy Kind="Color.X" Mood="@(_booped ? "cheer" : "wave")" Size="52" /><PieceBuddy Kind="Color.O" Mood="cheer" Size="48" /></span>
+                break;
+            default: <Bert Mood="@(_booped ? "love" : _mood)" Size="@(_path == "peek" ? 74 : 62)" /> break;
+        }
     </button>
 }
 
 @code {
     private static readonly string[] FlyMoods = ["wave", "jumpy", "love", "laugh", "happy", "cool"];
     private static readonly string[] Paths = ["ltr", "rtl", "ltr", "rtl", "peek"];
+    // Bert headlines; the X and O sidekicks (solo or as a duo) take turns with him.
+    private static readonly string[] Cast = ["bert", "bert", "x", "o", "duo"];
+    private static readonly string[] BuddyMoods = ["wave", "cheer", "happy"];
+    private string _cast = "bert", _buddyMood = "wave";
     private CancellationTokenSource? _cts;
     private int _run, _y;
     private string _mood = "wave", _path = "ltr";
@@ -27,16 +39,18 @@
     {
         try
         {
-            await Task.Delay(TimeSpan.FromSeconds(6), ct);
+            await Task.Delay(TimeSpan.FromSeconds(5), ct);
             while (!ct.IsCancellationRequested)
             {
                 _mood = FlyMoods[Random.Shared.Next(FlyMoods.Length)];
+                _cast = Cast[Random.Shared.Next(Cast.Length)];
+                _buddyMood = BuddyMoods[Random.Shared.Next(BuddyMoods.Length)];
                 _path = Paths[Random.Shared.Next(Paths.Length)];
                 _y = Random.Shared.Next(18, 70);
                 _booped = false;
                 _run++;
                 await InvokeAsync(StateHasChanged);
-                await Task.Delay(TimeSpan.FromSeconds(Random.Shared.Next(22, 45)), ct);
+                await Task.Delay(TimeSpan.FromSeconds(Random.Shared.Next(14, 30)), ct);
             }
         }
         catch (TaskCanceledException) { }

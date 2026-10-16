@@ -103,9 +103,10 @@ else
     {
         <div class="match-over" role="dialog" aria-modal="true" aria-label="Game over" data-testid="local-over">
             <div class="t-card" style="align-items:center;text-align:center">
-                <span class="t-label">@ReasonText(r)</span>
+                <Bert Mood="@(r.WinnerSeat is null ? "think" : "cheer")" Size="64" />
                 <span class="t-hero"><BounceText Text="@(r.WinnerSeat is int w ? $"{g.NameOf(w)} wins!" : "Draw")" /></span>
-                <span class="t-num">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)@(g.Draws > 0 ? $" · {g.Draws} drawn" : "")</span>
+                <Scoreboard Name0="@g.NameOf(0)" Name1="@g.NameOf(1)" Score0="g.Score[0]" Score1="g.Score[1]" Color0="g.ColorOf(0)" Color1="g.ColorOf(1)"
+                            Winner="r.WinnerSeat" Reason="@ReasonText(r)" Draws="g.Draws" />
                 <Button OnClick="Rematch" data-testid="local-rematch">Rematch · swap colours</Button>
                 <Button Variant="secondary" OnClick="() => _showOverlay = false">View board</Button>
                 <Button Variant="ghost" Href="local">New setup</Button>

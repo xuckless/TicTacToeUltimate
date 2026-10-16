@@ -1,0 +1,52 @@
+@* X and O as little characters (face, gloved hands, shoes): Bert's sidekicks in flybys and empty states.
+   Moods: happy, wave (one hand waves), cheer (both hands up, bouncing). Decorative unless Label is set. *@
+<svg class="buddy buddy-@(Kind == Color.X ? "x" : "o") mood-@Mood @Class" viewBox="0 0 120 124" width="@Size" height="@Size"
+     role="@(Label is null ? "presentation" : "img")" aria-label="@Label" aria-hidden="@(Label is null ? "true" : null)">
+    @if (Kind == Color.X)
+    {
+        <g class="b-feet"><ellipse cx="30" cy="104" rx="12" ry="7" /><ellipse cx="90" cy="104" rx="12" ry="7" /></g>
+        <path class="b-outline" d="M30 30L90 94M90 30L30 94" />
+        <circle class="b-core-outline" cx="60" cy="62" r="25" />
+        <path class="b-body" d="M30 30L90 94M90 30L30 94" />
+        <circle class="b-core" cx="60" cy="62" r="21" />
+        <path class="b-shine" d="M34 36l10 11M86 36l-6 6M46 50a17 17 0 0 1 9-7" />
+        <g class="b-hand l"><circle cx="24" cy="24" r="11" /><path d="M18 18l-3-6M24 14v-6M30 17l3-6" /></g>
+        <g class="b-hand r"><circle cx="96" cy="24" r="11" /><path d="M90 17l-3-6M96 14v-6M102 18l3-6" /></g>
+        <g class="b-face" transform="translate(60 63) scale(1.25)">@Face()</g>
+    }
+    else
+    {
+        <g class="b-feet"><ellipse cx="44" cy="106" rx="12" ry="7" /><ellipse cx="76" cy="106" rx="12" ry="7" /></g>
+        <path class="b-arm-outline" d="M32 64q-14-4-20-18M88 64q14-4 20-18" />
+        <path class="b-arm l" d="M32 64q-14-4-20-18" /><path class="b-arm r" d="M88 64q14-4 20-18" />
+        <circle class="b-outline" cx="60" cy="62" r="31" />
+        <circle class="b-body" cx="60" cy="62" r="31" />
+        <circle class="b-hole" cx="60" cy="62" r="19" />
+        <path class="b-shine" d="M38 46a28 28 0 0 1 14-12" />
+        <g class="b-hand l"><circle cx="12" cy="42" r="10" /></g>
+        <g class="b-hand r"><circle cx="108" cy="42" r="10" /></g>
+        <g class="b-face" transform="translate(60 63) scale(1.1)">@Face()</g>
+    }
+</svg>
+
+@code {
+    /// <summary>X or O.</summary>
+    [Parameter] public Color Kind { get; set; } = Color.X;
+    /// <summary>happy | wave | cheer.</summary>
+    [Parameter] public string Mood { get; set; } = "happy";
+    /// <summary>Width in px.</summary>
+    [Parameter] public int Size { get; set; } = 64;
+    /// <summary>Accessible label; null = decorative.</summary>
+    [Parameter] public string? Label { get; set; }
+    /// <summary>Extra classes.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    private RenderFragment Face() => __builder =>
+    {
+        <ellipse class="b-eye" cx="-8" cy="-4" rx="5.5" ry="6.5" /><ellipse class="b-eye" cx="8" cy="-4" rx="5.5" ry="6.5" />
+        <circle class="b-pupil" cx="-7" cy="-3" r="3" /><circle class="b-pupil" cx="9" cy="-3" r="3" />
+        <circle class="b-glint" cx="-8.5" cy="-5.5" r="1.2" /><circle class="b-glint" cx="7.5" cy="-5.5" r="1.2" />
+        @if (Mood == "cheer") { <path class="b-mouth" d="M-7 5q7 10 14 0z" /> } else { <path class="b-mouth" d="M-5 5q5 6 10 0z" /> }
+        <ellipse class="b-cheek" cx="-14" cy="4" rx="3.5" ry="2" /><ellipse class="b-cheek" cx="14" cy="4" rx="3.5" ry="2" />
+    };
+}

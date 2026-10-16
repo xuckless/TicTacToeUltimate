@@ -1,0 +1,44 @@
+@* Sports-style result header: players on either side, the result reason over a big score in the middle.
+   The winner gets a crown and their digit pops; the other side dims. *@
+<div class="scoreboard @(Winner is null ? "draw" : null)" role="group" aria-label="@($"{Name0} {Score0}, {Name1} {Score1}")" data-testid="scoreboard">
+    @Side(0, Name0, Color0)
+    <div class="sb-mid">
+        <span class="sb-reason">@Reason</span>
+        <span class="sb-score">
+            <b class="@(Winner == 0 ? "lead" : null)" @key="@($"a{Score0}")">@Score0</b><i>–</i><b class="@(Winner == 1 ? "lead" : null)" @key="@($"b{Score1}")">@Score1</b>
+        </span>
+        @if (Draws > 0) { <span class="sb-draws">@Draws drawn</span> }
+    </div>
+    @Side(1, Name1, Color1)
+</div>
+
+@code {
+    /// <summary>Left player.</summary>
+    [Parameter] public string Name0 { get; set; } = "";
+    /// <summary>Right player.</summary>
+    [Parameter] public string Name1 { get; set; } = "";
+    /// <summary>Scores.</summary>
+    [Parameter] public int Score0 { get; set; }
+    /// <summary>Scores.</summary>
+    [Parameter] public int Score1 { get; set; }
+    /// <summary>Piece each side played this game.</summary>
+    [Parameter] public Color Color0 { get; set; } = Color.X;
+    /// <summary>Piece each side played this game.</summary>
+    [Parameter] public Color Color1 { get; set; } = Color.O;
+    /// <summary>Seat that won this game; null = draw.</summary>
+    [Parameter] public int? Winner { get; set; }
+    /// <summary>"Knockout", "Three in a row"…</summary>
+    [Parameter] public string Reason { get; set; } = "";
+    /// <summary>Drawn games in the session.</summary>
+    [Parameter] public int Draws { get; set; }
+
+    private RenderFragment Side(int seat, string name, Color piece) => __builder =>
+    {
+        var cls = piece == Color.X ? "x" : "o";
+        <div class="sb-side @cls @(Winner == seat ? "won" : Winner is not null ? "lost" : null)">
+            @if (Winner == seat) { <span class="sb-crown" aria-hidden="true"><Icon Name="crown" /></span> }
+            <span class="sb-avatar" aria-hidden="true">@(string.IsNullOrEmpty(name) ? "?" : name[..1].ToUpperInvariant())<span class="sb-piece">@(piece == Color.X ? "X" : "O")</span></span>
+            <span class="sb-name">@name</span>
+        </div>
+    };
+}
