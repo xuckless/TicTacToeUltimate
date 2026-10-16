@@ -132,6 +132,7 @@ else
             <Button Variant="secondary" Block="true" OnClick="Home">Home</Button>
             @if (_view.Snapshot.Rated) { <div class="t-small t-muted" style="text-align:center">No rematch in ranked games</div> }
         </div>
+        <AdSlot Kind="AdSlotKind.Feed" />
     </div>
     <ImpactFrame Kind="promotion" Text="PROMOTED!" Token="@($"tier-{s?.Tier?.After.Tier.ToString().ToLowerInvariant()}")" Trigger="_promoTrigger" />
 }

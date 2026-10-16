@@ -32,10 +32,12 @@ public interface IAdProvider
 /// <summary>Detects a browser ad blocker (web AdSense only; absent elsewhere).</summary>
 public interface IAdBlockDetector { ValueTask<bool> IsBlockedAsync(); }
 /// <summary>Real banner ads (web AdSense). Absent = the stub banner.</summary>
+/// <summary>Where a display ad sits: a horizontal strip (menus, match), an in-feed card (lists, result) or the desktop side rail.</summary>
+public enum AdSlotKind { Banner, Feed, Rail }
 public interface IBannerAds
 {
-    string? BannerSlot { get; }
-    ValueTask RenderBannerAsync(object host);   // an ElementReference
+    bool Has(AdSlotKind kind);
+    ValueTask RenderAsync(object host, AdSlotKind kind);   // host is an ElementReference
 }
 public sealed record AdOverlayRequest(string Kind /* "interstitial" | "rewarded" */, RewardKind? Reward, int Seconds);
 /// <summary>Implemented by Shared (WP6): renders the stub ad modal; returns true when the countdown completed (false if closed early).</summary>

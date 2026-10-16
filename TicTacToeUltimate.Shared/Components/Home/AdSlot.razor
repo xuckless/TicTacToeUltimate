@@ -2,31 +2,37 @@
 
 @if (Visible)
 {
-    @if (Services.GetService(typeof(IBannerAds)) is IBannerAds { BannerSlot: not null })
+    @if (Services.GetService(typeof(IBannerAds)) is IBannerAds banner && banner.Has(Kind))
     {
-        <div class="ad-slot real" role="complementary" aria-label="Advertisement" @ref="_host"></div>
+        <div class="ad-slot real @KindClass" role="complementary" aria-label="Advertisement" @ref="_host"></div>
     }
     else if (Services.GetService(typeof(IBannerAds)) is null)
     {
-        @* Stub placeholder (dev / stub ads). Real ads without a banner unit render nothing. *@
-        <div class="ad-slot" role="complementary" aria-label="Advertisement">Banner ad · 320×50</div>
+        @* Stub placeholder (dev / stub ads). Real ads without a unit for this kind render nothing. *@
+        <div class="ad-slot @KindClass" role="complementary" aria-label="Advertisement">@StubLabel</div>
     }
 }
 
 @code {
     private ElementReference _host;
 
+    /// <summary>Strip (default), in-feed card or desktop side rail.</summary>
+    [Parameter] public AdSlotKind Kind { get; set; } = AdSlotKind.Banner;
+
+    private string KindClass => Kind switch { AdSlotKind.Feed => "ad-feed", AdSlotKind.Rail => "ad-rail", _ => "ad-banner" };
+    private string StubLabel => Kind switch { AdSlotKind.Feed => "In-feed ad", AdSlotKind.Rail => "Rail ad", _ => "Banner ad" };
+
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && Visible && Services.GetService(typeof(IBannerAds)) is IBannerAds { BannerSlot: not null } banner)
-            await banner.RenderBannerAsync(_host);
+        if (firstRender && Visible && Services.GetService(typeof(IBannerAds)) is IBannerAds banner && banner.Has(Kind))
+            await banner.RenderAsync(_host, Kind);
     }
 
-    /// <summary>Cascaded false by <see cref="Layout.MatchLayout"/>: no ads during a match.</summary>
+    /// <summary>Cascaded by the layouts; false hides the slot.</summary>
     [CascadingParameter(Name = "AdsAllowed")] public bool? AdsAllowed { get; set; }
 
-    /// <summary>True when the banner renders.</summary>
+    /// <summary>True when the slot renders.</summary>
     public bool Visible
     {
         get

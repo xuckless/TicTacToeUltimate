@@ -92,6 +92,9 @@ public sealed class ToastService
 /// <summary>Display helpers shared by components.</summary>
 public static class Ui
 {
+    /// <summary>In-feed ads in lists: one after every 8th row (owner decision 2026-10-16).</summary>
+    public static bool FeedAdAfter(int index) => index % 8 == 7;
+
     /// <summary>"Gold II", "Master".</summary>
     public static string TierName(TierDto? t) => t is null ? "Unranked"
         : t.Tier == Tier.Master || t.Division <= 0 ? t.Tier.ToString() : $"{t.Tier} {Roman(t.Division)}";

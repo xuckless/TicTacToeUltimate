@@ -55,9 +55,10 @@ else
     <section class="t-col" style="padding:0;gap:0" aria-label="Friends">
         @if (!Social.State.Loaded) { <BertLoader Text="Finding your friends" Mood="wave" /> }
         else if (Social.State.Friends.Length == 0) { <div class="t-empty"><Bert Mood="wink" Size="56" /><span>No friends yet. Search above or send an invite link.</span></div> }
-        @foreach (var f in SortedFriends)
+        @foreach (var (f, i) in SortedFriends.Select((f, i) => (f, i)))
         {
             <FriendRow Friend="f" OnChallenge="Challenge" OnWatch="Watch" OnDaily="Daily" />
+            @if (Ui.FeedAdAfter(i)) { <AdSlot Kind="AdSlotKind.Feed" /> }
         }
     </section>
 

@@ -26,7 +26,7 @@ else
 {
     <section aria-label="Rankings">
         @if (_page.Rows.Length == 0) { <p class="t-muted t-small">Nobody here yet.</p> }
-        @foreach (var row in _page.Rows) { <LeaderboardRow Row="row" IsMe="@(row.Player.UserId == Session.State.Me?.UserId)" /> }
+        @foreach (var (row, i) in _page.Rows.Select((r, i) => (r, i))) { <LeaderboardRow Row="row" IsMe="@(row.Player.UserId == Session.State.Me?.UserId)" />@if (Ui.FeedAdAfter(i)) { <AdSlot Kind="AdSlotKind.Feed" /> } }
         @if (_page.Me is { } me && _page.Rows.All(r => r.Player.UserId != me.Player.UserId))
         {
             <div style="height:12px"></div>

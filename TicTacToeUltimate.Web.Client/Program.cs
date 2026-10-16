@@ -33,6 +33,7 @@ builder.Services.Replace(ServiceDescriptor.Singleton<IPlatformInfo, WebPlatformI
 if (NonEmpty(builder.Configuration["Ads:AdSenseClient"]) is { } adClient)
 {
     var adOptions = new AdSenseOptions(adClient, NonEmpty(builder.Configuration["Ads:AdSenseBannerSlot"]),
+        NonEmpty(builder.Configuration["Ads:AdSenseRailSlot"]),
         string.Equals(builder.Configuration["Ads:TestMode"], "true", StringComparison.OrdinalIgnoreCase));
     builder.Services.AddSingleton(adOptions);
     builder.Services.AddSingleton<AdSenseAdProvider>();

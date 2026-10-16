@@ -26,6 +26,7 @@
         <ConnectionBanner Phase="Session.State.Connection" Attempt="Session.State.ReconnectAttempt" />
         <CascadingValue Name="AdsAllowed" Value="true" IsFixed="true">
             <main id="main" class="page"><ResumeBanner /><AdBlockNotice /><ErrorBoundary @ref="_errors"><ChildContent>@Body</ChildContent><ErrorContent Context="ex"><CrashPanel Exception="ex" OnRecover="() => _errors?.Recover()" /></ErrorContent></ErrorBoundary></main>
+            <AdSlot Kind="AdSlotKind.Rail" />
         </CascadingValue>
     </div>
     <nav class="t-nav" aria-label="Main">

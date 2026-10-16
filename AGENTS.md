@@ -425,3 +425,14 @@ Full report with findings and decisions: the plan file of this session (security
 - **Emotes (owner, 2026-10-16):** Clash Royale style: a large fixed still pops in beside the sender's card, holds ~2.5 s and fades. No arc, no spin. Same emotes can be sent in DMs (`emote:<id>` message bodies, server-validated).
 - **Inbox:** `/social/messages` lists conversations most-recent-first with preview, time and unread count (Instagram style); the Social tab and header carry an unread badge.
 - **Sign-in = email → 6-digit code (owner, 2026-10-16).** Password login and Google/Apple providers are dropped (no Apple-sign-in obligation, nothing to set up). Supabase OTP: `POST /auth/v1/otp` (create_user) then `POST /auth/v1/verify` type=email; `supabase/config.toml` sets `otp_length = 6`, `otp_expiry = 600`, template `supabase/templates/code.html` ({{ .Token }}). The old password/recovery endpoints remain in `SupabaseAuthClient` but have no UI. **Resend SMTP is required for real volume** (built-in mailer: a few emails/hour).
+
+### Ad placements (owner, 2026-10-16)
+- **AdMob ids:** Android app `~8660098885` (interstitial `/7771804459`, rewarded `/3937510383`, banner `/4516094884`); iOS banner `/6563673722` added. Debug builds still use Google's test units.
+- **Web display ads** (AdSense units "Display Square" 6385289336, "ads vertical" 8269216645; `AdSlot Kind=Banner|Feed|Rail`):
+  - Strip: menus (100px) and during a match (50px, under your card).
+  - In-feed: one after every 8th row in History, Leaderboards and the Social friends list (`Ui.FeedAdAfter`), and one card below the result-screen buttons.
+  - Rail: fixed right of the game column at ≥1200px (160×600, 300×600 at ≥1500px), menus and matches. Hidden on narrower screens.
+  - Mobile apps render none of these in HTML; the native AdMob banner sits under the web view.
+- **Auto ads OFF.** The production build writes the AdSense tag into every page's static `<head>` for the site review; `ads.js` reuses it.
+- **Rewards when no ad fills (web): unchanged for now** (still granted). Diamonds usage is not planned yet; revisit with the economy. Watch-ad buttons stay visible on web.
+- The home header puts the wordmark on its own row on every screen (desktop overlapped the Diamonds pill).

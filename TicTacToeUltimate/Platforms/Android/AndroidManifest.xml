@@ -6,9 +6,9 @@
             android:roundIcon="@mipmap/appicon_round"
             android:networkSecurityConfig="@xml/network_security_config"
             android:supportsRtl="true">
-        <!-- AdMob. APPLICATION_ID is Google's sample app id until the real one exists (DEPLOYMENT_GUIDE.md). -->
+        <!-- AdMob. APPLICATION_ID is the real Android AdMob app id. -->
         <activity android:name="com.google.android.gms.ads.AdActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" android:theme="@android:style/Theme.Translucent" />
-        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713" />
+        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-7292645320711380~8660098885" />
     </application>
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

@@ -6,7 +6,7 @@
 <h1 class="t-title">History</h1>
 
 <section class="t-col" style="padding:0;gap:0">
-    @foreach (var g in _games) { <GameRow Game="g" /> }
+    @foreach (var (g, i) in _games.Select((g, i) => (g, i))) { <GameRow Game="g" />@if (Ui.FeedAdAfter(i)) { <AdSlot Kind="AdSlotKind.Feed" /> } }
     @if (_loading && _games.Count == 0) { <BertLoader Text="Loading your games" /> }
     else if (_error && _games.Count == 0) { <div class="t-empty"><Bert Mood="shocked" Size="64" /><span>Couldn't load your history.</span><Button Variant="secondary" Small="true" OnClick="LoadMore">Retry</Button></div> }
     else if (!_loading && _games.Count == 0) { <div class="t-empty"><Bert Mood="happy" Size="64" /><span>No games yet. Your first win is waiting!</span></div> }
