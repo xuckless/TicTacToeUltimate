@@ -11,7 +11,7 @@ public sealed record SupabaseSession(string AccessToken, string RefreshToken, lo
 public sealed record EmailAuthResult(SupabaseSession? Session, bool NeedsConfirmation, string? Error);
 
 /// <summary>
-/// Minimal GoTrue REST client (email + password only): sign up, sign in, refresh, password recovery.
+/// Minimal GoTrue REST client: email one-time codes (the product sign-in), refresh, and the legacy password endpoints.
 /// URL and publishable key come from <c>/api/config</c>; nothing here is secret.
 /// </summary>
 public sealed class SupabaseAuthClient(HttpClient http)
@@ -29,6 +29,19 @@ public sealed class SupabaseAuthClient(HttpClient http)
     /// <summary>POST /auth/v1/token?grant_type=password.</summary>
     public Task<EmailAuthResult> SignInAsync(string url, string key, string email, string password)
         => SendAsync(url, key, "token?grant_type=password", new { email, password }, signUp: false);
+
+    /// <summary>POST /auth/v1/otp: emails a one-time code (creates the user on first use). Null = sent.</summary>
+    public async Task<string?> SendCodeAsync(string url, string key, string email)
+    {
+        HttpResponseMessage r;
+        try { r = await SendRawAsync(url, key, "otp", new { email, create_user = true }); }
+        catch (HttpRequestException) { return "Can't reach the sign-in service. Check your connection."; }
+        return r.IsSuccessStatusCode ? null : await ErrorOf(r);
+    }
+
+    /// <summary>POST /auth/v1/verify (type=email): exchanges the 6-digit code for a session.</summary>
+    public Task<EmailAuthResult> VerifyCodeAsync(string url, string key, string email, string code)
+        => SendAsync(url, key, "verify", new { type = "email", email, token = code }, signUp: false);
 
     /// <summary>POST /auth/v1/token?grant_type=refresh_token.</summary>
     public Task<EmailAuthResult> RefreshAsync(string url, string key, string refreshToken)

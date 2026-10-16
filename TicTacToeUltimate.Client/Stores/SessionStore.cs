@@ -187,6 +187,22 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     public async Task SignInGuestAsync() => await CompleteSignInAsync(await _api.GuestTokenAsync(new GuestTokenRequestDto(await DeviceIdAsync())), true);
 
     /// <inheritdoc />
+    public async Task<string?> SendCodeAsync(string email)
+    {
+        if (Supabase() is not { } s) return "Email sign-in isn't available right now.";
+        return await _supa.SendCodeAsync(s.Url, s.Key, email.Trim().ToLowerInvariant());
+    }
+
+    /// <inheritdoc />
+    public async Task<string?> VerifyCodeAsync(string email, string code)
+    {
+        if (Supabase() is not { } s) return "Email sign-in isn't available right now.";
+        var r = await _supa.VerifyCodeAsync(s.Url, s.Key, email.Trim().ToLowerInvariant(), code.Trim());
+        if (r.Session is null) return r.Error ?? "That code didn't work. Check it and try again.";
+        return await AdoptSupabaseSessionAsync(r.Session);
+    }
+
+    /// <inheritdoc />
     public async Task<string?> SignInEmailAsync(string email, string password)
     {
         if (Supabase() is not { } s) return "Email sign-in isn't available right now.";

@@ -29,6 +29,10 @@ public interface ISessionStore : IStore<SessionState>
     Task SignInDevAsync(Guid userId);
     Task SignInDevNewUserAsync(string username);
     Task SignInGuestAsync();
+    /// <summary>Emails a 6-digit sign-in code (creates the account on first use). Returns an error text or null.</summary>
+    Task<string?> SendCodeAsync(string email);
+    /// <summary>Verifies the code and signs in (guest history is claimed). Returns an error text or null.</summary>
+    Task<string?> VerifyCodeAsync(string email, string code);
     /// <summary>Email + password (Supabase). Returns an error text or null.</summary>
     Task<string?> SignInEmailAsync(string email, string password);
     /// <summary>Creates the account; returns (needsConfirmation, error).</summary>
