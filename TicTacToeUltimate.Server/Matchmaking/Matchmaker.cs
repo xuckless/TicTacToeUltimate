@@ -54,6 +54,9 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
     private long _lastStatusMs = long.MinValue / 2;
     private readonly HashSet<QueueEntry> _dispatched = [];
 
+    /// <summary>Players waiting per time control, published each tick (safe to read from any thread: admin live view).</summary>
+    public IReadOnlyDictionary<TimeControl, int> QueueCounts { get; private set; } = new Dictionary<TimeControl, int>();
+
     /// <summary>Posts a command; applied on the next tick.</summary>
     public void Post(QueueCommand command) => _commands.Writer.TryWrite(command);
 
@@ -116,6 +119,7 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
             await CreateBotMatchAsync(e, bot, ct).ConfigureAwait(false);
         }
 
+        QueueCounts = _entries.GroupBy(e => e.TimeControl).ToDictionary(g => g.Key, g => g.Count());
         if (now - _lastStatusMs >= 1000)
         {
             _lastStatusMs = now;

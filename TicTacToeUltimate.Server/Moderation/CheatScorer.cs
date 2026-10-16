@@ -86,7 +86,19 @@ public sealed class CheatScorer(ITablebaseCache tablebases, IGameMetricsReposito
         catch (Exception ex) when (ex is InvalidActionException or InvalidOperationException) { return null; }
     }
 
-    /// <summary>Rolling check over the player's recent games.</summary>
+    /// <summary>Rolling numbers over the player's recent games (no side effects: the admin view).</summary>
+    public async Task<SuspicionDto> ComputeAsync(Guid userId, CancellationToken ct)
+    {
+        var recent = await metrics.RecentAsync(userId, Opts.WindowGames, ct);
+        var critical = recent.Sum(r => r.Critical);
+        var accuracy = critical == 0 ? 0 : recent.Sum(r => r.Accurate) / (double)critical;
+        var winRate = recent.Count == 0 ? 0 : recent.Count(r => r.Won) / (double)recent.Count;
+        var think = critical == 0 ? 0 : (int)(recent.Sum(r => (long)r.ThinkMsAvg * r.Critical) / critical);
+        return new SuspicionDto(userId, recent.Count, critical, accuracy, winRate, think,
+            critical >= Opts.MinCritical && accuracy >= Opts.MinAccuracy && winRate >= Opts.MinWinRate);
+    }
+
+    /// <summary>Rolling check over the player's recent games; crossing the thresholds puts them in the shadow pool.</summary>
     public async Task<SuspicionDto> EvaluateAsync(Guid userId, CancellationToken ct)
     {
         var recent = await metrics.RecentAsync(userId, Opts.WindowGames, ct);
