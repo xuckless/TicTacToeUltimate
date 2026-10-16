@@ -1,26 +1,49 @@
-<Card Title="Daily quests" Class="t-quest">
-    <Aside><span class="t-small t-muted">@ResetsText</span></Aside>
-    <ChildContent>
-        @if (Progress is null)
-        {
-            <span class="t-muted t-small">Loading quests…</span>
-        }
-        else
-        {
+@* Daily quests: Ghosty reacts to progress; each quest has an illustrated badge, a chunky segmented bar
+   (one segment per win, bounces when the quest completes) and a reward chest that opens when done. *@
+<section class="quest-card" aria-labelledby="quest-title">
+    <header class="quest-head">
+        <Ghosty Mood="@GhostMood" Size="58" />
+        <div class="quest-head-text">
+            <h2 id="quest-title" class="quest-title">Daily quests</h2>
+            <span class="t-small t-muted">@HeadLine</span>
+        </div>
+        <span class="quest-reset">@ResetsText</span>
+    </header>
+    @if (Progress is null)
+    {
+        <span class="t-muted t-small">Loading quests…</span>
+    }
+    else
+    {
+        <ul class="quest-list">
             @foreach (var q in Progress.Quests)
             {
-                <div class="q"><span>@q.Title</span>
-                    @if (q.Completed) { <span class="done">✓ @q.Progress/@q.Target</span> } else { <span>@q.Progress/@q.Target</span> }
-                </div>
-                <ProgressBar Value="@(q.Target == 0 ? 0 : (double)q.Progress / q.Target)" Label="@q.Title" />
+                var segments = Math.Clamp(q.Target, 1, 5);
+                var filled = q.Target == 0 ? 0 : (int)Math.Round((double)Math.Min(q.Progress, q.Target) / q.Target * segments);
+                <li class="quest @(q.Completed ? "done" : null) badge-@Badge(q)">
+                    <span class="quest-badge" aria-hidden="true"><Icon Name="@BadgeIcon(q)" /></span>
+                    <div class="quest-body">
+                        <div class="quest-row"><span class="quest-name">@q.Title</span><span class="quest-count">@Math.Min(q.Progress, q.Target)/@q.Target</span></div>
+                        <div class="quest-bar" role="progressbar" aria-label="@q.Title" aria-valuemin="0" aria-valuemax="@q.Target" aria-valuenow="@Math.Min(q.Progress, q.Target)">
+                            @for (var i = 0; i < segments; i++)
+                            {
+                                <span class="seg @(i < filled ? "on" : null)" style="--i:@i"></span>
+                            }
+                        </div>
+                    </div>
+                    <span class="quest-chest @(q.Completed ? "open" : null)" title="@(q.Completed ? "Reward earned" : "Reward")">
+                        <Icon Name="@(q.Completed ? "gift" : "chest")" />
+                        @if (q.Completed) { <span class="quest-check"><Icon Name="check" /></span> }
+                    </span>
+                </li>
             }
-            @if (Progress.ExtraQuestAvailable && OnExtraQuest.HasDelegate)
-            {
-                <Button Variant="ghost" Small="true" OnClick="OnExtraQuest">Watch ad for a bonus quest</Button>
-            }
+        </ul>
+        @if (Progress.ExtraQuestAvailable && OnExtraQuest.HasDelegate)
+        {
+            <Button Variant="ghost" Small="true" OnClick="OnExtraQuest"><Icon Name="ad" /> Watch ad for a bonus quest</Button>
         }
-    </ChildContent>
-</Card>
+    }
+</section>
 
 @code {
     /// <summary>Progress.</summary>
@@ -30,13 +53,27 @@
     /// <summary>Rewarded extra quest.</summary>
     [Parameter] public EventCallback OnExtraQuest { get; set; }
 
+    private int Done => Progress?.Quests.Count(q => q.Completed) ?? 0;
+    private int Total => Progress?.Quests.Length ?? 0;
+
+    private string GhostMood => Progress is null ? "sleepy"
+        : Total > 0 && Done == Total ? "cheer"
+        : Done > 0 ? "wink"
+        : Progress.Quests.Any(q => q.Progress > 0) ? "happy" : "sleepy";
+
+    private string HeadLine => Progress is null ? "" : Total > 0 && Done == Total ? "All done. See you tomorrow!"
+        : Done > 0 ? $"{Done} of {Total} done. Keep it going!" : "Win games to fill the bars.";
+
+    private static string Badge(QuestDto q) => q.Bonus ? "bonus" : q.Target switch { <= 1 => "spark", <= 3 => "flame", _ => "crown" };
+    private static string BadgeIcon(QuestDto q) => Badge(q) switch { "spark" => "bolt", "flame" => "flame", "crown" => "crown", _ => "gift" };
+
     private string ResetsText
     {
         get
         {
             if (Progress is null || NowMs <= 0) return "";
             var left = TimeSpan.FromMilliseconds(Math.Max(0, Progress.ResetsAtMs - NowMs));
-            return left.TotalHours >= 1 ? $"Resets in {(int)left.TotalHours}h" : $"Resets in {Math.Max(1, (int)left.TotalMinutes)}m";
+            return left.TotalHours >= 1 ? $"{(int)left.TotalHours}h left" : $"{Math.Max(1, (int)left.TotalMinutes)}m left";
         }
     }
 }

@@ -2,7 +2,7 @@
     <div class="t-spread" style="padding-bottom:4px"><h2 class="t-heading">Recent games</h2>@if (ShowHistoryLink) { <a href="history" class="t-small">History</a> }</div>
     @if (Games.Count == 0)
     {
-        <p class="t-muted t-small">No games yet.</p>
+        <div class="t-empty"><Ghosty Mood="happy" Size="52" /><span>No games yet. Your first win is waiting!</span></div>
     }
     @foreach (var g in Games)
     {

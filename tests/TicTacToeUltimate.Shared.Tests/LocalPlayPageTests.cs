@@ -57,7 +57,7 @@ public sealed class LocalPlayPageTests : IDisposable
         Assert.Contains("Player 1 wins!", cut.Find("[data-testid='local-over']").TextContent, StringComparison.Ordinal);
         Assert.Contains("1 – 0", cut.Find("[data-testid='local-score']").TextContent, StringComparison.Ordinal);
         cut.Find("[data-testid='local-rematch']").Click();
-        Assert.Equal(1, g.ToMoveSeat);
+        Assert.Equal(1, Session.Current!.ToMoveSeat);
         Assert.Contains("X's turn (Player 2)", cut.Find("[data-testid='local-banner']").TextContent, StringComparison.Ordinal);
     }
 }

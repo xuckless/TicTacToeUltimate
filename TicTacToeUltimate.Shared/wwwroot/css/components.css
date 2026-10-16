@@ -232,3 +232,60 @@ h1:focus, h1:focus-visible { outline: none; }
 @keyframes ttt-letter-bob { 50% { transform: translateY(calc(var(--dy, 0) - 0.06em)) rotate(var(--rot, 0deg)); } }
 @media (prefers-reduced-motion: reduce) { .t-bounce.wiggle > span { animation: none; } }
 :root[data-motion="reduce"] .t-bounce.wiggle > span { animation: none; }
+
+/* Ghosty mascot */
+.ghosty { overflow: visible; flex: none; }
+.ghosty .g-body { fill: var(--primary-fill); }
+.ghosty .g-shadow { fill: var(--primary-shade); }
+.ghosty .g-shine { fill: #fff; opacity: .28; }
+.ghosty .g-halo { fill: none; stroke: var(--primary); stroke-width: 4; stroke-dasharray: 6 5; opacity: .55; }
+.ghosty .g-eye { fill: #fff; }
+.ghosty .g-pupil { fill: #1b1030; }
+.ghosty .g-glint { fill: #fff; }
+.ghosty .g-mouth { fill: #1b1030; }
+.ghosty .g-cheek { fill: #ff7aa8; opacity: .55; }
+.ghosty .g-line { fill: none; stroke: #1b1030; stroke-width: 3.5; stroke-linecap: round; }
+.ghosty .g-line.thick { stroke-width: 4.5; }
+.ghosty .g-arm { fill: none; stroke: var(--primary-fill); stroke-width: 9; stroke-linecap: round; }
+.ghosty .g-spark { fill: var(--streak); }
+.ghosty .g-tear { fill: var(--piece-x); }
+.ghosty .g-z { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.ghosty.bob .g-body-wrap { animation: ghosty-bob 2.6s ease-in-out infinite; transform-origin: 60px 100px; }
+.ghosty.bob .g-halo { animation: ghosty-halo 2.6s ease-in-out infinite; }
+.ghosty.mood-cheer.bob .g-body-wrap { animation: ghosty-hop .9s cubic-bezier(.3, 1.6, .5, 1) infinite; }
+@keyframes ghosty-bob { 50% { transform: translateY(-4px) rotate(-2deg); } }
+@keyframes ghosty-halo { 50% { transform: translateY(-6px); opacity: .3; } }
+@keyframes ghosty-hop { 0%, 100% { transform: translateY(0) scale(1, 1); } 40% { transform: translateY(-10px) scale(.96, 1.05); } 70% { transform: translateY(0) scale(1.06, .94); } }
+@media (prefers-reduced-motion: reduce) { .ghosty .g-body-wrap, .ghosty .g-halo { animation: none !important; } }
+:root[data-motion="reduce"] .ghosty .g-body-wrap, :root[data-motion="reduce"] .ghosty .g-halo { animation: none !important; }
+
+/* Quest card */
+.quest-card { background: var(--surface); border-radius: var(--radius-lg); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); box-shadow: var(--ledge-neutral); }
+.quest-head { display: flex; align-items: center; gap: var(--space-3); }
+.quest-head-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.quest-title { margin: 0; font: 400 22px/1.1 var(--font-headline); text-transform: uppercase; letter-spacing: .01em; }
+.quest-reset { align-self: flex-start; font: 600 12px/1 var(--font-sans); color: var(--ink-muted); background: var(--surface-raised); border-radius: var(--radius-pill); padding: 5px 9px; }
+.quest-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.quest { display: flex; align-items: center; gap: var(--space-3); }
+.quest-badge { width: 44px; height: 44px; flex: none; border-radius: 14px; display: grid; place-items: center; color: #fff;
+  background: var(--badge, var(--primary-fill)); box-shadow: 0 3px 0 rgb(0 0 0 / .35), inset 0 2px 0 rgb(255 255 255 / .25); transform: rotate(-4deg); }
+.quest-badge .t-icon { width: 26px; height: 26px; }
+.quest-badge .t-icon .d { fill-opacity: .35; }
+.badge-spark { --badge: #2f9be0; } .badge-flame { --badge: #ff8a2a; } .badge-crown { --badge: #e3a91a; } .badge-bonus { --badge: #d6409f; }
+.quest-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.quest-row { display: flex; justify-content: space-between; font: 600 15px/1.2 var(--font-sans); }
+.quest-count { font-family: var(--font-numeric); color: var(--ink-muted); }
+.quest.done .quest-count { color: var(--success); }
+.quest-bar { display: flex; gap: 4px; height: 14px; }
+.quest-bar .seg { flex: 1; border-radius: 6px; background: var(--surface-raised); box-shadow: inset 0 2px 0 rgb(0 0 0 / .25); }
+.quest-bar .seg.on { background: var(--badge, var(--primary-fill)); box-shadow: inset 0 -3px 0 rgb(0 0 0 / .22), inset 0 2px 0 rgb(255 255 255 / .3); }
+.quest.done .quest-bar .seg.on { animation: quest-seg-bounce .6s cubic-bezier(.3, 1.8, .5, 1) both; animation-delay: calc(var(--i) * 70ms); }
+@keyframes quest-seg-bounce { 0% { transform: scaleY(.4); } 60% { transform: scaleY(1.35); } 100% { transform: scaleY(1); } }
+.quest-chest { position: relative; width: 40px; height: 40px; flex: none; display: grid; place-items: center; color: var(--ink-muted); }
+.quest-chest .t-icon { width: 30px; height: 30px; }
+.quest-chest.open { color: var(--streak); animation: quest-chest-pop .7s cubic-bezier(.3, 1.8, .5, 1) both; }
+.quest-chest .quest-check { position: absolute; right: -2px; bottom: -2px; width: 18px; height: 18px; border-radius: 50%; background: var(--success); color: #0b2a18; display: grid; place-items: center; }
+.quest-chest .quest-check .t-icon { width: 12px; height: 12px; stroke-width: 3.4; }
+@keyframes quest-chest-pop { 0% { transform: scale(.6) rotate(-12deg); } 70% { transform: scale(1.15) rotate(6deg); } 100% { transform: scale(1) rotate(0); } }
+@media (prefers-reduced-motion: reduce) { .quest-bar .seg.on, .quest-chest.open { animation: none !important; } }
+.t-empty { display: flex; align-items: center; gap: var(--space-3); color: var(--ink-muted); font: var(--type-body-sm); }
