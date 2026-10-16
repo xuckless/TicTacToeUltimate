@@ -16,6 +16,7 @@
         @foreach (var m in Modes.Where(x => x.Group == group))
         {
             var locked = IsGuest && !m.Guests;
+            <div class="mode-wrap">
             <button type="button" class="mode-card" style="--accent:@m.Accent" disabled="@locked"
                     @onclick="() => Enter(m.Tc)" aria-label="@($"{m.Name}{(locked ? ", account required" : "")}")">
                 <span class="mode-art" aria-hidden="true"><Icon Name="@m.Icon" /></span>
@@ -30,15 +31,20 @@
                 </span>
                 <span class="mode-watermark" aria-hidden="true">@m.Glyph</span>
             </button>
+            <InfoButton Key="@m.Guide" Class="corner" />
+            </div>
         }
         @if (group == "Offline")
         {
+            <div class="mode-wrap">
             <a class="mode-card" style="--accent:#2ec27e" href="local" data-testid="play-passplay">
                 <span class="mode-art" aria-hidden="true"><Icon Name="passplay" /></span>
-                <span class="mode-text"><span class="mode-name">Pass &amp; Play</span><span class="mode-sub">Two players on this device · works offline</span></span>
+                <span class="mode-text"><span class="mode-name">Pass &amp; Play</span><span class="mode-sub">One device · offline</span></span>
                 <span class="mode-side"><Icon Name="next" Class="mode-go" /></span>
                 <span class="mode-watermark" aria-hidden="true">XO</span>
             </a>
+            <InfoButton Key="passplay" Class="corner" />
+            </div>
         }
     </section>
 }
@@ -49,7 +55,7 @@
         <Ghosty Mood="wink" Size="56" />
         <p class="t-small t-muted" style="margin:0;flex:1">Send a link. Friendly games are unrated and allow rematches.</p>
     </div>
-    <InviteLinkButton Text="Create invite link" CreateLink="CreateLink" />
+    <InviteLinkButton Text="Create invite link" CreateLink="CreateLink" Guest="IsGuest" />
 </section>
 
 <Sheet Open="@(Queue.State.Phase is QueuePhase.Entering or QueuePhase.Searching or QueuePhase.Found)" Title="Finding a match" Dismissible="false">
@@ -77,17 +83,17 @@
 </Sheet>
 
 @code {
-    private sealed record ModeOption(TimeControl Tc, string Name, string Sub, bool Guests, string Group, string Icon, string Accent, string Glyph);
+    private sealed record ModeOption(TimeControl Tc, string Name, string Sub, bool Guests, string Group, string Icon, string Accent, string Glyph, string Guide);
     private static readonly string[] Groups = ["Competitive", "Casual", "Offline"];
 
     private static readonly ModeOption[] Modes =
     [
-        new(TimeControl.ArenaRanked, "Ranked", "Arena · rated", false, "Competitive", "ranked", "#7442ef", "X"),
-        new(TimeControl.Daily, "Daily", "24h per move · rated", false, "Competitive", "calendar", "#ff8a2a", "O"),
-        new(TimeControl.Casual, "Casual", "Sudden-death clock · unrated", true, "Casual", "casual", "#2f9be0", "O"),
-        new(TimeControl.ArenaCasual, "Arena", "Health bars · unrated", true, "Casual", "arena", "#e0457b", "X"),
-        new(TimeControl.OldSchool, "Old school", "Classic tic-tac-toe", true, "Casual", "play", "#1fb5a0", "X"),
-        new(TimeControl.Unlimited, "Unlimited", "No clock", true, "Casual", "unlimited", "#8a6cff", "O"),
+        new(TimeControl.ArenaRanked, "Ranked", "Rated · Arena", false, "Competitive", "ranked", "#7442ef", "X", "ranked"),
+        new(TimeControl.Daily, "Daily", "Rated · 1 move a day", false, "Competitive", "calendar", "#ff8a2a", "O", "daily"),
+        new(TimeControl.Casual, "Casual", "Unrated · 15s clock", true, "Casual", "casual", "#2f9be0", "O", "casual"),
+        new(TimeControl.ArenaCasual, "Arena", "Unrated · health bars", true, "Casual", "arena", "#e0457b", "X", "arena"),
+        new(TimeControl.OldSchool, "Old school", "No vanishing", true, "Casual", "play", "#1fb5a0", "X", "oldschool"),
+        new(TimeControl.Unlimited, "Unlimited", "No clock", true, "Casual", "unlimited", "#8a6cff", "O", "unlimited"),
     ];
 
     [SupplyParameterFromQuery(Name = "tc")] private string? Tc { get; set; }
@@ -131,9 +137,9 @@
 
     private Task Cancel() => Queue.LeaveAsync();
 
-    private async Task<ChallengeDto?> CreateLink()
+    private async Task<ChallengeDto?> CreateLink(TimeControl tc)
     {
-        try { return await Social.CreateChallengeAsync(new CreateChallengeDto(TimeControl.CasualX2, null)); }
+        try { return await Social.CreateChallengeAsync(new CreateChallengeDto(tc, null)); }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { return null; }
     }
 }

@@ -20,9 +20,12 @@
 {
     <a class="daily-nudge" href="daily"><Icon Name="calendar" /><span><strong>Daily</strong> · @Session.State.DailyYourTurn your move</span><Icon Name="next" /></a>
 }
-<a class="mode-btn local-entry" href="local" data-testid="home-passplay">
-    <span class="t-label">Pass &amp; Play</span><span class="sub">2 players · 1 device · works offline</span>
-</a>
+<div class="mode-wrap">
+    <a class="mode-btn local-entry" href="local" data-testid="home-passplay">
+        <Icon Name="passplay" Class="mode-ico" /><span class="t-label">Pass &amp; Play</span><span class="sub">One device · offline</span>
+    </a>
+    <InfoButton Key="passplay" Class="corner" />
+</div>
 <QuestCard Progress="Progress.State.Progress" NowMs="NowMs" OnExtraQuest="ExtraQuest" />
 @if (!IsGuest)
 {

@@ -42,7 +42,7 @@ else
         }
     </section>
 
-    <InviteLinkButton CreateLink="CreateLink" />
+    <InviteLinkButton CreateLink="CreateLink" Guest="@Session.State.IsGuest" />
     <div class="t-row"><Button Variant="ghost" Href="leaderboards">Leaderboards</Button></div>
 }
 
@@ -92,9 +92,9 @@ else
         if (f.Presence.MatchId is Guid id) Nav.NavigateTo($"match/{id}");
     }
 
-    private async Task<ChallengeDto?> CreateLink()
+    private async Task<ChallengeDto?> CreateLink(TimeControl tc)
     {
-        try { return await Social.CreateChallengeAsync(new CreateChallengeDto(TimeControl.CasualX2, null)); }
+        try { return await Social.CreateChallengeAsync(new CreateChallengeDto(tc, null)); }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { return null; }
     }
 

@@ -1,0 +1,29 @@
+@using TicTacToeUltimate.Shared.Services
+@* Small (?) button that opens a sheet explaining a mode or option in detail (ModeGuide). *@
+@if (Entry is { } e)
+{
+    <button type="button" class="info-btn @Class" aria-label="@($"About {e.Title}")" @onclick="Show" @onclick:stopPropagation="true" @onclick:preventDefault="true">?</button>
+    <Sheet Open="_open" Title="@e.Title" OnClose="() => _open = false">
+        <div class="guide" style="--accent:@e.Accent">
+            <div class="guide-head">
+                <span class="mode-art" aria-hidden="true"><Icon Name="@e.Icon" /></span>
+                <p class="guide-summary">@e.Summary</p>
+            </div>
+            <ul class="guide-points">
+                @foreach (var p in e.Points) { <li>@p</li> }
+            </ul>
+        </div>
+    </Sheet>
+}
+
+@code {
+    private bool _open;
+
+    /// <summary>ModeGuide key (ranked, casual, arena, oldschool, unlimited, daily, passplay, classic, legacy7, pie, guided).</summary>
+    [Parameter, EditorRequired] public string Key { get; set; } = "";
+    /// <summary>Extra classes (e.g. "corner" to pin top-right of a card).</summary>
+    [Parameter] public string? Class { get; set; }
+
+    private ModeGuideEntry? Entry => ModeGuide.Get(Key);
+    private void Show() => _open = true;
+}

@@ -29,10 +29,13 @@
         @foreach (var c in Clocks)
         {
             var on = _tc == c.Tc;
-            <button type="button" role="radio" aria-checked="@(on ? "true" : "false")" class="mode-btn local-opt @(on ? "on" : null)"
-                    data-testid="@($"tc-{c.Tc}")" @onclick="() => _tc = c.Tc">
-                <span class="t-label">@c.Name</span><span class="sub">@c.Sub</span>
-            </button>
+            <div class="mode-wrap">
+                <button type="button" role="radio" aria-checked="@(on ? "true" : "false")" class="mode-btn local-opt @(on ? "on" : null)"
+                        data-testid="@($"tc-{c.Tc}")" @onclick="() => _tc = c.Tc">
+                    <span class="t-label">@c.Name</span><span class="sub">@c.Sub</span>
+                </button>
+                <InfoButton Key="@c.Guide" Class="corner" />
+            </div>
         }
     </div>
 </Card>
@@ -44,38 +47,44 @@
         @foreach (var p in Presets)
         {
             var on = _preset == p.Preset;
-            <button type="button" role="radio" aria-checked="@(on ? "true" : "false")" class="mode-btn local-opt @(on ? "on" : null)"
-                    data-testid="@($"rules-{p.Preset}")" @onclick="() => _preset = p.Preset">
-                <span class="t-label">@p.Name</span><span class="sub">@p.Sub</span>
-            </button>
+            <div class="mode-wrap">
+                <button type="button" role="radio" aria-checked="@(on ? "true" : "false")" class="mode-btn local-opt @(on ? "on" : null)"
+                        data-testid="@($"rules-{p.Preset}")" @onclick="() => _preset = p.Preset">
+                    <span class="t-label">@p.Name</span><span class="sub">@p.Sub</span>
+                </button>
+                <InfoButton Key="@p.Guide" Class="corner" />
+            </div>
         }
     </div>
+    <div class="pie-row">
     <label class="local-toggle">
         <input type="checkbox" checked="@_pie" @onchange="e => _pie = e.Value is true" data-testid="pie" />
-        <span><strong>Pie rule</strong><br /><span class="t-small t-muted">After X's first move, O may take X's position instead.</span></span>
+        <span><strong>Pie rule</strong></span>
     </label>
+    <InfoButton Key="pie" />
+    </div>
 </Card>
 }
 
 <Button Variant="hero" Block="true" OnClick="Start" data-testid="local-start">@(Local.Current is null ? "Start" : "Start new session")</Button>
 
 @code {
-    private sealed record ClockOption(TimeControl Tc, string Name, string Sub);
-    private sealed record PresetOption(LocalRulePreset Preset, string Name, string Sub);
+    private sealed record ClockOption(TimeControl Tc, string Name, string Sub, string Guide);
+    private sealed record PresetOption(LocalRulePreset Preset, string Name, string Sub, string Guide);
 
     private static readonly PresetOption[] Presets =
     [
-        new(LocalRulePreset.Classic, "Classic", "3 pieces each. Placing a 4th removes your own oldest (you can't replay that cell this turn). Any 3 in a row wins."),
-        new(LocalRulePreset.OldSchool, "Old school", "Classic tic-tac-toe. Pieces stay; a full board is a draw."),
-        new(LocalRulePreset.Legacy7, "Legacy 7-piece", "7 pieces on the board, the oldest vanishes. The faded piece can't complete a line."),
+        new(LocalRulePreset.Classic, "Classic", "3 pieces each", "classic"),
+        new(LocalRulePreset.OldSchool, "Old school", "No vanishing", "oldschool"),
+        new(LocalRulePreset.Legacy7, "Legacy 7-piece", "Original prototype", "legacy7"),
     ];
     private LocalRulePreset _preset = LocalRulePreset.Classic;
 
     private static readonly ClockOption[] Clocks =
     [
-        new(TimeControl.Unlimited, "Unlimited", "No clock"),
-        new(TimeControl.Casual, "Casual", "Sudden-death clock"),
-        new(TimeControl.ArenaCasual, "Arena", "Health bars"),
+        new(TimeControl.Unlimited, "Unlimited", "No clock", "unlimited"),
+        new(TimeControl.Casual, "Casual", "15s clock", "casual"),
+        new(TimeControl.ArenaCasual, "Arena", "Health bars", "arena"),
     ];
 
     private string _p1 = "", _p2 = "";

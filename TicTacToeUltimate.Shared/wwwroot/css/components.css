@@ -144,7 +144,7 @@ a { color: var(--primary); }
 .t-result.x { background: var(--piece-x); } .t-result.o { background: var(--piece-o); }
 .t-result.loss { background: var(--surface-raised); color: var(--ink); }
 .t-result.draw { background: var(--surface-raised); color: var(--ink); }
-.t-result h1 { margin: 0; font: 400 56px/56px var(--font-headline); transform: rotate(-4deg); }
+.t-result h1 { margin: 10px 0 4px; font: 400 56px/1.15 var(--font-headline); transform: rotate(-4deg); }
 .t-delta { font: 700 18px/22px var(--font-numeric); font-variant-numeric: tabular-nums; }
 .t-delta .up { color: var(--success); } .t-delta .down { color: var(--alert); }
 

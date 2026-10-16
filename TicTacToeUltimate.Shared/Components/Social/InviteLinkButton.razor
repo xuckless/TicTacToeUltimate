@@ -1,15 +1,68 @@
+@using TicTacToeUltimate.Engine.Clocks
 @inject IShareService Share
 @inject ToastService Toasts
+@inject IJSRuntime JS
 
-<Button Variant="dashed" Block="true" OnClick="Invite" Disabled="_busy">@Text</Button>
+@* Custom lobby: pick a mode (each with a (?) explainer), then create and share an invite link. *@
+<Button Variant="dashed" Block="true" OnClick="() => { _created = null; _picking = true; }" Disabled="_busy">@Text</Button>
+
+<Sheet Open="_picking" Title="@(_created is null ? "Invite a friend" : "Invite ready")" OnClose="() => _picking = false">
+    @if (_created is { } made)
+    {
+        <div class="invite-made" data-testid="invite-made">
+            <Ghosty Mood="cheer" Size="64" />
+            <span class="t-small t-muted">Send this to a friend. It works for 24 hours.</span>
+            <span class="invite-code" aria-label="Invite code">@made.Code</span>
+            <input class="invite-url" readonly value="@made.Url" aria-label="Invite link" data-testid="invite-url" @onfocus="SelectAll" id="invite-url" />
+            <div class="invite-actions">
+                <Button Variant="primary" OnClick="Copy" data-testid="invite-copy"><Icon Name="link" /> @(_copied ? "Copied!" : "Copy link")</Button>
+                <Button Variant="secondary" OnClick="ShareNative"><Icon Name="share" /> Share</Button>
+            </div>
+            <a class="t-small" href="@($"c/{made.Code}")">Open the lobby</a>
+        </div>
+    }
+    else
+    {
+    <p class="t-small t-muted" style="margin:0">Pick a mode. Friendly games are unrated.</p>
+    <div class="lobby-modes" role="radiogroup" aria-label="Mode">
+        @foreach (var m in Modes)
+        {
+            var on = _tc == m.Tc;
+            var locked = Guest && m.AccountOnly;
+            <div class="mode-wrap">
+                <button type="button" role="radio" aria-checked="@(on ? "true" : "false")" class="mode-btn local-opt @(on ? "on" : null)" disabled="@locked"
+                        data-testid="@($"invite-{m.Tc}")" @onclick="() => _tc = m.Tc">
+                    <Icon Name="@m.Icon" Class="mode-ico" /><span class="t-label">@m.Name</span><span class="sub">@(locked ? "Account only" : m.Sub)</span>
+                </button>
+                <InfoButton Key="@m.Guide" Class="corner" />
+            </div>
+        }
+    </div>
+    <Button Variant="primary" Block="true" OnClick="Invite" Disabled="_busy" data-testid="invite-create">Create link</Button>
+    }
+</Sheet>
 
 @code {
-    private bool _busy;
+    private bool _busy, _picking, _copied;
+    private ChallengeDto? _created;
+    private TimeControl _tc = TimeControl.Casual;
+
+    private sealed record LobbyMode(TimeControl Tc, string Name, string Sub, string Icon, string Guide, bool AccountOnly);
+    private static readonly LobbyMode[] Modes =
+    [
+        new(TimeControl.Casual, "Casual", "15s clock", "casual", "casual", false),
+        new(TimeControl.ArenaCasual, "Arena", "Health bars", "arena", "arena", false),
+        new(TimeControl.OldSchool, "Old school", "No vanishing", "play", "oldschool", false),
+        new(TimeControl.Unlimited, "Unlimited", "No clock", "unlimited", "unlimited", false),
+        new(TimeControl.Daily, "Daily", "1 move a day", "calendar", "daily", true),
+    ];
 
     /// <summary>Caption.</summary>
     [Parameter] public string Text { get; set; } = "Invite a friend by link";
-    /// <summary>Creates the challenge link to share.</summary>
-    [Parameter, EditorRequired] public Func<Task<ChallengeDto?>> CreateLink { get; set; } = () => Task.FromResult<ChallengeDto?>(null);
+    /// <summary>Guests can't create Daily invites.</summary>
+    [Parameter] public bool Guest { get; set; }
+    /// <summary>Creates the challenge link for the chosen time control.</summary>
+    [Parameter, EditorRequired] public Func<TimeControl, Task<ChallengeDto?>> CreateLink { get; set; } = _ => Task.FromResult<ChallengeDto?>(null);
 
     private async Task Invite()
     {
@@ -17,21 +70,40 @@
         try
         {
             ChallengeDto? c;
-            try { c = await CreateLink(); }
+            try { c = await CreateLink(_tc); }
             catch (Exception ex)
             {
                 // Server errors arrive as HubException with an ErrorCodes value in the message.
                 var m = ex.Message;
                 Toasts.Show(m.Contains(ErrorCodes.UsernameRequired) ? "Pick a username first (Profile) to create invite links."
-                    : m.Contains(ErrorCodes.GuestNotAllowed) ? "Sign in to challenge a friend directly."
+                    : m.Contains(ErrorCodes.GuestNotAllowed) ? "Sign in to create this kind of invite."
                     : "Couldn't create a link. Check your connection and try again.", ToastKind.Error);
                 return;
             }
-            if (c is null || !Uri.TryCreate(c.Url, UriKind.Absolute, out var url)) { Toasts.Show("Couldn't create a link.", ToastKind.Error); return; }
-            var r = await Share.ShareLinkAsync("TTT Ultimate", $"Play me in TTT Ultimate! Code {c.Code}", url);
-            if (r == "copied") Toasts.Show("Link copied", ToastKind.Success);
-            else if (r == "failed") Toasts.Show($"Share this code: {c.Code}");
+            if (c is null || !Uri.TryCreate(c.Url, UriKind.Absolute, out _)) { Toasts.Show("Couldn't create a link.", ToastKind.Error); return; }
+            // Keep the sheet open and show the link: never rely on a system share sheet the user may dismiss.
+            _created = c;
+            _copied = false;
         }
         finally { _busy = false; }
+    }
+
+    private async Task Copy()
+    {
+        if (_created is null) return;
+        try { await JS.InvokeVoidAsync("navigator.clipboard.writeText", _created.Url); _copied = true; Toasts.Show("Link copied", ToastKind.Success); }
+        catch (Exception) { Toasts.Show("Select the link above and copy it.", ToastKind.Info); }
+    }
+
+    private async Task ShareNative()
+    {
+        if (_created is null || !Uri.TryCreate(_created.Url, UriKind.Absolute, out var url)) return;
+        var r = await Share.ShareLinkAsync("Tic Tac Toe Ultimate", $"Play me in Tic Tac Toe Ultimate! Code {_created.Code}", url);
+        if (r == "copied") { _copied = true; Toasts.Show("Link copied", ToastKind.Success); }
+    }
+
+    private async Task SelectAll()
+    {
+        try { await JS.InvokeVoidAsync("eval", "document.getElementById('invite-url')?.select()"); } catch (Exception) { /* optional */ }
     }
 }

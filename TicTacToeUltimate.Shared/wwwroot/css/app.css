@@ -179,3 +179,33 @@ body { min-height: 100dvh; }
   background: color-mix(in srgb, #ff8a2a 18%, var(--surface)); border: 2px solid color-mix(in srgb, #ff8a2a 55%, var(--line)); font: 500 14px/1.2 var(--font-sans); }
 .daily-nudge > span { flex: 1; }
 .daily-nudge .t-icon { color: #ff8a2a; }
+
+/* (?) info buttons + guide sheet */
+.info-btn { width: 26px; height: 26px; min-width: 26px; border-radius: 50%; border: 2px solid var(--line-strong); background: var(--surface-raised); color: var(--ink-muted);
+  font: 700 14px/1 var(--font-sans); display: inline-grid; place-items: center; cursor: pointer; padding: 0; flex: none; position: relative; z-index: 2; }
+.info-btn::before { content: ""; position: absolute; inset: -9px; }   /* 44px touch target */
+.info-btn:hover { color: var(--ink); border-color: var(--primary); }
+.info-btn.corner { position: absolute; top: 8px; right: 8px; }
+.mode-wrap { position: relative; }
+.guide { display: flex; flex-direction: column; gap: 12px; }
+.guide-head { display: flex; align-items: center; gap: 12px; }
+.guide-summary { margin: 0; font: 600 16px/1.35 var(--font-sans); }
+.guide-points { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font: 500 14px/1.45 var(--font-sans); color: var(--ink-muted); }
+.guide-points li::marker { color: var(--accent); }
+.mode-wrap > .mode-btn { width: 100%; height: 100%; box-sizing: border-box; }
+.mode-wrap > .local-entry { justify-content: flex-start; gap: 10px; padding-right: 48px; }
+.mode-wrap > .local-entry .mode-ico { margin: 0; }
+.mode-wrap > .local-entry .sub { margin-left: auto; }
+.mode-wrap > .local-entry + .info-btn.corner { top: 50%; transform: translateY(-50%); right: 12px; }
+.pie-row { display: flex; align-items: center; gap: 10px; }
+.lobby-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.lobby-modes .mode-wrap:last-child:nth-child(odd) { grid-column: span 2; }
+.invite-made { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.invite-code { font: 400 40px/1 var(--font-headline); letter-spacing: .08em; color: var(--streak); }
+.invite-url { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line-strong); background: var(--surface-raised); color: var(--ink); font: 500 14px/1.2 var(--font-numeric); text-align: center; }
+.invite-actions { display: flex; gap: 10px; width: 100%; }
+.invite-actions > * { flex: 1; }
+/* Play cards: centre the (?) on the right and drop the chevron so they never collide. */
+.mode-wrap > .mode-card { padding-right: 52px; }
+.mode-wrap > .mode-card .mode-go { display: none; }
+.mode-wrap > .mode-card + .info-btn.corner { top: 50%; transform: translateY(-50%); right: 14px; }
