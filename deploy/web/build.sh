@@ -15,7 +15,13 @@ fi
 rm -rf deploy/web/out
 "$DOTNET" publish TicTacToeUltimate.Web.Client -c Release -o deploy/web/publish
 mv deploy/web/publish/wwwroot deploy/web/out && rm -rf deploy/web/publish
-cat > deploy/web/out/appsettings.Production.json <<JSON
+# SEO pages, robots/sitemap, icons and social preview image.
+cp -R deploy/web/static/. deploy/web/out/
+rm -f deploy/web/out/appsettings.Development.json*
+# Blazor only loads config files listed in its boot manifest, so production values replace appsettings.json itself
+# (and its precompressed copies, which would be stale).
+rm -f deploy/web/out/appsettings.json.br deploy/web/out/appsettings.json.gz
+cat > deploy/web/out/appsettings.json <<JSON
 { "Backend": { "BaseUrl": "${TTT_BACKEND_URL:-http://localhost:5091}" }, "Web": { "BaseUrl": "${TTT_WEB_URL:-}" },
   "Ads": { "AdSenseClient": "${TTT_ADSENSE_CLIENT:-}", "AdSenseBannerSlot": "${TTT_ADSENSE_BANNER_SLOT:-}", "TestMode": "${TTT_ADSENSE_TEST:-false}" } }
 JSON

@@ -1,0 +1,6 @@
+{
+  "name": "alidirect-root",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-01",
+  "routes": [{ "pattern": "alidirect.dev", "custom_domain": true }]
+}

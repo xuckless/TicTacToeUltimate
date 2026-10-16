@@ -5,7 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#7442ef" />
     <base href="/" />
-    <title>TTT Ultimate</title>
+    <title>Tic Tac Toe Ultimate · Free online tic-tac-toe where pieces vanish</title>
+    <meta name="description" content="Tic Tac Toe Ultimate is a free online tic-tac-toe game where each player keeps only 3 pieces, so your oldest piece vanishes and every game ends in a win. Play ranked Arena with health bars, casual, old school, daily games and pass &amp; play." />
+    <link rel="canonical" href="https://tictactoeultimate.alidirect.dev/" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Tic Tac Toe Ultimate" />
+    <meta property="og:title" content="Tic Tac Toe Ultimate · tic-tac-toe where pieces vanish" />
+    <meta property="og:description" content="3 pieces each, your oldest vanishes, every game ends in a win. Ranked Arena with health bars, friends, daily streaks. Free in your browser." />
+    <meta property="og:url" content="https://tictactoeultimate.alidirect.dev/" />
+    <meta property="og:image" content="https://tictactoeultimate.alidirect.dev/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Tic Tac Toe Ultimate" />
+    <meta name="twitter:description" content="Tic-tac-toe where pieces vanish and every game ends in a win. Play free online." />
+    <meta name="twitter:image" content="https://tictactoeultimate.alidirect.dev/og-image.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="manifest" href="site.webmanifest" />
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@graph":[
+      {"@type":"VideoGame","name":"Tic Tac Toe Ultimate","url":"https://tictactoeultimate.alidirect.dev/","image":"https://tictactoeultimate.alidirect.dev/og-image.png",
+        "description":"Online tic-tac-toe where each player keeps 3 pieces and the oldest vanishes, so every game ends in a win. Ranked Arena with health bars, casual and daily modes, friends and streaks.",
+        "genre":["Board game","Strategy","Puzzle"],"gamePlatform":["Web browser","iOS","Android"],"playMode":["MultiPlayer","SinglePlayer"],
+        "applicationCategory":"Game","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},
+      {"@type":"WebSite","name":"Tic Tac Toe Ultimate","url":"https://tictactoeultimate.alidirect.dev/"}]}
+    </script>
     <script>
         // Theme bootstrap before first paint: ttt.theme = "dark" | "light"; absent = follow the system.
         (function () {
@@ -22,9 +47,13 @@
     <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/css/components.css" />
     <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/css/app.css" />
     <link rel="stylesheet" href="_content/TicTacToeUltimate.Shared/css/motion.css" />
-    <link rel="icon" type="image/svg+xml" href="_content/TicTacToeUltimate.Shared/img/favicon.svg" />
+    <link rel="icon" href="favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
     <style>
         html, body { margin: 0; background: #120a22; }
+        /* Crawlable summary for search engines; the app replaces it on boot. */
+        .seo-pre { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         #ttt-splash { position: fixed; inset: 0; display: grid; place-items: center; background: #7442ef; z-index: 9999;
                       transition: opacity .25s ease; }
         #ttt-splash .mark { font: 800 44px/1 system-ui, sans-serif; color: #fff; letter-spacing: .04em; }
@@ -44,7 +73,19 @@
     <div id="ttt-splash" aria-hidden="true"><div class="mark">X O X</div></div>
     <!-- Shown until the WebAssembly app renders over it. Static (Vercel / nginx) build: see deploy/web/build.sh. -->
     <div class="ttt-preboot" aria-hidden="true"><span>X</span><span>O</span><span>X</span></div>
-    <div id="app"></div>
+    <div id="app"><main class="seo-pre">
+        <h1>Tic Tac Toe Ultimate</h1>
+        <p>Free online tic-tac-toe where pieces vanish. Each player keeps only three pieces on the board: place a fourth and your oldest piece disappears. There are no draws to hide behind, so every game ends in a win.</p>
+        <h2>Game modes</h2>
+        <ul>
+            <li><strong>Ranked Arena</strong>: health bars, line damage, combos and a rated ladder with tiers from Bronze to Master.</li>
+            <li><strong>Casual</strong>: Tic Tac Toe Ultimate on a sudden-death clock.</li>
+            <li><strong>Old school</strong>: classic tic-tac-toe, pieces never vanish.</li>
+            <li><strong>Daily</strong>: one move a day, up to ten games at once.</li>
+            <li><strong>Pass &amp; Play</strong>: two players on one device, works offline.</li>
+        </ul>
+        <p><a href="/how-to-play/">How to play</a> · <a href="/about/">About</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p>
+    </main></div>
     <script src="js/ads.js"></script>
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
     <script>

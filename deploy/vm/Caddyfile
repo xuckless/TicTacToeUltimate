@@ -1,0 +1,11 @@
+{$ORIGIN_HOST} {
+	encode zstd gzip
+	# Only the Cloudflare Worker (which adds this header) may use the origin; scanners get 403.
+	@fromWorker header X-Origin-Auth {$ORIGIN_SECRET}
+	handle @fromWorker {
+		reverse_proxy server:8080
+	}
+	handle {
+		respond "Forbidden" 403
+	}
+}

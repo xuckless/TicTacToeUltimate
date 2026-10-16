@@ -30,6 +30,8 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     private int _remintInFlight;
     private volatile bool _wasGuest;
     private const string KindKey = "ttt.kind";
+    /// <summary>How long startup waits for the server before going offline.</summary>
+    public static int WakeBudgetSeconds { get; set; } = 60;
 
     /// <summary>Raised after each successful Hello.</summary>
     public event Action<ServerHelloDto>? HelloReceived;
@@ -57,15 +59,36 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
 
     private async Task InitCoreAsync()
     {
-        try
+        // The server can be restarting (deploy, VM reboot). Keep trying for up to a minute, showing a "waking up"
+        // buffer, before falling back to offline mode.
+        var started = DateTime.UtcNow;
+        for (var attempt = 0; ; attempt++)
         {
-            var config = await _api.GetConfigAsync();
-            Update(s => s with { Config = config, Error = null });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Config load failed");
-            Update(s => s with { Error = "offline" });
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                var config = await _api.GetConfigAsync(cts.Token);
+                Update(s => s with { Config = config, Error = null, WakingSeconds = 0 });
+                break;
+            }
+            catch (TttApiException ex) when ((int)ex.Status < 500)
+            {
+                _logger.LogWarning(ex, "Config load failed");
+                Update(s => s with { Error = "offline", WakingSeconds = 0 });
+                break;
+            }
+            catch (Exception ex)
+            {
+                var waited = (int)(DateTime.UtcNow - started).TotalSeconds;
+                if (waited >= WakeBudgetSeconds)
+                {
+                    _logger.LogWarning(ex, "Config load failed");
+                    Update(s => s with { Error = "offline", WakingSeconds = 0 });
+                    break;
+                }
+                Update(s => s with { WakingSeconds = Math.Max(1, waited) });
+                await Task.Delay(TimeSpan.FromSeconds(Math.Min(4, 1 + attempt)));
+            }
         }
 
         if (_devAs is { } devAs && (_options.IsDevelopment || State.Config?.DevAuth == true))

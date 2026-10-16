@@ -19,6 +19,8 @@ public sealed record SessionState(SessionStatus Status, MeDto? Me, AppConfigDto?
 {
     public static SessionState Initial { get; } = new(SessionStatus.Initializing, null, null, ConnectionPhase.Idle, 0, [], 0, null);
     public bool IsGuest => Me?.Kind == AccountKind.Guest;
+    /// <summary>Seconds spent waiting for a sleeping/restarting server at startup (0 = not waiting).</summary>
+    public int WakingSeconds { get; init; }
 }
 public interface ISessionStore : IStore<SessionState>
 {

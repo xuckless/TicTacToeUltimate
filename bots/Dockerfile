@@ -1,10 +1,11 @@
 # Bot service (botd). Build context: repo root (needs spec/ only for tests, not at runtime).
-FROM golang:1.24-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS build
+ARG TARGETOS TARGETARCH
 WORKDIR /src/bots
 COPY bots/go.mod bots/go.sum ./
 RUN go mod download
 COPY bots/ ./
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/botd ./cmd/botd
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/botd ./cmd/botd
 
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=build /out/botd /botd

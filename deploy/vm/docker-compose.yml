@@ -1,0 +1,38 @@
+# Production stack on the e2-micro VM: Caddy (auto HTTPS for the sslip.io origin name) -> game server; bots on the
+# private network. Every service restarts on crash and on VM reboot. Secrets: /opt/ttt/server.env, /opt/ttt/personas.json.
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: always
+    ports: ["80:80", "443:443"]
+    environment:
+      ORIGIN_HOST: ${ORIGIN_HOST}
+      ORIGIN_SECRET: ${ORIGIN_SECRET}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on: [server]
+    mem_limit: 96m
+  server:
+    image: ttt-server:amd64
+    restart: always
+    env_file: server.env
+    environment:
+      Ttt__Bots__Service__Url: http://bots:8080
+    mem_limit: 600m
+  bots:
+    image: ttt-bots:amd64
+    restart: always
+    environment:
+      TTT_SERVER_WS: ws://server:8080/bot/ws?protocol=1
+      TTT_BOT_PERSONAS: /personas.json
+      TTT_DISPATCH_TOKEN: ${DISPATCH_TOKEN}
+      TTT_BOT_STATE: /state/difficulty.json
+    volumes:
+      - ./personas.json:/personas.json:ro
+      - bots-state:/state
+    depends_on: [server]
+    mem_limit: 64m
+volumes:
+  caddy-data:
+  bots-state:

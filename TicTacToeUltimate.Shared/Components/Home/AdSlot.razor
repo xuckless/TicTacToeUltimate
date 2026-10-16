@@ -6,8 +6,9 @@
     {
         <div class="ad-slot real" role="complementary" aria-label="Advertisement" @ref="_host"></div>
     }
-    else
+    else if (Services.GetService(typeof(IBannerAds)) is null)
     {
+        @* Stub placeholder (dev / stub ads). Real ads without a banner unit render nothing. *@
         <div class="ad-slot" role="complementary" aria-label="Advertisement">Banner ad · 320×50</div>
     }
 }

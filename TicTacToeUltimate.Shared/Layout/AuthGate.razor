@@ -16,6 +16,17 @@ else if (_error is not null && Session.State.Status == SessionStatus.Initializin
         <Button Variant="secondary" Href="local">Play offline · Pass &amp; Play</Button>
     </div>
 }
+else if (Session.State.Status == SessionStatus.Initializing && Session.State.WakingSeconds > 0)
+{
+    @* Server restarting or waking up: a friendly buffer instead of an error. *@
+    <div class="splash wake" role="status" data-testid="waking">
+        <span class="splash-logo"><BounceText Text="Tic Tac Toe" /> <BounceText Text="Ultimate" Class="ultimate" /></span>
+        <BertLoader Text="Waking up the game server" Mood="sleepy" />
+        <span class="t-small t-muted">This takes a few seconds after a restart. Hang tight!</span>
+        <div class="wake-bar" aria-hidden="true"><span style="width:@(Math.Min(100, Session.State.WakingSeconds * 100 / 60))%"></span></div>
+        <Button Variant="ghost" Small="true" Href="local">Play offline meanwhile · Pass &amp; Play</Button>
+    </div>
+}
 else if (Session.State.Status == SessionStatus.Initializing || RedirectTarget() is not null)
 {
     <div class="splash" role="status" style="flex-direction:column;gap:6px"><span class="splash-logo"><BounceText Text="Tic Tac Toe" /> <BounceText Text="Ultimate" Class="ultimate" /></span><BertLoader Text="Warming up" Mood="jumpy" /></div>

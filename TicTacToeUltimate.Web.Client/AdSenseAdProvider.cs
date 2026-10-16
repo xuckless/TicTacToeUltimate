@@ -27,7 +27,9 @@ public sealed class AdSenseAdProvider(IJSRuntime js, AdSenseOptions options) : I
             if (!await EnsureAsync()) return new(false, null);
             var r = await js.InvokeAsync<string>("tttAds.rewarded", ct, kind.ToString());
             // The Ad Placement API has no server-side verification: the receipt is a one-time nonce (the server ledger dedups it).
-            return r == "viewed" ? new(true, $"web:{kind.ToString().ToLowerInvariant()}:{Guid.NewGuid()}") : new(false, null);
+            // No inventory (H5 Games Ads not approved yet, or no fill) and no blocker: grant anyway so rewards keep working.
+            var earned = r == "viewed" || (r == "unavailable" && !await IsBlockedAsync());
+            return earned ? new(true, $"web:{kind.ToString().ToLowerInvariant()}:{Guid.NewGuid()}") : new(false, null);
         }
         catch (JSException) { return new(false, null); }
     }

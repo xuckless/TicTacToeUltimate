@@ -446,3 +446,7 @@ body { min-height: 100dvh; }
 .abn-text strong { font: 700 17px/1.2 var(--font-display); }
 .abn-steps { margin: 2px 0 0; padding-left: 18px; display: grid; gap: 2px; }
 .abn-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+/* Server wake-up buffer */
+.splash.wake { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 14px; text-align: center; padding: 16px; }
+.wake-bar { width: min(260px, 70vw); height: 10px; border-radius: 999px; background: var(--surface-raised); overflow: hidden; border: 2px solid var(--line-strong); }
+.wake-bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--piece-x), var(--primary-fill), var(--piece-o)); border-radius: 999px; transition: width .8s ease; }
