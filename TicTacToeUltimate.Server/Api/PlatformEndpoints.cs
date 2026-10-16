@@ -42,7 +42,7 @@ public static class PlatformEndpoints
         }).ToArray();
         var s = o.Auth.Supabase;
         return new AppConfigDto(ProtocolInfo.Version, o.Auth.Dev.Enabled, s.Enabled, s.Enabled ? s.Url : null, s.Enabled ? s.AnonKey : null, modes,
-            EmoteCatalog.All.ToArray(), tiers.Bands, o.Ratings.MinRatedGames, new AdConfigDto(o.Ads.InterstitialEveryGames, o.Ads.SkipAfterTwoLosses), o.Web.BaseUrl);
+            EmoteCatalog.All.ToArray(), tiers.Bands, o.Ratings.MinRatedGames, new AdConfigDto(o.Ads.InterstitialEveryGames, o.Ads.SkipAfterTwoLosses, o.Ads.MinSecondsBetween, o.Ads.FirstAfterGames), o.Web.BaseUrl);
     }
 
     private static IResult From<T>(OpResult<T> r) => r.Ok ? Results.Ok(r.Value) : ApiErrors.Problem(r.Status, r.Error!);

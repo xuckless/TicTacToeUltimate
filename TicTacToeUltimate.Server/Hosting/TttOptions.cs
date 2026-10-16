@@ -98,6 +98,14 @@ public sealed class TiersOptions
     public int DivisionWidth { get; set; } = 100;
 }
 public sealed class SeasonsOptions { public int LengthDays { get; set; } = 90; public int MasterResetRd { get; set; } = 150; }
-public sealed class AdsOptions { public string Provider { get; set; } = "Stub"; public int InterstitialEveryGames { get; set; } = 3; public bool SkipAfterTwoLosses { get; set; } = true; }
+public sealed class AdsOptions
+{
+    public string Provider { get; set; } = "Stub";
+    /// <summary>Mobile-game pacing (about one break per Duolingo lesson): every 2 games, 2+ min apart, none in a session's first 2.</summary>
+    public int InterstitialEveryGames { get; set; } = 2;
+    public bool SkipAfterTwoLosses { get; set; } = true;
+    public int MinSecondsBetween { get; set; } = 120;
+    public int FirstAfterGames { get; set; } = 2;
+}
 public sealed class CorsOptions { public List<string> Origins { get; set; } = []; }
 public sealed class WebOptions { public string BaseUrl { get; set; } = "http://localhost:5028"; }

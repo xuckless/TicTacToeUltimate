@@ -8,7 +8,7 @@ namespace TicTacToeUltimate.Client.Services;
 /// <summary>Applies <see cref="AdPolicy"/> and talks to the <see cref="IAdProvider"/>.</summary>
 public sealed class AdCoordinator(IAdProvider provider, ISessionStore session, IQueueStore queue, ILogger<AdCoordinator> logger) : IAdCoordinator
 {
-    private static readonly AdConfigDto DefaultConfig = new(3, true);
+    private static readonly AdConfigDto DefaultConfig = new(2, true, 120, 2);
     private readonly Lock _gate = new();
     private AdPolicyState _state;
     private volatile bool _matchRoute;
@@ -29,7 +29,8 @@ public sealed class AdCoordinator(IAdProvider provider, ISessionStore session, I
         lock (_gate)
         {
             var blocked = _matchRoute || queue.State.Phase != QueuePhase.Idle || !provider.IsAvailable;
-            (show, _state) = AdPolicy.OnGameCompleted(_state, result, session.State.Config?.Ads ?? DefaultConfig, blocked);
+            (show, _state) = AdPolicy.OnGameCompleted(_state, result, session.State.Config?.Ads ?? DefaultConfig, blocked,
+                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
         }
         if (!show) return;
         try { await provider.ShowInterstitialAsync(CancellationToken.None); }

@@ -1,0 +1,48 @@
+@page "/dev/ads"
+@inject ClientOptions Options
+@inject IAdProvider Ads
+@* Development builds only: exercises the platform ad provider (open with ?run=interstitial|rewarded, e.g. via tttu://dev/ads?run=rewarded). *@
+
+@if (!Options.IsDevelopment)
+{
+    <p class="t-muted">Not available.</p>
+}
+else
+{
+    <h1 class="t-title">Ad test</h1>
+    <p class="t-small t-muted">Provider: @Ads.GetType().Name · available: @Ads.IsAvailable</p>
+    <div class="t-row" style="gap:8px">
+        <Button OnClick="() => Run(true)">Interstitial</Button>
+        <Button Variant="secondary" OnClick="() => Run(false)">Rewarded</Button>
+    </div>
+    <p data-testid="ad-result" style="margin-top:12px">@_result</p>
+}
+
+@code {
+    private string _result = "Idle";
+
+    [SupplyParameterFromQuery(Name = "run")] private string? RunKind { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && Options.IsDevelopment && RunKind is "interstitial" or "rewarded") await Run(RunKind == "interstitial");
+    }
+
+    private async Task Run(bool interstitial)
+    {
+        _result = "Loading…";
+        StateHasChanged();
+        try
+        {
+            if (interstitial) _result = $"Interstitial shown: {await Ads.ShowInterstitialAsync(CancellationToken.None)}";
+            else
+            {
+                var r = await Ads.ShowRewardedAsync(RewardKind.StreakFreeze, CancellationToken.None);
+                _result = $"Rewarded earned: {r.Earned} receipt: {r.Receipt}";
+            }
+        }
+        catch (Exception ex) { _result = "Error: " + ex.Message; }
+        StateHasChanged();
+    }
+}

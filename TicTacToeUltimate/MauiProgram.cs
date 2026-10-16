@@ -16,6 +16,9 @@ public static class MauiProgram
     {
         var builder = MauiApp.CreateBuilder();
         builder.UseMauiApp<App>();
+#if IOS || ANDROID
+        ConfigureAdMob(builder);
+#endif
         builder.Services.AddMauiBlazorWebView();
 #if IOS || MACCATALYST
         // Edge-to-edge web view: CSS env(safe-area-inset-*) owns the safe areas. Without this, WKWebView also insets the
@@ -62,10 +65,21 @@ public static class MauiProgram
         s.Replace(ServiceDescriptor.Singleton<IDeepLinkSource>(sp => sp.GetRequiredService<MauiDeepLinkSource>()));
         s.Replace(ServiceDescriptor.Singleton<IShareService, MauiShareService>());
         s.Replace(ServiceDescriptor.Singleton<IPushService, StubPushService>());
-        s.Replace(ServiceDescriptor.Singleton<IAdProvider, StubAdProvider>());
+#if IOS || ANDROID
+        s.AddSingleton<AdMobAdProvider>();
+        s.Replace(ServiceDescriptor.Singleton<IAdProvider>(sp => sp.GetRequiredService<AdMobAdProvider>()));
+#else
+        s.Replace(ServiceDescriptor.Singleton<IAdProvider, NoAdsProvider>());
+#endif
         s.AddTttClientFallbacks();
 
-        return builder.Build();
+        var app = builder.Build();
+#if DEBUG
+        // Dev hook: SIMCTL_CHILD_TTT_DEV_ROUTE=dev/ads?run=rewarded xcrun simctl launch … opens a route at startup.
+        if (Environment.GetEnvironmentVariable("TTT_DEV_ROUTE") is { Length: > 0 } route)
+            (app.Services.GetService<IDeepLinkSource>() as MauiDeepLinkSource)?.Publish("tttu://" + route);
+#endif
+        return app;
     }
 
     /// <summary>Production site; it also proxies the game API (/api, /hubs).</summary>
@@ -84,6 +98,43 @@ public static class MauiProgram
         if (DeviceInfo.Platform == DevicePlatform.Android) return ClientPlatform.Android;
         if (DeviceInfo.Platform == DevicePlatform.MacCatalyst) return ClientPlatform.MacCatalyst;
         return ClientPlatform.iOS;
+    }
+
+#if IOS || ANDROID
+    /// <summary>
+    /// AdMob ad units from appsettings.json (Ads:AdMob:{Android|iOS}:{Interstitial|Rewarded}). Missing ids, or a Debug
+    /// build, use Google's test units, so a dev build can never earn invalid traffic on the real account.
+    /// </summary>
+    private static void ConfigureAdMob(MauiAppBuilder builder)
+    {
+        var platform = DeviceInfo.Platform == DevicePlatform.Android ? "Android" : "iOS";
+        var interstitial = ReadSetting("Ads", "AdMob", platform, "Interstitial");
+        var rewarded = ReadSetting("Ads", "AdMob", platform, "Rewarded");
+        Plugin.AdMob.Configuration.AdConfig.DefaultInterstitialAdUnitId = interstitial;
+        Plugin.AdMob.Configuration.AdConfig.DefaultRewardedAdUnitId = rewarded;
+#if DEBUG
+        Plugin.AdMob.Configuration.AdConfig.UseTestAdUnitIds = true;
+#else
+        Plugin.AdMob.Configuration.AdConfig.UseTestAdUnitIds = interstitial is null || rewarded is null;
+#endif
+        Plugin.AdMob.Config.UseAdMob(builder);
+    }
+#endif
+
+    /// <summary>Reads a nested string from the embedded appsettings.json (null when missing or empty).</summary>
+    private static string? ReadSetting(params string[] path)
+    {
+        try
+        {
+            using var stream = typeof(MauiProgram).Assembly.GetManifestResourceStream("appsettings.json");
+            if (stream is null) return null;
+            using var doc = JsonDocument.Parse(stream);
+            var e = doc.RootElement;
+            foreach (var key in path)
+                if (e.ValueKind != JsonValueKind.Object || !e.TryGetProperty(key, out e)) return null;
+            return e.ValueKind == JsonValueKind.String && e.GetString() is { Length: > 0 } v ? v : null;
+        }
+        catch (JsonException) { return null; }
     }
 
     /// <summary>Reads Backend:BaseUrl from the embedded Resources/Raw/appsettings.json (empty = platform default).</summary>

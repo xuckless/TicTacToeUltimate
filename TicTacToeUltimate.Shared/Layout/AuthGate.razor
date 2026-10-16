@@ -67,7 +67,7 @@ else
     private string Path => Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].Trim('/').ToLowerInvariant();
 
     /// <summary>Offline pass-and-play routes never wait for (or redirect on) the session.</summary>
-    private bool IsOfflineRoute => Path == "local" || Path.StartsWith("local/", StringComparison.Ordinal);
+    private bool IsOfflineRoute => Path == "local" || Path.StartsWith("local/", StringComparison.Ordinal) || Path == "dev/ads";
 
     /// <summary>Where the current route must redirect to, or null.</summary>
     private string? RedirectTarget()

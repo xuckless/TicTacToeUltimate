@@ -193,6 +193,28 @@ public class AdPolicyTests
     }
 
     [Fact]
+    public void Mobile_pacing_grace_cooldown_and_every_second_game()
+    {
+        var cfg = new AdConfigDto(2, true, 120, 2);
+        var state = default(AdPolicyState);
+        var shown = new List<bool>();
+        // games end at t = 60 s, 120 s, ... (one per minute)
+        for (var i = 1; i <= 8; i++)
+        {
+            (var show, state) = AdPolicy.OnGameCompleted(state, GameResultForUser.Win, cfg, false, i * 60_000L);
+            shown.Add(show);
+        }
+        // grace: none in games 1-2; game 3 shows; then every 2nd game but at least 120 s apart (games 5 and 7).
+        Assert.Equal([false, false, true, false, true, false, true, false], shown);
+        // a fast player (20 s games) waits for the cooldown: next break only once 120 s have passed
+        state = new AdPolicyState(0, 0, 5, 0);
+        (var fast1, state) = AdPolicy.OnGameCompleted(state, GameResultForUser.Win, cfg, false, 20_000);
+        (var fast2, state) = AdPolicy.OnGameCompleted(state, GameResultForUser.Win, cfg, false, 40_000);
+        (var late, _) = AdPolicy.OnGameCompleted(state, GameResultForUser.Win, cfg, false, 125_000);
+        Assert.Equal([false, false, true], new[] { fast1, fast2, late });
+    }
+
+    [Fact]
     public void Every_third_game() => Assert.Equal([false, false, true, false, false, true],
         Run(GameResultForUser.Win, GameResultForUser.Draw, GameResultForUser.Win, GameResultForUser.Win, GameResultForUser.Loss, GameResultForUser.Win));
 

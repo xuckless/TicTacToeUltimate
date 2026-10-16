@@ -370,3 +370,23 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
 - Perched X/O trinkets removed everywhere (too distracting). Flybys now rotate Bert, X, O and an X+O duo (`PieceBuddy`: 2D X/O characters with faces, gloved hands, shoes; moods happy/wave/cheer), and come more often (every 14–30 s).
 
 - **Ad blocker prompt (2026-10-15):** web only, when AdSense is configured. `tttAds.blocked()` runs a no-cors probe of the AdSense script plus a bait element. A dismissible Bert notice (`AdBlockNotice`, menus only, once per day) asks the player to allow ads. Rewarded ads that fail because of a blocker toast "Your ad blocker stopped the ad…" (`ErrorCodes.AdBlocked`). Note: the dev Mac blocks googlesyndication at DNS level (local resolver 127.31.17.22), so ads never load there.
+
+### Production + mobile release (owner, 2026-10-15)
+- **Live:** https://tictactoeultimate.alidirect.dev (Cloudflare Worker: static site plus a same-origin API proxy to the VM).
+  - GCE e2-micro `ttt-server` (project `ttt-ultimate-b7097a`, us-east1) runs Caddy + server + bots in Docker. It is always on (free tier); containers use `restart: always`.
+  - Origin locked by an `X-Origin-Auth` secret.
+  - The apex `alidirect.dev` Worker serves `ads.txt` and redirects to the game.
+- Server cold start is about 25 s (tablebases). The client shows a "Waking up the game server" buffer, retrying 5xx and network errors for up to 60 s.
+- SEO: meta, Open Graph, Twitter and JSON-LD on the index; crawlable summary; static `/how-to-play/ /about/ /privacy/ /terms/`; sitemap, robots, favicon set, apple-touch icon, manifest, OG image.
+- AdSense publisher `ca-pub-7292645320711380`. Banner hidden until a slot id exists. With no fill (H5 not approved) the reward is granted anyway; blocked → prompt.
+- **Ad pacing (owner: "same frequency as Duolingo")**, web and mobile:
+  - an interstitial every 2nd completed game, at least 120 s apart;
+  - none in a session's first 2 games, none right after a 2nd loss in a row;
+  - never in a match or a queue;
+  - rewarded ads are opt-in for perks.
+  - Config: `Ttt:Ads:{InterstitialEveryGames,MinSecondsBetween,FirstAfterGames}`.
+- **Mobile ads:** AdMob via Plugin.AdMob 10.0.90 (interstitial + rewarded, UMP consent, iOS ATT before the first ad, no banners). Google test IDs until real IDs are set (see DEPLOYMENT_GUIDE.md). Receipts are `admob:` nonces (SSV later). Mac Catalyst: no ads, rewards granted.
+- Mobile Release builds target production. Android upload key is in `~/.ttt-signing` (signed AAB builds). iOS signs through `TTT_IOS_CODESIGN_KEY` / `TTT_IOS_PROVISIONING_PROFILE`.
+- Deep links are now actually handled (`DeepLinkHandler`): `tttu://c/CODE` and `https://…/c/CODE` open the challenge.
+- Git history rewritten (2026-10-15) to purge `BackendWebAPI/appsettings.{Auth,Stripe}.json` and all bin/obj/.idea (310 MB → 2.4 MB). Merged work branches deleted. `main` = `rebuild/pvp-foundation`. **Not pushed:** needs `git push --force origin main`. The old keys must still be rotated.
+- `DEPLOYMENT_GUIDE.md` (gitignored) holds the operational runbook and the secret locations.

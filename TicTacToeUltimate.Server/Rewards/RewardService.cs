@@ -27,7 +27,7 @@ public sealed partial class StubRewardVerifier : IRewardVerifier
 /// </summary>
 public sealed partial class AdSenseRewardVerifier : IRewardVerifier
 {
-    [GeneratedRegex("^(web|stub):[a-z]+:[0-9a-f-]{36}$")]
+    [GeneratedRegex("^(web|admob|stub):[a-z]+:[0-9a-f-]{36}$")]
     private static partial Regex Pattern();
 
     public bool Verify(RewardKind kind, string receipt) => receipt is not null && Pattern().IsMatch(receipt);

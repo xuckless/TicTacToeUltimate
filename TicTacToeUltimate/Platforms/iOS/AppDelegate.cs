@@ -7,7 +7,12 @@ namespace TicTacToeUltimate;
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate
 {
-    protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+    protected override MauiApp CreateMauiApp()
+    {
+        var app = MauiProgram.CreateMauiApp();
+        Google.MobileAds.MobileAds.SharedInstance.Start(completionHandler: null);
+        return app;
+    }
 
     public override bool OpenUrl(UIApplication application, NSUrl url, NSDictionary options)
     {

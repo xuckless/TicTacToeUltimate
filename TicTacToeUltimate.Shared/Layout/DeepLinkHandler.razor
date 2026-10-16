@@ -1,0 +1,29 @@
+@inject IDeepLinkSource Links
+@inject NavigationManager Nav
+@implements IDisposable
+@* Opens app links (tttu://c/CODE, https://<site>/c/CODE, …) at the matching route. Web: no-op (the URL is the route). *@
+
+@code {
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        Links.LinkOpened += Open;
+        if (Links.InitialLink is { } first) Open(first);
+    }
+
+    private void Open(Uri uri) => _ = InvokeAsync(() =>
+    {
+        if (RouteOf(uri) is { } route) Nav.NavigateTo(route);
+    });
+
+    /// <summary>Route for a link: custom scheme uses host + path (tttu://c/AB12 → c/AB12), https uses the path.</summary>
+    public static string? RouteOf(Uri uri)
+    {
+        var path = uri.Scheme is "http" or "https" ? uri.AbsolutePath.Trim('/') : (uri.Host + uri.AbsolutePath).Trim('/');
+        if (string.IsNullOrEmpty(path) && string.IsNullOrEmpty(uri.Query)) return null;
+        return path + uri.Query;
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Links.LinkOpened -= Open;
+}

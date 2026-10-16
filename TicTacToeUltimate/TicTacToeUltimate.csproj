@@ -113,10 +113,28 @@
         <PackageReference Include="Microsoft.Maui.Controls" VersionOverride="$(MauiVersion)"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" VersionOverride="$(MauiVersion)"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Debug"/>
+        <PackageReference Include="Plugin.AdMob"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\TicTacToeUltimate.Shared\TicTacToeUltimate.Shared.csproj"/>
     </ItemGroup>
+
+    <!-- Google Mobile Ads (Swift) needs the Swift runtime libraries on iOS. -->
+    <Target Name="LinkWithSwift" DependsOnTargets="_ParseBundlerArguments;_DetectSdkLocations" BeforeTargets="_LinkNativeExecutable"
+            Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+        <PropertyGroup>
+            <_SwiftPlatform Condition="$(RuntimeIdentifier.StartsWith('iossimulator-'))">iphonesimulator</_SwiftPlatform>
+            <_SwiftPlatform Condition="$(RuntimeIdentifier.StartsWith('ios-'))">iphoneos</_SwiftPlatform>
+        </PropertyGroup>
+        <ItemGroup>
+            <_CustomLinkFlags Include="-L" />
+            <_CustomLinkFlags Include="/usr/lib/swift" />
+            <_CustomLinkFlags Include="-L" />
+            <_CustomLinkFlags Include="$(_SdkDevPath)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(_SwiftPlatform)" />
+            <_CustomLinkFlags Include="-Wl,-rpath" />
+            <_CustomLinkFlags Include="-Wl,/usr/lib/swift" />
+        </ItemGroup>
+    </Target>
 
 </Project>
