@@ -2,6 +2,8 @@
 @layout MatchLayout
 @using TicTacToeUltimate.Client.Local
 @implements IDisposable
+@inject TicTacToeUltimate.Shared.Services.AmbienceService Ambience
+@using TicTacToeUltimate.Shared.Services
 @inject LocalPlaySession Local
 @inject ISettingsStore Settings
 @inject ISoundService Sound
@@ -225,7 +227,11 @@ else
         Haptic(sec == 5 ? HapticCue.Warning : HapticCue.Tick);
     }
 
-    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+    private void OnChanged()
+    {
+        if (_g is { } g) Ambience.Set(AmbienceMode.Match, g.SuddenDeath, g.Urgency);
+        _ = InvokeAsync(StateHasChanged);
+    }
 
     private void OnEvent(LocalGameEvent e)
     {

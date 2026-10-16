@@ -1,6 +1,8 @@
 @page "/match/{Id:guid}"
 @layout MatchLayout
 @inherits StoreComponent
+@inject TicTacToeUltimate.Shared.Services.AmbienceService Ambience
+@using TicTacToeUltimate.Shared.Services
 @inject IMatchStore Matches
 @inject ISessionStore Session
 @inject ISettingsStore Settings
@@ -153,6 +155,7 @@ else
         if (_view is null) return;
         _clock = Matches.GetClock(Id);
         var sd = InSuddenDeath;
+        Ambience.Set(AmbienceMode.Match, sd, Ended ? ClockUrgency.Idle : _clock?.Urgency ?? ClockUrgency.Idle);
         if (_prevSd == false && sd && !Ended) Impact("suddendeath", "SUDDEN DEATH", "alert-fill");
         _prevSd = sd;
         DeriveArena();

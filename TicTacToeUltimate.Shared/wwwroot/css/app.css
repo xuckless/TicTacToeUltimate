@@ -115,3 +115,23 @@ body { min-height: 100dvh; }
 .local-banner.x { color: var(--piece-x); }
 .local-banner.o { color: var(--piece-o); }
 .local-banner.ended { color: inherit; }
+
+/* Falling X/O wallpaper (Wallpaper.razor). Pieces are dark purple on bg; content sits above at z-index 1. */
+:root { --wp-piece: #2a1850; --wp-piece-sd: #5a1228; }
+:root[data-theme="light"] { --wp-piece: #e2d6ff; --wp-piece-sd: #ffc9d3; }
+.wallpaper { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; transition: opacity .6s ease; }
+.shell, .match-shell { position: relative; z-index: 1; }
+.wp-layer { position: absolute; inset: 0; }
+.wallpaper i { position: absolute; top: -12%; left: var(--x); font: 400 var(--s, 64px)/1 var(--font-headline); font-style: normal; color: var(--wp-piece);
+  opacity: var(--a, 1); animation: wp-fall var(--d) linear infinite; animation-delay: var(--delay); will-change: transform; transition: color .6s ease; }
+.wp-l0 i { --s: 34px; --a: .55; filter: blur(1.5px); }
+.wp-l1 i { --s: 60px; --a: .8; }
+.wp-l2 i { --s: 104px; --a: 1; }
+@keyframes wp-fall { from { transform: translateY(0) rotate(var(--r0)); } to { transform: translateY(125vh) rotate(calc(var(--r0) + 220deg)); } }
+.wallpaper.match { opacity: .45; }
+.wallpaper.match i { animation-duration: calc(var(--d) * 1.7); }
+.wallpaper.sd { opacity: .7; }
+.wallpaper.sd i { color: var(--wp-piece-sd); animation-duration: calc(var(--d) * .45); }
+.wallpaper.sd.crit i { animation-duration: calc(var(--d) * .28); }
+@media (prefers-reduced-motion: reduce) { .wallpaper i { animation: none; top: var(--y); transform: rotate(var(--r0)); } }
+:root[data-motion="reduce"] .wallpaper i { animation: none; top: var(--y); transform: rotate(var(--r0)); }

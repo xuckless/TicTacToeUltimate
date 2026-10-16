@@ -1,0 +1,39 @@
+@using TicTacToeUltimate.Shared.Services
+@inject AmbienceService Ambience
+@implements IDisposable
+
+@* Falling X/O wallpaper: three depth layers of dark-purple pieces. Slower and dimmer in matches;
+   red and faster in sudden death. Static under reduced motion. *@
+<div class="wallpaper @ModeClass" aria-hidden="true">
+    @for (var layer = 0; layer < 3; layer++)
+    {
+        <div class="wp-layer wp-l@(layer)">
+            @for (var i = 0; i < PerLayer[layer]; i++)
+            {
+                var k = layer * 31 + i;
+                var d = 16 + (k * 7 % 13) + layer * 6;
+                <i class="@(k % 2 == 0 ? "x" : "o")"
+                   style="--x:@((k * 37 + layer * 11) % 100)%;--y:@((k * 53) % 100)%;--d:@(d)s;--delay:-@Delay(k, d)s;--r0:@((k * 47) % 360)deg">@(k % 2 == 0 ? "X" : "O")</i>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private static readonly int[] PerLayer = [9, 7, 5];
+
+    // Negative delays start every piece mid-fall, so the wallpaper is already populated on first paint.
+    private static string Delay(int k, int d) => ((k * 5.3) % d).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+
+    private string ModeClass => (Ambience.Mode == AmbienceMode.Match ? "match" : "menu")
+        + (Ambience.SuddenDeath ? " sd" : "")
+        + (Ambience.Urgency == TicTacToeUltimate.Client.State.ClockUrgency.Critical ? " crit" : "");
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Ambience.Changed += OnChanged;
+
+    private void OnChanged() => InvokeAsync(StateHasChanged);
+
+    /// <inheritdoc />
+    public void Dispose() => Ambience.Changed -= OnChanged;
+}

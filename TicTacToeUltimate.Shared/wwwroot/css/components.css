@@ -215,7 +215,10 @@ a { color: var(--primary); }
 .match.arena-red { box-shadow: inset 0 0 0 4px var(--alert-fill), inset 0 0 120px #6a0f26; }
 
 /* BounceText: Luckiest Guy headlines with letters stepping up and down. */
-.t-bounce { display: inline-block; font-family: var(--font-headline); font-weight: 400; white-space: pre; }
+.t-bounce { display: inline-block; font-family: var(--font-headline); font-weight: 400; white-space: pre; text-transform: uppercase; }
+h1:focus, h1:focus-visible { outline: none; }
+.signin-logo { font-size: 56px; line-height: 1; color: var(--ink); text-shadow: 0 4px 0 var(--primary-shade); }
+.signin-logo .sub { font-size: 24px; color: var(--primary); text-shadow: none; }
 .t-bounce > span { display: inline-block; transform: translateY(var(--dy, 0)) rotate(var(--rot, 0deg)); }
 .t-bounce > span:nth-child(3n+1) { --dy: -0.07em; --rot: -4deg; }
 .t-bounce > span:nth-child(3n+2) { --dy: 0.05em; --rot: 3deg; }

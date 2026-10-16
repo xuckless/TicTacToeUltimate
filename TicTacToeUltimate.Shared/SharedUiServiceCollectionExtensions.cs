@@ -16,6 +16,7 @@ public static class SharedUiServiceCollectionExtensions
     public static IServiceCollection AddTttSharedUi(this IServiceCollection services)
     {
         services.TryAddSingleton<TttJsModule>();
+        services.TryAddSingleton<TicTacToeUltimate.Shared.Services.AmbienceService>();
         services.TryAddSingleton<IKeyValueStore, JsKeyValueStore>();
         services.TryAddSingleton<ISecureStore, JsSecureStore>();
         services.TryAddSingleton<IHaptics, JsHaptics>();

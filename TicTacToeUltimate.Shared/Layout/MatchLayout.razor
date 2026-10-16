@@ -1,17 +1,30 @@
 @inherits LayoutComponentBase
+@using TicTacToeUltimate.Shared.Services
 @inject IServiceProvider Services
+@inject AmbienceService Ambience
 @implements IDisposable
 
-<CascadingValue Name="AdsAllowed" Value="false" IsFixed="true">
-    @Body
-</CascadingValue>
+<Wallpaper />
+<div class="match-shell">
+    <CascadingValue Name="AdsAllowed" Value="false" IsFixed="true">
+        @Body
+    </CascadingValue>
+</div>
 
 @code {
     private IAdCoordinator? Ads => Services.GetService(typeof(IAdCoordinator)) as IAdCoordinator;
 
     /// <inheritdoc />
-    protected override void OnInitialized() => Ads?.SetMatchRouteActive(true);
+    protected override void OnInitialized()
+    {
+        Ads?.SetMatchRouteActive(true);
+        Ambience.Set(AmbienceMode.Match);
+    }
 
     /// <inheritdoc />
-    public void Dispose() => Ads?.SetMatchRouteActive(false);
+    public void Dispose()
+    {
+        Ads?.SetMatchRouteActive(false);
+        Ambience.Set(AmbienceMode.Menu);
+    }
 }
