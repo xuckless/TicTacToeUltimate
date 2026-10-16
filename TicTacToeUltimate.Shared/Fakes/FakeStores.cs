@@ -36,6 +36,11 @@ public sealed class FakeSessionStore() : FakeStore<SessionState>(MockupFixtures.
     public Task SignInDevNewUserAsync(string username) { Calls.Add($"SignInDevNew:{username}"); Set(MockupFixtures.SignedInSession); return Task.CompletedTask; }
     /// <inheritdoc />
     public Task SignInGuestAsync() { Calls.Add("SignInGuest"); Set(MockupFixtures.GuestSession); return Task.CompletedTask; }
+    public Task<string?> SignInEmailAsync(string email, string password) { Calls.Add("SignInEmail:" + email); return Task.FromResult<string?>(null); }
+    public Task<(bool NeedsConfirmation, string? Error)> SignUpEmailAsync(string email, string password) { Calls.Add("SignUpEmail:" + email); return Task.FromResult((true, (string?)null)); }
+    public Task<string?> ResetPasswordAsync(string email) { Calls.Add("Reset:" + email); return Task.FromResult<string?>(null); }
+    public Task<bool> CompleteRedirectAsync(string fragment) => Task.FromResult(false);
+    public Task<string?> SetPasswordAsync(string password) => Task.FromResult<string?>(null);
     /// <inheritdoc />
     public Task SignOutAsync() { Calls.Add("SignOut"); Set(State with { Status = SessionStatus.SignedOut, Me = null }); return Task.CompletedTask; }
     /// <inheritdoc />

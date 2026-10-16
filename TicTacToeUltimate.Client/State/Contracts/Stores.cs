@@ -27,6 +27,16 @@ public interface ISessionStore : IStore<SessionState>
     Task SignInDevAsync(Guid userId);
     Task SignInDevNewUserAsync(string username);
     Task SignInGuestAsync();
+    /// <summary>Email + password (Supabase). Returns an error text or null.</summary>
+    Task<string?> SignInEmailAsync(string email, string password);
+    /// <summary>Creates the account; returns (needsConfirmation, error).</summary>
+    Task<(bool NeedsConfirmation, string? Error)> SignUpEmailAsync(string email, string password);
+    /// <summary>Sends a password reset email. Returns an error text or null.</summary>
+    Task<string?> ResetPasswordAsync(string email);
+    /// <summary>Completes a confirmation/recovery redirect (URL fragment with tokens). True when signed in.</summary>
+    Task<bool> CompleteRedirectAsync(string fragment);
+    /// <summary>Sets a new password for the signed-in email account.</summary>
+    Task<string?> SetPasswordAsync(string password);
     Task SignOutAsync();
     Task<CommandAckDto> SetUsernameAsync(string username, bool acceptTos);
     Task<CommandAckDto> UpdateProfileAsync(UpdateProfileDto patch);

@@ -29,6 +29,12 @@ public interface IAdProvider
     Task<bool> ShowInterstitialAsync(CancellationToken ct);
     Task<RewardedAdResult> ShowRewardedAsync(RewardKind kind, CancellationToken ct);
 }
+/// <summary>Real banner ads (web AdSense). Absent = the stub banner.</summary>
+public interface IBannerAds
+{
+    string? BannerSlot { get; }
+    ValueTask RenderBannerAsync(object host);   // an ElementReference
+}
 public sealed record AdOverlayRequest(string Kind /* "interstitial" | "rewarded" */, RewardKind? Reward, int Seconds);
 /// <summary>Implemented by Shared (WP6): renders the stub ad modal; returns true when the countdown completed (false if closed early).</summary>
 public interface IAdOverlay { Task<bool> ShowAsync(AdOverlayRequest request, CancellationToken ct); }

@@ -2,10 +2,26 @@
 
 @if (Visible)
 {
-    <div class="ad-slot" role="complementary" aria-label="Advertisement">Banner ad · 320×50</div>
+    @if (Services.GetService(typeof(IBannerAds)) is IBannerAds { BannerSlot: not null })
+    {
+        <div class="ad-slot real" role="complementary" aria-label="Advertisement" @ref="_host"></div>
+    }
+    else
+    {
+        <div class="ad-slot" role="complementary" aria-label="Advertisement">Banner ad · 320×50</div>
+    }
 }
 
 @code {
+    private ElementReference _host;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && Visible && Services.GetService(typeof(IBannerAds)) is IBannerAds { BannerSlot: not null } banner)
+            await banner.RenderBannerAsync(_host);
+    }
+
     /// <summary>Cascaded false by <see cref="Layout.MatchLayout"/>: no ads during a match.</summary>
     [CascadingParameter(Name = "AdsAllowed")] public bool? AdsAllowed { get; set; }
 

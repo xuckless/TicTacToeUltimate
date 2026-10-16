@@ -37,3 +37,8 @@ public sealed record AdConfigDto(int InterstitialEveryGames, bool SkipAfterTwoLo
 public sealed record ModeConfigDto(TimeControl TimeControl, MatchMode Mode, RuleSetDto Rules, bool Rated, bool GuestsAllowed, ArenaRulesDto? Arena = null);
 public sealed record AppConfigDto(int ProtocolVersion, bool DevAuth, bool SupabaseAuth, string? SupabaseUrl, string? SupabaseAnonKey,
     ModeConfigDto[] Modes, EmoteDto[] Emotes, TierBandDto[] Tiers, int LeaderboardMinGames, AdConfigDto Ads, string WebBaseUrl);
+
+/// <summary>POST /api/auth/claim-guest body: the device's guest token.</summary>
+public sealed record ClaimGuestDto(string GuestToken);
+/// <summary>Games moved from the guest into the account.</summary>
+public sealed record ClaimGuestResultDto(int GamesMoved);

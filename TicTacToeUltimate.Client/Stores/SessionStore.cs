@@ -16,6 +16,9 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     public const string DeviceIdKey = "ttt.deviceId";
 
     private readonly TttApiClient _api;
+    private readonly SupabaseAuthClient _supa;
+    private const string RefreshKey = "ttt.refresh";
+    private CancellationTokenSource? _refreshTimer;
     private readonly IRealtimeTransport _rt;
     private readonly TokenStore _tokens;
     private readonly IKeyValueStore _kv;
@@ -32,9 +35,11 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     public event Action<ServerHelloDto>? HelloReceived;
 
     /// <summary>Creates the store.</summary>
-    public SessionStore(TttApiClient api, IRealtimeTransport rt, TokenStore tokens, IKeyValueStore kv, ClientOptions options, ILogger<SessionStore> logger)
+    public SessionStore(TttApiClient api, IRealtimeTransport rt, TokenStore tokens, IKeyValueStore kv, ClientOptions options, ILogger<SessionStore> logger,
+        SupabaseAuthClient? supa = null)
         : base(SessionState.Initial)
     {
+        _supa = supa ?? new SupabaseAuthClient(new HttpClient());
         _api = api; _rt = rt; _tokens = tokens; _kv = kv; _options = options; _logger = logger;
         _rt.Handshake = HelloAsync;
         _rt.PhaseChanged += () => Update(s => s with { Connection = _rt.Phase, ReconnectAttempt = _rt.ReconnectAttempt });
@@ -80,6 +85,8 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
 
         _wasGuest = await _kv.GetAsync(KindKey) == nameof(AccountKind.Guest);
         var stored = await _tokens.LoadAsync();
+        // Email accounts: Supabase access tokens last an hour, so start from a fresh one.
+        if (!_wasGuest && await _kv.GetAsync(RefreshKey) is { Length: > 0 } && await TryRefreshAsync()) stored = _tokens.Token;
         if (string.IsNullOrEmpty(stored))
         {
             Update(s => s with { Status = SessionStatus.SignedOut });
@@ -132,8 +139,100 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     public async Task SignInGuestAsync() => await CompleteSignInAsync(await _api.GuestTokenAsync(new GuestTokenRequestDto(await DeviceIdAsync())), true);
 
     /// <inheritdoc />
+    public async Task<string?> SignInEmailAsync(string email, string password)
+    {
+        if (Supabase() is not { } s) return "Email sign-in isn't available right now.";
+        var r = await _supa.SignInAsync(s.Url, s.Key, email.Trim(), password);
+        if (r.Session is null) return r.Error ?? "Sign-in failed.";
+        return await AdoptSupabaseSessionAsync(r.Session);
+    }
+
+    /// <inheritdoc />
+    public async Task<(bool NeedsConfirmation, string? Error)> SignUpEmailAsync(string email, string password)
+    {
+        if (Supabase() is not { } s) return (false, "Email sign-up isn't available right now.");
+        var r = await _supa.SignUpAsync(s.Url, s.Key, email.Trim(), password, RedirectUrl());
+        if (r.Error is not null) return (false, r.Error);
+        if (r.Session is null) return (true, null);
+        return (false, await AdoptSupabaseSessionAsync(r.Session));
+    }
+
+    /// <inheritdoc />
+    public async Task<string?> ResetPasswordAsync(string email)
+    {
+        if (Supabase() is not { } s) return "Password reset isn't available right now.";
+        return await _supa.RecoverAsync(s.Url, s.Key, email.Trim(), RedirectUrl());
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> CompleteRedirectAsync(string fragment)
+    {
+        if (SupabaseAuthClient.FromFragment(fragment, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()) is not { } session) return false;
+        if (State.Config is null) await InitializeAsync();
+        return await AdoptSupabaseSessionAsync(session) is null;
+    }
+
+    /// <inheritdoc />
+    public async Task<string?> SetPasswordAsync(string password)
+    {
+        if (Supabase() is not { } s || _tokens.Token is not { } at) return "Sign in first.";
+        return await _supa.UpdatePasswordAsync(s.Url, s.Key, at, password);
+    }
+
+    private (string Url, string Key)? Supabase()
+        => State.Config is { SupabaseAuth: true, SupabaseUrl: { Length: > 0 } url, SupabaseAnonKey: { Length: > 0 } key } ? (url, key) : null;
+
+    private string RedirectUrl() => new Uri(_options.WebBaseUrl, "signin").ToString();
+
+    // Switch to the Supabase session, then move this device's guest history into the account.
+    private async Task<string?> AdoptSupabaseSessionAsync(SupabaseSession session)
+    {
+        var guestToken = (State.IsGuest || _wasGuest) ? _tokens.Token ?? await _tokens.LoadAsync() : null;
+        await _tokens.SetAsync(session.AccessToken, true);
+        await _kv.SetAsync(RefreshKey, session.RefreshToken);
+        ScheduleRefresh(session.ExpiresAtMs);
+        MeDto me;
+        try { me = await _api.GetMeAsync(); }
+        catch (Exception ex) { _logger.LogWarning(ex, "Account load failed"); return "Signed in, but the game server didn't answer. Try again."; }
+        if (guestToken is not null && me.Kind == AccountKind.Account)
+        {
+            try { await _api.ClaimGuestAsync(new ClaimGuestDto(guestToken)); me = await _api.GetMeAsync(); }
+            catch (Exception ex) { _logger.LogInformation(ex, "Guest history claim skipped"); }
+        }
+        await CompleteSignInAsync(new TokenResponseDto(session.AccessToken, session.ExpiresAtMs, me), true);
+        return null;
+    }
+
+    private async Task<bool> TryRefreshAsync()
+    {
+        if (await _kv.GetAsync(RefreshKey) is not { Length: > 0 } rt) return false;
+        if (State.Config is null) return false;
+        if (Supabase() is not { } s) return false;
+        var r = await _supa.RefreshAsync(s.Url, s.Key, rt);
+        if (r.Session is null) return false;
+        await _tokens.SetAsync(r.Session.AccessToken, true);
+        await _kv.SetAsync(RefreshKey, r.Session.RefreshToken);
+        ScheduleRefresh(r.Session.ExpiresAtMs);
+        return true;
+    }
+
+    private void ScheduleRefresh(long expiresAtMs)
+    {
+        _refreshTimer?.Cancel();
+        var cts = _refreshTimer = new CancellationTokenSource();
+        var delay = TimeSpan.FromMilliseconds(Math.Max(30_000, expiresAtMs - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 120_000));
+        _ = Task.Run(async () =>
+        {
+            try { await Task.Delay(delay, cts.Token); } catch (OperationCanceledException) { return; }
+            if (!await TryRefreshAsync()) _logger.LogInformation("Token refresh failed; will retry on the next 401");
+        });
+    }
+
+    /// <inheritdoc />
     public async Task SignOutAsync()
     {
+        _refreshTimer?.Cancel();
+        await _kv.SetAsync(RefreshKey, "");
         await _rt.StopAsync();
         await _tokens.ClearAsync();
         Update(s => s with { Status = SessionStatus.SignedOut, Me = null, ActiveMatchIds = [], DailyYourTurn = 0, Error = null });
@@ -189,7 +288,12 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
         {
             try
             {
-                if (State.IsGuest || (State.Me is null && _wasGuest))
+                if (!State.IsGuest && !_wasGuest && await TryRefreshAsync())
+                {
+                    var me = await _api.GetMeAsync();
+                    Update(s => s with { Status = SessionStatus.SignedIn, Me = me, Error = null });
+                }
+                else if (State.IsGuest || (State.Me is null && _wasGuest))
                 {
                     await CompleteSignInAsync(await _api.GuestTokenAsync(new GuestTokenRequestDto(await DeviceIdAsync())), true);
                 }

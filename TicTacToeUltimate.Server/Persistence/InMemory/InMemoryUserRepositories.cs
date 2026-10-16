@@ -14,6 +14,17 @@ public sealed class InMemoryUserRepository : IUserRepository
     private readonly Dictionary<string, Guid> _byName = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Guid> _byDevice = new(StringComparer.Ordinal);
 
+    /// <summary>Guest merge: removes the guest row (and its device binding).</summary>
+    internal void DeleteGuest(Guid id)
+    {
+        lock (_gate)
+        {
+            if (!_byId.TryGetValue(id, out var u) || u.Kind != AccountKind.Guest) return;
+            _byId.Remove(id);
+            if (u.DeviceId is { } d) _byDevice.Remove(d);
+        }
+    }
+
     public Task<UserRecord?> GetAsync(Guid id, CancellationToken ct)
     {
         lock (_gate) return Task.FromResult(_byId.GetValueOrDefault(id));
@@ -121,6 +132,18 @@ public sealed class InMemoryRatingRepository(IUserRepository users) : IRatingRep
     private readonly Lock _gate = new();
     private readonly Dictionary<(Guid, RatingPool), RatingRecord> _map = [];
 
+    /// <summary>Guest merge: moves pools the account doesn't have yet.</summary>
+    internal void Reassign(Guid from, Guid to)
+    {
+        lock (_gate)
+            foreach (var key in _map.Keys.Where(k => k.Item1 == from).ToArray())
+            {
+                var r = _map[key];
+                _map.Remove(key);
+                _map.TryAdd((to, key.Item2), r with { UserId = to });
+            }
+    }
+
     public Task<RatingRecord> GetAsync(Guid userId, RatingPool pool, CancellationToken ct)
     {
         lock (_gate) return Task.FromResult(_map.GetValueOrDefault((userId, pool)) ?? RatingRecord.Initial(userId, pool));
@@ -187,6 +210,24 @@ public sealed class InMemoryGameRepository : IGameRepository
     public Task<int> CountForUserAsync(Guid userId, CancellationToken ct)
     {
         lock (_gate) return Task.FromResult(_games.Values.Count(g => g.Setup.SeatA.UserId == userId || g.Setup.SeatB.UserId == userId));
+    }
+
+    /// <summary>Guest merge: rewrites seats of <paramref name="from"/> to <paramref name="to"/>.</summary>
+    internal int Reassign(Guid from, Guid to)
+    {
+        lock (_gate)
+        {
+            var n = 0;
+            foreach (var g in _games.Values.ToArray())
+            {
+                var s = g.Setup;
+                if (s.SeatA.UserId != from && s.SeatB.UserId != from) continue;
+                SeatSetup Fix(SeatSetup seat) => seat.UserId == from ? seat with { UserId = to, Kind = AccountKind.Account } : seat;
+                _games[g.Id] = g with { Setup = s with { SeatA = Fix(s.SeatA), SeatB = Fix(s.SeatB) } };
+                n++;
+            }
+            return n;
+        }
     }
 }
 

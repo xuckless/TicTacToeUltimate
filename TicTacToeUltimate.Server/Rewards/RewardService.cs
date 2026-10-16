@@ -21,6 +21,18 @@ public sealed partial class StubRewardVerifier : IRewardVerifier
     public bool Verify(RewardKind kind, string receipt) => receipt is not null && Pattern().IsMatch(receipt);
 }
 
+/// <summary>
+/// "Ttt:Ads:Provider = AdSense": the web Ad Placement API has no server-side verification, so a rewarded ad yields a one-time
+/// "web:{kind}:{uuid}" nonce (the ledger rejects reuse). Mobile builds still send stub receipts until AdMob SSV is wired.
+/// </summary>
+public sealed partial class AdSenseRewardVerifier : IRewardVerifier
+{
+    [GeneratedRegex("^(web|stub):[a-z]+:[0-9a-f-]{36}$")]
+    private static partial Regex Pattern();
+
+    public bool Verify(RewardKind kind, string receipt) => receipt is not null && Pattern().IsMatch(receipt);
+}
+
 /// <summary>POST /api/rewards/claim logic (§6.7 Rewards).</summary>
 public sealed class RewardService(IRewardVerifier verifier, IRewardLedger ledger, IProgressRepository progress, IUserRepository users,
     IGameRepository games, ProgressService progressService, UserLocks locks, TimeProvider time)

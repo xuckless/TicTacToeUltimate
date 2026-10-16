@@ -342,3 +342,10 @@ h1:focus, h1:focus-visible { outline: none; }
 @keyframes bert-droop { 50% { transform: translateY(3px) rotate(-2deg); } }
 @media (prefers-reduced-motion: reduce) { .bert * { animation: none !important; } }
 :root[data-motion="reduce"] .bert * { animation: none !important; }
+
+/* Email sign-in */
+.t-link-btn { background: none; border: 0; color: var(--accent-2, #b79bff); font: 600 14px/1.2 var(--font-ui, inherit); cursor: pointer;
+  padding: 8px 0; align-self: center; text-decoration: underline; text-underline-offset: 3px; }
+.email-card .t-tabs, .email-card [role="tablist"] { margin-bottom: 4px; }
+.email-info { display: flex; align-items: center; gap: 10px; margin: 0; padding: 10px 12px; border-radius: 14px;
+  background: color-mix(in srgb, var(--accent, #7442ef) 18%, transparent); }

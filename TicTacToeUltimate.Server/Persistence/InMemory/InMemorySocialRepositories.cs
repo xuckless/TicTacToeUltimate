@@ -154,6 +154,22 @@ public sealed class InMemoryProgressRepository : IProgressRepository
     private readonly Dictionary<Guid, StreakRecord> _streaks = [];
     private readonly Dictionary<(Guid, DateOnly), QuestDayRecord> _days = [];
 
+    /// <summary>Guest merge: better streak wins; quest wins add up.</summary>
+    internal void Reassign(Guid from, Guid to)
+    {
+        lock (_gate)
+        {
+            if (_streaks.Remove(from, out var gs) && (!_streaks.TryGetValue(to, out var acc) || gs.Current > acc.Current))
+                _streaks[to] = gs with { UserId = to, Best = Math.Max(gs.Best, _streaks.GetValueOrDefault(to)?.Best ?? 0) };
+            foreach (var key in _days.Keys.Where(k => k.Item1 == from).ToArray())
+            {
+                var d = _days[key];
+                _days.Remove(key);
+                _days[(to, key.Item2)] = _days.TryGetValue((to, key.Item2), out var have) ? have with { Wins = have.Wins + d.Wins } : d with { UserId = to };
+            }
+        }
+    }
+
     public Task<StreakRecord> GetStreakAsync(Guid userId, CancellationToken ct)
     {
         lock (_gate) return Task.FromResult(_streaks.GetValueOrDefault(userId) ?? new StreakRecord(userId, 0, 0, null, 0));

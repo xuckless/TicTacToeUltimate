@@ -35,7 +35,8 @@ public readonly record struct OpResult<T>(T? Value, string? Error, int Status = 
 }
 
 /// <summary>Account lifecycle: dev users, guest login, me, username, profile.</summary>
-public sealed class AccountService(IUserRepository users, RatingService ratings, UsernameRules rules, DevTokenIssuer issuer, TimeProvider time)
+public sealed class AccountService(IUserRepository users, RatingService ratings, UsernameRules rules, DevTokenIssuer issuer, TimeProvider time,
+    TicTacToeUltimate.Server.Persistence.IGuestMergeStore merge)
 {
     /// <summary>Builds MeDto.</summary>
     public async Task<MeDto?> GetMeAsync(Guid userId, CancellationToken ct)
@@ -96,6 +97,28 @@ public sealed class AccountService(IUserRepository users, RatingService ratings,
             if (u is null) return OpResult<TokenResponseDto>.Fail(ErrorCodes.Internal, 500);
         }
         return new(await TokenAsync(u, ct), null);
+    }
+
+    /// <summary>POST /api/auth/claim-guest: merge the guest behind <paramref name="guestToken"/> into <paramref name="accountId"/>.</summary>
+    public async Task<OpResult<ClaimGuestResultDto>> ClaimGuestAsync(Guid accountId, string? guestToken, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(guestToken)) return OpResult<ClaimGuestResultDto>.Fail(ErrorCodes.Validation, 400);
+        var check = await new Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler()
+            .ValidateTokenAsync(guestToken, issuer.ValidationParameters() is var p ? WithoutLifetime(p) : null);
+        if (!check.IsValid || !Guid.TryParse((check.Claims.TryGetValue(TicTacToeUltimate.Server.Abstractions.TttClaims.Sub, out var sub) ? sub?.ToString() : null), out var guestId) || guestId == accountId)
+            return OpResult<ClaimGuestResultDto>.Fail(ErrorCodes.Validation, 400);
+        var guest = await users.GetAsync(guestId, ct);
+        if (guest is null || guest.Kind != AccountKind.Guest) return new(new ClaimGuestResultDto(0), null);
+        var moved = await merge.MergeAsync(guestId, accountId, ct);
+        return new(new ClaimGuestResultDto(moved), null);
+    }
+
+    // A guest token found in storage may be past its expiry; the signature is what proves ownership.
+    private static Microsoft.IdentityModel.Tokens.TokenValidationParameters WithoutLifetime(Microsoft.IdentityModel.Tokens.TokenValidationParameters p)
+    {
+        var c = p.Clone();
+        c.ValidateLifetime = false;
+        return c;
     }
 
     /// <summary>"Guest#NNNN".</summary>

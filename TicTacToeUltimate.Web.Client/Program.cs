@@ -29,7 +29,20 @@ builder.Services.AddTttClient(options);
 builder.Services.AddTttSharedUi();
 // Host overrides (last registration wins). IAppLifecycle stays the Shared JsLifecycle registered by AddTttSharedUi.
 builder.Services.Replace(ServiceDescriptor.Singleton<IPlatformInfo, WebPlatformInfo>());
-builder.Services.Replace(ServiceDescriptor.Singleton<IAdProvider, StubAdProvider>());
+// AdSense when a publisher id is configured (deploy/web/build.sh writes it), otherwise stub ads.
+if (NonEmpty(builder.Configuration["Ads:AdSenseClient"]) is { } adClient)
+{
+    var adOptions = new AdSenseOptions(adClient, NonEmpty(builder.Configuration["Ads:AdSenseBannerSlot"]),
+        string.Equals(builder.Configuration["Ads:TestMode"], "true", StringComparison.OrdinalIgnoreCase));
+    builder.Services.AddSingleton(adOptions);
+    builder.Services.AddSingleton<AdSenseAdProvider>();
+    builder.Services.Replace(ServiceDescriptor.Singleton<IAdProvider>(sp => sp.GetRequiredService<AdSenseAdProvider>()));
+    builder.Services.AddSingleton<IBannerAds>(sp => sp.GetRequiredService<AdSenseAdProvider>());
+}
+else
+{
+    builder.Services.Replace(ServiceDescriptor.Singleton<IAdProvider, StubAdProvider>());
+}
 builder.Services.AddTttClientFallbacks();
 
 var host = builder.Build();

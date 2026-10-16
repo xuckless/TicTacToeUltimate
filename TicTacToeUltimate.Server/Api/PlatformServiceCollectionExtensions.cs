@@ -42,7 +42,8 @@ public static class PlatformServiceCollectionExtensions
         services.AddSingleton<SocialService>();
         services.AddSingleton<GameViews>();
 
-        services.AddSingleton<IRewardVerifier, StubRewardVerifier>();
+        if (string.Equals(cfg["Ttt:Ads:Provider"], "AdSense", StringComparison.OrdinalIgnoreCase)) services.AddSingleton<IRewardVerifier, AdSenseRewardVerifier>();
+        else services.AddSingleton<IRewardVerifier, StubRewardVerifier>();
         services.AddSingleton<RewardService>();
         return services;
     }
@@ -65,6 +66,7 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<IBotKeyRepository, PgBotKeyRepository>();
             services.AddSingleton<IRewardLedger, PgRewardLedger>();
             services.AddSingleton<ISeasonRepository, PgSeasonRepository>();
+            services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.PgGuestMergeStore>();
         }
         else
         {
@@ -79,6 +81,7 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<IBotKeyRepository, InMemoryBotKeyRepository>();
             services.AddSingleton<IRewardLedger, InMemoryRewardLedger>();
             services.AddSingleton<ISeasonRepository, InMemorySeasonRepository>();
+            services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.InMemoryGuestMergeStore>();
             services.AddHostedService<FixtureSeeder>();
         }
         return services;

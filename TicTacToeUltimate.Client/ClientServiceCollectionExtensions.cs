@@ -23,6 +23,7 @@ public static class ClientServiceCollectionExtensions
         services.TryAddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddSingleton<TokenStore>();
         services.AddSingleton<ClockSync>();
+        services.AddSingleton(_ => new SupabaseAuthClient(new HttpClient { Timeout = TimeSpan.FromSeconds(20) }));
         services.AddSingleton(sp => new TttApiClient(new HttpClient { BaseAddress = options.BackendBaseUrl }, sp.GetRequiredService<TokenStore>()));
         services.AddSingleton<RealtimeClient>(sp => new RealtimeClient(options, sp.GetRequiredService<TokenStore>(),
             sp.GetRequiredService<ClockSync>(), sp.GetRequiredService<ILogger<RealtimeClient>>(), sp.GetService<IAppLifecycle>()));

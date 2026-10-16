@@ -62,8 +62,12 @@ public static class PlatformEndpoints
         {
             api.MapGet("/auth/dev/users", async (AccountService a, CancellationToken ct) => Results.Ok(await a.DevUsersAsync(ct))).AllowAnonymous();
             api.MapPost("/auth/dev/token", async (DevTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.DevTokenAsync(req, ct))).AllowAnonymous();
-            api.MapPost("/auth/guest", async (GuestTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.GuestTokenAsync(req, ct))).AllowAnonymous();
         }
+        // Guests (device-bound, server-signed tokens) exist in every environment.
+        api.MapPost("/auth/guest", async (GuestTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.GuestTokenAsync(req, ct))).AllowAnonymous();
+        // After an email sign-in: move the device's guest history into the account (the guest token proves ownership).
+        api.MapPost("/auth/claim-guest", async (ClaimGuestDto req, HttpContext http, AccountService a, CancellationToken ct) =>
+            From(await a.ClaimGuestAsync(http.Me().UserId, req.GuestToken, ct))).RequireAuthorization(Account);
 
         // ---- me ----
         api.MapGet("/me", async (HttpContext http, AccountService a, IUserRepository users, TimeProvider time, CancellationToken ct) =>

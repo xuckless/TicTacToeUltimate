@@ -346,3 +346,13 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
 - Web is a **static** Blazor WebAssembly build (`deploy/web/build.sh` → `deploy/web/out`). `TicTacToeUltimate.Web.Client/wwwroot/index.html` sets `window.tttStandalone`, so Program.cs mounts Routes itself.
   - **Vercel** builds it from `vercel.json`: it installs .NET via dotnet-install and adds SPA rewrites.
   - Env for the build: `TTT_BACKEND_URL`, `TTT_WEB_URL`, `TTT_ADSENSE_CLIENT`.
+
+### Supabase, deployment, ads (owner, 2026-10-15)
+- Supabase project **tictactoe-ultimate** (org tictactoe-ultimate, ref `mmoxnxiiqftnfqxqueob`, us-east-1). The DB password is in `.env` (gitignored).
+  - Migrations are pushed. Dev keeps InMemory by default; set `Ttt__Persistence__Provider=Postgres` to run against Supabase (user-secrets hold the connection string, URL and publishable key).
+- Auth: **email + password only** for now (confirmations on, anonymous off). Guests stay server-issued device tokens; `/api/auth/guest` is now mapped in every environment (it used to be Dev-only, which would have broken production guests).
+  - **Guest history**: on email sign-in the client calls `/api/auth/claim-guest` with the old guest token (the signature is the proof). The server moves games and replays, streak, quests and hidden casual ratings, then deletes the guest row.
+- Game history + replays are stored in `games` + `game_actions`. Verified end to end against Supabase: guest game → email sign-in → history → replay.
+- Real-time spectating: the existing friend spectating over SignalR (match actors live in memory; there's no DB involvement).
+- Deployment: web → **Vercel** (static); game server → Cloud Run with 1 instance or the workstation; bots → same, or Docker + Tailscale Funnel. Vercel can't host the C# server (no .NET runtime, no long-lived WebSockets). Full guide: `docs/DEPLOY.md`.
+- Ads: web uses **AdSense**, with the Ad Placement API for interstitials and rewarded ads plus a display unit for the menu banner. It activates only when `Ads:AdSenseClient` is set and falls back to "no ad" after 5 s. The server's `Ttt:Ads:Provider=AdSense` accepts one-time `web:` nonces.
