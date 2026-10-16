@@ -1,0 +1,185 @@
+@page "/local/arena"
+@layout MatchLayout
+@using TicTacToeUltimate.Client.Local
+@using TicTacToeUltimate.Engine.Arena
+@using TicTacToeUltimate.Shared.Services
+@implements IDisposable
+@inject LocalPlaySession Local
+@inject AmbienceService Ambience
+@inject ISettingsStore Settings
+@inject ISoundService Sound
+@inject IHaptics Haptics
+@inject NavigationManager Nav
+
+<PageTitle>Arena · Pass &amp; Play · Tic Tac Toe Ultimate</PageTitle>
+
+@if (_g is null)
+{
+    <div class="splash" role="status">Starting…</div>
+}
+else
+{
+    var g = _g;
+    <div class="match @(g.RedAlert || g.State.Phase == ArenaPhase.Overtime ? "sd" : "arena")" data-testid="local-arena">
+        <div class="match-header">
+            <span>Pass &amp; Play · Arena</span>
+            <span class="t-num" data-testid="local-arena-score">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)</span>
+        </div>
+        @if (g.IsLive)
+        {
+            <ArenaBanner RemainingMs="g.RoundLeftMs" RedAlert="g.RedAlert" Multiplier="g.Rules.RedAlertMultiplier" RedAlertMs="g.Rules.RedAlertMs"
+                         Overtime="@(g.State.Phase == ArenaPhase.Overtime)" FirstMover="@(g.State.Phase == ArenaPhase.Overtime ? g.NameOf(g.ToMoveSeat) : null)" />
+        }
+
+        @SeatRow(1)
+
+        <div class="match-board">
+            <div class="local-banner @(g.State.ToMove == Color.X ? "x" : "o") @(g.IsLive ? null : "ended")" role="status">
+                @(g.IsLive ? $"{g.State.ToMove}'s turn ({g.NameOf(g.ToMoveSeat)}) · {Ui.Seconds(g.MoveLeftMs)}s" : "Round over")
+            </div>
+            <div class="arena-board-wrap">
+                <Board Size="g.Rules.Board.BoardSize" Cells="@g.Board" Ghost="g.Ghost" Legal="g.LegalCells" Interactive="@(g.IsLive && !g.Paused)"
+                       LastPlaced="g.LastPlaced" SuddenDeath="g.RedAlert" OnCellSelected="Place" />
+                @if (g.LastHit is { } hit)
+                {
+                    <ShatterBurst Size="g.Rules.Board.BoardSize" Cells="hit.Shattered" Piece="hit.Attacker" Damage="hit.Damage" Crit="hit.Crit"
+                                  RedAlert="hit.RedAlert" Ply="g.HitKey" />
+                }
+            </div>
+        </div>
+
+        @SeatRow(0)
+
+        <div class="match-actions">
+            <Button Variant="ghost" OnClick="g.TogglePause">@(g.Paused ? "Resume" : "Pause")</Button>
+            <Button Variant="ghost" Href="local">Leave</Button>
+        </div>
+    </div>
+
+    @if (!g.IsLive && _showOverlay)
+    {
+        <div class="t-scrim">
+            <div class="t-sheet result-overlay" data-testid="local-arena-over">
+                <Ghosty Mood="cheer" Size="72" />
+                <span class="t-hero"><BounceText Text="@(g.WinnerSeat is int w ? $"{g.NameOf(w)} wins!" : "Draw")" /></span>
+                <span class="t-small t-muted">@EndText(g.State.End)</span>
+                <span class="t-num">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)</span>
+                <Button OnClick="Rematch">Rematch · swap colours</Button>
+                <Button Variant="secondary" OnClick="() => _showOverlay = false">View board</Button>
+                <Button Variant="ghost" Href="local">New setup</Button>
+            </div>
+        </div>
+    }
+    <ImpactFrame Kind="@_impactKind" Text="@_impactText" Token="@_impactToken" Trigger="_impactTrigger" DurationMs="_impactMs" />
+}
+
+@code {
+    private LocalArenaGame? _g;
+    private CancellationTokenSource? _cts;
+    private bool _showOverlay, _redAlertShown;
+    private int _impactTrigger, _impactMs = 1400, _lastHitKey;
+    private string _impactKind = "shatter", _impactText = "", _impactToken = "alert-fill";
+
+    private RenderFragment SeatRow(int seat) => __builder =>
+    {
+        var g = _g!;
+        var piece = g.ColorOf(seat);
+        var active = g.IsLive && g.ToMoveSeat == seat;
+        <div class="t-player @(active ? (piece == Color.X ? "active-x" : "active-o") : null)">
+            <Avatar Name="@g.NameOf(seat)" />
+            <div class="who" style="flex:1;min-width:0">
+                <HealthBar Hp="@g.State.Hp(piece)" Max="g.Rules.Hp" Piece="piece" Label="@g.NameOf(seat)" Streak="@g.State.Streak(piece)"
+                           Steps="g.Rules.Ramp.Length" Preview="@(active ? 0 : ArenaEngine.NextLineDamage(g.State, piece == Color.X ? Color.O : Color.X))"
+                           Hit="@(g.LastHit is { } h && h.Attacker != piece)" HitKey="g.HitKey" />
+            </div>
+        </div>
+    };
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _g = Local.Arena;
+        if (_g is null) { Nav.NavigateTo("local", replace: true); return; }
+        _g.Changed += OnChanged;
+        _showOverlay = !_g.IsLive;
+        _cts = new CancellationTokenSource();
+        _ = TickLoop(_cts.Token);
+    }
+
+    private async Task TickLoop(CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(200));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(ct))
+            {
+                _g?.Tick();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private void Place(int cell) => _g?.Place(cell);
+
+    private void Rematch()
+    {
+        _showOverlay = false;
+        _redAlertShown = false;
+        _g?.Rematch();
+    }
+
+    private void OnChanged()
+    {
+        var g = _g!;
+        Ambience.Set(AmbienceMode.Match, g.RedAlert || g.State.Phase == ArenaPhase.Overtime, ClockUrgency.Idle,
+            g.State.Phase == ArenaPhase.Overtime ? "sd sd-2 arena-ot" : g.RedAlert ? "sd sd-1 arena-red" : "");
+        if (g.HitKey != _lastHitKey && g.LastHit is { } hit)
+        {
+            _lastHitKey = g.HitKey;
+            if (hit.Crit) Impact("crit", $"CRITICAL! −{hit.Damage}", "streak", 1600);
+            else Impact("shatter", $"−{hit.Damage}", hit.Attacker == Color.X ? "piece-x" : "piece-o", 700);
+            if (Settings.State.Sfx) { try { Sound.Play(hit.Crit ? SoundCue.Crit : SoundCue.Shatter); } catch (Exception) { /* audio optional */ } }
+            if (Settings.State.Haptics) { try { Haptics.Play(HapticCue.Win); } catch (Exception) { /* haptics optional */ } }
+        }
+        if (g.RedAlert && !_redAlertShown && g.IsLive) { _redAlertShown = true; Impact("suddendeath", "RED ALERT ×2", "alert-fill"); }
+        if (!g.IsLive && !_showOverlay)
+        {
+            var ko = g.State.End == ArenaEnd.Knockout;
+            Impact("win", ko ? "K.O.!" : g.WinnerSeat is int w ? $"{g.NameOf(w).ToUpperInvariant()} WINS!" : "DRAW",
+                g.State.Winner == Color.O ? "piece-o" : "piece-x");
+            _ = RevealOverlayLater(Settings.State.ImpactFrames ? 1400 : 0);
+        }
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RevealOverlayLater(int ms)
+    {
+        if (ms > 0) await Task.Delay(ms);
+        _showOverlay = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Impact(string kind, string text, string token, int ms = 1400)
+    {
+        if (!Settings.State.ImpactFrames) return;
+        (_impactKind, _impactText, _impactToken, _impactMs) = (kind, text, token, ms);
+        _impactTrigger++;
+    }
+
+    private static string EndText(ArenaEnd e) => e switch
+    {
+        ArenaEnd.Knockout => "Knockout",
+        ArenaEnd.Decision => "Time! Higher health wins",
+        ArenaEnd.Overtime => "Overtime: next line won",
+        _ => "Draw",
+    };
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        if (_g is not null) _g.Changed -= OnChanged;
+    }
+}

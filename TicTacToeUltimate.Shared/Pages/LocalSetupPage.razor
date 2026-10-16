@@ -37,6 +37,8 @@
     </div>
 </Card>
 
+@if (_tc != TimeControl.ArenaCasual)
+{
 <Card Title="Rules">
     <div class="local-options" role="radiogroup" aria-label="Rules">
         @foreach (var p in Presets)
@@ -53,6 +55,7 @@
         <span><strong>Pie rule</strong><br /><span class="t-small t-muted">After X's first move, O may take X's position instead.</span></span>
     </label>
 </Card>
+}
 
 <Button Variant="hero" Block="true" OnClick="Start" data-testid="local-start">@(Local.Current is null ? "Start" : "Start new session")</Button>
 
@@ -73,6 +76,7 @@
         new(TimeControl.CasualX4, "Casual x4", "60s · timeout auto-moves"),
         new(TimeControl.CasualX2, "Casual x2", "30s · timeout auto-moves"),
         new(TimeControl.Ranked, "Sudden death", "15s, shrinking · timeout loses"),
+        new(TimeControl.ArenaCasual, "Arena", "Health bars · 2:00 round"),
     ];
 
     private string _p1 = "", _p2 = "";
@@ -94,6 +98,12 @@
 
     private void Start()
     {
+        if (_tc == TimeControl.ArenaCasual)
+        {
+            Local.StartArena(_p1, _p2);
+            Nav.NavigateTo("local/arena");
+            return;
+        }
         Local.Start(new LocalGameOptions { Player1 = _p1, Player2 = _p2, TimeControl = _tc, Pie = _pie, Preset = _preset });
         Nav.NavigateTo("local/play");
     }

@@ -392,6 +392,16 @@ public sealed class LocalPlaySession(TimeProvider time)
         return Current;
     }
 
+    /// <summary>Current offline Arena session, if one was started.</summary>
+    public LocalArenaGame? Arena { get; private set; }
+
+    /// <summary>Starts a fresh offline Arena session (score reset).</summary>
+    public LocalArenaGame StartArena(string player1, string player2)
+    {
+        Arena = new LocalArenaGame(player1, player2, time);
+        return Arena;
+    }
+
     /// <summary>Forgets the current session.</summary>
-    public void End() => Current = null;
+    public void End() { Current = null; Arena = null; }
 }
