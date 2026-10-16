@@ -1,13 +1,21 @@
 /* App layout and page styles (WP6). */
+html, body { background: var(--bg); overscroll-behavior: none; }
 body { min-height: 100dvh; }
-.shell { min-height: 100dvh; display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+.shell { min-height: 100dvh; display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr; }
 .shell .t-side { display: none; }
-.shell .t-nav { position: sticky; bottom: 0; z-index: 10; grid-row: 2; }
-.shell-main { min-width: 0; display: flex; flex-direction: column; }
+/* Phone: the tab bar is pinned to the real screen edge (incl. the home-indicator area) and content scrolls under a
+   status-bar backdrop, so iOS overscroll never shows a floating nav or text behind the Dynamic Island. */
+.shell .t-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; }
+.shell-main { min-width: 0; display: flex; flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+.shell::before, .match-shell::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px);
+  background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); z-index: 25; pointer-events: none; }
+.match-shell { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 :root { --col: 420px; --board: 340px; }
 .page { flex: 1; width: 100%; max-width: var(--col); margin: 0 auto; padding: var(--space-4) var(--space-4) var(--space-6); display: flex; flex-direction: column; gap: 16px; }
 @media (min-width: 900px) {
   .shell { grid-template-columns: 84px 1fr; grid-template-rows: 1fr; }
+  .shell-main { padding-bottom: 0; }
   .shell .t-side { display: flex; position: sticky; top: 0; height: 100dvh; }
   .shell .t-nav { display: none; }
   .page { padding: var(--space-6) var(--space-4); }
@@ -209,3 +217,4 @@ body { min-height: 100dvh; }
 .mode-wrap > .mode-card { padding-right: 52px; }
 .mode-wrap > .mode-card .mode-go { display: none; }
 .mode-wrap > .mode-card + .info-btn.corner { top: 50%; transform: translateY(-50%); right: 14px; }
+.match-shell .match { min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }

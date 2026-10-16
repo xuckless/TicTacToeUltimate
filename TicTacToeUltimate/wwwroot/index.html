@@ -21,7 +21,8 @@
     <link rel="icon" href="data:,">
     <style>
         html, body { background: #120a22; margin: 0; }
-        body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        /* Safe areas are handled by the shared layout CSS (shell/match/nav), not by padding the body. */
+        body { padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
                box-sizing: border-box; min-height: 100vh; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
         #app > .ttt-loading { min-height: 100vh; display: grid; place-items: center; color: #fff; font: 800 32px/1 system-ui, sans-serif; }
     </style>

@@ -17,6 +17,17 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder.UseMauiApp<App>();
         builder.Services.AddMauiBlazorWebView();
+#if IOS || MACCATALYST
+        // Edge-to-edge web view: CSS env(safe-area-inset-*) owns the safe areas. Without this, WKWebView also insets the
+        // scroll content, which doubles the top gap and makes the tab bar float on overscroll.
+        Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("EdgeToEdge", (handler, _) =>
+        {
+            handler.PlatformView.ScrollView.ContentInsetAdjustmentBehavior = UIKit.UIScrollViewContentInsetAdjustmentBehavior.Never;
+            handler.PlatformView.ScrollView.Bounces = false;
+            handler.PlatformView.Opaque = false;
+            handler.PlatformView.BackgroundColor = UIKit.UIColor.FromRGB(0x12, 0x0a, 0x22);
+        });
+#endif
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
