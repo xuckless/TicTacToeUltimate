@@ -101,7 +101,9 @@ public sealed class PostGameProcessor(
                 if (!IsHuman(seats[seat])) continue;
                 var userId = seats[seat].UserId;
                 var progBefore = wallet is null ? null : await progress.GetAsync(userId, ct);
-                progressBySeat[seat] = await progress.ApplyGameAsync(userId, m.Result.WinnerSeat == seat, m.EndedAt, ct);
+                var farmable = s.Origin is MatchOrigin.Challenge or MatchOrigin.Rematch || s.Mode == MatchMode.Challenge;
+                // Streak: any played game. Quest wins: queue and bot-fallback games only (two friends could farm quests through rematches).
+                progressBySeat[seat] = await progress.ApplyGameAsync(userId, m.Result.WinnerSeat == seat && !farmable, m.EndedAt, ct);
                 if (wallet is null) continue;
                 try { diamonds[seat] = await PayoutAsync(wallet, userId, seat, s, m, progBefore!, progressBySeat[seat]!, tierChanges[seat], ct); }
                 catch (Exception e) when (e is not OperationCanceledException) { logger.LogWarning(e, "Diamond payout failed for {User}", userId); }

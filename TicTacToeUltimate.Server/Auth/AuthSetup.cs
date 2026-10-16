@@ -122,9 +122,9 @@ public sealed class TttClaimsTransformation(IUserRepository users, TimeProvider 
         if (u is null && kindClaim is null)
         {
             var anon = string.Equals(principal.FindFirst("is_anonymous")?.Value, "true", StringComparison.OrdinalIgnoreCase);
-            var email = principal.FindFirst("email")?.Value;
             var now = time.GetUtcNow();
-            var name = anon ? AccountService.GuestName() : DisplayFromEmail(email);
+            // Never derive a display name from the email (it leaked part of the address on friend-request cards before a username was set).
+            var name = anon ? AccountService.GuestName() : "Player";
             await users.CreateAsync(new UserRecord(id, anon ? AccountKind.Guest : AccountKind.Account, null, name, "a1", null, "UTC", 1, null, null, now, now),
                 CancellationToken.None);
             u = await users.GetAsync(id, CancellationToken.None);
@@ -139,13 +139,6 @@ public sealed class TttClaimsTransformation(IUserRepository users, TimeProvider 
         ci.AddClaim(new Claim(TttClaims.Kind, AuthKinds.ToClaim(u.Kind)));
         ci.AddClaim(new Claim(TttClaims.Name, u.DisplayName));
         return clone;
-    }
-
-    private static string DisplayFromEmail(string? email)
-    {
-        var local = (email ?? "").Split('@')[0];
-        var clean = new string(local.Where(ch => char.IsLetterOrDigit(ch) || ch is '_' or '.').Take(24).ToArray());
-        return clean.Length == 0 ? "Player" : clean;
     }
 }
 

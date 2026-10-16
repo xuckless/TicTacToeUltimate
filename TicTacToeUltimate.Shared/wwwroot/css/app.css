@@ -203,6 +203,7 @@ body { min-height: 100dvh; }
   background: color-mix(in srgb, #ff8a2a 18%, var(--surface)); border: 2px solid color-mix(in srgb, #ff8a2a 55%, var(--line)); font: 500 14px/1.2 var(--font-sans); }
 .daily-nudge > span { flex: 1; }
 .daily-nudge .t-icon { color: #ff8a2a; }
+.t-pill.at-risk { box-shadow: 0 0 0 2px color-mix(in srgb, var(--streak) 60%, transparent); }
 .diamond-pill .t-icon, .diamond-pill svg { color: var(--diamond, #38d6ff); width: 18px; height: 18px; fill: none; }
 .diamond-chip { background: color-mix(in srgb, var(--diamond, #38d6ff) 20%, var(--surface)); color: var(--diamond, #38d6ff); margin-top: 6px; }
 .wallet-card { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius-lg, 18px); padding: 14px 16px; box-shadow: var(--ledge-neutral); }

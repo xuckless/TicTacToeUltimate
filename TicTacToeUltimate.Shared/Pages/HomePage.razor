@@ -10,7 +10,7 @@
 <PageTitle>Tic Tac Toe Ultimate</PageTitle>
 
 <header class="home-header">
-    <span style="display:flex;gap:6px;align-items:center"><StreakPill Count="@(Progress.State.Progress?.Streak.Current ?? 0)" AtRisk="@(Progress.State.Progress?.Streak.AtRisk ?? false)" /><DiamondPill /></span>
+    <span style="display:flex;gap:6px;align-items:center"><StreakPill Count="@(Progress.State.Progress?.Streak.Current ?? 0)" AtRisk="@(Progress.State.Progress?.Streak.AtRisk ?? false)" Freezes="@(Progress.State.Progress?.Streak.FreezesBanked ?? 0)" /><DiamondPill /></span>
     <h1 class="brand" style="margin:0"><BounceText Text="Tic Tac Toe" /> <BounceText Text="Ultimate" Class="ultimate" /></h1>
     <a class="t-iconbtn t-iconbtn--round" href="settings" aria-label="Settings"><Icon Name="settings" /></a>
 </header>
