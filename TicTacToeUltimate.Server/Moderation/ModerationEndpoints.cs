@@ -11,6 +11,9 @@ public static class ModerationEndpoints
     public static IServiceCollection AddTttModeration(this IServiceCollection services)
     {
         services.AddSingleton<ModerationService>();
+        services.AddSingleton(_ => new ChatFilter());   // not the IEnumerable<string> ctor (DI would pass an empty list)
+        services.AddSingleton<AiModerator>();
+        services.AddSingleton<ReportService>();
         return services;
     }
 
@@ -28,6 +31,11 @@ public static class ModerationEndpoints
         api.MapPost("/appeals", async (AppealRequestDto req, HttpContext http, ModerationService m, CancellationToken ct) =>
             await m.AppealAsync(http.Me().UserId, req, ct) is { } error ? ApiErrors.Problem(error == ErrorCodes.AlreadyAppealed ? 409 : 400, error) : Results.NoContent())
             .RequireAuthorization().RequireRateLimiting(RateLimits.Social);
+        api.MapPost("/reports", async (ReportRequestDto req, HttpContext http, ReportService reports, CancellationToken ct) =>
+        {
+            var (id, error, status) = await reports.ReportAsync(http.Me(), req, ct);
+            return error is null ? Results.Ok(new ReportResultDto(id!.Value)) : ApiErrors.Problem(status, error);
+        }).RequireAuthorization().RequireRateLimiting(RateLimits.Social);
         return app;
     }
 }

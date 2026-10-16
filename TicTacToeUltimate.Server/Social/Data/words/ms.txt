@@ -1,0 +1,11 @@
+# ms: chat/username filter seed list (machine-assembled 2026-10-16, native review pending).
+# !term = severe (inside words, spacing tricks), term = whole word, ?term = mild (AI check).
+!pukimak
+!kote
+puki
+?babi
+?bodoh
+sial
+celaka
+lancau
+?bangang

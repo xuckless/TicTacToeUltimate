@@ -100,6 +100,12 @@ public interface IChatRepository
     Task<IReadOnlyList<DirectMessageRecord>> PageAsync(Guid a, Guid b, long? beforeId, int take, CancellationToken ct); // newest first
     Task MarkReadAsync(Guid reader, Guid other, long upToId, DateTimeOffset at, CancellationToken ct);
     Task<IReadOnlyDictionary<Guid, int>> UnreadCountsAsync(Guid reader, CancellationToken ct);
+    /// <summary>One message (hidden ones included: moderation evidence).</summary>
+    Task<DirectMessageRecord?> GetAsync(long id, CancellationToken ct);
+    /// <summary>Moderation: hide a message (kept as evidence, never shown again).</summary>
+    Task HideAsync(long id, DateTimeOffset at, CancellationToken ct);
+    /// <summary>Moderation "purge chat": hide everything a player sent. Returns how many.</summary>
+    Task<int> HideAllFromAsync(Guid sender, DateTimeOffset at, CancellationToken ct);
 }
 
 public sealed record StreakRecord(Guid UserId, int Current, int Best, DateOnly? LastPlayedDay, int Freezes);

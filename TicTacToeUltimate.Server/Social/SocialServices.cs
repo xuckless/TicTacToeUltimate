@@ -85,7 +85,8 @@ public sealed class ChatRateLimiter(TimeProvider time, double perSecond = 1, int
 public sealed class SocialService(
     IUserRepository users, IFriendRepository friends, IChatRepository chat, IPlayerCardService cards, PresenceLookup presence,
     IUserNotifier notifier, ProfanityFilter profanity, ChatRateLimiter limiter, TimeProvider time, ILogger<SocialService> logger,
-    TicTacToeUltimate.Server.Moderation.ModerationService? moderation = null)
+    TicTacToeUltimate.Server.Moderation.ModerationService? moderation = null, TicTacToeUltimate.Server.Moderation.ChatFilter? filter = null,
+    TicTacToeUltimate.Server.Moderation.AiModerator? ai = null)
 {
     /// <summary>Max DM length.</summary>
     public const int MaxBody = 500;
@@ -184,10 +185,40 @@ public sealed class SocialService(
         if (!await friends.AreFriendsAsync(me, to, ct)) return (null, ErrorCodes.NotFriends);
         if (!limiter.TryTake(me)) return (null, ErrorCodes.RateLimited);
         if (moderation is not null && await moderation.ChatMuteAsync(me, ct) is not null) return (null, ErrorCodes.ChatMuted);
-        var rec = await chat.AppendAsync(me, to, profanity.Mask(text), time.GetUtcNow(), ct);
+        // Auto-moderation (owner decision 2026-10-16): abusive words are never delivered and cost a strike; links, emails and
+        // phone numbers are refused without one; anything doubtful is delivered, then checked by the AI and hidden if abusive.
+        var check = text.StartsWith("emote:", StringComparison.Ordinal) || filter is null
+            ? new TicTacToeUltimate.Server.Moderation.FilterResult(TicTacToeUltimate.Server.Moderation.FilterVerdict.Allow)
+            : filter.Check(text);
+        if (check.Verdict == TicTacToeUltimate.Server.Moderation.FilterVerdict.Block)
+        {
+            if (moderation is not null) await moderation.StrikeAsync(me, "filter_block", text, new { check.Term, check.Reason, to }, ct);
+            return (null, ErrorCodes.MessageBlocked);
+        }
+        if (check.Verdict == TicTacToeUltimate.Server.Moderation.FilterVerdict.Reject) return (null, ErrorCodes.MessageBlocked);
+        var rec = await chat.AppendAsync(me, to, filter is null ? profanity.Mask(text) : text, time.GetUtcNow(), ct);
         var dto = ToDto(rec);
         await Safe(() => notifier.ToUsersAsync([to, me], c => c.DirectMessage(dto)));
+        if (check.Verdict == TicTacToeUltimate.Server.Moderation.FilterVerdict.Uncertain && ai is { Enabled: true }) _ = ReviewLaterAsync(rec, check);
         return (dto, null);
+    }
+
+    /// <summary>The AI looks at a delivered, doubtful message; if abusive it disappears for both sides and the sender gets a strike.</summary>
+    private async Task ReviewLaterAsync(DirectMessageRecord rec, TicTacToeUltimate.Server.Moderation.FilterResult check)
+    {
+        try
+        {
+            var verdict = await ai!.CheckAsync(rec.Body, isUsername: false, CancellationToken.None);
+            if (verdict is not { Abusive: true, Severity: >= 2 }) return;
+            await chat.HideAsync(rec.Id, time.GetUtcNow(), CancellationToken.None);
+            var hiddenForSender = new MessageHiddenDto(rec.Id, rec.To);
+            var hiddenForRecipient = new MessageHiddenDto(rec.Id, rec.From);
+            await Safe(() => notifier.ToUserAsync(rec.From, c => c.MessageHidden(hiddenForSender)));
+            await Safe(() => notifier.ToUserAsync(rec.To, c => c.MessageHidden(hiddenForRecipient)));
+            if (moderation is not null)
+                await moderation.StrikeAsync(rec.From, "ai_hide", rec.Body, new { check.Term, verdict.Category, verdict.Severity, verdict.Reason, messageId = rec.Id }, CancellationToken.None);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException) { logger.LogWarning(ex, "AI review of message {Id} failed", rec.Id); }
     }
 
     /// <summary>Marks messages from <paramref name="friendId"/> read.</summary>

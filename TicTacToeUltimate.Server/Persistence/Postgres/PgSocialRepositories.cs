@@ -125,8 +125,27 @@ public sealed class PgChatRepository(PgDb db) : IChatRepository
         await using var c = await db.Source.OpenConnectionAsync(ct);
         return (await c.QueryAsync<Row>("""
             select * from direct_messages where least(sender, recipient) = least(@a::uuid, @b::uuid) and greatest(sender, recipient) = greatest(@a::uuid, @b::uuid)
-              and (@beforeId::bigint is null or id < @beforeId::bigint) order by id desc limit @take
+              and (@beforeId::bigint is null or id < @beforeId::bigint) and hidden_at is null order by id desc limit @take
             """, new { a, b, beforeId, take })).Select(Map).ToList();
+    }
+
+    public async Task<DirectMessageRecord?> GetAsync(long id, CancellationToken ct)
+    {
+        await using var c = await db.Source.OpenConnectionAsync(ct);
+        var r = await c.QuerySingleOrDefaultAsync<Row>("select id, sender, recipient, body, sent_at, read_at from direct_messages where id=@id", new { id });
+        return r is null ? null : Map(r);
+    }
+
+    public async Task HideAsync(long id, DateTimeOffset at, CancellationToken ct)
+    {
+        await using var c = await db.Source.OpenConnectionAsync(ct);
+        await c.ExecuteAsync("update direct_messages set hidden_at=@at where id=@id and hidden_at is null", new { id, at = at.UtcDateTime });
+    }
+
+    public async Task<int> HideAllFromAsync(Guid sender, DateTimeOffset at, CancellationToken ct)
+    {
+        await using var c = await db.Source.OpenConnectionAsync(ct);
+        return await c.ExecuteAsync("update direct_messages set hidden_at=@at where sender=@sender and hidden_at is null", new { sender, at = at.UtcDateTime });
     }
 
     public async Task MarkReadAsync(Guid reader, Guid other, long upToId, DateTimeOffset at, CancellationToken ct)

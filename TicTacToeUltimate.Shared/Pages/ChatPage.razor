@@ -16,11 +16,14 @@
 }
 else
 {
-    <MessageList Messages="Messages" MeId="@(Session.State.Me?.UserId ?? Guid.Empty)" />
+    <MessageList Messages="Messages" MeId="@(Session.State.Me?.UserId ?? Guid.Empty)" OnReport="m => _reportMessage = m" />
+    <ReportSheet Open="_reportMessage is not null" Kind="@ReportKinds.Chat" Target="UserId" TargetName="@(Friend.Player.DisplayName)"
+                 MessageId="_reportMessage?.Id" OnClose="() => _reportMessage = null" />
     <Composer OnSend="Send" />
 }
 
 @code {
+    private DirectMessageDto? _reportMessage;
     /// <summary>Friend id.</summary>
     [Parameter] public Guid UserId { get; set; }
 

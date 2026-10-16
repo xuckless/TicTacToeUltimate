@@ -56,7 +56,9 @@ else
             {
                 <Button Variant="ghost" Small="true" OnClick="Block">Block</Button>
             }
+            <Button Variant="ghost" Small="true" OnClick="() => _reporting = true" data-testid="report-player"><Icon Name="flag" /> Report</Button>
         </div>
+        <ReportSheet Open="_reporting" Kind="@ReportKinds.Profile" Target="_profile.Card.UserId" TargetName="@_profile.Card.DisplayName" OnClose="() => _reporting = false" />
     }
     <StatGrid Stats="_profile.Stats" Ratings="_profile.Ratings" />
     <TierLadder Tier="ranked?.Tier" />
@@ -65,6 +67,7 @@ else
 }
 
 @code {
+    private bool _reporting;
     private ProfileDto? _profile;
     private bool _loading = true;
 

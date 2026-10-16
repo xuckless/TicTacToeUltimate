@@ -116,7 +116,22 @@ public sealed class InMemoryChatRepository : IChatRepository
 {
     private readonly Lock _gate = new();
     private readonly List<DirectMessageRecord> _messages = [];
+    private readonly HashSet<long> _hidden = [];
     private long _nextId;
+
+    public Task<DirectMessageRecord?> GetAsync(long id, CancellationToken ct) { lock (_gate) return Task.FromResult(_messages.FirstOrDefault(m => m.Id == id)); }
+
+    public Task HideAsync(long id, DateTimeOffset at, CancellationToken ct) { lock (_gate) _hidden.Add(id); return Task.CompletedTask; }
+
+    public Task<int> HideAllFromAsync(Guid sender, DateTimeOffset at, CancellationToken ct)
+    {
+        lock (_gate)
+        {
+            var n = 0;
+            foreach (var m in _messages.Where(m => m.From == sender)) if (_hidden.Add(m.Id)) n++;
+            return Task.FromResult(n);
+        }
+    }
 
     internal void RemoveUser(Guid id)
     {
@@ -137,7 +152,7 @@ public sealed class InMemoryChatRepository : IChatRepository
     {
         lock (_gate)
             return Task.FromResult<IReadOnlyList<DirectMessageRecord>>(_messages
-                .Where(m => ((m.From == a && m.To == b) || (m.From == b && m.To == a)) && (beforeId is null || m.Id < beforeId))
+                .Where(m => ((m.From == a && m.To == b) || (m.From == b && m.To == a)) && (beforeId is null || m.Id < beforeId) && !_hidden.Contains(m.Id))
                 .OrderByDescending(m => m.Id).Take(take).ToList());
     }
 

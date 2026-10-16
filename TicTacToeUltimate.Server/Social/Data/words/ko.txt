@@ -1,0 +1,14 @@
+# ko: chat/username filter seed list (machine-assembled 2026-10-16, native review pending).
+# !term = severe (inside words, spacing tricks), term = whole word, ?term = mild (AI check).
+!씨발
+!시발
+!병신
+!좆
+!니애미
+!느금마
+개새끼
+지랄
+미친놈
+썅
+?바보
+?멍청

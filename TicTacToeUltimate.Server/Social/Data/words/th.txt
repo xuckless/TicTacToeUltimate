@@ -1,0 +1,12 @@
+# th: chat/username filter seed list (machine-assembled 2026-10-16, native review pending).
+# !term = severe (inside words, spacing tricks), term = whole word, ?term = mild (AI check).
+!เหี้ย
+!ควย
+หี
+!เย็ด
+!อีดอก
+สัส
+ไอ้สัตว์
+ส้นตีน
+?โง่
+?ควาย

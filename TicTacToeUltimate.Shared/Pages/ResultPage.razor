@@ -58,7 +58,10 @@ else
                         <Button Variant="primary" Small="true" OnClick="AddFriend" Disabled="_busy" data-testid="result-add-friend"><Icon Name="social" /> Add friend</Button>
                     }
                     else if (_friendSent) { <span class="t-chip">Request sent</span> }
+                    <Button Variant="ghost" Small="true" OnClick="() => _reportCheating = true" data-testid="report-cheating"><Icon Name="flag" /> Report</Button>
                 </div>
+                <ReportSheet Open="_reportCheating" Kind="@ReportKinds.Cheating" Target="opp.Player.UserId" TargetName="@opp.Player.DisplayName"
+                             GameId="_view.Snapshot.MatchId" OnClose="() => _reportCheating = false" />
                 <div class="rs-player">
                     <Avatar Name="@me?.Player.DisplayName" AvatarId="@me?.Player.AvatarId" />
                     <span class="t-small">You</span>
@@ -138,6 +141,7 @@ else
 }
 
 @code {
+    private bool _reportCheating;
     private MatchView? _view;
     private bool _loading = true, _busy, _completedReported, _emotes, _emotesOpen = true, _friendSent, _rematchExpired;
     private int _rematchLeft = 60;

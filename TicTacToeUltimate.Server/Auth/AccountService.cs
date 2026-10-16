@@ -8,7 +8,7 @@ using TicTacToeUltimate.Server.Social;
 namespace TicTacToeUltimate.Server.Auth;
 
 /// <summary>Username normalization and validation (§6.7 Usernames).</summary>
-public sealed partial class UsernameRules(ProfanityFilter profanity)
+public sealed partial class UsernameRules(ProfanityFilter profanity, TicTacToeUltimate.Server.Moderation.ChatFilter? filter = null)
 {
     private static readonly HashSet<string> Reserved = new(StringComparer.Ordinal)
     {
@@ -23,7 +23,8 @@ public sealed partial class UsernameRules(ProfanityFilter profanity)
     public static string Normalize(string? s) => (s ?? "").Trim().ToLowerInvariant();
 
     /// <summary>True when the normalized name is allowed.</summary>
-    public bool IsValid(string normalized) => Pattern().IsMatch(normalized) && !Reserved.Contains(normalized) && !profanity.ContainsBlocked(normalized);
+    public bool IsValid(string normalized) => Pattern().IsMatch(normalized) && !Reserved.Contains(normalized) && !profanity.ContainsBlocked(normalized)
+        && filter?.UsernameBlocked(normalized) != true;
 }
 
 /// <summary>Result with an error code (ErrorCodes) on failure.</summary>
@@ -165,6 +166,14 @@ public sealed class AccountService(IUserRepository users, RatingService ratings,
         if (u.Kind == AccountKind.Guest) return OpResult<MeDto>.Fail(ErrorCodes.GuestNotAllowed, 403);
         var name = UsernameRules.Normalize(req.Username);
         if (!rules.IsValid(name)) return OpResult<MeDto>.Fail(ErrorCodes.UsernameInvalid, 400);
+        // Second opinion on names the word lists can't judge (owner decision 2026-10-16); a refused name is a strike.
+        if (services.GetService(typeof(TicTacToeUltimate.Server.Moderation.AiModerator)) is TicTacToeUltimate.Server.Moderation.AiModerator ai
+            && await ai.CheckAsync(name, isUsername: true, ct) is { Abusive: true, Severity: >= 2 } verdict)
+        {
+            if (services.GetService(typeof(TicTacToeUltimate.Server.Moderation.ModerationService)) is TicTacToeUltimate.Server.Moderation.ModerationService mod)
+                await mod.StrikeAsync(userId, "username_block", name, verdict, ct);
+            return OpResult<MeDto>.Fail(ErrorCodes.UsernameBlocked, 400);
+        }
         if (u.Username is null && u.TosAcceptedAt is null && !req.AcceptTos) return OpResult<MeDto>.Fail(ErrorCodes.TosRequired, 400);
         var first = u.Username is null;
         var result = await users.SetUsernameAsync(userId, name, req.AcceptTos ? time.GetUtcNow() : null, ct);
