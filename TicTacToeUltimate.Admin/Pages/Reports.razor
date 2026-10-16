@@ -1,0 +1,49 @@
+@page "/reports"
+@inject AdminApi Api
+
+<PageTitle>Reports · TTT Admin</PageTitle>
+<div class="page-head"><div><h1>Reports</h1><span class="muted small">Reported chat is checked by the AI first; confirmed abuse is handled automatically and closed.</span></div>
+    <div class="seg" role="group" aria-label="Status">@foreach (var s in new[] { "open", "actioned", "dismissed", "all" }) { <button type="button" class="@(_status == s ? "on" : "")" @onclick="() => Load(s)">@s</button> }</div></div>
+
+@if (_list.Length == 0) { <p class="muted">Nothing here.</p> }
+<div class="grid" style="gap:10px">
+@foreach (var r in _list)
+{
+    <div class="card">
+        <div class="row" style="justify-content:space-between">
+            <div><strong>@r.Kind</strong> · @r.Reason · <a href="@($"players/{r.Target}")">@r.TargetName</a> <span class="muted">reported by</span> <a href="@($"players/{r.Reporter}")">@r.ReporterName</a></div>
+            <span class="muted small"><Ago At="r.CreatedAt" /> · @r.Status@(r.Resolution is { } res ? $" · {res}" : "")</span>
+        </div>
+        @if (r.Note is { } note) { <p class="small">“@note”</p> }
+        @if (r.AiVerdictJson is { } ai) { <p class="small"><span class="badge accent">AI</span> <span class="mono">@ai</span></p> }
+        <details><summary>Evidence</summary><pre>@Pretty(r.EvidenceJson)</pre></details>
+        @if (r.Status == "open")
+        {
+            <div class="row" style="margin-top:8px">
+                <button class="btn" type="button" @onclick='() => Resolve(r, "dismissed", null)'>Dismiss</button>
+                <button class="btn" type="button" @onclick='() => Resolve(r, "actioned", new PenaltyRequestDto("warn", Reason(r), null))'>Warn</button>
+                <button class="btn" type="button" @onclick='() => Resolve(r, "actioned", new PenaltyRequestDto("chat_mute", Reason(r), 1440))'>Mute 24 h</button>
+                <button class="btn danger" type="button" @onclick='() => Resolve(r, "actioned", new PenaltyRequestDto("ban", Reason(r), 10080))'>Ban 7 d</button>
+                @if (r.Kind == "profile") { <button class="btn" type="button" @onclick='() => Resolve(r, "actioned", new PenaltyRequestDto("username_reset", Reason(r), null))'>Reset username</button> }
+                @if (r.Kind == "cheating") { <button class="btn" type="button" @onclick='() => Resolve(r, "actioned", new PenaltyRequestDto("shadow", "Shadow pool after a cheating report", null))'>Shadow pool</button> }
+            </div>
+        }
+    </div>
+}
+</div>
+
+@code {
+    private string _status = "open";
+    private AdminReportDto[] _list = [];
+
+    protected override Task OnInitializedAsync() => Load("open");
+    private async Task Load(string status) { _status = status; _list = await Api.ReportsAsync(status) ?? []; }
+    private static string Reason(AdminReportDto r) => r.Kind switch { "chat" => $"A message you sent was reported: {r.Reason.Replace('_', ' ')}.", "profile" => "Your profile broke the rules.", _ => "Fair play." };
+    private async Task Resolve(AdminReportDto r, string status, PenaltyRequestDto? p) { await Api.ResolveAsync(r.Id, new ResolveReportDto(status, p?.Kind ?? status, p)); await Load(_status); }
+
+    private static string Pretty(string json)
+    {
+        try { return JsonSerializer.Serialize(JsonDocument.Parse(json).RootElement, new JsonSerializerOptions { WriteIndented = true }); }
+        catch (JsonException) { return json; }
+    }
+}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>TTT Admin</title>
+    <base href="/" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="css/admin.css" />
+    <script>
+        // Theme before first paint: stored choice, else the OS setting (data-theme only when the admin forces one).
+        window.adminTheme = {
+            set(mode) {
+                try { localStorage.setItem('adm.theme', mode); } catch { }
+                if (mode === 'light' || mode === 'dark') document.documentElement.setAttribute('data-theme', mode);
+                else document.documentElement.removeAttribute('data-theme');
+            }
+        };
+        try { const t = localStorage.getItem('adm.theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch { }
+    </script>
+</head>
+<body>
+    <div id="app"><div class="adm-boot">Loading admin…</div></div>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

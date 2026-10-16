@@ -9,6 +9,7 @@
       "TicTacToeUltimate.Shared\\TicTacToeUltimate.Shared.csproj",
       "TicTacToeUltimate.Web\\TicTacToeUltimate.Web.csproj",
       "TicTacToeUltimate.Web.Client\\TicTacToeUltimate.Web.Client.csproj",
+      "TicTacToeUltimate.Admin\\TicTacToeUltimate.Admin.csproj",
       "tools\\TicTacToeUltimate.RulesTool\\TicTacToeUltimate.RulesTool.csproj",
       "tests\\TicTacToeUltimate.Client.Tests\\TicTacToeUltimate.Client.Tests.csproj",
       "tests\\TicTacToeUltimate.Engine.Tests\\TicTacToeUltimate.Engine.Tests.csproj",

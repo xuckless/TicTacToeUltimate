@@ -1,0 +1,11 @@
+<div class="card tile">
+    <div class="label">@Label</div>
+    <div class="value">@Value</div>
+    @if (Sub is not null) { <div class="sub">@Sub</div> }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public string Value { get; set; } = "";
+    [Parameter] public string? Sub { get; set; }
+}

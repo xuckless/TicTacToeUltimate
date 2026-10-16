@@ -1,0 +1,52 @@
+@inherits LayoutComponentBase
+@inject AdminApi Api
+@inject Theme Theme
+@implements IDisposable
+
+<div class="adm">
+    <nav class="adm-nav" aria-label="Admin">
+        <a class="adm-brand" href=""><img src="img/logo.svg" alt="" /> <span>TTT Admin</span></a>
+        @foreach (var g in Groups)
+        {
+            <div class="adm-nav-group">@g.Title</div>
+            @foreach (var (href, label) in g.Links)
+            {
+                <NavLink href="@href" Match="@(href.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix)">@label</NavLink>
+            }
+        }
+        <div class="adm-nav-foot">
+            <span class="muted small">@(_me?.Email ?? "…")@(_me?.DevBypass == true ? " (dev)" : "")</span>
+            <select aria-label="Theme" @onchange="SetTheme">
+                <option value="system">System theme</option><option value="light">Light</option><option value="dark">Dark</option>
+            </select>
+        </div>
+    </nav>
+    <main class="adm-main">
+        @if (_error is not null) { <div class="adm-banner" role="alert">@_error <button type="button" class="link" @onclick="() => _error = null">Dismiss</button></div> }
+        @Body
+    </main>
+</div>
+
+@code {
+    private AdminMeDto? _me;
+    private string? _error;
+
+    private static readonly (string Title, (string Href, string Label)[] Links)[] Groups =
+    [
+        ("Overview", [("", "Overview"), ("live", "Live"), ("analytics", "Analytics"), ("ads", "Ads"), ("campaigns", "Campaigns")]),
+        ("Moderation", [("players", "Players"), ("reports", "Reports"), ("automod", "Auto-mod"), ("suspicious", "Suspicious"), ("appeals", "Appeals")]),
+        ("Quality", [("crashes", "Crashes"), ("bugs", "Bug reports")]),
+        ("Operations", [("infra", "Infrastructure"), ("logs", "Logs"), ("audit", "Audit log")]),
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        Api.Failed += OnFailed;
+        _me = await Api.MeAsync();
+    }
+
+    private async Task SetTheme(ChangeEventArgs e) => await Theme.SetAsync(e.Value?.ToString() ?? "system");
+
+    private void OnFailed(string message) { _error = message; InvokeAsync(StateHasChanged); }
+    public void Dispose() => Api.Failed -= OnFailed;
+}

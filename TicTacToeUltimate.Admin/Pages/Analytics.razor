@@ -1,0 +1,56 @@
+@page "/analytics"
+@inject AdminApi Api
+
+<PageTitle>Analytics · TTT Admin</PageTitle>
+<div class="page-head">
+    <div><h1>Analytics</h1><span class="muted small">First-party events (raw kept 14 days, daily totals forever). Days are UTC.</span></div>
+    <div class="row"><button class="btn" type="button" @onclick="Recompute">Recompute today</button>
+    <div class="seg" role="group" aria-label="Range">@foreach (var d in new[] { 7, 30, 90 }) { <button type="button" class="@(_days == d ? "on" : "")" @onclick="() => Load(d)">@(d)d</button> }</div></div>
+</div>
+
+<div class="grid two">
+    <div class="card"><h2>Daily active players</h2><LineChart AriaLabel="Daily active players" Series="@([new("Players", "--s1", Fmt.PerDay(_s.GetValueOrDefault("dau")))])" /></div>
+    <div class="card"><h2>Sessions</h2><LineChart AriaLabel="Sessions per day" Series="@([new("Sessions", "--s1", Fmt.PerDay(_s.GetValueOrDefault("sessions")))])" /></div>
+    <div class="card"><h2>Games by mode</h2><BarList Rows="@Bars("games")" /></div>
+    <div class="card"><h2>Top pages</h2><BarList Rows="@Bars("page_views", 12)" /></div>
+    <div class="card"><h2>Languages</h2><BarList Rows="@Bars("dau_locale", 12)" /></div>
+    <div class="card"><h2>Countries</h2><BarList Rows="@Bars("dau_country", 12)" /></div>
+    <div class="card"><h2>Platforms</h2><BarList Rows="@Bars("dau_platform")" /></div>
+    <div class="card"><h2>Retention</h2>
+        <p class="muted small" style="margin-top:0">Share of each day's new players who came back after 1, 7 and 30 days.</p>
+        <div class="table-wrap"><table><thead><tr><th>Cohort</th><th class="num">New</th><th class="num">D1</th><th class="num">D7</th><th class="num">D30</th></tr></thead><tbody>
+        @foreach (var day in Cohorts)
+        {
+            var size = Value("new_users", day);
+            <tr><td>@day.ToString("yyyy-MM-dd")</td><td class="num">@size</td><td class="num">@Ret("retention_d1", day, size)</td><td class="num">@Ret("retention_d7", day, size)</td><td class="num">@Ret("retention_d30", day, size)</td></tr>
+        }
+        </tbody></table></div>
+    </div>
+</div>
+
+@code {
+    private int _days = 30;
+    private Dictionary<string, StatPointDto[]> _s = [];
+    private static readonly string[] Metrics = ["dau", "sessions", "games", "page_views", "dau_locale", "dau_country", "dau_platform", "new_users", "retention_d1", "retention_d7", "retention_d30"];
+
+    protected override Task OnInitializedAsync() => Load(30);
+
+    // Daily totals are rebuilt hourly by the server; this rebuilds today and yesterday now.
+    private async Task Recompute() { await Api.RollupAsync(); await Load(_days); }
+
+    private async Task Load(int days)
+    {
+        _days = days;
+        var tasks = Metrics.ToDictionary(m => m, m => Api.StatsAsync(m, days));
+        await Task.WhenAll(tasks.Values);
+        _s = tasks.ToDictionary(kv => kv.Key, kv => kv.Value.Result ?? []);
+    }
+
+    private IReadOnlyList<BarList.Row> Bars(string metric, int take = 8) =>
+        Fmt.PerDim(_s.GetValueOrDefault(metric)).Take(take).Select(d => new BarList.Row(d.Dim.Length == 0 ? "(none)" : d.Dim, [new BarList.Part(d.Dim, d.Value, "--s1")])).ToList();
+
+    private IEnumerable<DateOnly> Cohorts => (_s.GetValueOrDefault("new_users") ?? []).Select(p => p.Day).Distinct().OrderByDescending(d => d).Take(30);
+    private long Value(string metric, DateOnly day) => (_s.GetValueOrDefault(metric) ?? []).Where(p => p.Day == day).Sum(p => p.Value);
+    private string Ret(string metric, DateOnly day, long size) =>
+        size == 0 || day.AddDays(int.Parse(metric[11..])) > DateOnly.FromDateTime(DateTime.UtcNow) ? "–" : Fmt.Pct(Value(metric, day) / (double)size);
+}

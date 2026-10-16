@@ -1,0 +1,11 @@
+{
+  // admin.alidirect.dev: the admin site plus a proxy for /api/admin to the game server's origin.
+  // Protect the hostname with Cloudflare Access first; Access adds Cf-Access-Jwt-Assertion, which the server verifies.
+  "name": "tictactoeultimate-admin",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-01",
+  "routes": [{ "pattern": "admin.alidirect.dev", "custom_domain": true }],
+  "vars": { "ORIGIN": "https://136-108-68-64.sslip.io" },
+  // wrangler secret put ORIGIN_SECRET -c deploy/cloudflare/admin/wrangler.jsonc   (same value as the game worker's)
+  "assets": { "directory": "../../admin/out", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/api/*"] }
+}

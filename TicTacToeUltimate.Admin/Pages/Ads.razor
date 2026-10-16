@@ -1,0 +1,32 @@
+@page "/ads"
+@inject AdminApi Api
+
+<PageTitle>Ads · TTT Admin</PageTitle>
+<div class="page-head"><div><h1>Ads</h1><span class="muted small">Impressions and no-fills reported by the apps. Revenue stays in AdMob / AdSense for now.</span></div></div>
+
+<div class="grid two">
+    <div class="card"><h2>Per day</h2><LineChart AriaLabel="Ad events per day" Series="@Series" /></div>
+    <div class="card"><h2>By type and platform (30 days)</h2>
+        <div class="table-wrap"><table><thead><tr><th>Event</th><th>Platform</th><th class="num">Count</th></tr></thead><tbody>
+        @foreach (var (dim, v) in Fmt.PerDim(_points)) { var parts = dim.Split('|'); <tr><td>@parts[0]</td><td>@(parts.Length > 1 ? parts[1] : "")</td><td class="num">@Fmt.N(v)</td></tr> }
+        </tbody></table></div>
+    </div>
+</div>
+
+@code {
+    private StatPointDto[] _points = [];
+
+    protected override async Task OnInitializedAsync() => _points = await Api.StatsAsync("ads", 30) ?? [];
+
+    // Three named series at most (validated slots); everything else folds into "Other".
+    private IReadOnlyList<LineChart.LineSeries> Series
+    {
+        get
+        {
+            var types = _points.GroupBy(p => p.Dim.Split('|')[0]).OrderByDescending(g => g.Sum(p => p.Value)).ToList();
+            var list = types.Take(3).Select((g, i) => new LineChart.LineSeries(g.Key, Fmt.Slot(i), Fmt.PerDay(g))).ToList();
+            if (types.Count > 3) list.Add(new("Other", "--s-other", Fmt.PerDay(types.Skip(3).SelectMany(g => g))));
+            return list;
+        }
+    }
+}

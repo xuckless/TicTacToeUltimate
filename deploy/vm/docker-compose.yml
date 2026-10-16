@@ -21,6 +21,8 @@ services:
     env_file: server.env
     environment:
       Ttt__Bots__Service__Url: http://bots:8080
+      Ttt__Admin__OpsUrl: http://ops:8090
+      Ttt__Admin__OpsToken: ${OPS_TOKEN}
     mem_limit: 600m
   bots:
     image: ttt-bots:amd64
@@ -36,6 +38,22 @@ services:
       - bots-state:/state
     depends_on: [server]
     mem_limit: 160m
+  # ttt-ops: host + container metrics and container logs for admin.alidirect.dev (Infrastructure / Logs pages).
+  # Private network only (Caddy never routes to it). Root to read the Docker socket; it only makes GET calls.
+  ops:
+    image: ttt-bots:amd64
+    entrypoint: ["/opsd"]
+    restart: always
+    user: "0"
+    environment:
+      OPS_TOKEN: ${OPS_TOKEN}
+      GOMEMLIMIT: 24MiB
+    volumes:
+      - /proc:/host/proc:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ops-state:/data
+    mem_limit: 40m
 volumes:
   caddy-data:
   bots-state:
+  ops-state:

@@ -1,0 +1,90 @@
+@* Daily line chart: one axis, thin 2px lines, recessive grid, crosshair + tooltip on hover, legend for 2+ series, table view below. *@
+<div class="chart-box" @onmouseleave="() => _hover = null">
+    @if (Days.Count == 0)
+    {
+        <p class="muted small">No data yet.</p>
+    }
+    else
+    {
+        <svg class="chart" viewBox="0 0 @W @H" role="img" aria-label="@AriaLabel">
+            @foreach (var t in Ticks)
+            {
+                var y = Y(t);
+                <line class="grid-line" x1="@L" x2="@(W - R)" y1="@F(y)" y2="@F(y)" />
+                @SvgText(L - 6, y + 4, "end", Short(t))
+            }
+            @for (var i = 0; i < Days.Count; i += Math.Max(1, (Days.Count + 3) / 4))
+            {
+                @SvgText(X(i), H - 4, "middle", Days[i].ToString("MMM d", CultureInfo.InvariantCulture))
+            }
+            @foreach (var (s, si) in Series.Select((s, i) => (s, i)))
+            {
+                <polyline class="line" style="stroke:var(@s.Color)" points="@Points(s)" />
+            }
+            @if (_hover is int h)
+            {
+                <line class="cross" x1="@F(X(h))" x2="@F(X(h))" y1="@T" y2="@(H - B)" />
+                @foreach (var s in Series)
+                {
+                    <circle class="dot" cx="@F(X(h))" cy="@F(Y(ValueAt(s, Days[h])))" r="4" style="fill:var(@s.Color)" />
+                }
+            }
+            @for (var i = 0; i < Days.Count; i++)
+            {
+                var idx = i;
+                var step = (W - L - R) / Math.Max(1, Days.Count - 1);
+                <rect class="hit" x="@F(X(i) - step / 2)" y="@T" width="@F(Math.Max(step, 4))" height="@(H - T - B)" @onmouseenter="() => _hover = idx" />
+            }
+        </svg>
+        @if (_hover is int hv)
+        {
+            <div class="chart-tip" style="left:@F(Math.Min(78, X(hv) / W * 100))%;top:0">
+                <strong>@Days[hv].ToString("ddd, MMM d", CultureInfo.InvariantCulture)</strong>
+                @foreach (var s in Series) { <div><i class="swatch" style="background:var(@s.Color)"></i>@s.Name: <strong>@ValueAt(s, Days[hv]).ToString("N0", CultureInfo.InvariantCulture)</strong></div> }
+            </div>
+        }
+        @if (Series.Count > 1)
+        {
+            <div class="legend">@foreach (var s in Series) { <span><i style="background:var(@s.Color)"></i>@s.Name</span> }</div>
+        }
+        <details><summary class="small">Table</summary>
+            <div class="table-wrap"><table><thead><tr><th>Day</th>@foreach (var s in Series) { <th class="num">@s.Name</th> }</tr></thead>
+            <tbody>@foreach (var d in Days.AsEnumerable().Reverse()) { <tr><td>@d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</td>@foreach (var s in Series) { <td class="num">@ValueAt(s, d).ToString("N0", CultureInfo.InvariantCulture)</td> }</tr> }</tbody></table></div>
+        </details>
+    }
+</div>
+
+@code {
+    public sealed record LineSeries(string Name, string Color, IReadOnlyDictionary<DateOnly, long> Values);
+
+    [Parameter, EditorRequired] public IReadOnlyList<LineSeries> Series { get; set; } = [];
+    [Parameter] public string AriaLabel { get; set; } = "Chart";
+
+    // Sized close to a dashboard card so 11px axis text stays ~11px after scaling.
+    private const double W = 380, H = 170, L = 36, R = 8, T = 8, B = 20;
+    private int? _hover;
+    private List<DateOnly> Days = [];
+    private double _max = 1;
+    private IEnumerable<double> Ticks => Enumerable.Range(0, 5).Select(i => _max * i / 4);
+
+    protected override void OnParametersSet()
+    {
+        var all = Series.SelectMany(s => s.Values.Keys).ToList();
+        if (all.Count == 0) { Days = []; return; }
+        var from = all.Min(); var to = all.Max();
+        Days = Enumerable.Range(0, to.DayNumber - from.DayNumber + 1).Select(from.AddDays).ToList();
+        _max = Nice(Math.Max(1, Series.SelectMany(s => s.Values.Values).DefaultIfEmpty(0).Max()));
+    }
+
+    private static double Nice(double v) { var p = Math.Pow(10, Math.Floor(Math.Log10(v))); foreach (var m in new[] { 1, 2, 2.5, 5, 10 }) if (m * p >= v) return m * p; return 10 * p; }
+    private static long ValueAt(LineSeries s, DateOnly d) => s.Values.TryGetValue(d, out var v) ? v : 0;
+    private double X(int i) => L + (W - L - R) * (Days.Count == 1 ? 0.5 : i / (double)(Days.Count - 1));
+    private double Y(double v) => H - B - (H - T - B) * v / _max;
+    private string Points(LineSeries s) => string.Join(' ', Days.Select((d, i) => $"{F(X(i))},{F(Y(ValueAt(s, d)))}"));
+    // Razor reserves <text> inside code blocks, so SVG labels are emitted as markup.
+    private static MarkupString SvgText(double x, double y, string anchor, string label) =>
+        new($"<text class=\"axis-text\" x=\"{F(x)}\" y=\"{F(y)}\" text-anchor=\"{anchor}\">{System.Net.WebUtility.HtmlEncode(label)}</text>");
+
+    private static string F(double v) => v.ToString("0.#", CultureInfo.InvariantCulture);
+    private static string Short(double v) => v >= 1_000_000 ? $"{v / 1_000_000:0.#}M" : v >= 1000 ? $"{v / 1000:0.#}k" : v.ToString("0", CultureInfo.InvariantCulture);
+}

@@ -5,10 +5,13 @@ WORKDIR /src/bots
 COPY bots/go.mod bots/go.sum ./
 RUN go mod download
 COPY bots/ ./
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/botd ./cmd/botd
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/botd ./cmd/botd \
+ && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/opsd ./cmd/opsd
 
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=build /out/botd /botd
+# The same image runs the ttt-ops sidecar with entrypoint /opsd (deploy/vm/docker-compose.yml, service "ops").
+COPY --from=build /out/opsd /opsd
 # Personas (bot API keys) come from a mounted secret: TTT_BOT_PERSONAS=/secrets/personas.json
 ENV TTT_BOT_LISTEN=:8080
 EXPOSE 8080

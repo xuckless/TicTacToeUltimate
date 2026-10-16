@@ -56,6 +56,14 @@ public static class AdminEndpoints
             return Results.Ok((await a.StatsAsync(metric, to.AddDays(-Math.Clamp(days ?? 30, 1, 365)), to, ct)).Select(r => new StatPointDto(r.Day, r.Dim, r.Value)).ToArray());
         });
 
+        admin.MapPost("/stats/rollup", async (IAnalyticsRepository a, TimeProvider t, CancellationToken ct) =>
+        {
+            var today = DateOnly.FromDateTime(t.GetUtcNow().UtcDateTime);
+            await a.RollupAsync(today.AddDays(-1), ct);
+            await a.RollupAsync(today, ct);
+            return Results.Ok(new AdminActionResultDto(true));
+        });
+
         // ---------- players ----------
         admin.MapGet("/players", async (string? q, IUserRepository users, IModerationRepository mod, PresenceTracker presence, CancellationToken ct) =>
         {

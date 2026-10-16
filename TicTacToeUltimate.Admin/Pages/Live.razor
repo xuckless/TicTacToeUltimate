@@ -1,0 +1,52 @@
+@page "/live"
+@inject AdminApi Api
+@inject Microsoft.Extensions.Configuration.IConfiguration Config
+@implements IDisposable
+
+<PageTitle>Live · TTT Admin</PageTitle>
+<div class="page-head"><div><h1>Live</h1><span class="muted small">Refreshes every 5 s.</span></div></div>
+@if (_live is { } l)
+{
+    <div class="grid tiles">
+        <StatTile Label="Online" Value="@Fmt.N(l.Online)" />
+        <StatTile Label="Connections" Value="@Fmt.N(l.Connections)" />
+        <StatTile Label="Live matches" Value="@Fmt.N(l.LiveMatches)" Sub="@($"{l.BotMatches} with a bot")" />
+        <StatTile Label="Bots waiting" Value="@Fmt.N(l.BotsSeeking)" />
+        <StatTile Label="In queue" Value="@Fmt.N(l.Queues.Values.Sum())" />
+        <StatTile Label="Shadow pool" Value="@Fmt.N(l.ShadowPlayers)" />
+    </div>
+    <div class="grid two">
+        <div class="card"><h2>Queues</h2>
+            @if (l.Queues.Count == 0) { <p class="muted small">Nobody is queued.</p> }
+            else { <table><thead><tr><th>Time control</th><th class="num">Waiting</th></tr></thead><tbody>@foreach (var q in l.Queues.OrderByDescending(q => q.Value)) { <tr><td>@q.Key</td><td class="num">@q.Value</td></tr> }</tbody></table> }
+        </div>
+        <div class="card"><h2>Matches</h2>
+            @if (l.Matches.Length == 0) { <p class="muted small">No live matches.</p> }
+            else
+            {
+                <div class="table-wrap"><table><thead><tr><th>Players</th><th>Mode</th><th class="num">Ply</th><th class="num">Watching</th><th></th></tr></thead><tbody>
+                @foreach (var m in l.Matches)
+                {
+                    <tr><td>@m.Players[0]@(m.Kinds[0] == "Bot" ? " (bot)" : "") vs @m.Players[1]@(m.Kinds[1] == "Bot" ? " (bot)" : "")</td><td>@m.TimeControl</td>
+                        <td class="num">@m.Ply</td><td class="num">@m.Spectators</td><td><a href="@($"{GameUrl}/match/{m.MatchId}")" target="_blank" rel="noopener">Watch</a></td></tr>
+                }
+                </tbody></table></div>
+            }
+        </div>
+    </div>
+}
+else { <p class="muted">Loading…</p> }
+
+@code {
+    private LiveDto? _live;
+    private Timer? _timer;
+    private string GameUrl => (Config["Game:BaseUrl"] ?? "").TrimEnd('/');
+
+    protected override async Task OnInitializedAsync()
+    {
+        _live = await Api.LiveAsync();
+        _timer = new Timer(async _ => { _live = await Api.LiveAsync() ?? _live; await InvokeAsync(StateHasChanged); }, null, 5000, 5000);
+    }
+
+    public void Dispose() => _timer?.Dispose();
+}

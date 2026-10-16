@@ -1,0 +1,92 @@
+@page "/infra"
+@inject AdminApi Api
+@implements IDisposable
+
+<PageTitle>Infrastructure · TTT Admin</PageTitle>
+<div class="page-head"><div><h1>Infrastructure</h1><span class="muted small">Game VM (via the ttt-ops sidecar), containers, the game server, Supabase and Cloudflare. Refreshes every 15 s.</span></div></div>
+@if (_i is { } i)
+{
+    @if (i.Alerts.Length > 0)
+    {
+        <div class="alert-list">@foreach (var a in i.Alerts) { <div class="card"><span class="badge @(a.Level == "error" ? "critical" : "warning")">@(a.Level == "error" ? "Critical" : "Warning")</span> @a.Text</div> }</div>
+    }
+    <div class="grid two">
+        <div class="card"><h2>VM</h2>
+            @if (i.Host is { } h)
+            {
+                <div class="grid" style="gap:10px">
+                    <Gauge Label="CPU" Percent="h.CpuPercent" Text="@($"{h.CpuPercent:0}% · load {h.Load1:0.00}")" />
+                    <Gauge Label="Memory" Percent="@(Pct(h.MemUsedBytes, h.MemTotalBytes))" Text="@($"{Fmt.Bytes(h.MemUsedBytes)} of {Fmt.Bytes(h.MemTotalBytes)} · swap {Fmt.Bytes(h.SwapUsedBytes)}")" />
+                    <Gauge Label="Disk" Percent="@(Pct(h.DiskUsedBytes, h.DiskTotalBytes))" Warn="75" Crit="85" Text="@($"{Fmt.Bytes(h.DiskUsedBytes)} of {Fmt.Bytes(h.DiskTotalBytes)}")" />
+                    <Gauge Label="Egress this month (free tier 1 GB)" Percent="@(Pct(h.EgressMonthBytes, i.EgressFreeTierBytes))" Text="@($"{Fmt.Bytes(h.EgressMonthBytes)} of {Fmt.Bytes(i.EgressFreeTierBytes)}")" />
+                    <div class="small muted">Network now: ↓ @Fmt.Bytes(h.RxBytesPerSec)/s · ↑ @Fmt.Bytes(h.TxBytesPerSec)/s · up @Fmt.Duration(h.UptimeSeconds)</div>
+                </div>
+            }
+            else { <p class="muted small">No host metrics: deploy the ttt-ops sidecar and set Ttt__Admin__OpsUrl / OpsToken.</p> }
+        </div>
+        <div class="card"><h2>Game server</h2>
+            @{ var s = i.Server; }
+            <table class="kv"><tbody>
+                <tr><td>Version</td><td class="mono">@s.Version · @s.BuildSha</td></tr>
+                <tr><td>Running since</td><td><Ago At="s.StartedAt" /></td></tr>
+                <tr><td>Memory (GC heap)</td><td>@Fmt.Bytes(s.GcHeapBytes)</td></tr>
+                <tr><td>Busy threads</td><td>@s.ThreadPoolThreads</td></tr>
+                <tr><td>Connections · live matches</td><td>@s.Connections · @s.LiveMatches</td></tr>
+                <tr><td>Tablebase</td><td>@s.TablebaseStatus</td></tr>
+            </tbody></table>
+        </div>
+        @if (i.Series.Length > 1)
+        {
+            <div class="card"><h2>CPU % (24 h)</h2><LineChart AriaLabel="CPU" Series="@([new("CPU %", "--s1", Hourly(x => (long)x.Cpu))])" /></div>
+            <div class="card"><h2>Network (24 h, bytes/s)</h2><LineChart AriaLabel="Network" Series="@([new("In", "--s1", Hourly(x => x.Rx)), new("Out", "--s2", Hourly(x => x.Tx))])" /></div>
+        }
+        <div class="card" style="grid-column:1/-1"><h2>Containers</h2>
+            @if (i.Containers.Length == 0) { <p class="muted small">No container data.</p> }
+            else
+            {
+                <div class="table-wrap"><table><thead><tr><th>Name</th><th>Image</th><th>State</th><th class="num">CPU</th><th class="num">Memory</th><th class="num">Restarts</th><th>Started</th></tr></thead><tbody>
+                @foreach (var c in i.Containers)
+                {
+                    <tr><td>@c.Name</td><td class="mono">@c.Image</td><td><span class="badge @(c.State == "running" ? "good" : "critical")">@c.State</span></td>
+                        <td class="num">@($"{c.CpuPercent:0.0}%")</td><td class="num">@Fmt.Bytes(c.MemBytes)@(c.MemLimitBytes > 0 ? $" / {Fmt.Bytes(c.MemLimitBytes)}" : "")</td>
+                        <td class="num">@c.Restarts</td><td>@if (c.StartedAt is { } st) { <Ago At="st" /> }</td></tr>
+                }
+                </tbody></table></div>
+            }
+        </div>
+        <div class="card"><h2>Supabase</h2>
+            @if (i.Usage is { } u)
+            {
+                <Gauge Label="Database (free plan 500 MB)" Percent="@(Pct(u.DbBytes, u.DbLimitBytes))" Text="@($"{Fmt.Bytes(u.DbBytes)} of {Fmt.Bytes(u.DbLimitBytes)}")" />
+                <p class="small muted">Storage (bug screenshots): @Fmt.Bytes(u.StorageBytes)</p>
+                <table class="kv"><tbody>@foreach (var t in u.Tables) { <tr><td>@t.Key</td><td class="num">@Fmt.Bytes(t.Value)</td></tr> }</tbody></table>
+            }
+            else { <p class="muted small">In-memory storage (no database configured).</p> }
+        </div>
+        <div class="card"><h2>Cloudflare (24 h)</h2>
+            @if (i.Usage?.WorkerRequests24h is long req) { <p>Worker requests: <strong>@Fmt.N(req)</strong> · errors: <strong>@Fmt.N(i.Usage.WorkerErrors24h ?? 0)</strong></p> }
+            else { <p class="muted small">Set Ttt__Cloudflare__ApiToken and AccountId (Account Analytics: read) to see Worker traffic.</p> }
+        </div>
+    </div>
+}
+else { <p class="muted">Loading…</p> }
+
+@code {
+    private InfraDto? _i;
+    private Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _i = await Api.InfraAsync();
+        _timer = new Timer(async _ => { _i = await Api.InfraAsync() ?? _i; await InvokeAsync(StateHasChanged); }, null, 15_000, 15_000);
+    }
+
+    private static double Pct(long v, long total) => total <= 0 ? 0 : v * 100.0 / total;
+
+    // The line chart is daily; for the 24 h view the series is keyed by hour (DateOnly carries the hour index).
+    private IReadOnlyDictionary<DateOnly, long> Hourly(Func<InfraSampleDto, long> pick) =>
+        (_i?.Series ?? []).GroupBy(x => DateOnly.FromDayNumber(DateOnly.FromDateTime(DateTime.UtcNow).DayNumber - (int)((DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - x.AtMs) / 3_600_000)))
+            .ToDictionary(g => g.Key, g => (long)g.Average(pick));
+
+    public void Dispose() => _timer?.Dispose();
+}

@@ -116,8 +116,11 @@ public sealed class InfraService(IHttpClientFactory http, IOptions<AdminOptions>
         ThreadPool.GetAvailableThreads(out var workers, out _);
         ThreadPool.GetMaxThreads(out var maxWorkers, out _);
         var tablebase = services.GetService<ITablebaseCache>()?.GetStatus(RuleSet.Default).ToString() ?? "n/a";
-        return new ServerHealthDto(asm?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "dev",
-            Environment.GetEnvironmentVariable("TTT_BUILD_SHA") ?? "local", Started, GC.GetTotalMemory(false), maxWorkers - workers,
+        // "1.0.0+<git sha>" (SourceLink): the sha doubles as the build id when TTT_BUILD_SHA isn't set by the image build.
+        var info = asm?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "dev";
+        var parts = info.Split('+', 2);
+        var sha = Environment.GetEnvironmentVariable("TTT_BUILD_SHA") is { Length: > 0 } env ? env : parts.Length > 1 ? parts[1] : "local";
+        return new ServerHealthDto(parts[0], sha.Length > 12 ? sha[..12] : sha, Started, GC.GetTotalMemory(false), maxWorkers - workers,
             services.GetService<ServerDrain>()?.ConnectionCount ?? 0, services.GetService<MatchGateway>()?.LiveMatches().Count ?? 0, tablebase);
     }
 

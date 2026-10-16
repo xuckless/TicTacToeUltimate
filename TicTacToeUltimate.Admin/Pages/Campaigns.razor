@@ -1,0 +1,51 @@
+@page "/campaigns"
+@inject AdminApi Api
+@inject IJSRuntime Js
+
+<PageTitle>Campaigns · TTT Admin</PageTitle>
+<div class="page-head"><div><h1>Campaigns</h1><span class="muted small">Short links count clicks and send each visitor to the App Store, Play or the web game. Installs inside the stores are in App Store Connect / Play Console.</span></div></div>
+
+<div class="card" style="margin-bottom:12px">
+    <h2>New campaign</h2>
+    <div class="row">
+        <input type="text" placeholder="slug (a-z, 0-9, -)" @bind="_slug" aria-label="Slug" />
+        <input type="text" placeholder="Name" @bind="_name" aria-label="Name" />
+        <select @bind="_channel" aria-label="Channel">
+            @foreach (var c in new[] { "apple-search-ads", "tiktok", "instagram", "youtube", "reddit", "x", "discord", "email", "influencer", "other" }) { <option value="@c">@c</option> }
+        </select>
+        <input type="text" placeholder="Web URL (optional)" @bind="_web" aria-label="Web URL" />
+        <button class="btn primary" type="button" @onclick="Create" disabled="@(_slug.Length < 2 || _name.Length == 0)">Create</button>
+    </div>
+    @if (_created is not null) { <p class="small">Link: <span class="mono">@_created</span> <button class="link" type="button" @onclick="() => Copy(_created)">Copy</button></p> }
+</div>
+
+<div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>Campaign</th><th>Channel</th><th>Link</th><th class="num">Clicks</th><th class="num">Sign-ups</th><th class="num">Active (peak day)</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var c in _list.Where(c => !c.Archived))
+    {
+        <tr><td><strong>@c.Name</strong><div class="muted small">created <Ago At="c.CreatedAt" /></div></td><td>@c.Channel</td>
+            <td><span class="mono">@c.Link</span> <button class="link small" type="button" @onclick="() => Copy(c.Link)">Copy</button></td>
+            <td class="num">@Fmt.N(c.Clicks)</td><td class="num">@Fmt.N(c.Signups)</td><td class="num">@Fmt.N(c.Active)</td>
+            <td><button class="btn" type="button" @onclick="() => Archive(c.Slug)">Archive</button></td></tr>
+    }
+    </tbody>
+</table></div></div>
+
+@code {
+    private CampaignDto[] _list = [];
+    private string _slug = "", _name = "", _channel = "apple-search-ads", _web = "";
+    private string? _created;
+
+    protected override async Task OnInitializedAsync() => _list = await Api.CampaignsAsync() ?? [];
+
+    private async Task Create()
+    {
+        var r = await Api.CreateCampaignAsync(new CreateCampaignDto(_slug.Trim().ToLowerInvariant(), _name.Trim(), _channel, null, null, string.IsNullOrWhiteSpace(_web) ? null : _web.Trim()));
+        if (r is { Ok: true }) { _created = r.Url; _slug = _name = _web = ""; _list = await Api.CampaignsAsync() ?? []; }
+        else _created = r?.Error == "exists" ? "That slug is taken." : "Use 2-40 characters: a-z, 0-9 and -.";
+    }
+
+    private async Task Archive(string slug) { await Api.ArchiveCampaignAsync(slug); _list = await Api.CampaignsAsync() ?? []; }
+    private async Task Copy(string text) => await Js.InvokeVoidAsync("navigator.clipboard.writeText", text);
+}

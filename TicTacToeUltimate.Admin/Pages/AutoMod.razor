@@ -1,0 +1,14 @@
+@page "/automod"
+@inject AdminApi Api
+
+<PageTitle>Auto-mod · TTT Admin</PageTitle>
+<div class="page-head"><div><h1>Auto-moderation</h1><span class="muted small">Every strike: blocked words, AI-hidden messages, refused usernames, confirmed reports. Strikes count for 30 days.</span></div></div>
+<div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>When</th><th>Player</th><th>Kind</th><th>Text</th><th>Detail</th></tr></thead>
+    <tbody>@foreach (var e in _list) { <tr><td><Ago At="e.At" /></td><td><a href="@($"players/{e.UserId}")">@e.UserName</a></td><td>@e.Kind</td><td class="mono">@e.Text</td><td class="mono small">@e.DetailJson</td></tr> }</tbody>
+</table></div></div>
+
+@code {
+    private AdminModEventDto[] _list = [];
+    protected override async Task OnInitializedAsync() => _list = await Api.ModEventsAsync() ?? [];
+}

@@ -1,0 +1,53 @@
+@page "/"
+@inject AdminApi Api
+@implements IDisposable
+
+<PageTitle>Overview · TTT Admin</PageTitle>
+<div class="page-head"><div><h1>Overview</h1><span class="muted small">Live numbers refresh every 10 s; charts are daily (UTC).</span></div></div>
+
+@if (_o is { } o)
+{
+    <div class="grid tiles">
+        <StatTile Label="Online now" Value="@Fmt.N(o.Live.Online)" Sub="@($"{o.Live.Connections} connections")" />
+        <StatTile Label="Live matches" Value="@Fmt.N(o.Live.LiveMatches)" Sub="@($"{o.Live.BotMatches} vs bots")" />
+        <StatTile Label="Players today" Value="@Fmt.N(Today("dau"))" Sub="@($"yesterday {Fmt.N(Yesterday("dau"))}")" />
+        <StatTile Label="New players today" Value="@Fmt.N(Today("new_users"))" />
+        <StatTile Label="Open reports" Value="@Fmt.N(o.OpenReports)" />
+        <StatTile Label="Open appeals" Value="@Fmt.N(o.OpenAppeals)" />
+        <StatTile Label="Crash groups (24 h)" Value="@Fmt.N(o.CrashGroups24h)" />
+        <StatTile Label="Shadow pool" Value="@Fmt.N(o.ShadowPlayers)" />
+    </div>
+    <div class="grid two">
+        <div class="card"><h2>Daily active players</h2><LineChart AriaLabel="Daily active players" Series="@([new("Players", "--s1", Fmt.PerDay(o.Series.GetValueOrDefault("dau")))])" /></div>
+        <div class="card"><h2>Games finished</h2><LineChart AriaLabel="Games per day" Series="@([new("Games", "--s1", Fmt.PerDay(o.Series.GetValueOrDefault("games")))])" /></div>
+        <div class="card"><h2>New players</h2><LineChart AriaLabel="New players per day" Series="@NewUsers(o)" /></div>
+        <div class="card"><h2>Players by platform (30 days)</h2><BarList Rows="@Bars(o.Series.GetValueOrDefault("dau_platform"))" /></div>
+    </div>
+}
+else { <p class="muted">Loading…</p> }
+
+@code {
+    private OverviewDto? _o;
+    private Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _o = await Api.OverviewAsync(30);
+        _timer = new Timer(async _ => { if (await Api.LiveAsync() is { } live && _o is not null) { _o = _o with { Live = live }; await InvokeAsync(StateHasChanged); } }, null, 10_000, 10_000);
+    }
+
+    private long Day(string metric, DateOnly d) => _o?.Series.GetValueOrDefault(metric)?.Where(p => p.Day == d).Sum(p => p.Value) ?? 0;
+    private long Today(string m) => Day(m, DateOnly.FromDateTime(DateTime.UtcNow));
+    private long Yesterday(string m) => Day(m, DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1));
+
+    private static IReadOnlyList<LineChart.LineSeries> NewUsers(OverviewDto o) =>
+    [
+        new("Accounts", "--s1", Fmt.PerDay(o.Series.GetValueOrDefault("new_users")?.Where(p => p.Dim == "account"))),
+        new("Guests", "--s2", Fmt.PerDay(o.Series.GetValueOrDefault("new_users")?.Where(p => p.Dim == "guest"))),
+    ];
+
+    private static IReadOnlyList<BarList.Row> Bars(StatPointDto[]? points) =>
+        Fmt.PerDim(points).Select((d, i) => new BarList.Row(d.Dim, [new BarList.Part(d.Dim, d.Value, "--s1")])).ToList();
+
+    public void Dispose() => _timer?.Dispose();
+}

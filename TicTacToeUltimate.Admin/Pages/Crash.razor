@@ -1,0 +1,69 @@
+@page "/crashes/{Fingerprint}"
+@inject AdminApi Api
+
+<PageTitle>Crash · TTT Admin</PageTitle>
+@if (_d is { } d)
+{
+    var g = d.Group;
+    <div class="page-head">
+        <div><h1>@g.Title</h1>
+            <div class="row small muted"><span class="mono">@g.Fingerprint</span><span>@g.Kind</span><span>seen @g.Count×</span><span>@d.Users24h players in 24 h</span>
+                <span>first <Ago At="g.FirstSeen" /></span><span>last <Ago At="g.LastSeen" /></span><span class="badge">@g.Status</span></div></div>
+        <div class="row">
+            @if (g.GhIssueUrl is { } url) { <a class="btn" href="@url" target="_blank" rel="noopener">Open GitHub issue</a> }
+            else { <button class="btn primary" type="button" @onclick="File" disabled="@_busy">Create GitHub issue</button> }
+            @if (g.Status != "fixed") { <button class="btn" type="button" @onclick='() => Status("fixed")'>Mark fixed</button> }
+            @if (g.Status != "ignored") { <button class="btn" type="button" @onclick='() => Status("ignored")'>Ignore</button> }
+            @if (g.Status != "open") { <button class="btn" type="button" @onclick='() => Status("open")'>Reopen</button> }
+        </div>
+    </div>
+    @if (_msg is not null) { <div class="adm-banner" role="status">@_msg</div> }
+    <div class="grid" style="gap:12px">
+    @foreach (var r in d.Reports)
+    {
+        <div class="card">
+            <div class="row" style="justify-content:space-between">
+                <div><strong>@(r.Username ?? (r.UserId is null ? "Signed-out player" : r.UserId.ToString()))</strong> · @r.Platform @r.AppVersion · @r.Os · @r.Device</div>
+                <span class="muted small"><Ago At="r.At" /></span>
+            </div>
+            <div class="small muted">@r.Browser · @r.Locale · @r.Screen · route <span class="mono">@r.Route</span></div>
+            @if (r.Description is { } desc) { <p>“@desc”</p> }
+            @if (r.ScreenshotPath is { } shot) { <img class="shot" src="@Api.ScreenshotUrl(shot)" alt="Screenshot attached to the report" loading="lazy" /> }
+            @if (r.ExceptionType is not null)
+            {
+                <p><span class="mono">@r.ExceptionType</span>: @r.Message @if (r.Component is { } c) { <span class="badge accent">@c</span> }</p>
+                <details open><summary>Stack trace</summary><pre>@r.Stack</pre></details>
+            }
+            <details><summary>Recent actions</summary><pre>@Lines(r.TrailJson)</pre></details>
+            <details><summary>Recent logs</summary><pre>@Lines(r.LogsJson)</pre></details>
+        </div>
+    }
+    </div>
+}
+else { <p class="muted">Loading…</p> }
+
+@code {
+    [Parameter] public string Fingerprint { get; set; } = "";
+    private CrashGroupDetailDto? _d;
+    private string? _msg;
+    private bool _busy;
+
+    protected override async Task OnParametersSetAsync() => _d = await Api.CrashAsync(Fingerprint);
+
+    private async Task File()
+    {
+        _busy = true;
+        var r = await Api.FileIssueAsync(Fingerprint);
+        _busy = false;
+        _msg = r is { Ok: true } ? "Issue created." : r?.Error == "github_not_configured" ? "Set Ttt__GitHub__Token on the server first." : "GitHub refused the issue.";
+        _d = await Api.CrashAsync(Fingerprint);
+    }
+
+    private async Task Status(string s) { await Api.CrashStatusAsync(Fingerprint, s); _d = await Api.CrashAsync(Fingerprint); }
+
+    private static string Lines(string json)
+    {
+        try { return string.Join('\n', JsonDocument.Parse(json).RootElement.EnumerateArray().Select(e => string.Join("  ", e.EnumerateObject().Select(p => p.Name == "atMs" ? DateTimeOffset.FromUnixTimeMilliseconds(p.Value.GetInt64()).ToLocalTime().ToString("HH:mm:ss") : p.Value.ToString())))); }
+        catch (Exception) { return json; }
+    }
+}

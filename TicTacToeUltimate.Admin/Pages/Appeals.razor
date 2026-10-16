@@ -1,0 +1,34 @@
+@page "/appeals"
+@inject AdminApi Api
+
+<PageTitle>Appeals · TTT Admin</PageTitle>
+<div class="page-head"><div><h1>Appeals</h1><span class="muted small">One appeal per mute or ban. Approving lifts the penalty right away.</span></div>
+    <div class="seg" role="group" aria-label="Status">@foreach (var s in new[] { "open", "approved", "denied", "all" }) { <button type="button" class="@(_status == s ? "on" : "")" @onclick="() => Load(s)">@s</button> }</div></div>
+@if (_list.Length == 0) { <p class="muted">Nothing here.</p> }
+<div class="grid" style="gap:10px">
+@foreach (var a in _list)
+{
+    <div class="card">
+        <div class="row" style="justify-content:space-between"><div><a href="@($"players/{a.UserId}")"><strong>@a.UserName</strong></a> appeals @(a.Penalty?.Kind ?? "a penalty")</div><span class="muted small"><Ago At="a.CreatedAt" /> · @a.Status</span></div>
+        @if (a.Penalty is { } p) { <p class="small muted">Penalty: @p.Reason (@p.Source@(p.EndsAt is { } e ? $", until {e.ToLocalTime():g}" : ""))</p> }
+        <p>“@a.Text”</p>
+        @if (a.Status == "open")
+        {
+            <div class="row"><input type="text" placeholder="Note (optional)" @bind="_notes[a.Id]" aria-label="Note" />
+                <button class="btn primary" type="button" @onclick="() => Decide(a, true)">Approve</button>
+                <button class="btn" type="button" @onclick="() => Decide(a, false)">Deny</button></div>
+        }
+        else if (a.DecisionNote is { } n) { <p class="small muted">Note: @n</p> }
+    </div>
+}
+</div>
+
+@code {
+    private string _status = "open";
+    private AdminAppealDto[] _list = [];
+    private readonly Dictionary<long, string> _notes = [];
+
+    protected override Task OnInitializedAsync() => Load("open");
+    private async Task Load(string status) { _status = status; _list = await Api.AppealsAsync(status) ?? []; foreach (var a in _list) _notes.TryAdd(a.Id, ""); }
+    private async Task Decide(AdminAppealDto a, bool approve) { await Api.DecideAsync(a.Id, new DecideAppealDto(approve, _notes.GetValueOrDefault(a.Id))); await Load(_status); }
+}

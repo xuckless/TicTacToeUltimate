@@ -1,0 +1,29 @@
+@inject AdminApi Api
+@inject NavigationManager Nav
+
+<div class="page-head"><div><h1>@Title</h1><span class="muted small">@Intro</span></div>
+    <div class="seg" role="group" aria-label="Status">@foreach (var s in new[] { "open", "fixed", "ignored", "all" }) { <button type="button" class="@(_status == s ? "on" : "")" @onclick="() => Load(s)">@s</button> }</div></div>
+<div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>@(Kind == "bug" ? "Report" : "Crash")</th><th class="num">Seen</th><th>Platforms</th><th>Last</th><th>Issue</th></tr></thead>
+    <tbody>
+    @foreach (var g in _list)
+    {
+        <tr class="clickable" @onclick='() => Nav.NavigateTo($"crashes/{Uri.EscapeDataString(g.Fingerprint)}")'>
+            <td>@g.Title</td><td class="num">@g.Count</td><td>@string.Join(", ", g.Platforms)</td><td><Ago At="g.LastSeen" /></td>
+            <td>@if (g.GhIssueUrl is { } url) { <a href="@url" target="_blank" rel="noopener" @onclick:stopPropagation="true">#@url.Split('/').Last()</a> }</td>
+        </tr>
+    }
+    </tbody>
+</table></div></div>
+@if (_list.Length == 0) { <p class="muted">Nothing here.</p> }
+
+@code {
+    [Parameter, EditorRequired] public string Kind { get; set; } = "crash";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Intro { get; set; } = "";
+    private string _status = "open";
+    private CrashGroupDto[] _list = [];
+
+    protected override Task OnInitializedAsync() => Load("open");
+    private async Task Load(string status) { _status = status; _list = await Api.CrashesAsync(Kind, status) ?? []; }
+}
