@@ -36,8 +36,29 @@ public readonly record struct OpResult<T>(T? Value, string? Error, int Status = 
 
 /// <summary>Account lifecycle: dev users, guest login, me, username, profile.</summary>
 public sealed class AccountService(IUserRepository users, RatingService ratings, UsernameRules rules, DevTokenIssuer issuer, TimeProvider time,
-    TicTacToeUltimate.Server.Persistence.IGuestMergeStore merge)
+    TicTacToeUltimate.Server.Persistence.IGuestMergeStore merge, TicTacToeUltimate.Server.Persistence.IAccountDeletionStore deletion,
+    SupabaseAdminClient supabaseAdmin, IServiceProvider services, ILogger<AccountService> log)
 {
+    /// <summary>
+    /// DELETE /api/me: resigns live games, anonymises the player and purges personal data (see IAccountDeletionStore), then deletes
+    /// the Supabase auth user when the admin key is configured. The caller must sign out; the id can never authenticate again.
+    /// </summary>
+    public async Task<OpResult<bool>> DeleteAccountAsync(Guid userId, CancellationToken ct)
+    {
+        var u = await users.GetAsync(userId, ct);
+        if (u is null || u.Kind == AccountKind.Bot) return OpResult<bool>.Fail(ErrorCodes.Validation, 400);
+        if (services.GetService(typeof(TicTacToeUltimate.Server.Abstractions.IMatchGateway)) is TicTacToeUltimate.Server.Abstractions.IMatchGateway gateway)
+            foreach (var matchId in gateway.ActiveMatchesFor(userId))
+            {
+                try { await gateway.ResignAsync(matchId, userId, ct); }
+                catch (Exception ex) when (ex is not OperationCanceledException) { log.LogWarning(ex, "Resign on delete failed for {Match}", matchId); }
+            }
+        await deletion.DeleteAsync(userId, ct);
+        if (u.Kind == AccountKind.Account) await supabaseAdmin.DeleteUserAsync(userId, ct);
+        log.LogInformation("Account {User} deleted", userId);
+        return new(true, null);
+    }
+
     /// <summary>Builds MeDto.</summary>
     public async Task<MeDto?> GetMeAsync(Guid userId, CancellationToken ct)
     {

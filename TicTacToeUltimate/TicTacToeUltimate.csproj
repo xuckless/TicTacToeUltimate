@@ -68,8 +68,13 @@
     <PropertyGroup Condition="'$(Configuration)'=='Release' And '$(TTT_IOS_CODESIGN_KEY)'!=''">
         <CodesignKey>$(TTT_IOS_CODESIGN_KEY)</CodesignKey>
         <CodesignProvision>$(TTT_IOS_PROVISIONING_PROFILE)</CodesignProvision>
+        <CodesignEntitlements>Platforms\iOS\Entitlements.plist</CodesignEntitlements>
         <ArchiveOnBuild>true</ArchiveOnBuild>
     </PropertyGroup>
+    <!-- Apple privacy manifest (required reason APIs + AdMob tracking). Missing manifest = ITMS-91053 at upload. -->
+    <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+        <BundleResource Include="Platforms\iOS\PrivacyInfo.xcprivacy" LogicalName="PrivacyInfo.xcprivacy" />
+    </ItemGroup>
 
     <!-- macOS store rule: both archs or x64 only -->
     <PropertyGroup Condition="'$(Configuration)'=='Release' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">

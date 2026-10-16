@@ -3,6 +3,7 @@ using TicTacToeUltimate.Contracts;
 using TicTacToeUltimate.Server.Abstractions;
 using TicTacToeUltimate.Server.Abstractions.Persistence;
 using TicTacToeUltimate.Server.Hosting;
+using TicTacToeUltimate.Server.Persistence;
 
 namespace TicTacToeUltimate.Server.Persistence.InMemory;
 
@@ -22,6 +23,19 @@ public sealed class InMemoryUserRepository : IUserRepository
             if (!_byId.TryGetValue(id, out var u) || u.Kind != AccountKind.Guest) return;
             _byId.Remove(id);
             if (u.DeviceId is { } d) _byDevice.Remove(d);
+        }
+    }
+
+    /// <summary>Account deletion: keeps the id (game FKs) but strips every personal field and marks the row Deleted.</summary>
+    internal void Anonymise(Guid id)
+    {
+        lock (_gate)
+        {
+            if (!_byId.TryGetValue(id, out var u)) return;
+            if (u.Username is { } n) _byName.Remove(n);
+            if (u.DeviceId is { } d) _byDevice.Remove(d);
+            _byId[id] = u with { Kind = AccountKind.Deleted, Username = null, DisplayName = DeletedPlayer.DisplayName, AvatarId = "a1", Country = null,
+                TimeZone = "UTC", RenamesLeft = 0, TosAcceptedAt = null, DeviceId = null };
         }
     }
 
@@ -131,6 +145,11 @@ public sealed class InMemoryRatingRepository(IUserRepository users) : IRatingRep
     private readonly Lock _gate = new();
     private readonly Dictionary<(Guid, RatingPool), RatingRecord> _map = [];
 
+    internal void RemoveUser(Guid id)
+    {
+        lock (_gate) foreach (var key in _map.Keys.Where(k => k.Item1 == id).ToArray()) _map.Remove(key);
+    }
+
     /// <summary>Guest merge: moves pools the account doesn't have yet.</summary>
     internal void Reassign(Guid from, Guid to)
     {
@@ -209,6 +228,19 @@ public sealed class InMemoryGameRepository : IGameRepository
     public Task<int> CountForUserAsync(Guid userId, CancellationToken ct)
     {
         lock (_gate) return Task.FromResult(_games.Values.Count(g => g.Setup.SeatA.UserId == userId || g.Setup.SeatB.UserId == userId));
+    }
+
+    /// <summary>Account deletion: the seat keeps its id but shows "Deleted player".</summary>
+    internal void AnonymiseSeats(Guid userId)
+    {
+        lock (_gate)
+            foreach (var g in _games.Values.ToArray())
+            {
+                var s = g.Setup;
+                if (s.SeatA.UserId != userId && s.SeatB.UserId != userId) continue;
+                SeatSetup Fix(SeatSetup seat) => seat.UserId == userId ? seat with { DisplayName = DeletedPlayer.DisplayName, Kind = AccountKind.Deleted } : seat;
+                _games[g.Id] = g with { Setup = s with { SeatA = Fix(s.SeatA), SeatB = Fix(s.SeatB) } };
+            }
     }
 
     /// <summary>Guest merge: rewrites seats of <paramref name="from"/> to <paramref name="to"/>.</summary>

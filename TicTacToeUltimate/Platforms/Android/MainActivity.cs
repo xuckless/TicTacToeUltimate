@@ -12,6 +12,9 @@ namespace TicTacToeUltimate;
                            ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
 [IntentFilter([Intent.ActionView], Categories = [Intent.CategoryDefault, Intent.CategoryBrowsable],
     DataScheme = MauiDeepLinkSource.Scheme, DataHost = "c")]
+// App Links: https://tictactoeultimate.alidirect.dev/c/{code} (verified through /.well-known/assetlinks.json).
+[IntentFilter([Intent.ActionView], Categories = [Intent.CategoryDefault, Intent.CategoryBrowsable], AutoVerify = true,
+    DataScheme = "https", DataHost = MauiDeepLinkSource.WebHost, DataPathPrefix = "/c/")]
 public class MainActivity : MauiAppCompatActivity
 {
     protected override void OnCreate(Bundle? savedInstanceState)

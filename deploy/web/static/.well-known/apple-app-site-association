@@ -1,0 +1,7 @@
+{
+  "applinks": {
+    "details": [
+      { "appIDs": ["TEAMID.com.wedirectsoftwares.tictactoeultimate"], "components": [ { "/": "/c/*", "comment": "challenge / room codes" } ] }
+    ]
+  }
+}

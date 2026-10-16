@@ -38,6 +38,7 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
     public Task<MeDto> GetMeAsync() => Get<MeDto>("api/me")!;
     /// <summary>PUT /api/me/username.</summary>
     public Task<MeDto> SetUsernameAsync(SetUsernameDto request) => Send<MeDto>(HttpMethod.Put, "api/me/username", request)!;
+    public Task DeleteAccountAsync() => Send<object>(HttpMethod.Delete, "api/me", null);
     /// <summary>PATCH /api/me.</summary>
     public Task<MeDto> UpdateProfileAsync(UpdateProfileDto request) => Send<MeDto>(HttpMethod.Patch, "api/me", request)!;
     /// <summary>GET /api/players/{username}; null on 404.</summary>

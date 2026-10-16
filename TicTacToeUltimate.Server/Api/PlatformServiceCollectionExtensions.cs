@@ -34,6 +34,8 @@ public static class PlatformServiceCollectionExtensions
 
         services.AddSingleton(_ => new ProfanityFilter());
         services.AddSingleton<UsernameRules>();
+        services.AddHttpClient(nameof(SupabaseAdminClient));
+        services.AddSingleton<SupabaseAdminClient>();
         services.AddSingleton<AccountService>();
         services.AddSingleton<IPlayerCardService, PlayerCardService>();
         services.AddSingleton<PresenceLookup>();
@@ -66,6 +68,7 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<IRewardLedger, PgRewardLedger>();
             services.AddSingleton<ISeasonRepository, PgSeasonRepository>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.PgGuestMergeStore>();
+            services.AddSingleton<TicTacToeUltimate.Server.Persistence.IAccountDeletionStore, TicTacToeUltimate.Server.Persistence.PgAccountDeletionStore>();
         }
         else
         {
@@ -81,6 +84,7 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<IRewardLedger, InMemoryRewardLedger>();
             services.AddSingleton<ISeasonRepository, InMemorySeasonRepository>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.InMemoryGuestMergeStore>();
+            services.AddSingleton<TicTacToeUltimate.Server.Persistence.IAccountDeletionStore, TicTacToeUltimate.Server.Persistence.InMemoryAccountDeletionStore>();
             services.AddHostedService<FixtureSeeder>();
         }
         return services;

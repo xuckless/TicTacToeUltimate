@@ -20,6 +20,15 @@ export default {
         return new Response(JSON.stringify({ error: 'server_unreachable' }), { status: 503, headers: { 'Content-Type': 'application/json', 'Retry-After': '3' } });
       }
     }
+    // Store deep-link verification files: Cloudflare serves /.well-known/* from assets, but the extension-less AASA must be JSON,
+    // and neither may fall back to the SPA page (that was the bug: both returned index.html with 200).
+    if (url.pathname.startsWith('/.well-known/')) {
+      const res = await env.ASSETS.fetch(request);
+      if (res.status !== 200 || (res.headers.get('content-type') || '').includes('text/html')) return new Response('Not found', { status: 404 });
+      const headers = new Headers(res.headers);
+      headers.set('Content-Type', 'application/json');
+      return new Response(res.body, { status: 200, headers });
+    }
     return env.ASSETS.fetch(request);
   },
 };

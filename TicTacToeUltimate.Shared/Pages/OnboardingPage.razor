@@ -1,5 +1,6 @@
 @page "/onboarding"
 @inject ISessionStore Session
+@inject TicTacToeUltimate.Client.Abstractions.ClientOptions Options
 @inject NavigationManager Nav
 
 <PageTitle>Welcome · Tic Tac Toe Ultimate</PageTitle>
@@ -26,11 +27,12 @@
     </div>
 </div>
 
-<label class="t-toggle"><span>I am 13 or older and accept the Terms of Service</span><input type="checkbox" @bind="_tos" /></label>
+<label class="t-toggle"><span>I am 13 or older and accept the <a href="@Web("terms/")" target="_blank" rel="noopener" @onclick:stopPropagation="true">Terms of Service</a> and <a href="@Web("privacy/")" target="_blank" rel="noopener" @onclick:stopPropagation="true">Privacy Policy</a></span><input type="checkbox" @bind="_tos" /></label>
 @if (_error is not null) { <p class="t-alert" role="alert">@_error</p> }
 <Button Variant="primary" Block="true" OnClick="Submit" Disabled="@(_busy || UsernameError is not null || _username.Length == 0 || !_tos)">Let's play</Button>
 
 @code {
+    private string Web(string path) => new Uri(Options.WebBaseUrl, path).ToString();
     private static readonly string[] Countries = ["US", "CA", "GB", "AU", "DE", "FR", "ES", "IT", "BR", "MX", "IN", "PK", "JP", "KR", "NL", "SE", "PL", "TR", "AE", "NG"];
     private static readonly System.Text.RegularExpressions.Regex UsernameRx = new("^[a-z0-9_]{3,16}$", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 

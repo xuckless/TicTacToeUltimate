@@ -19,4 +19,15 @@ public class AppDelegate : MauiUIApplicationDelegate
         MauiDeepLinkSource.Current?.Publish(url.AbsoluteString);
         return base.OpenUrl(application, url, options) || url.Scheme == MauiDeepLinkSource.Scheme;
     }
+
+    /// <summary>Universal links (https://tictactoeultimate.alidirect.dev/c/CODE).</summary>
+    public override bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
+    {
+        if (userActivity.ActivityType == NSUserActivityType.BrowsingWeb && userActivity.WebPageUrl is { } url)
+        {
+            MauiDeepLinkSource.Current?.Publish(url.AbsoluteString);
+            return true;
+        }
+        return base.ContinueUserActivity(application, userActivity, completionHandler);
+    }
 }

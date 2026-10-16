@@ -44,6 +44,8 @@ public sealed class FakeSessionStore() : FakeStore<SessionState>(MockupFixtures.
     /// <inheritdoc />
     public Task SignOutAsync() { Calls.Add("SignOut"); Set(State with { Status = SessionStatus.SignedOut, Me = null }); return Task.CompletedTask; }
     /// <inheritdoc />
+    public Task<string?> DeleteAccountAsync() { Calls.Add("DeleteAccount"); Set(State with { Status = SessionStatus.SignedOut, Me = null }); return Task.FromResult<string?>(null); }
+    /// <inheritdoc />
     public Task<CommandAckDto> SetUsernameAsync(string username, bool acceptTos) { Calls.Add($"SetUsername:{username}"); return Task.FromResult(new CommandAckDto(acceptTos, acceptTos ? null : ErrorCodes.TosRequired)); }
     /// <inheritdoc />
     public Task<CommandAckDto> UpdateProfileAsync(UpdateProfileDto patch) { Calls.Add("UpdateProfile"); return Task.FromResult(new CommandAckDto(true, null)); }

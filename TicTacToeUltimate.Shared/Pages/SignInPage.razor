@@ -51,7 +51,7 @@
     }
     }
 
-    @if (Session.State.Config?.DevAuth != false)
+    @if (Session.State.Config?.DevAuth == true)
     {
         <Card Title="Dev sign-in">
             @if (_users.Count == 0) { <span class="t-small t-muted">@(_loading ? "Loading dev users…" : "No dev users.")</span> }
@@ -103,7 +103,7 @@
         {
             _error = "That link has expired or was already used. Sign in, or ask for a new link.";
         }
-        if (Session.State.Config?.DevAuth != false)
+        if (Session.State.Config?.DevAuth == true)
         {
             try { _users = (await Session.GetDevUsersAsync()).ToList(); }
             catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { }

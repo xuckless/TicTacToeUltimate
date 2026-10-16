@@ -130,6 +130,7 @@ public sealed class TttClaimsTransformation(IUserRepository users, TimeProvider 
             u = await users.GetAsync(id, CancellationToken.None);
         }
         if (u is null) return principal;
+        if (u.Kind == AccountKind.Deleted) return new ClaimsPrincipal(new ClaimsIdentity());   // deleted accounts never authenticate again
 
         var clone = principal.Clone();
         var ci = (ClaimsIdentity)clone.Identity!;

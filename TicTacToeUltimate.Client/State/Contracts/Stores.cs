@@ -40,6 +40,8 @@ public interface ISessionStore : IStore<SessionState>
     /// <summary>Sets a new password for the signed-in email account.</summary>
     Task<string?> SetPasswordAsync(string password);
     Task SignOutAsync();
+    /// <summary>Deletes the account (server anonymises + purges), then signs out locally. Returns an error code or null.</summary>
+    Task<string?> DeleteAccountAsync();
     Task<CommandAckDto> SetUsernameAsync(string username, bool acceptTos);
     Task<CommandAckDto> UpdateProfileAsync(UpdateProfileDto patch);
 }

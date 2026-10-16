@@ -3,6 +3,8 @@
 @inject ISettingsStore Settings
 @inject ISessionStore Session
 @inject NavigationManager Nav
+@inject ToastService Toasts
+@inject TicTacToeUltimate.Client.Abstractions.ClientOptions Options
 
 <PageTitle>Settings · Tic Tac Toe Ultimate</PageTitle>
 <h1 class="t-title">Settings</h1>
@@ -49,10 +51,46 @@
         else if (me.RenamesLeft > 0) { <Button Variant="secondary" Href="onboarding">Edit profile</Button> }
     }
     <Button Variant="danger" OnClick="SignOut">Sign out</Button>
+    @if (Session.State.Me is not null)
+    {
+        <button type="button" class="t-linkbtn t-small t-muted" style="margin-top:8px;background:none;border:0;cursor:pointer;color:inherit;text-decoration:underline" @onclick="() => _confirmDelete = true" data-testid="delete-account">Delete my account…</button>
+    }
 </Card>
+
+<Card Title="About">
+    <div class="t-small t-muted">Tic Tac Toe Ultimate @Options.ClientVersion</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px">
+        <a href="@Web("privacy/")" target="_blank" rel="noopener">Privacy policy</a>
+        <a href="@Web("terms/")" target="_blank" rel="noopener">Terms of service</a>
+        <a href="@Web("how-to-play/")" target="_blank" rel="noopener">How to play</a>
+        <a href="mailto:hello@alidirect.dev">Contact</a>
+    </div>
+</Card>
+
+<Sheet Open="_confirmDelete" Title="Delete account?" OnClose="() => _confirmDelete = false">
+    <p class="t-body">This removes your @(Session.State.Me?.Kind == AccountKind.Guest ? "guest profile" : "account"), ratings, streak, quests, friends and messages right away. Finished games stay in your opponents' history as "Deleted player". This cannot be undone.</p>
+    <div style="display:grid;gap:10px;margin-top:12px">
+        <Button Variant="danger" Block="true" Disabled="_deleting" OnClick="DeleteAccount" data-testid="confirm-delete">@(_deleting ? "Deleting…" : "Delete everything")</Button>
+        <Button Variant="secondary" Block="true" OnClick="() => _confirmDelete = false">Keep my account</Button>
+    </div>
+</Sheet>
 
 @code {
     private SettingsState S => Settings.State;
+    private bool _confirmDelete, _deleting;
+
+    private string Web(string path) => new Uri(Options.WebBaseUrl, path).ToString();
+
+    private async Task DeleteAccount()
+    {
+        _deleting = true;
+        var error = await Session.DeleteAccountAsync();
+        _deleting = false;
+        if (error is not null) { Toasts.Show(error == ErrorCodes.RateLimited ? "Too many attempts. Try again in a minute." : "Couldn't delete your account. Check your connection and try again.", ToastKind.Error); return; }
+        _confirmDelete = false;
+        Toasts.Show("Your account was deleted.", ToastKind.Success);
+        Nav.NavigateTo("signin", replace: true);
+    }
 
     /// <inheritdoc />
     protected override void OnInitialized() => Subscribe(Settings, Session);

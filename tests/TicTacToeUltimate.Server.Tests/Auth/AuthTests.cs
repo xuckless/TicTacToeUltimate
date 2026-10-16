@@ -114,3 +114,39 @@ public class AuthTests
         Assert.Equal(AccountKind.Guest, (await tx.TransformAsync(new ClaimsPrincipal(stale))).ToTttUser().Kind);
     }
 }
+
+public class AccountDeletionTests
+{
+    [Fact]
+    public async Task DeleteAnonymisesAndPurges()
+    {
+        using var p = new TestPlatform();
+        var a = await p.UserAsync("da" + Guid.NewGuid().ToString("N")[..8]);
+        var b = await p.UserAsync("db" + Guid.NewGuid().ToString("N")[..8]);
+        var m = TestPlatform.Match(a, b, 0);
+        await p.Get<TicTacToeUltimate.Server.Progression.PostGameProcessor>().ProcessAsync(m, default);
+        var friends = p.Get<TicTacToeUltimate.Server.Abstractions.Persistence.IFriendRepository>();
+        await friends.RequestAsync(a.Id, b.Id, TestPlatform.Start, default);
+        await friends.RequestAsync(b.Id, a.Id, TestPlatform.Start, default);   // auto-accept → friends
+        Assert.Contains(a.Id, await friends.ListFriendsAsync(b.Id, default));
+
+        var r = await p.Get<AccountService>().DeleteAccountAsync(a.Id, default);
+        Assert.True(r.Ok);
+
+        var users = p.Get<TicTacToeUltimate.Server.Abstractions.Persistence.IUserRepository>();
+        var row = (await users.GetAsync(a.Id, default))!;
+        Assert.Equal(AccountKind.Deleted, row.Kind);
+        Assert.Null(row.Username);
+        Assert.Equal("Deleted player", row.DisplayName);
+        Assert.Null(await users.GetByUsernameAsync(a.Username!, default));
+        Assert.DoesNotContain(a.Id, await friends.ListFriendsAsync(b.Id, default));
+        // The opponent keeps the game; the seat is anonymised.
+        var game = (await p.Get<TicTacToeUltimate.Server.Abstractions.Persistence.IGameRepository>().GetAsync(m.Setup.MatchId, default))!;
+        var seat = game.Setup.SeatA.UserId == a.Id ? game.Setup.SeatA : game.Setup.SeatB;
+        Assert.Equal(("Deleted player", AccountKind.Deleted), (seat.DisplayName, seat.Kind));
+        // A stale token for the deleted id no longer authenticates.
+        var tx = p.Services.CreateScope().ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Authentication.IClaimsTransformation>();
+        var stale = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity([new System.Security.Claims.Claim("sub", a.Id.ToString()), new System.Security.Claims.Claim(TttClaims.Kind, "account")], "Dev"));
+        Assert.False((await tx.TransformAsync(stale)).Identity?.IsAuthenticated ?? false);
+    }
+}

@@ -37,6 +37,8 @@ public sealed class SupabaseAuthOptions
     public string AnonKey { get; set; } = "";
     public string JwtSecret { get; set; } = "";
     public string Audience { get; set; } = "authenticated";
+    /// <summary>Service-role key (secret) for the auth admin API: deleting auth users on account deletion.</summary>
+    public string ServiceRoleKey { get; set; } = "";
 }
 public sealed class PersistenceOptions
 {

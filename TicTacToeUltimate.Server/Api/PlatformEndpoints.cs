@@ -83,6 +83,12 @@ public static class PlatformEndpoints
             .RequireAuthorization();
         api.MapPatch("/me", async (UpdateProfileDto req, HttpContext http, AccountService a, CancellationToken ct) => From(await a.UpdateProfileAsync(http.Me().UserId, req, ct)))
             .RequireAuthorization();
+        // In-app account deletion (store policies). Works for guests and accounts.
+        api.MapDelete("/me", async (HttpContext http, AccountService a, CancellationToken ct) =>
+        {
+            var r = await a.DeleteAccountAsync(http.Me().UserId, ct);
+            return r.Ok ? Results.NoContent() : ApiErrors.Problem(r.Status, r.Error!);
+        }).RequireAuthorization().RequireRateLimiting(RateLimits.Auth);
 
         // ---- players ----
         api.MapGet("/players/search", async (string? q, IUserRepository users, IPlayerCardService cards, CancellationToken ct) =>

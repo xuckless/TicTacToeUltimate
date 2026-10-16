@@ -9,7 +9,8 @@ public enum EndReason { Line, Timeout, Resign, Abandoned, Draw, Aborted, Knockou
 public enum RatingPool { Ranked, CasualX2, CasualX4, Unlimited, Daily, ArenaCasual, ArenaRanked }
 public enum Tier { Bronze, Silver, Gold, Platinum, Diamond, Master }
 public enum PresenceStatus { Offline, Online, InGame }
-public enum AccountKind { Guest, Account, Bot }
+/// <summary>Deleted: anonymised row kept for game history; can never authenticate.</summary>
+public enum AccountKind { Guest, Account, Bot, Deleted }
 public enum ClientPlatform { Web, iOS, Android, MacCatalyst }
 public enum LeaderboardScope { Global, Friends, Country, MasterSeason }
 public enum RewardKind { StreakFreeze, ExtraQuest, Analysis }
