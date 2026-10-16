@@ -12,12 +12,14 @@ public sealed partial class GameHub(IServiceProvider services, ILogger<GameHub> 
 
     public override async Task OnConnectedAsync()
     {
+        services.GetService<TicTacToeUltimate.Server.Matches.ServerDrain>()?.Track(Context);
         await OnConnectedSessionAsync();     // WP2, GameHub.Session.cs (presence, pinger registration)
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        services.GetService<TicTacToeUltimate.Server.Matches.ServerDrain>()?.Untrack(Context.ConnectionId);
         await OnDisconnectedSessionAsync(exception);   // WP2, GameHub.Session.cs (detach from matches, presence)
         await base.OnDisconnectedAsync(exception);
     }

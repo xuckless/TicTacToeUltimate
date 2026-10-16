@@ -28,7 +28,9 @@ public sealed partial class GameHub
     }
 
     /// <summary>Accepts by code; first acceptor wins.</summary>
-    public Task<AcceptChallengeResultDto> AcceptChallenge(string code) => Challenges.AcceptAsync(Me, code, Context.ConnectionAborted);
+    public Task<AcceptChallengeResultDto> AcceptChallenge(string code) => Draining
+        ? Task.FromResult(new AcceptChallengeResultDto(false, ErrorCodes.ServerUpdating, null))
+        : Challenges.AcceptAsync(Me, code, Context.ConnectionAborted);
 
     /// <summary>Declines a targeted challenge.</summary>
     public Task<CommandAckDto> DeclineChallenge(string code) => Challenges.DeclineAsync(Me, code, Context.ConnectionAborted);

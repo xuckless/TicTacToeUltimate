@@ -156,6 +156,9 @@ public static class Ui
     public static string Delta(int d) => d > 0 ? $"+{d}" : d < 0 ? $"−{-d}" : "±0";
 
     /// <summary>"Line"/"Timeout" etc. as player-facing copy.</summary>
+    /// <summary>Shown when the server refuses new games because a deploy is draining.</summary>
+    public const string ServerUpdatingText = "The game server is updating. Try again in a minute.";
+
     /// <summary>Toast text when a rewarded ad didn't pay out.</summary>
     public static string RewardFailText(RewardClaimResultDto r, string fallback) => r.Error switch
     {

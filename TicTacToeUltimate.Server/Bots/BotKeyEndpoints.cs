@@ -83,7 +83,10 @@ public static partial class BotKeyEndpoints
         var session = new BotSession(socket, auth.Principal.ToTttUser(), sp.GetService<IMatchGateway>(), sp.GetService<IChallengeService>(),
             sp.GetRequiredService<BotPool>(), sp.GetRequiredService<TimeProvider>(),
             sp.GetRequiredService<ILoggerFactory>().CreateLogger<BotSession>(), sp.GetService<BotSessionSettings>());
-        await session.RunAsync(http.RequestAborted).ConfigureAwait(false);
+        // Closes with the request, or when a deploy's drain ends (botd reconnects to the next server).
+        var closeAll = sp.GetService<TicTacToeUltimate.Server.Matches.ServerDrain>()?.CloseAll ?? CancellationToken.None;
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(http.RequestAborted, closeAll);
+        await session.RunAsync(linked.Token).ConfigureAwait(false);
     }
 
     private static async Task CloseAsync(WebSocket socket, int code, string reason)

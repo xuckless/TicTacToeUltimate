@@ -16,6 +16,8 @@ services:
   server:
     image: ttt-server:amd64
     restart: always
+    # Graceful deploys: the server drains live games (Ttt:Shutdown:DrainSeconds = 600) before it exits.
+    stop_grace_period: 11m
     env_file: server.env
     environment:
       Ttt__Bots__Service__Url: http://bots:8080
@@ -28,11 +30,12 @@ services:
       TTT_BOT_PERSONAS: /personas.json
       TTT_DISPATCH_TOKEN: ${DISPATCH_TOKEN}
       TTT_BOT_STATE: /state/difficulty.json
+      GOMEMLIMIT: 110MiB
     volumes:
       - ./personas.json:/personas.json:ro
       - bots-state:/state
     depends_on: [server]
-    mem_limit: 64m
+    mem_limit: 160m
 volumes:
   caddy-data:
   bots-state:

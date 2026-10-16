@@ -58,5 +58,9 @@ public sealed partial class GameHub
     public Task<CommandAckDto> SendEmote(Guid matchId, string emoteId) => Gateway.EmoteAsync(matchId, Me.UserId, emoteId, Context.ConnectionAborted);
 
     /// <summary>Offers a rematch (unrated only, within the window).</summary>
-    public Task<CommandAckDto> OfferRematch(Guid matchId) => Gateway.OfferRematchAsync(matchId, Me.UserId, Context.ConnectionAborted);
+    public Task<CommandAckDto> OfferRematch(Guid matchId) => Draining
+        ? Task.FromResult(new CommandAckDto(false, ErrorCodes.ServerUpdating))
+        : Gateway.OfferRematchAsync(matchId, Me.UserId, Context.ConnectionAborted);
+
+    private bool Draining => services.GetService<TicTacToeUltimate.Server.Matches.ServerDrain>() is { Draining: true };
 }

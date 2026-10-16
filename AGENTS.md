@@ -390,3 +390,10 @@ From `docs/ARCHITECTURE.md` §1 (binding; [OPEN] items have working defaults).
 - Deep links are now actually handled (`DeepLinkHandler`): `tttu://c/CODE` and `https://…/c/CODE` open the challenge.
 - Git history rewritten (2026-10-15) to purge `BackendWebAPI/appsettings.{Auth,Stripe}.json` and all bin/obj/.idea (310 MB → 2.4 MB). Merged work branches deleted. `main` = `rebuild/pvp-foundation`. **Not pushed:** needs `git push --force origin main`. The old keys must still be rotated.
 - `DEPLOYMENT_GUIDE.md` (gitignored) holds the operational runbook and the secret locations.
+
+### Restart safety (owner bug report, 2026-10-15)
+- **Graceful deploys:** `MatchShutdownService.StoppingAsync` runs before Kestrel stops. It sets `ServerDrain`, which makes queue entry, rematch and challenge accept answer `server_updating`; the matchmaker keeps the queue but pairs nobody. It then waits up to `Ttt:Shutdown:DrainSeconds` (Production 600; compose `stop_grace_period: 11m`) for live non-Daily games to end, and finally closes SignalR and bot sockets so the process exits.
+- Clients: the queue re-enters automatically after a reconnect, and the queue sheet explains "server updating".
+- If a game is lost anyway (crash), the match page shows **"Game interrupted"** (Play again / Home) instead of a frozen board.
+- Bots were OOM-killed at 64 MB: the limit is now 160 MB with `GOMEMLIMIT=110MiB`.
+- Invite sheet off-screen: the page-entrance animation filled `transform` (`both`), which made page children containing blocks for `position:fixed`. It now uses `backwards`.

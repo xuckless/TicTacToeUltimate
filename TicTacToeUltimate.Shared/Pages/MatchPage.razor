@@ -23,6 +23,19 @@ else
     var sd = InSuddenDeath;
     <div class="match @AlertClass" data-testid="match">
         <ConnectionBanner Phase="Session.State.Connection" Attempt="Session.State.ReconnectAttempt" Resyncing="_view.Resyncing" />
+        @if (_view.LastError == ErrorCodes.MatchNotFound && _view.Result is null)
+        {
+            @* The server restarted and this live game is gone: say so instead of leaving a frozen board. *@
+            <div class="t-scrim" role="dialog" aria-modal="true" aria-label="Game interrupted" data-testid="match-interrupted">
+                <div class="t-sheet result-overlay">
+                    <Bert Mood="sad" Size="72" />
+                    <span class="t-title">Game interrupted</span>
+                    <span class="t-small t-muted">The game server restarted and this game was lost. It doesn't count: no rating, streak or quest change.</span>
+                    <Button Variant="primary" Href="@($"play?tc={snap.TimeControl}")">Play again</Button>
+                    <Button Variant="secondary" Href="">Home</Button>
+                </div>
+            </div>
+        }
         <MatchHeader Mode="snap.Mode" TimeControl="snap.TimeControl" Clock="_clock" Spectators="snap.SpectatorCount" />
         <h1 class="sr-only">Match vs @(opp?.Player.DisplayName ?? "opponent")</h1>
         @if (IsArena && !Ended)

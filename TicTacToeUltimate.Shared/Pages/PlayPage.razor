@@ -72,7 +72,11 @@
             <BertLoader Text="@null" Mood="jumpy" />
             <span class="t-num" style="font:var(--type-clock)" role="timer">@Ui.Elapsed(Queue.State.Status?.WaitedMs ?? 0)</span>
             <span class="t-small t-muted">
-                @if (Queue.State.Status is { } st)
+                @if (Queue.State.Status is { ServerUpdating: true })
+                {
+                    <span data-testid="queue-updating">The game server is updating. You'll be matched as soon as it's back (usually under a minute).</span>
+                }
+                else if (Queue.State.Status is { } st)
                 {
                     @(st.GuestPool ? "Guest pool" : $"Rating window ±{st.RatingWindow}")
                 }
@@ -161,6 +165,7 @@
         if (tc == TimeControl.Daily) { Nav.NavigateTo("daily"); return; }
         try { await Queue.EnterAsync(tc); }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't join the queue.", ToastKind.Error); }
+        if (Queue.State.Error == ErrorCodes.ServerUpdating) Toasts.Show(Ui.ServerUpdatingText, ToastKind.Info);
     }
 
     private Task Cancel() => Queue.LeaveAsync();

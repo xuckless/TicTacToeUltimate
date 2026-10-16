@@ -21,6 +21,7 @@ public sealed partial class GameHub
         var opts = services.GetRequiredService<TttOptions>();
         var mode = MatchModes.Options(opts, tc);
         if (me.IsBot) return Reject(ErrorCodes.Validation);
+        if (services.GetService<TicTacToeUltimate.Server.Matches.ServerDrain>() is { Draining: true }) return Reject(ErrorCodes.ServerUpdating);
         if (me.IsGuest && (!mode.GuestsAllowed || MatchModes.IsRankedLike(tc))) return Reject(ErrorCodes.GuestNotAllowed);
         var users = services.GetService<IUserRepository>();
         var rec = users is null ? null : await users.GetAsync(me.UserId, ct);

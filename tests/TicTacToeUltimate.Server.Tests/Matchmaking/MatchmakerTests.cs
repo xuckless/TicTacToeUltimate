@@ -34,8 +34,9 @@ public class MatchmakerTests
         public UserActivityRegistry Activity { get; } = new();
         public TttOptions Options { get; } = new();
         public RecordingDispatcher Dispatcher { get; } = new();
+        public TicTacToeUltimate.Server.Matches.ServerDrain Drain { get; } = new();
         public Matchmaker Mm { get; }
-        public Rig() => Mm = new Matchmaker(Gateway, Activity, Notifier, new FakeCards(), Bots, Time, Options, NullLogger<Matchmaker>.Instance, Dispatcher);
+        public Rig() => Mm = new Matchmaker(Gateway, Activity, Notifier, new FakeCards(), Bots, Time, Options, NullLogger<Matchmaker>.Instance, Dispatcher, Drain);
 
         public Guid Enter(int rating, TimeControl tc = TimeControl.Ranked, AccountKind kind = AccountKind.Account, string? region = null)
         {
@@ -178,6 +179,21 @@ public class MatchmakerTests
         Assert.Contains(b, new[] { s.SeatA.UserId, s.SeatB.UserId });
         await r.At(20);
         Assert.Contains(r.Gateway.Created, m => m.Origin == MatchOrigin.BotFallback && (m.SeatA.UserId == arena || m.SeatB.UserId == arena));
+    }
+
+    [Fact]
+    public async Task DrainingStartsNothingNewButKeepsTheQueue()
+    {
+        var r = new Rig();
+        r.Bots.Available = true;
+        r.Drain.Begin();
+        var a = r.Enter(1200, TimeControl.Casual);
+        var b = r.Enter(1200, TimeControl.Casual);
+        await r.At(30);
+        Assert.Empty(r.Gateway.Created);                 // no human pair, no bot fallback
+        Assert.Empty(r.Dispatcher.Requests);
+        Assert.Equal(2, r.Mm.Entries.Count);              // still queued
+        Assert.True(r.Notifier.Of<QueueStatusDto>(a).Last().ServerUpdating);
     }
 
     [Fact]

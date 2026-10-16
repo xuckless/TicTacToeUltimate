@@ -193,7 +193,11 @@ else
         await Leave(tc == TimeControl.Daily ? "daily" : $"play?tc={tc}");
     }
 
-    private Task Rematch() => Matches.OfferRematchAsync(Id);
+    private async Task Rematch()
+    {
+        await Matches.OfferRematchAsync(Id);
+        if (Matches.State.Matches.GetValueOrDefault(Id)?.LastError == ErrorCodes.ServerUpdating) Toasts.Show(Ui.ServerUpdatingText, ToastKind.Info);
+    }
     private Task Home() => Leave("");
 
     private async Task Leave(string href)

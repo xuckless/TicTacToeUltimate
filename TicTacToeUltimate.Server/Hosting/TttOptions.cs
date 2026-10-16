@@ -19,6 +19,7 @@ public sealed class TttOptions
     public TiersOptions Tiers { get; set; } = new();
     public SeasonsOptions Seasons { get; set; } = new();
     public AdsOptions Ads { get; set; } = new();
+    public ShutdownOptions Shutdown { get; set; } = new();
     public CorsOptions Cors { get; set; } = new();
     public WebOptions Web { get; set; } = new();
 }
@@ -107,5 +108,7 @@ public sealed class AdsOptions
     public int MinSecondsBetween { get; set; } = 120;
     public int FirstAfterGames { get; set; } = 2;
 }
+/// <summary>Graceful deploys: on SIGTERM stop new matches and wait up to DrainSeconds for live ones to finish (0 = no wait).</summary>
+public sealed class ShutdownOptions { public int DrainSeconds { get; set; } }
 public sealed class CorsOptions { public List<string> Origins { get; set; } = []; }
 public sealed class WebOptions { public string BaseUrl { get; set; } = "http://localhost:5028"; }

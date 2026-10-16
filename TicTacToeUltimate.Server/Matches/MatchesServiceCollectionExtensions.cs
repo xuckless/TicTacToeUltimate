@@ -39,7 +39,8 @@ public static class MatchesServiceCollectionExtensions
 
         services.AddSingleton(sp => new Matchmaker(sp.GetRequiredService<IMatchGateway>(), sp.GetRequiredService<UserActivityRegistry>(),
             sp.GetRequiredService<IUserNotifier>(), sp.GetRequiredService<IPlayerCardService>(), sp.GetRequiredService<IBotPool>(),
-            sp.GetRequiredService<TimeProvider>(), sp.GetRequiredService<TttOptions>(), sp.GetRequiredService<ILogger<Matchmaker>>(), sp.GetService<TicTacToeUltimate.Server.Bots.IBotDispatcher>()));
+            sp.GetRequiredService<TimeProvider>(), sp.GetRequiredService<TttOptions>(), sp.GetRequiredService<ILogger<Matchmaker>>(), sp.GetService<TicTacToeUltimate.Server.Bots.IBotDispatcher>(),
+            sp.GetService<ServerDrain>()));
         services.AddHostedService(sp => sp.GetRequiredService<Matchmaker>());
 
         services.AddSingleton(sp => new ChallengeService(sp.GetRequiredService<IChallengeRepository>(), sp.GetRequiredService<IMatchGateway>(),
@@ -53,7 +54,11 @@ public static class MatchesServiceCollectionExtensions
 
         services.AddHostedService(sp => new DailyDeadlineSweeper(sp.GetRequiredService<MatchGateway>(), sp.GetRequiredService<TimeProvider>(),
             sp.GetRequiredService<TttOptions>(), sp.GetRequiredService<ILogger<DailyDeadlineSweeper>>()));
-        services.AddHostedService(sp => new MatchShutdownService(sp.GetRequiredService<MatchGateway>()));
+        services.AddSingleton<ServerDrain>();
+        services.AddHostedService(sp => new MatchShutdownService(sp.GetRequiredService<MatchGateway>(), sp.GetRequiredService<ServerDrain>(),
+            sp.GetRequiredService<TttOptions>(), sp.GetRequiredService<TimeProvider>(), sp.GetService<ILogger<MatchShutdownService>>()));
+        // Give the drain room before the host gives up (the default is 30 s).
+        services.AddOptions<HostOptions>().Configure<TttOptions>((h, o) => h.ShutdownTimeout = TimeSpan.FromSeconds(Math.Max(30, o.Shutdown.DrainSeconds + 30)));
         return services;
     }
 

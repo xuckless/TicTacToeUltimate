@@ -44,7 +44,8 @@ public sealed record ReconnectQueueCommand(Guid UserId) : QueueCommand;
 
 /// <summary>Single-loop matchmaker (§6.6). Single-threaded, so it cannot double-pair.</summary>
 public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activity, IUserNotifier notifier, IPlayerCardService cards,
-    IBotPool bots, TimeProvider time, TttOptions options, ILogger<Matchmaker> log, TicTacToeUltimate.Server.Bots.IBotDispatcher? dispatcher = null) : BackgroundService
+    IBotPool bots, TimeProvider time, TttOptions options, ILogger<Matchmaker> log, TicTacToeUltimate.Server.Bots.IBotDispatcher? dispatcher = null,
+    TicTacToeUltimate.Server.Matches.ServerDrain? drain = null) : BackgroundService
 {
     private readonly Channel<QueueCommand> _commands = Channel.CreateUnbounded<QueueCommand>(new UnboundedChannelOptions { SingleReader = true });
     private readonly List<QueueEntry> _entries = [];
@@ -86,7 +87,9 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
         foreach (var e in _entries.Where(e => e.DisconnectedAtMs is { } d && now - d >= o.DisconnectGraceSeconds * 1000L).ToArray())
             Remove(e);
 
-        foreach (var (a, b) in FindPairs(_entries, now, o))
+        // Deploy in progress: keep everyone queued (they re-enter on the new server after reconnecting) but start nothing new.
+        var draining = drain?.Draining == true;
+        foreach (var (a, b) in draining ? [] : FindPairs(_entries, now, o))
         {
             _entries.Remove(a);
             _entries.Remove(b);
@@ -96,7 +99,7 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
         // Bots: real people get priority (pairing above). A player still waiting after DispatchAfterSeconds triggers one bot
         // dispatch; after BotFallbackSeconds the longest-waiting player is paired with a seeking bot. Nobody is left alone.
         _dispatched.RemoveWhere(e => !_entries.Contains(e));
-        foreach (var e in _entries.Where(e => e.DisconnectedAtMs is null && !BotsExcluded(e.TimeControl) && !_dispatched.Contains(e)
+        foreach (var e in _entries.Where(e => !draining && e.DisconnectedAtMs is null && !BotsExcluded(e.TimeControl) && !_dispatched.Contains(e)
                      && now - e.EnqueuedAtMs >= options.Bots.Service.DispatchAfterSeconds * 1000L).ToArray())
         {
             _dispatched.Add(e);
@@ -104,7 +107,7 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
         }
         foreach (var e in _entries.Where(e => now - e.EnqueuedAtMs >= o.BotFallbackSeconds * 1000L).OrderBy(e => e.EnqueuedAtMs).ToArray())
         {
-            if (BotsExcluded(e.TimeControl) || e.DisconnectedAtMs is not null) continue;
+            if (draining || BotsExcluded(e.TimeControl) || e.DisconnectedAtMs is not null) continue;
             if (!bots.TryReserve(e.TimeControl, e.Rating, out var bot)) continue;
             _entries.Remove(e);
             await CreateBotMatchAsync(e, bot, ct).ConfigureAwait(false);
@@ -115,7 +118,7 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
             _lastStatusMs = now;
             foreach (var e in _entries.Where(e => e.DisconnectedAtMs is null).ToArray())
             {
-                var status = new QueueStatusDto(e.TimeControl, (int)Math.Min(int.MaxValue, now - e.EnqueuedAtMs), Window(now - e.EnqueuedAtMs, o), e.IsGuest);
+                var status = new QueueStatusDto(e.TimeControl, (int)Math.Min(int.MaxValue, now - e.EnqueuedAtMs), Window(now - e.EnqueuedAtMs, o), e.IsGuest, draining);
                 await SafeAsync(() => notifier.ToUserAsync(e.UserId, c => c.QueueStatus(status))).ConfigureAwait(false);
             }
         }

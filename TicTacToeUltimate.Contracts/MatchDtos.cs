@@ -61,7 +61,8 @@ public sealed record PostGameSummaryDto(Guid MatchId, MatchResultDto Result, Gam
 
 public sealed record QueueRequestDto(TimeControl TimeControl);
 public sealed record QueueTicketDto(bool Accepted, string? Error, TimeControl TimeControl, long EnqueuedAtMs);
-public sealed record QueueStatusDto(TimeControl TimeControl, int WaitedMs, int RatingWindow, bool GuestPool);
+/// <summary>ServerUpdating: a deploy is draining live games; matching resumes right after the restart.</summary>
+public sealed record QueueStatusDto(TimeControl TimeControl, int WaitedMs, int RatingWindow, bool GuestPool, bool ServerUpdating = false);
 public sealed record MatchFoundDto(Guid MatchId, MatchMode Mode, TimeControl TimeControl, PlayerCardDto Opponent, Color YourColor, int YourSeat);
 
 public sealed record ClientHelloDto(int ProtocolVersion, string ClientVersion, ClientPlatform Platform, string TimeZone, string? Locale);
