@@ -111,7 +111,7 @@ public sealed class RefRules : IGameRules
 /// <summary>Reference MoveClock (§4.3).</summary>
 public sealed class RefClock : IClockSchedule
 {
-    private static int Scale(TimeControl tc) => tc switch { TimeControl.Ranked => 1, TimeControl.CasualX2 => 2, TimeControl.CasualX4 => 4, _ => 0 };
+    private static int Scale(TimeControl tc) => tc switch { TimeControl.Ranked or TimeControl.Casual or TimeControl.OldSchool => 1, TimeControl.CasualX2 => 2, TimeControl.CasualX4 => 4, _ => 0 };
 
     public TimeSpan? Allowance(TimeControl tc, TimeSpan e)
     {

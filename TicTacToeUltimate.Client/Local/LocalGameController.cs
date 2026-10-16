@@ -234,6 +234,7 @@ public sealed class LocalGameController
     {
         if (!IsLive) return MoveError.GameOver;
         if (Paused) Resume();
+        if (Tick()) return MoveError.GameOver;   // the clock ran out before the tap landed (≤ 100 ms between ticks): the timeout wins
         return ApplyPlacement(cell);
     }
 

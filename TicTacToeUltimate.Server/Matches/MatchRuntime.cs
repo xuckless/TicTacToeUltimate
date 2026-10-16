@@ -107,8 +107,10 @@ public sealed class UserActivityRegistry
 public sealed class MatchRuntime(
     TimeProvider time, IGameRules rules, IClockSchedule clock, TttOptions options, IMatchBroadcaster broadcaster,
     IMatchResultSink sink, IUserNotifier notifier, IPushSender push, IPlayerCardService cards,
-    UserActivityRegistry activity, ILoggerFactory loggers, IDailyMatchRepository? dailyRepo)
+    UserActivityRegistry activity, ILoggerFactory loggers, IDailyMatchRepository? dailyRepo, Func<Guid, int>? halfRtt = null)
 {
+    /// <summary>Known halfRtt per user for seeding a new match's lag credit (null = none).</summary>
+    public Func<Guid, int>? HalfRtt { get; } = halfRtt;
     /// <summary>Clock.</summary>
     public TimeProvider Time { get; } = time;
     /// <summary>Rules seam.</summary>

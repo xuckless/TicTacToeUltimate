@@ -153,6 +153,13 @@ public sealed class RttTracker(TimeProvider time, IOptions<TttOptions> options)
         }
     }
 
+    /// <summary>Current halfRtt estimate (min of the kept samples / 2), or 0 when nothing is known yet.</summary>
+    public int HalfRtt(Guid userId)
+    {
+        if (!_users.TryGetValue(userId, out var s)) return 0;
+        lock (s.Gate) return s.Samples.Count == 0 ? 0 : Math.Clamp(s.Samples.Min() / 2, 0, 1000);
+    }
+
     /// <summary>Forgets a user.</summary>
     public void Forget(Guid userId) => _users.TryRemove(userId, out _);
 }
