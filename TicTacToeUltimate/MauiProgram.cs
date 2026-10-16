@@ -29,7 +29,14 @@ public static class MauiProgram
             handler.PlatformView.ScrollView.Bounces = false;
             handler.PlatformView.Opaque = false;
             handler.PlatformView.BackgroundColor = UIKit.UIColor.FromRGB(0x12, 0x0a, 0x22);
+            // iOS edge swipe = back. Blazor uses pushState history, which WKWebView's gesture navigates.
+            handler.PlatformView.AllowsBackForwardNavigationGestures = true;
         });
+#endif
+#if ANDROID
+        // Hardware/gesture back goes back in the app's history before leaving the app (MainActivity.OnBackPressed).
+        Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping("BackHistory", (handler, _) =>
+            TicTacToeUltimate.Platforms.Android.BackNavigation.WebView = handler.PlatformView);
 #endif
 
 #if DEBUG
