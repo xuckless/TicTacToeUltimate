@@ -1,5 +1,5 @@
 name: web
-# Vercel builds and deploys the site itself (vercel.json, Git integration). This job only checks it builds and tests pass.
+# The site deploys to Cloudflare (deploy/cloudflare, `wrangler deploy`). This job only checks it builds and tests pass.
 on:
   pull_request:
     paths: ['TicTacToeUltimate.Shared/**', 'TicTacToeUltimate.Client/**', 'TicTacToeUltimate.Web.Client/**', 'TicTacToeUltimate.Contracts/**', 'TicTacToeUltimate.Engine/**', 'tests/TicTacToeUltimate.Client.Tests/**', 'tests/TicTacToeUltimate.Shared.Tests/**', 'deploy/web/**', 'vercel.json', '.github/workflows/web.yml']
