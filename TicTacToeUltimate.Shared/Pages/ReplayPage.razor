@@ -1,6 +1,7 @@
 @page "/replay/{Id:guid}"
 @inject IGameQueries Queries
 @inject IProgressStore Progress
+@inject IWalletStore Wallet
 @inject ToastService Toasts
 
 <PageTitle>Replay · Tic Tac Toe Ultimate</PageTitle>
@@ -32,7 +33,8 @@ else
             }
             else
             {
-                <Button Variant="primary" OnClick="Unlock" Disabled="_busy"><Icon Name="ad" /> Watch ad to unlock</Button>
+                <Button Variant="primary" OnClick="Unlock" Disabled="_busy"><Icon Name="diamond" /> Unlock · 20</Button>
+                <a class="t-small" href="store">Need Diamonds? Earn them in the Store</a>
             }
         </Card>
     }
@@ -90,9 +92,10 @@ else
         _busy = true;
         try
         {
-            var r = await Progress.ClaimRewardAsync(RewardKind.Analysis, Id);
-            if (r.Granted) await LoadAnalysis();
-            else Toasts.Show(Ui.RewardFailText(r, "Watch the full ad to unlock"), ToastKind.Error);
+            var r = await Wallet.BuyAsync("analysis", Id);
+            if (r.Ok || r.Error == ErrorCodes.ItemUnavailable) await LoadAnalysis();
+            else if (r.Error == ErrorCodes.InsufficientDiamonds) Toasts.Show("The review costs 20 Diamonds. Win games or watch an ad in the Store.", ToastKind.Info);
+            else Toasts.Show(Ui.ErrorToastText(r.Error, "Couldn't unlock the review."), ToastKind.Error);
         }
         finally { _busy = false; }
     }

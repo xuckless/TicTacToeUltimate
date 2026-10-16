@@ -203,6 +203,21 @@ body { min-height: 100dvh; }
   background: color-mix(in srgb, #ff8a2a 18%, var(--surface)); border: 2px solid color-mix(in srgb, #ff8a2a 55%, var(--line)); font: 500 14px/1.2 var(--font-sans); }
 .daily-nudge > span { flex: 1; }
 .daily-nudge .t-icon { color: #ff8a2a; }
+.diamond-pill .t-icon, .diamond-pill svg { color: var(--diamond, #38d6ff); width: 18px; height: 18px; fill: none; }
+.diamond-chip { background: color-mix(in srgb, var(--diamond, #38d6ff) 20%, var(--surface)); color: var(--diamond, #38d6ff); margin-top: 6px; }
+.wallet-card { background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius-lg, 18px); padding: 14px 16px; box-shadow: var(--ledge-neutral); }
+.wallet-main { display: flex; align-items: center; gap: 12px; }
+.wallet-gem { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 16px; background: color-mix(in srgb, var(--diamond, #38d6ff) 18%, var(--surface)); color: var(--diamond, #38d6ff); }
+.wallet-gem .t-icon { width: 30px; height: 30px; }
+.wallet-balance { font: 700 34px/1 var(--font-clock, var(--font-sans)); }
+.wallet-ad { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.store-grid { display: grid; gap: 10px; }
+.store-item { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 12px; }
+.store-item.off { opacity: .72; }
+.store-ico { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--surface-raised); color: var(--primary); }
+.store-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.store-name { font-weight: 800; }
+.store-why { color: var(--streak); }
 .resume-banner { background: color-mix(in srgb, var(--primary) 22%, var(--surface)); border-color: color-mix(in srgb, var(--primary) 60%, var(--line)); margin-bottom: 10px; }
 .resume-banner .t-icon { color: var(--primary); }
 .resume-banner .t-chip { background: var(--primary); color: #fff; }

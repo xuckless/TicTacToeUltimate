@@ -102,6 +102,12 @@ public sealed class InMemoryUserRepository : IUserRepository
         }
     }
 
+    public Task AddRenamesAsync(Guid id, int count, CancellationToken ct)
+    {
+        lock (_gate) if (_byId.TryGetValue(id, out var u)) _byId[id] = u with { RenamesLeft = u.RenamesLeft + count };
+        return Task.CompletedTask;
+    }
+
     public Task UpdateProfileAsync(Guid id, ProfilePatch patch, CancellationToken ct)
     {
         lock (_gate)

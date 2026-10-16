@@ -44,6 +44,7 @@ public static class PlatformServiceCollectionExtensions
         services.AddSingleton<SocialService>();
         services.AddSingleton<GameViews>();
 
+        services.AddSingleton<TicTacToeUltimate.Server.Economy.WalletService>();
         services.AddSingleton<RewardNonceService>();   // server-minted single-use nonces; Ttt:Ads:Provider only steers the client
         services.AddSingleton<RewardService>();
         return services;
@@ -66,6 +67,7 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<IChallengeRepository, PgChallengeRepository>();
             services.AddSingleton<IBotKeyRepository, PgBotKeyRepository>();
             services.AddSingleton<IRewardLedger, PgRewardLedger>();
+            services.AddSingleton<IWalletRepository, TicTacToeUltimate.Server.Persistence.PgWalletRepository>();
             services.AddSingleton<ISeasonRepository, PgSeasonRepository>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.PgGuestMergeStore>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IAccountDeletionStore, TicTacToeUltimate.Server.Persistence.PgAccountDeletionStore>();
@@ -82,6 +84,7 @@ public static class PlatformServiceCollectionExtensions
             services.AddSingleton<IChallengeRepository, InMemoryChallengeRepository>();
             services.AddSingleton<IBotKeyRepository, InMemoryBotKeyRepository>();
             services.AddSingleton<IRewardLedger, InMemoryRewardLedger>();
+            services.AddSingleton<IWalletRepository, TicTacToeUltimate.Server.Persistence.InMemoryWalletRepository>();
             services.AddSingleton<ISeasonRepository, InMemorySeasonRepository>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IGuestMergeStore, TicTacToeUltimate.Server.Persistence.InMemoryGuestMergeStore>();
             services.AddSingleton<TicTacToeUltimate.Server.Persistence.IAccountDeletionStore, TicTacToeUltimate.Server.Persistence.InMemoryAccountDeletionStore>();

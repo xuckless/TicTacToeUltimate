@@ -162,7 +162,10 @@ public sealed class AccountService(IUserRepository users, RatingService ratings,
         var name = UsernameRules.Normalize(req.Username);
         if (!rules.IsValid(name)) return OpResult<MeDto>.Fail(ErrorCodes.UsernameInvalid, 400);
         if (u.Username is null && u.TosAcceptedAt is null && !req.AcceptTos) return OpResult<MeDto>.Fail(ErrorCodes.TosRequired, 400);
+        var first = u.Username is null;
         var result = await users.SetUsernameAsync(userId, name, req.AcceptTos ? time.GetUtcNow() : null, ct);
+        if (result == UsernameResult.Ok && first && services.GetService(typeof(TicTacToeUltimate.Server.Economy.WalletService)) is TicTacToeUltimate.Server.Economy.WalletService wallet)
+            await wallet.GrantAsync(userId, TicTacToeUltimate.Server.Economy.EconomyRules.FirstUsernameReward, TicTacToeUltimate.Server.Economy.EconomyRules.ReasonFirstUsername, "once", ct);
         return result switch
         {
             UsernameResult.Ok => new((await GetMeAsync(userId, ct))!, null),

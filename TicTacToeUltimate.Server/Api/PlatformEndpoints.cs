@@ -147,7 +147,10 @@ public static class PlatformEndpoints
         {
             var g = await games.GetAsync(id, ct);
             if (g is null) return ApiErrors.Problem(404, ErrorCodes.MatchNotFound);
-            if (!await ledger.HasGrantAsync(http.Me().UserId, RewardKind.Analysis, id, ct)) return ApiErrors.Problem(403, ErrorCodes.RewardRequired);
+            var meId = http.Me().UserId;
+            if (!await ledger.HasGrantAsync(meId, RewardKind.Analysis, id, ct)
+                && (await http.RequestServices.GetRequiredService<TicTacToeUltimate.Server.Economy.WalletService>().GetAsync(meId, ct)).AnalysisPassUntilMs is null)
+                return ApiErrors.Problem(403, ErrorCodes.RewardRequired);
             if (MoveClock.IsArena(g.Setup.TimeControl)) return ApiErrors.Problem(404, ErrorCodes.AnalysisUnavailable);
             switch (cache.GetStatus(g.Setup.Rules))
             {
@@ -225,6 +228,14 @@ public static class PlatformEndpoints
         // ---- progress / rewards ----
         api.MapGet("/progress", async (HttpContext http, ProgressService p, CancellationToken ct) => Results.Ok(await p.GetAsync(http.Me().UserId, ct)))
             .RequireAuthorization();
+        // ---- store / wallet ----
+        api.MapGet("/wallet", async (HttpContext http, TicTacToeUltimate.Server.Economy.WalletService w, CancellationToken ct) => Results.Ok(await w.GetAsync(http.Me().UserId, ct)))
+            .RequireAuthorization();
+        api.MapGet("/store", async (HttpContext http, TicTacToeUltimate.Server.Economy.WalletService w, CancellationToken ct) => Results.Ok(await w.StoreAsync(http.Me().UserId, ct)))
+            .RequireAuthorization();
+        api.MapPost("/store/buy", async (PurchaseDto req, HttpContext http, TicTacToeUltimate.Server.Economy.WalletService w, CancellationToken ct) =>
+            Results.Ok(await w.PurchaseAsync(http.Me().UserId, req, ct))).RequireAuthorization().RequireRateLimiting(RateLimits.Rewards);
+
         api.MapPost("/rewards/nonce", async (RewardNonceRequestDto req, HttpContext http, RewardService r, CancellationToken ct) =>
             Results.Ok(await r.IssueNonceAsync(http.Me().UserId, req, ct))).RequireAuthorization().RequireRateLimiting(RateLimits.Rewards);
         api.MapPost("/rewards/claim", async (RewardClaimDto req, HttpContext http, RewardService r, CancellationToken ct) =>

@@ -35,7 +35,11 @@ public sealed record RewardNonceRequestDto(RewardKind Kind, Guid? GameId);
 /// <summary>The nonce to send back as the claim receipt after the ad; Error (reward_capped, reward_invalid) when not eligible.</summary>
 public sealed record RewardNonceDto(string? Nonce, long ExpiresAtMs, string? Error);
 public sealed record RewardClaimDto(RewardKind Kind, Guid? GameId, string Receipt);
-public sealed record RewardClaimResultDto(bool Granted, string? Error, ProgressDto? Progress);
+public sealed record RewardClaimResultDto(bool Granted, string? Error, ProgressDto? Progress)
+{
+    /// <summary>Wallet after a Diamonds grant.</summary>
+    public WalletDto? Wallet { get; init; }
+}
 
 public sealed record BotKeyDto(string KeyId, Guid BotUserId, string BotName, DateTimeOffset CreatedAt, DateTimeOffset? RevokedAt);
 public sealed record CreateBotKeyDto(string BotName);

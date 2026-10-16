@@ -21,6 +21,8 @@ public interface IUserRepository
     /// <summary>First set (Guest->Account upgrade or Account onboarding) does not consume a rename; later sets do.</summary>
     Task<UsernameResult> SetUsernameAsync(Guid id, string username, DateTimeOffset? tosAcceptedAt, CancellationToken ct);
     Task UpdateProfileAsync(Guid id, ProfilePatch patch, CancellationToken ct);
+    /// <summary>Store: a bought name change adds renames.</summary>
+    Task AddRenamesAsync(Guid id, int count, CancellationToken ct);
     Task TouchAsync(Guid id, DateTimeOffset lastSeenAt, CancellationToken ct);
     Task<IReadOnlyList<UserRecord>> SearchAsync(string prefix, int take, CancellationToken ct);
     Task<IReadOnlyList<UserRecord>> ListAsync(int take, CancellationToken ct);        // dev user picker
@@ -136,6 +138,22 @@ public interface IRewardLedger
     Task<bool> HasGrantAsync(Guid userId, RewardKind kind, Guid? gameId, CancellationToken ct);
     /// <summary>Grants of <paramref name="kind"/> for the user at or after <paramref name="since"/> (daily caps).</summary>
     Task<int> CountSinceAsync(Guid userId, RewardKind kind, DateTimeOffset since, CancellationToken ct);
+}
+
+// ---------- economy ----------
+public sealed record WalletRecord(Guid UserId, int Balance);
+/// <summary>One ledger line. (UserId, Reason, Ref) is unique: appending the same grant twice is a no-op.</summary>
+public sealed record LedgerEntry(Guid UserId, int Delta, string Reason, string Ref, DateTimeOffset At);
+public sealed record InventoryItem(Guid UserId, string ItemId, DateTimeOffset AcquiredAt, DateTimeOffset? ExpiresAt);
+public interface IWalletRepository
+{
+    Task<WalletRecord> GetAsync(Guid userId, CancellationToken ct);
+    /// <summary>False when the (user, reason, ref) exists or the debit would overdraw.</summary>
+    Task<bool> AppendAsync(LedgerEntry entry, CancellationToken ct);
+    Task<int> CountSinceAsync(Guid userId, string reason, DateTimeOffset since, CancellationToken ct);
+    Task<int> SumSinceAsync(Guid userId, DateTimeOffset since, bool positiveOnly, CancellationToken ct);
+    Task<IReadOnlyList<InventoryItem>> ListInventoryAsync(Guid userId, CancellationToken ct);
+    Task AddInventoryAsync(InventoryItem item, CancellationToken ct);
 }
 
 public sealed record SeasonRecord(int Id, DateTimeOffset StartsAt, DateTimeOffset EndsAt);

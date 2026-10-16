@@ -88,6 +88,9 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens)
     /// <summary>GET /api/progress.</summary>
     public Task<ProgressDto> GetProgressAsync() => Get<ProgressDto>("api/progress")!;
     /// <summary>POST /api/rewards/claim.</summary>
+    public Task<WalletDto> GetWalletAsync() => Get<WalletDto>("api/wallet")!;
+    public Task<StoreDto> GetStoreAsync() => Get<StoreDto>("api/store")!;
+    public Task<PurchaseResultDto> BuyAsync(PurchaseDto request) => Send<PurchaseResultDto>(HttpMethod.Post, "api/store/buy", request)!;
     public Task<RewardNonceDto> RequestRewardNonceAsync(RewardNonceRequestDto request) => Send<RewardNonceDto>(HttpMethod.Post, "api/rewards/nonce", request)!;
     public Task<RewardClaimResultDto> ClaimRewardAsync(RewardClaimDto claim) => Send<RewardClaimResultDto>(HttpMethod.Post, "api/rewards/claim", claim)!;
     /// <summary>GET /api/challenges/{code}; null on 404.</summary>

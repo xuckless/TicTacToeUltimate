@@ -38,6 +38,9 @@ public sealed class ProgressStore : StoreBase<ProgressState>, IProgressStore
     }
 
     /// <inheritdoc />
+    public void Apply(ProgressDto progress) => Update(_ => new ProgressState(progress, true));
+
+    /// <inheritdoc />
     public async Task<RewardClaimResultDto> ClaimRewardAsync(RewardKind kind, Guid? gameId = null)
     {
         // 1) Ask the server for a single-use nonce. It also checks eligibility, so a capped reward is refused BEFORE the ad plays.

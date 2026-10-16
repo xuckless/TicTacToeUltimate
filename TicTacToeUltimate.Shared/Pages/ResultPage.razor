@@ -5,6 +5,7 @@
 @inject IProgressStore Progress
 @inject IQueueStore Queue
 @inject ISocialStore Social
+@inject IWalletStore Wallet
 @inject ISettingsStore Settings
 @inject IServiceProvider Services
 @inject NavigationManager Nav
@@ -31,6 +32,10 @@ else
                 <span class="t-label">@Ui.ReasonText(r.Reason, _view.IsSpectator ? null : YourResult)</span>
                 <h1><BounceText Text="@Title" /></h1>
                 <span class="result-sub">vs @(opp?.Player.DisplayName ?? "opponent") · @Ui.Elapsed(_view.Snapshot.Clock?.GameElapsedMsAtTurnStart ?? 0) · @_view.Snapshot.Ply moves</span>
+                @if (s is { DiamondsEarned: > 0 })
+                {
+                    <span class="t-chip diamond-chip" data-testid="diamonds-earned"><Icon Name="diamond" /> +@s.DiamondsEarned</span>
+                }
             </div>
         </div>
 
@@ -94,7 +99,8 @@ else
                         <span class="at-title"><Icon Name="chart" /> Perfect-play review</span>
                         <span class="t-small t-muted">See every winning and losing move.</span>
                         @if (s.YourBlunders is int b) { <span class="at-blunders">@b blunder@(b == 1 ? "" : "s") found</span> }
-                        <Button Variant="primary" Small="true" OnClick="UnlockAnalysis" Disabled="_busy"><Icon Name="ad" /> Watch ad to unlock</Button>
+                        <Button Variant="primary" Small="true" OnClick="UnlockAnalysis" Disabled="_busy"><Icon Name="diamond" /> Unlock · 20</Button>
+                        @if ((Wallet.State.Wallet?.Diamonds ?? 0) < 20) { <a class="t-small" href="store">Need Diamonds? Watch an ad in the Store</a> }
                     </div>
                 </div>
             </Card>
@@ -288,9 +294,11 @@ else
         _busy = true;
         try
         {
-            var r = await Progress.ClaimRewardAsync(RewardKind.Analysis, Id);
-            if (r.Granted) { _completedReported = true; Nav.NavigateTo($"replay/{Id}?analysis=1"); }   // one ad is enough: the rewarded view was the break
-            else Toasts.Show(Ui.RewardFailText(r, "Watch the full ad to unlock"), ToastKind.Error);
+            var r = await Wallet.BuyAsync("analysis", Id);
+            if (r.Ok) { _completedReported = true; Nav.NavigateTo($"replay/{Id}?analysis=1"); }
+            else if (r.Error == ErrorCodes.InsufficientDiamonds) Toasts.Show("The review costs 20 Diamonds. Win games or watch an ad in the Store.", ToastKind.Info);
+            else if (r.Error == ErrorCodes.ItemUnavailable) { _completedReported = true; Nav.NavigateTo($"replay/{Id}?analysis=1"); }   // already unlocked
+            else Toasts.Show(Ui.ErrorToastText(r.Error, "Couldn't unlock the review."), ToastKind.Error);
         }
         finally { _busy = false; }
     }

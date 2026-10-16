@@ -1,0 +1,20 @@
+@inherits StoreComponent
+@inject IWalletStore Wallet
+@inject ISessionStore Session
+
+@* Diamond balance → Store. Hidden until the wallet is known. *@
+@if (Session.State.Status == SessionStatus.SignedIn && Wallet.State.Wallet is { } w)
+{
+    <a class="t-pill diamond-pill" href="store" aria-label="@($"{w.Diamonds} diamonds, open the store")" data-testid="diamond-pill">
+        <Icon Name="diamond" />@w.Diamonds
+    </a>
+}
+
+@code {
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Wallet, Session);
+        if (!Wallet.State.Loaded) await Wallet.LoadAsync();
+    }
+}

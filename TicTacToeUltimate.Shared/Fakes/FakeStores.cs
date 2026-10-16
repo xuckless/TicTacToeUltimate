@@ -147,6 +147,8 @@ public sealed class FakeProgressStore() : FakeStore<ProgressState>(new ProgressS
     /// <inheritdoc />
     public Task LoadAsync() => Task.CompletedTask;
     /// <inheritdoc />
+    public void Apply(ProgressDto progress) => Set(new ProgressState(progress, true));
+    /// <inheritdoc />
     public Task<RewardClaimResultDto> ClaimRewardAsync(RewardKind kind, Guid? gameId = null)
     { Calls.Add($"Claim:{kind}"); return Task.FromResult(new RewardClaimResultDto(true, null, State.Progress)); }
 }
@@ -197,6 +199,35 @@ public sealed class FakeAdCoordinator : IAdCoordinator
     public Task OnGameCompletedAsync(GameResultForUser result) { Completed.Add(result); return Task.CompletedTask; }
     /// <inheritdoc />
     public Task<RewardedAdResult> ShowRewardedAsync(RewardKind kind) => Task.FromResult(new RewardedAdResult(true, $"stub:{kind}:{Guid.Empty}"));
+    /// <summary>Last ad-free pass end.</summary>
+    public long? AdFreeUntilMs { get; private set; }
+    /// <inheritdoc />
+    public void SetAdFreeUntil(long? untilMs) => AdFreeUntilMs = untilMs;
+}
+
+/// <summary>Fake <see cref="IWalletStore"/> with a modest balance.</summary>
+public sealed class FakeWalletStore() : FakeStore<WalletState>(new WalletState(MockupFixtures.Wallet, [.. MockupFixtures.StoreItems], true)), IWalletStore
+{
+    /// <inheritdoc />
+    public Task LoadAsync() { Calls.Add("LoadWallet"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public Task<PurchaseResultDto> BuyAsync(string itemId, Guid? gameId = null)
+    {
+        Calls.Add($"Buy:{itemId}");
+        var item = State.Items.FirstOrDefault(i => i.Id == itemId);
+        if (item is null || State.Wallet is null || State.Wallet.Diamonds < item.Price) return Task.FromResult(new PurchaseResultDto(false, ErrorCodes.InsufficientDiamonds, null, null));
+        var w = State.Wallet with { Diamonds = State.Wallet.Diamonds - item.Price };
+        Set(State with { Wallet = w });
+        return Task.FromResult(new PurchaseResultDto(true, null, new StoreDto(w, [.. State.Items]), null));
+    }
+    /// <inheritdoc />
+    public Task<RewardClaimResultDto> WatchAdAsync()
+    {
+        Calls.Add("WatchAd");
+        var w = State.Wallet is { } x ? x with { Diamonds = x.Diamonds + x.AdReward, AdViewsToday = x.AdViewsToday + 1 } : null;
+        if (w is not null) Set(State with { Wallet = w });
+        return Task.FromResult(new RewardClaimResultDto(true, null, null) { Wallet = w });
+    }
 }
 
 /// <summary>Registers every fake store (tests and design previews).</summary>
@@ -210,6 +241,7 @@ public static class FakeServiceCollectionExtensions
         services.TryAddSingleton<FakeMatchStore>(); services.TryAddSingleton<IMatchStore>(sp => sp.GetRequiredService<FakeMatchStore>());
         services.TryAddSingleton<FakeSocialStore>(); services.TryAddSingleton<ISocialStore>(sp => sp.GetRequiredService<FakeSocialStore>());
         services.TryAddSingleton<FakeProgressStore>(); services.TryAddSingleton<IProgressStore>(sp => sp.GetRequiredService<FakeProgressStore>());
+        services.TryAddSingleton<FakeWalletStore>(); services.TryAddSingleton<IWalletStore>(sp => sp.GetRequiredService<FakeWalletStore>());
         services.TryAddSingleton<FakeActiveMatchesStore>(); services.TryAddSingleton<IActiveMatchesStore>(sp => sp.GetRequiredService<FakeActiveMatchesStore>());
         services.TryAddSingleton<FakeSettingsStore>(); services.TryAddSingleton<ISettingsStore>(sp => sp.GetRequiredService<FakeSettingsStore>());
         services.TryAddSingleton<FakeAdCoordinator>(); services.TryAddSingleton<IAdCoordinator>(sp => sp.GetRequiredService<FakeAdCoordinator>());

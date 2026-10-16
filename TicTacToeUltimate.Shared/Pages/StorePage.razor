@@ -1,0 +1,108 @@
+@page "/store"
+@inherits StoreComponent
+@inject IWalletStore Wallet
+@inject ISessionStore Session
+@inject IProgressStore Progress
+@inject ToastService Toasts
+
+<PageTitle>Store · Tic Tac Toe Ultimate</PageTitle>
+<h1 class="t-title">Store</h1>
+
+@if (Session.State.Status != SessionStatus.SignedIn)
+{
+    <Card><p class="t-small t-muted" style="margin:0">Sign in to earn and spend Diamonds.</p></Card>
+}
+else if (!Wallet.State.Loaded)
+{
+    <BertLoader Text="Counting your diamonds" Mood="think" />
+}
+else if (Wallet.State.Wallet is not { } w)
+{
+    <Card><div class="t-empty"><Bert Mood="shocked" Size="64" /><span>Couldn't load your wallet.</span><Button Variant="secondary" Small="true" OnClick="Wallet.LoadAsync">Retry</Button></div></Card>
+}
+else
+{
+    <section class="wallet-card" aria-label="Wallet" data-testid="wallet">
+        <div class="wallet-main">
+            <span class="wallet-gem" aria-hidden="true"><Icon Name="diamond" /></span>
+            <div>
+                <div class="wallet-balance" style="position:relative"><span data-testid="wallet-balance">@w.Diamonds</span><LocalBurst Trigger="_burst" Color="var(--diamond, #38d6ff)" /></div>
+                <div class="t-small t-muted">Diamonds · earned today @w.EarnedToday</div>
+            </div>
+        </div>
+        <p class="t-small t-muted" style="margin:6px 0 0">Earn Diamonds by winning (5), finishing quests (10 / 20 / 40), keeping your streak (3, 7, 14, 30, 100 days) and getting promoted (50).</p>
+        <div class="wallet-ad">
+            <Button Variant="primary" Small="true" OnClick="WatchAd" Disabled="@(_busy || w.AdViewsToday >= w.AdViewsPerDay)" data-testid="watch-ad">
+                <Icon Name="ad" /> Watch an ad · +@w.AdReward
+            </Button>
+            <span class="t-small t-muted">@w.AdViewsToday/@w.AdViewsPerDay today</span>
+        </div>
+    </section>
+
+    @foreach (var group in new[] { ("perk", "Perks"), ("pass", "Passes") })
+    {
+        var items = Wallet.State.Items.Where(i => i.Kind == group.Item1 && i.Id != "analysis").ToArray();
+        if (items.Length == 0) continue;
+        <h2 class="t-heading">@group.Item2</h2>
+        <section class="store-grid" aria-label="@group.Item2">
+            @foreach (var item in items)
+            {
+                var canAfford = w.Diamonds >= item.Price;
+                <article class="store-item @(item.Available ? null : "off")" data-testid="@($"store-{item.Id}")">
+                    <span class="store-ico" aria-hidden="true"><Icon Name="@item.Icon" /></span>
+                    <div class="store-text">
+                        <span class="store-name">@item.Title @(item.Owned is int n and > 0 ? $"· {n} banked" : "")</span>
+                        <span class="t-small t-muted">@item.Description</span>
+                        @if (!item.Available && item.Unavailable is { } why) { <span class="t-small store-why">@why</span> }
+                    </div>
+                    <Button Variant="@(item.Available && canAfford ? "primary" : "secondary")" Small="true" Disabled="@(_busy || !item.Available)" OnClick="() => Buy(item)">
+                        <Icon Name="diamond" /> @item.Price
+                    </Button>
+                </article>
+            }
+        </section>
+    }
+    <p class="t-small t-muted" style="margin-top:12px">Diamond packs for real money come later. Nothing here changes how the game plays.</p>
+}
+<AdSlot />
+
+@code {
+    private bool _busy;
+    private int _burst;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Wallet, Session, Progress);
+        if (!Wallet.State.Loaded) await Wallet.LoadAsync();
+    }
+
+    private async Task WatchAd()
+    {
+        _busy = true;
+        try
+        {
+            var r = await Wallet.WatchAdAsync();
+            if (r.Granted) { _burst++; Toasts.Show($"+{Wallet.State.Wallet?.AdReward ?? 15} Diamonds!", ToastKind.Success); }
+            else Toasts.Show(r.Error == ErrorCodes.RewardCapped ? "You've watched today's ads. Come back tomorrow!" : Ui.RewardFailText(r, "Watch the full ad to earn Diamonds."), ToastKind.Info);
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task Buy(StoreItemDto item)
+    {
+        _busy = true;
+        try
+        {
+            var r = await Wallet.BuyAsync(item.Id);
+            if (r.Ok) { _burst++; Toasts.Show($"{item.Title} — done!", ToastKind.Success); }
+            else Toasts.Show(r.Error switch
+            {
+                ErrorCodes.InsufficientDiamonds => $"You need {item.Price} Diamonds for that. Win games or watch an ad.",
+                ErrorCodes.ItemUnavailable => item.Unavailable ?? "That isn't available right now.",
+                _ => Ui.ErrorToastText(r.Error, "Couldn't complete the purchase."),
+            }, ToastKind.Error);
+        }
+        finally { _busy = false; }
+    }
+}

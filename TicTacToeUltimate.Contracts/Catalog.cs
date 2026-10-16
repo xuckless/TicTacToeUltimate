@@ -13,7 +13,8 @@ public enum PresenceStatus { Offline, Online, InGame }
 public enum AccountKind { Guest, Account, Bot, Deleted }
 public enum ClientPlatform { Web, iOS, Android, MacCatalyst }
 public enum LeaderboardScope { Global, Friends, Country, MasterSeason }
-public enum RewardKind { StreakFreeze, ExtraQuest, Analysis }
+/// <summary>Rewarded ads grant Diamonds only (2026-10-16); the other kinds stay for old clients and return reward_invalid.</summary>
+public enum RewardKind { StreakFreeze, ExtraQuest, Analysis, Diamonds }
 public enum ChallengeStatus { Open, Accepted, Declined, Cancelled, Expired }
 public enum FriendRequestDirection { Incoming, Outgoing }
 public enum FriendStatus { Self, None, Friends, RequestSent, RequestReceived, Blocked }
@@ -58,7 +59,7 @@ public static class ErrorCodes
         AnalysisUnavailable = "analysis_unavailable", RewardRequired = "reward_required", AdBlocked = "ad_blocked", ServerUpdating = "server_updating", RewardInvalid = "reward_invalid",
         RewardCapped = "reward_capped", RematchNotAllowed = "rematch_not_allowed", EmoteUnknown = "emote_unknown",
         Timeout = "timeout", ProtocolVersion = "protocol_version", Validation = "validation", Internal = "internal",
-        Forbidden = "forbidden";
+        Forbidden = "forbidden", InsufficientDiamonds = "insufficient_diamonds", ItemUnavailable = "item_unavailable";
 
     public static string FromMoveError(MoveError e) => e switch
     {

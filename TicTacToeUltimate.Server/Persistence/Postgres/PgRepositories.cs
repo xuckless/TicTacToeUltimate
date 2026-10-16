@@ -112,6 +112,12 @@ public sealed class PgUserRepository(PgDb db) : IUserRepository
         catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation) { return UsernameResult.Taken; }
     }
 
+    public async Task AddRenamesAsync(Guid id, int count, CancellationToken ct)
+    {
+        await using var c = await db.Source.OpenConnectionAsync(ct);
+        await c.ExecuteAsync("update players set renames_left = renames_left + @count where id = @id", new { id, count = (short)count });
+    }
+
     public async Task UpdateProfileAsync(Guid id, ProfilePatch p, CancellationToken ct)
     {
         await using var c = await db.Source.OpenConnectionAsync(ct);

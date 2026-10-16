@@ -59,9 +59,13 @@ public static class RewardCaps
 }
 
 /// <summary>POST /api/rewards/nonce + /api/rewards/claim logic (§6.7 Rewards).</summary>
+/// <remarks><see cref="AllowLegacyAdPerks"/> is a test seam: production ads grant Diamonds only.</remarks>
 public sealed class RewardService(RewardNonceService nonces, IRewardLedger ledger, IProgressRepository progress, IUserRepository users,
-    IGameRepository games, ProgressService progressService, UserLocks locks, TimeProvider time)
+    IGameRepository games, ProgressService progressService, TicTacToeUltimate.Server.Economy.WalletService wallet, UserLocks locks, TimeProvider time)
 {
+    /// <summary>Direct ad→perk grants (pre-economy behaviour). Off in production.</summary>
+    public bool AllowLegacyAdPerks { get; set; }
+
     /// <summary>Checks eligibility and mints a nonce; the client shows the ad only on success, so "capped" never follows an ad.</summary>
     public async Task<RewardNonceDto> IssueNonceAsync(Guid userId, RewardNonceRequestDto req, CancellationToken ct)
     {
@@ -84,6 +88,9 @@ public sealed class RewardService(RewardNonceService nonces, IRewardLedger ledge
             if (!await ledger.TryGrantAsync(grant, ct)) return new(false, ErrorCodes.RewardInvalid, null);   // nonce already redeemed
             switch (claim.Kind)
             {
+                case RewardKind.Diamonds:
+                    await wallet.GrantAsync(userId, TicTacToeUltimate.Server.Economy.EconomyRules.AdReward, TicTacToeUltimate.Server.Economy.EconomyRules.ReasonAd, claim.Receipt, ct);
+                    break;
                 case RewardKind.StreakFreeze:
                 {
                     var s = await progress.GetStreakAsync(userId, ct);
@@ -101,7 +108,7 @@ public sealed class RewardService(RewardNonceService nonces, IRewardLedger ledge
                     break;   // the grant row itself unlocks GET /api/games/{id}/analysis
             }
         }
-        return new(true, null, await progressService.GetAsync(userId, ct));
+        return new(true, null, await progressService.GetAsync(userId, ct)) { Wallet = await wallet.GetAsync(userId, ct) };
     }
 
     /// <summary>Null when the user may claim <paramref name="kind"/> now; otherwise reward_capped / reward_invalid.</summary>
@@ -110,6 +117,11 @@ public sealed class RewardService(RewardNonceService nonces, IRewardLedger ledge
         var now = time.GetUtcNow();
         switch (kind)
         {
+            case RewardKind.Diamonds:
+                return gameId is not null ? ErrorCodes.RewardInvalid : await wallet.CanWatchAdAsync(userId, ct) ? null : ErrorCodes.RewardCapped;
+            // Owner decision 2026-10-16: ads pay Diamonds only; perks are bought in the store. Old clients asking for a direct perk get reward_invalid.
+            case RewardKind.StreakFreeze or RewardKind.ExtraQuest or RewardKind.Analysis when !AllowLegacyAdPerks:
+                return ErrorCodes.RewardInvalid;
             case RewardKind.StreakFreeze:
             {
                 if (gameId is not null) return ErrorCodes.RewardInvalid;

@@ -57,7 +57,13 @@ public sealed record CommandAckDto(bool Ok, string? Error);
 
 public sealed record PostGameSummaryDto(Guid MatchId, MatchResultDto Result, GameResultForUser YourResult,
     RatingChangeDto? Rating, TierChangeDto? Tier, int WinStreak, ProgressDto? Progress,
-    bool AnalysisAvailable, int? YourBlunders, bool RematchAllowed);
+    bool AnalysisAvailable, int? YourBlunders, bool RematchAllowed)
+{
+    /// <summary>Diamonds this game paid (win/loss payout + quests + streak milestones + promotion); 0 for challenges, rematches and bot games.</summary>
+    public int DiamondsEarned { get; init; }
+    /// <summary>Wallet after the payout.</summary>
+    public WalletDto? Wallet { get; init; }
+}
 
 public sealed record QueueRequestDto(TimeControl TimeControl);
 public sealed record QueueTicketDto(bool Accepted, string? Error, TimeControl TimeControl, long EnqueuedAtMs);

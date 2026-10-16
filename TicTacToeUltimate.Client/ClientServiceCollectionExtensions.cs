@@ -39,6 +39,8 @@ public static class ClientServiceCollectionExtensions
         services.AddSingleton<IMatchStore>(sp => sp.GetRequiredService<MatchStore>());
         services.AddSingleton<SocialStore>();
         services.AddSingleton<ISocialStore>(sp => sp.GetRequiredService<SocialStore>());
+        services.AddSingleton<WalletStore>();
+        services.AddSingleton<IWalletStore>(sp => sp.GetRequiredService<WalletStore>());
         services.AddSingleton<ActiveMatchesStore>();
         services.AddSingleton<IActiveMatchesStore>(sp => sp.GetRequiredService<ActiveMatchesStore>());
         services.AddSingleton<ProgressStore>();

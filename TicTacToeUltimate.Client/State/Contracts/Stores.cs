@@ -125,11 +125,25 @@ public interface IActiveMatchesStore : IStore<ActiveMatchesState>
     void Forget(Guid matchId);
 }
 
+/// <summary>Diamonds wallet + store catalogue.</summary>
+public sealed record WalletState(WalletDto? Wallet, ImmutableArray<StoreItemDto> Items, bool Loaded)
+{ public static WalletState Empty { get; } = new(null, [], false); }
+public interface IWalletStore : IStore<WalletState>
+{
+    Task LoadAsync();
+    /// <summary>Buys an item (gameId for the single-game review).</summary>
+    Task<PurchaseResultDto> BuyAsync(string itemId, Guid? gameId = null);
+    /// <summary>Rewarded ad for Diamonds (nonce → ad → claim).</summary>
+    Task<RewardClaimResultDto> WatchAdAsync();
+}
+
 public sealed record ProgressState(ProgressDto? Progress, bool Loaded)
 { public static ProgressState Empty { get; } = new(null, false); }
 public interface IProgressStore : IStore<ProgressState>
 {
     Task LoadAsync();
+    /// <summary>Applies progress returned by another call (store purchase, reward).</summary>
+    void Apply(ProgressDto progress);
     /// <summary>Shows a rewarded ad via IAdCoordinator, then POST /api/rewards/claim. Returns the claim result.</summary>
     Task<RewardClaimResultDto> ClaimRewardAsync(RewardKind kind, Guid? gameId = null);
 }
@@ -163,4 +177,6 @@ public interface IAdCoordinator
     void SetMatchRouteActive(bool active);           // called by MatchLayout (WP6)
     Task OnGameCompletedAsync(GameResultForUser result);   // AdPolicy decides; never shows during a match route
     Task<RewardedAdResult> ShowRewardedAsync(RewardKind kind);
+    /// <summary>Store pass: no interstitials until this server time (null = none).</summary>
+    void SetAdFreeUntil(long? untilMs);
 }

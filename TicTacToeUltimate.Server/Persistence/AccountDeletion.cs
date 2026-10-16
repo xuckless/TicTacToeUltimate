@@ -42,6 +42,9 @@ public sealed class PgAccountDeletionStore(PgDb db) : IAccountDeletionStore
             delete from streaks where user_id = @id;
             delete from quest_days where user_id = @id;
             delete from reward_grants where user_id = @id;
+            delete from diamond_ledger where user_id = @id;
+            delete from wallets where user_id = @id;
+            delete from inventory where user_id = @id;
             delete from friend_requests where from_id = @id or to_id = @id;
             delete from friendships where user_lo = @id or user_hi = @id;
             delete from blocks where blocker = @id or blocked = @id;
@@ -60,7 +63,7 @@ public sealed class PgAccountDeletionStore(PgDb db) : IAccountDeletionStore
 /// <summary>InMemory: delegates to each store.</summary>
 public sealed class InMemoryAccountDeletionStore(IUserRepository users, IRatingRepository ratings, IGameRepository games, IProgressRepository progress,
     IFriendRepository friends, IChatRepository chat, IChallengeRepository challenges, IBotKeyRepository botKeys, IRewardLedger ledger,
-    TimeProvider time) : IAccountDeletionStore
+    IWalletRepository wallets, TimeProvider time) : IAccountDeletionStore
 {
     /// <inheritdoc />
     public Task DeleteAsync(Guid userId, CancellationToken ct)
@@ -74,6 +77,7 @@ public sealed class InMemoryAccountDeletionStore(IUserRepository users, IRatingR
         (challenges as InMemoryChallengeRepository)?.RemoveUser(userId);
         (botKeys as InMemoryBotKeyRepository)?.RevokeOwner(userId, time.GetUtcNow());
         (ledger as InMemoryRewardLedger)?.RemoveUser(userId);
+        (wallets as InMemoryWalletRepository)?.RemoveUser(userId);
         return Task.CompletedTask;
     }
 }
