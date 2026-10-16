@@ -41,7 +41,7 @@ public static class MauiProgram
         {
             BackendBaseUrl = new Uri(ReadBackendBaseUrl() ?? DefaultBackendUrl()),
 #if DEBUG
-            WebBaseUrl = new Uri("http://localhost:5028"),
+            WebBaseUrl = new Uri(DeviceInfo.DeviceType == DeviceType.Physical ? ProductionUrl : "http://localhost:5028"),
 #else
             WebBaseUrl = new Uri(ProductionUrl),
 #endif
@@ -85,10 +85,12 @@ public static class MauiProgram
     /// <summary>Production site; it also proxies the game API (/api, /hubs).</summary>
     private const string ProductionUrl = "https://tictactoeultimate.alidirect.dev";
 
-    // Debug talks to the local dev server; Release builds (store/TestFlight) talk to production.
+    // Debug on a simulator/emulator talks to the local dev server; Debug on a real phone (no "localhost" there) and every
+    // Release build talk to production. Override with Backend.BaseUrl in Resources/Raw/appsettings.json.
     private static string DefaultBackendUrl()
 #if DEBUG
-        => DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5091" : "http://localhost:5091";
+        => DeviceInfo.DeviceType == DeviceType.Physical ? ProductionUrl
+            : DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5091" : "http://localhost:5091";
 #else
         => ProductionUrl;
 #endif
