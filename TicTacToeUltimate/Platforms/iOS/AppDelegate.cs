@@ -16,10 +16,12 @@ public class AppDelegate : MauiUIApplicationDelegate, UserNotifications.IUNUserN
     }
 
     /// <summary>APNs device token → PushService (sent to the server after Hello).</summary>
-    public override void RegisteredForRemoteNotifications(UIApplication application, NSData deviceToken)
+    [Export("application:didRegisterForRemoteNotificationsWithDeviceToken:")]
+    public void RegisteredForRemoteNotifications(UIApplication application, NSData deviceToken)
         => PushService.SetToken(Convert.ToHexString(deviceToken.ToArray()).ToLowerInvariant());
 
-    public override void FailedToRegisterForRemoteNotifications(UIApplication application, NSError error) => PushService.SetToken(null);
+    [Export("application:didFailToRegisterForRemoteNotificationsWithError:")]
+    public void FailedToRegisterForRemoteNotifications(UIApplication application, NSError error) => PushService.SetToken(null);
 
     /// <summary>A tapped notification opens its link (e.g. social/chat/{id}, play?tc=Casual).</summary>
     [Export("userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:")]
