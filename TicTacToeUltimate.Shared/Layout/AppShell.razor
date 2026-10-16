@@ -5,7 +5,7 @@
 <Wallpaper />
 <div class="shell">
     <aside class="t-side" aria-label="Sidebar">
-        <div class="brand"><BounceText Text="TTT Ultimate" /></div>
+        <a class="brand" href="" aria-label="TTT Ultimate home"><img src="_content/TicTacToeUltimate.Shared/img/favicon.svg" alt="" /></a>
         @foreach (var item in Primary)
         {
             <NavLink href="@item.Href" Match="@item.Match"><Icon Name="@item.Icon" />@item.Label</NavLink>

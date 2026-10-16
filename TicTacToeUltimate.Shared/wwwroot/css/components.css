@@ -80,11 +80,11 @@ a { color: var(--primary); }
 
 /* Board */
 .t-board { position: relative; display: grid; gap: var(--space-2); padding: var(--space-3); background: var(--surface); border-radius: var(--radius-lg);
-  width: min(92vw, 60vh, 520px); aspect-ratio: 1; }
+  width: var(--board); height: var(--board); max-width: 100%; aspect-ratio: 1; box-sizing: border-box; flex: none; }
 .t-board--mini { width: 64px; padding: 4px; gap: 2px; border-radius: var(--radius-sm); background: var(--surface-raised); }
 .t-board--mini .t-cell { font-size: 14px; border-radius: 4px; box-shadow: none; min-width: 0; min-height: 0; background: var(--surface); cursor: default; }
 .t-cell { position: relative; background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--ledge-neutral); display: grid; place-items: center;
-  font: 400 clamp(28px, 13vw, 72px)/1 var(--font-headline); border: 0; color: var(--ink); cursor: pointer; min-width: 44px; min-height: 44px; padding: 0;
+  font: 400 calc(var(--board) * .17)/1 var(--font-headline); border: 0; color: var(--ink); cursor: pointer; min-width: 44px; min-height: 44px; padding: 0;
   overflow: hidden; contain: size; } /* fixed track size: glyphs must never resize rows */
 .t-cell:disabled { cursor: default; }
 .t-cell.x { color: var(--piece-x); } .t-cell.o { color: var(--piece-o); }
@@ -127,10 +127,15 @@ a { color: var(--primary); }
   font: 800 11px/14px var(--font-sans); letter-spacing: var(--label-tracking); text-transform: uppercase; }
 .t-nav a .t-icon { width: 24px; height: 24px; }
 .t-nav a[aria-current], .t-nav a.active { color: var(--primary); }
-.t-side { display: flex; flex-direction: column; gap: var(--space-1); background: var(--surface); border-right: 1px solid var(--line); padding: var(--space-4); }
-.t-side .brand { font: 400 22px/1 var(--font-headline); padding: var(--space-2) var(--space-3) var(--space-6); }
-.t-side a { display: flex; align-items: center; gap: var(--space-3); min-height: 48px; padding: 0 var(--space-3); border-radius: var(--radius-md); color: var(--ink-muted);
-  text-decoration: none; font: var(--type-label); letter-spacing: var(--label-tracking); text-transform: uppercase; }
+/* Desktop: slim icon rail (84px) with tiny labels; the game column stays centered at --col. */
+.t-side { display: flex; flex-direction: column; align-items: stretch; gap: 2px; background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(6px);
+  border-right: 1px solid var(--line); padding: var(--space-3) var(--space-2); overflow-y: auto; }
+.t-side .brand { display: grid; place-items: center; padding: 0 0 var(--space-3); }
+.t-side .brand img { width: 44px; height: 44px; }
+.t-side hr { margin: var(--space-2) 0; }
+.t-side a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 56px; padding: 6px 2px; border-radius: var(--radius-md); color: var(--ink-muted);
+  text-decoration: none; font: 600 10px/12px var(--font-sans); letter-spacing: .02em; text-align: center; }
+.t-side a .t-icon { width: 26px; height: 26px; }
 .t-side a:hover { background: var(--surface-raised); }
 .t-side a.active { color: var(--primary); background: var(--surface-raised); }
 
