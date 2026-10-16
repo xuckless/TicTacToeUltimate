@@ -123,9 +123,9 @@ a { color: var(--primary); }
 .t-quest .done { color: var(--success); }
 
 /* Bottom nav + sidebar */
-.t-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0); }
-.t-nav a { display: grid; justify-items: center; gap: 4px; padding: 10px 0 12px; min-height: 56px; color: var(--ink-muted); text-decoration: none;
-  font: 800 11px/14px var(--font-sans); letter-spacing: var(--label-tracking); text-transform: uppercase; }
+.t-nav { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0); }
+.t-nav a { display: grid; justify-items: center; gap: 4px; padding: 10px 2px 12px; min-height: 56px; min-width: 0; color: var(--ink-muted); text-decoration: none;
+  font: 800 10px/14px var(--font-sans); letter-spacing: .02em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .t-nav a .t-icon { width: 24px; height: 24px; }
 .t-nav a[aria-current], .t-nav a.active { color: var(--primary); }
 /* Desktop: slim icon rail (84px) with tiny labels; the game column stays centered at --col. */
