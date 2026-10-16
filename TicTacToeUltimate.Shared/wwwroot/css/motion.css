@@ -14,10 +14,6 @@
 .t-cell .glyph.vanishing { display: inline-block; animation: ttt-vanish 220ms ease-in forwards; }
 .t-winline line { stroke-dasharray: 1; stroke-dashoffset: 0; animation: ttt-draw 260ms ease-out; }
 .t-clock.sd { animation: ttt-pulse 1s ease-in-out infinite; }
-.match.sd { animation: ttt-alert-breathe 1.2s ease-in-out infinite; }
-.match.sd-2 { animation-duration: .8s; }
-.match.sd-3 { animation-duration: .55s; }
-.match.crit { animation-duration: .35s; }
 .match.crit .t-clock.sd { animation-duration: .5s; }
 .impact .flash { animation: ttt-flash 600ms ease-out forwards; }
 .impact .sil { animation: ttt-sil 900ms linear forwards; }
@@ -43,7 +39,6 @@
 .arena-hp.hit-1 .arena-hp-track { animation: ttt-hp-hit-b 360ms ease-out; }
 .arena-combo.broken { animation: ttt-combo-break 420ms ease-out; }
 .arena-hp-ghost { animation: ttt-ghost-flash .7s ease-in-out infinite; }
-.match.arena-red { animation: ttt-alert-breathe 1s ease-in-out infinite; }
 .impact[data-kind="crit"] .text { font-size: 64px; color: var(--streak); }
 .impact[data-kind="crit"] { animation: ttt-shake 90ms linear 5; }
 .impact[data-kind="shatter"] .flash { animation-duration: 260ms; opacity: .6; }

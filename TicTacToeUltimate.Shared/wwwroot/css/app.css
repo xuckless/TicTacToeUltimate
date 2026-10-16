@@ -51,11 +51,6 @@ body { min-height: 100dvh; }
 .match-over { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: rgb(0 0 0 / .5); }
 .match-over .t-card { align-items: center; text-align: center; min-width: 260px; }
 /* Escalating sudden-death red alert: level 1 (window >= 8s), 2 (5-7s), 3 (<= 4s), crit (<= 3s left). */
-.match.sd { box-shadow: inset 0 0 0 4px var(--alert-fill), inset 0 0 90px #5c0f22; }
-.match.sd-2 { box-shadow: inset 0 0 0 5px var(--alert-fill), inset 0 0 130px #7a1024; }
-.match.sd-3 { box-shadow: inset 0 0 0 6px var(--alert-fill), inset 0 0 170px #a3142f; }
-.match.crit { box-shadow: inset 0 0 0 8px var(--alert-fill), inset 0 0 220px #c0193a; }
-:root[data-theme="light"] .match.sd { box-shadow: inset 0 0 0 4px var(--alert-fill), inset 0 0 90px #f3b6c2; }
 .conn-banner { background: var(--surface-raised); color: var(--ink); text-align: center; padding: 6px var(--space-4); font: var(--type-body-sm); }
 .conn-banner.offline { background: var(--alert-fill); color: var(--on-primary); }
 .swap-choices { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
@@ -139,3 +134,18 @@ body { min-height: 100dvh; }
 .wallpaper.sd.crit i { animation-duration: calc(var(--d) * .28); }
 @media (prefers-reduced-motion: reduce) { .wallpaper i { animation: none; top: var(--y); transform: rotate(var(--r0)); } }
 :root[data-motion="reduce"] .wallpaper i { animation: none; top: var(--y); transform: rotate(var(--r0)); }
+
+/* Sudden death: a glow that hugs the whole viewport edge (browser window or phone screen), not the game column.
+   Intensity steps with the shrinking move window (sd-1..3) and peaks at <=3s (crit). */
+.sd-edge { position: fixed; inset: 0; z-index: 40; pointer-events: none; opacity: 0; transition: opacity .35s ease;
+  border-radius: var(--screen-radius, 0); --edge: 4px; --glow: 90px; --glow-color: #5c0f22; --rate: 1.2s;
+  box-shadow: inset 0 0 0 var(--edge) var(--alert-fill), inset 0 0 var(--glow) var(--glow-color), inset 0 0 calc(var(--glow) * .35) var(--alert-fill); }
+.sd-edge.sd { opacity: 1; animation: sd-edge-breathe var(--rate) ease-in-out infinite; }
+.sd-edge.sd-2 { --edge: 5px; --glow: 130px; --glow-color: #7a1024; --rate: .8s; }
+.sd-edge.sd-3 { --edge: 6px; --glow: 170px; --glow-color: #a3142f; --rate: .55s; }
+.sd-edge.crit { --edge: 8px; --glow: 220px; --glow-color: #c0193a; --rate: .35s; }
+:root[data-theme="light"] .sd-edge { --glow-color: #f3b6c2; }
+@keyframes sd-edge-breathe { 0%, 100% { opacity: .75; } 50% { opacity: 1; filter: brightness(1.3); } }
+@media (prefers-reduced-motion: reduce) { .sd-edge.sd { animation: none; } }
+:root[data-motion="reduce"] .sd-edge.sd { animation: none; }
+.sd-edge.arena-red { --glow-color: #6a0f26; --rate: 1s; }

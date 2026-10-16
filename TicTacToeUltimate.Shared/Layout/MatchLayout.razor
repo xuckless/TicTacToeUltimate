@@ -5,6 +5,7 @@
 @implements IDisposable
 
 <Wallpaper />
+<div class="sd-edge @Ambience.Edge" aria-hidden="true"></div>
 <div class="match-shell">
     <CascadingValue Name="AdsAllowed" Value="false" IsFixed="true">
         @Body
@@ -19,12 +20,16 @@
     {
         Ads?.SetMatchRouteActive(true);
         Ambience.Set(AmbienceMode.Match);
+        Ambience.Changed += OnAmbience;
     }
+
+    private void OnAmbience() => InvokeAsync(StateHasChanged);
 
     /// <inheritdoc />
     public void Dispose()
     {
         Ads?.SetMatchRouteActive(false);
+        Ambience.Changed -= OnAmbience;
         Ambience.Set(AmbienceMode.Menu);
     }
 }

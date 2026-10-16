@@ -229,7 +229,7 @@ else
 
     private void OnChanged()
     {
-        if (_g is { } g) Ambience.Set(AmbienceMode.Match, g.SuddenDeath, g.Urgency);
+        if (_g is { } g) Ambience.Set(AmbienceMode.Match, g.SuddenDeath, g.Urgency, AlertClass);
         _ = InvokeAsync(StateHasChanged);
     }
 

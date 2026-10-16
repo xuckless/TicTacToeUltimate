@@ -155,7 +155,8 @@ else
         if (_view is null) return;
         _clock = Matches.GetClock(Id);
         var sd = InSuddenDeath;
-        Ambience.Set(AmbienceMode.Match, sd, Ended ? ClockUrgency.Idle : _clock?.Urgency ?? ClockUrgency.Idle);
+        var edge = AlertClass;
+        Ambience.Set(AmbienceMode.Match, sd || edge.Contains("sd"), Ended ? ClockUrgency.Idle : _clock?.Urgency ?? ClockUrgency.Idle, edge);
         if (_prevSd == false && sd && !Ended) Impact("suddendeath", "SUDDEN DEATH", "alert-fill");
         _prevSd = sd;
         DeriveArena();

@@ -217,7 +217,6 @@ a { color: var(--primary); }
 .arena-card-head .sub { font: var(--type-body-sm); opacity: .9; }
 .arena-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .arena-chip { background: var(--alert-fill); color: var(--on-primary); }
-.match.arena-red { box-shadow: inset 0 0 0 4px var(--alert-fill), inset 0 0 120px #6a0f26; }
 
 /* BounceText: Luckiest Guy headlines with letters stepping up and down. */
 .t-bounce { display: inline-block; font-family: var(--font-headline); font-weight: 400; white-space: pre; text-transform: uppercase; }

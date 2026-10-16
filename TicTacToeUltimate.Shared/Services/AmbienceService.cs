@@ -14,14 +14,16 @@ public sealed class AmbienceService
     public bool SuddenDeath { get; private set; }
     /// <summary>Urgency of the clock of the player to move.</summary>
     public ClockUrgency Urgency { get; private set; } = ClockUrgency.Idle;
+    /// <summary>Alert intensity classes for the screen-edge glow ("sd sd-2 crit", "sd sd-1 arena-red", ...); empty = none.</summary>
+    public string Edge { get; private set; } = "";
     /// <summary>Raised when any value changes.</summary>
     public event Action? Changed;
 
     /// <summary>Updates the ambience; no-op when nothing changed.</summary>
-    public void Set(AmbienceMode mode, bool suddenDeath = false, ClockUrgency urgency = ClockUrgency.Idle)
+    public void Set(AmbienceMode mode, bool suddenDeath = false, ClockUrgency urgency = ClockUrgency.Idle, string edge = "")
     {
-        if (mode == Mode && suddenDeath == SuddenDeath && urgency == Urgency) return;
-        (Mode, SuddenDeath, Urgency) = (mode, suddenDeath, urgency);
+        if (mode == Mode && suddenDeath == SuddenDeath && urgency == Urgency && edge == Edge) return;
+        (Mode, SuddenDeath, Urgency, Edge) = (mode, suddenDeath, urgency, edge);
         Changed?.Invoke();
     }
 }
