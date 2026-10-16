@@ -30,11 +30,20 @@ otp_length = 6
 otp_expiry = 600
 max_frequency = "30s"
 
-# Custom templates need a paid plan or custom SMTP (Resend). Until then the default magic-link email is sent; the
-# sign-in screen accepts the link too. After SMTP is set up, uncomment and `supabase config push`.
-# [auth.email.template.magic_link]
-# subject = "Your Tic Tac Toe Ultimate code: {{ .Token }}"
-# content_path = "./supabase/templates/code.html"
+# Outgoing auth email through Resend (domain alidirect.dev verified in Resend; the key lives in .env as RESEND_API_KEY and is
+# passed to `supabase config push` from the environment, never committed). From/replies: email@alidirect.dev (owner's inbox).
+[auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_API_KEY)"
+admin_email = "email@alidirect.dev"
+sender_name = "Tic Tac Toe Ultimate"
+
+[auth.email.template.magic_link]
+subject = "Your Tic Tac Toe Ultimate code: {{ .Token }}"
+content_path = "./supabase/templates/code.html"
 
 [auth.external.google]
 enabled = false
