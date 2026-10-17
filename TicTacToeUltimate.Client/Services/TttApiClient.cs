@@ -134,7 +134,18 @@ public sealed class TttApiClient(HttpClient http, TokenStore tokens, TicTacToeUl
         catch (TttApiException e) when (e.Status == HttpStatusCode.NotFound) { return default; }
     }
 
+    // The browser aborts in-flight fetches by itself (the computer slept, the tab was frozen or the network changed). In WASM that
+    // surfaces as a JSException "AbortError" instead of an HttpRequestException, so callers' network-error handling missed it.
     private async Task<T?> Send<T>(HttpMethod method, string path, object? body, CancellationToken ct = default)
+    {
+        try { return await SendCore<T>(method, path, body, ct).ConfigureAwait(false); }
+        catch (Exception e) when (Diagnostics.BrowserAbort.Is(e) && !ct.IsCancellationRequested)
+        {
+            throw new HttpRequestException("The browser aborted the request.", e);
+        }
+    }
+
+    private async Task<T?> SendCore<T>(HttpMethod method, string path, object? body, CancellationToken ct)
     {
         using var req = new HttpRequestMessage(method, path);
         if (tokens.Token is { Length: > 0 } token) req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);

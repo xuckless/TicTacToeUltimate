@@ -186,7 +186,9 @@ public sealed class FakeGameQueries : IGameQueries
     public Task<IReadOnlyList<GameSummaryDto>> GetHistoryAsync(Guid userId, DateTimeOffset? before = null, int take = 20)
         => Task.FromResult<IReadOnlyList<GameSummaryDto>>(before is null ? MockupFixtures.RecentGames : []);
     /// <inheritdoc />
-    public Task<GameRecordDto?> GetGameAsync(Guid gameId) => Task.FromResult<GameRecordDto?>(null);
+    public Task<GameRecordDto?> GetGameAsync(Guid gameId) => Task.FromResult(Game);
+    /// <summary>The game <see cref="GetGameAsync"/> returns (tests).</summary>
+    public GameRecordDto? Game { get; set; }
     /// <inheritdoc />
     public Task<(GameAnalysisDto? Analysis, string? Error)> GetAnalysisAsync(Guid gameId) => Task.FromResult<(GameAnalysisDto?, string?)>((null, ErrorCodes.AnalysisUnavailable));
     /// <inheritdoc />
