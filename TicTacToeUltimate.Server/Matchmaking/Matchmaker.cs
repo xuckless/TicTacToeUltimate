@@ -29,6 +29,8 @@ public sealed class QueueEntry(Guid userId, string displayName, AccountKind kind
     public long? DisconnectedAtMs { get; set; }
     /// <summary>Guest pool.</summary>
     public bool IsGuest => Kind == AccountKind.Guest;
+    /// <summary>Anti-cheat shadow pool: paired only with other shadow players or bots (owner decision 2026-10-16).</summary>
+    public bool Shadow { get; init; }
 }
 
 /// <summary>Queue commands.</summary>
@@ -51,6 +53,9 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
     private readonly List<QueueEntry> _entries = [];
     private long _lastStatusMs = long.MinValue / 2;
     private readonly HashSet<QueueEntry> _dispatched = [];
+
+    /// <summary>Players waiting per time control, published each tick (safe to read from any thread: admin live view).</summary>
+    public IReadOnlyDictionary<TimeControl, int> QueueCounts { get; private set; } = new Dictionary<TimeControl, int>();
 
     /// <summary>Posts a command; applied on the next tick.</summary>
     public void Post(QueueCommand command) => _commands.Writer.TryWrite(command);
@@ -114,6 +119,7 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
             await CreateBotMatchAsync(e, bot, ct).ConfigureAwait(false);
         }
 
+        QueueCounts = _entries.GroupBy(e => e.TimeControl).ToDictionary(g => g.Key, g => g.Count());
         if (now - _lastStatusMs >= 1000)
         {
             _lastStatusMs = now;
@@ -128,6 +134,7 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
     /// <summary>True when the queue plus the online population near this player's rating is below MinNearbyPlayers.</summary>
     private bool ThinBand(QueueEntry e)
     {
+        if (e.Shadow) return true;               // shadow pool: a strong bot right away
         if (population is null) return false;   // no population data (tests / minimal hosts): normal timings
         var o = options.Matchmaking;
         var queued = _entries.Count(x => x != e && x.TimeControl == e.TimeControl && x.DisconnectedAtMs is null && Math.Abs(x.Rating - e.Rating) <= o.ThinBandWindow);
@@ -202,6 +209,7 @@ public sealed class Matchmaker(IMatchGateway gateway, UserActivityRegistry activ
     public static bool CanPair(QueueEntry a, QueueEntry b, long nowMs, MatchmakingOptions o)
     {
         if (a.UserId == b.UserId || a.TimeControl != b.TimeControl) return false;
+        if (a.Shadow != b.Shadow) return false;   // flagged players never meet clean humans
         if (a.IsGuest != b.IsGuest)
         {
             var guest = a.IsGuest ? a : b;

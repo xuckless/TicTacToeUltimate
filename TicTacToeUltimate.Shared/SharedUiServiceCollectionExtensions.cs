@@ -29,6 +29,11 @@ public static class SharedUiServiceCollectionExtensions
         services.TryAddSingleton<AdOverlayService>();
         services.TryAddSingleton<IAdOverlay>(sp => sp.GetRequiredService<AdOverlayService>());
         services.TryAddSingleton<ToastService>();
+        services.TryAddSingleton<Localizer>();
+        services.TryAddSingleton<TicTacToeUltimate.Shared.Platform.CurrentRoute>();
+        services.TryAddSingleton<TicTacToeUltimate.Client.Diagnostics.ICurrentRoute>(sp => sp.GetRequiredService<TicTacToeUltimate.Shared.Platform.CurrentRoute>());
+        services.TryAddSingleton<TicTacToeUltimate.Client.Diagnostics.IDeviceDescription, TicTacToeUltimate.Shared.Platform.JsDeviceDescription>();
+        services.TryAddSingleton<TicTacToeUltimate.Client.Diagnostics.IScreenshotProvider, TicTacToeUltimate.Shared.Platform.JsScreenshotProvider>();
         return services;
     }
 }

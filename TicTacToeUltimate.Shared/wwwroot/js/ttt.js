@@ -168,3 +168,141 @@ export function setMotion(mode) {
 export function focusCell(boardEl, index) {
   try { const cells = boardEl.querySelectorAll('[data-cell]'); cells[index]?.focus(); } catch { }
 }
+
+// ---------- Diagnostics (crash + bug reports, 2026-10-16) ----------
+let diagInstalled = false;
+// Taps go to the recent-actions trail by label (data-testid, aria-label or short text; never input values or chat text).
+// Uncaught JS errors and promise rejections are reported as crashes.
+export function diagInstall(dotnetRef) {
+  if (diagInstalled) return;
+  diagInstalled = true;
+  document.addEventListener('click', e => {
+    try {
+      const el = e.target && e.target.closest ? e.target.closest('button,a,[role=button],[data-testid],input[type=checkbox]') : null;
+      if (!el) return;
+      const label = el.getAttribute('data-testid') || el.getAttribute('aria-label')
+        || (el.closest('.chat, .msg, textarea, input[type=text]') ? '(chat)' : (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40));
+      dotnetRef.invokeMethodAsync('OnTap', (el.tagName || '').toLowerCase() + ':' + label);
+    } catch { }
+  }, { capture: true, passive: true });
+  window.addEventListener('error', e => {
+    try {
+      const err = e.error;
+      dotnetRef.invokeMethodAsync('OnJsError', err && err.name ? err.name : 'Error', String(e.message || err || 'script error'),
+        String((err && err.stack) || (e.filename ? e.filename + ':' + e.lineno + ':' + e.colno : '')));
+    } catch { }
+  });
+  window.addEventListener('unhandledrejection', e => {
+    try {
+      const r = e.reason;
+      dotnetRef.invokeMethodAsync('OnJsError', 'UnhandledRejection', String((r && r.message) || r || 'rejected promise'), String((r && r.stack) || ''));
+    } catch { }
+  });
+}
+
+export function diagDescribe() {
+  const ua = navigator.userAgent || '';
+  const os = /Windows/.test(ua) ? 'Windows' : /iPhone|iPad|iPod/.test(ua) ? 'iOS' : /Android/.test(ua) ? 'Android' : /Mac OS X/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : 'Unknown';
+  return { os, device: null, browser: ua.slice(0, 300), screen: `${window.innerWidth}x${window.innerHeight}@${window.devicePixelRatio || 1}`,
+           locale: (navigator.languages && navigator.languages[0]) || navigator.language || null };
+}
+
+let h2c = null;
+function loadHtml2Canvas() {
+  if (window.html2canvas) return Promise.resolve(window.html2canvas);
+  if (!h2c) h2c = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = new URL('./vendor/html2canvas.min.js', import.meta.url).href;
+    s.onload = () => resolve(window.html2canvas);
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  return h2c;
+}
+
+// PNG (base64, no prefix) of what the player sees, max 720 px wide; null on failure.
+export async function diagScreenshot() {
+  try {
+    const html2canvas = await loadHtml2Canvas();
+    const scale = Math.min(1, 720 / Math.max(1, window.innerWidth));
+    const canvas = await html2canvas(document.body, { scale, useCORS: true, logging: false, backgroundColor: getComputedStyle(document.body).backgroundColor,
+      width: window.innerWidth, height: window.innerHeight, x: window.scrollX, y: window.scrollY });
+    return canvas.toDataURL('image/png').split(',')[1] || null;
+  } catch { return null; }
+}
+
+// ---------- Language (2026-10-16) ----------
+export function languages() {
+  return (navigator.languages && navigator.languages.length ? Array.from(navigator.languages) : [navigator.language || 'en']);
+}
+// Catalogs live next to this module: _content/TicTacToeUltimate.Shared/i18n/<code>.json (web and the MAUI web view alike).
+export async function loadCatalog(code) {
+  try {
+    const res = await fetch(new URL(`../i18n/${code}.json`, import.meta.url), { cache: 'force-cache' });
+    return res.ok ? await res.text() : null;
+  } catch { return null; }
+}
+export function setDocLang(lang, rtl) {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+}
+
+// ---------- Text size (accessibility, 2026-10-16) ----------
+// Font sizes are in rem, so the root size carries the phone's text-size setting into the whole app.
+export function setTextScale(scale) {
+  const s = Math.min(1.35, Math.max(1, Number(scale) || 1));
+  document.documentElement.style.fontSize = s === 1 ? '' : `${16 * s}px`;
+}
+
+// ---------- Dialog focus (accessibility, WCAG 2.4.3 / 2.1.2, 2026-10-16) ----------
+// Every [role=dialog][aria-modal=true] the app renders gets the same behaviour, without per-component code: focus moves
+// into it, Tab cycles inside it, Escape presses its [data-dialog-close] button (if it has one), and when it goes away focus
+// returns to whatever opened it.
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+let a11yInstalled = false;
+const openDialogs = [];
+function focusables(d) { return Array.from(d.querySelectorAll(FOCUSABLE)).filter(e => e.offsetParent !== null || e === document.activeElement); }
+function onDialogAdded(d) {
+  if (openDialogs.some(o => o.el === d)) return;
+  openDialogs.push({ el: d, opener: document.activeElement });
+  requestAnimationFrame(() => {
+    if (!d.contains(document.activeElement)) {
+      const first = d.querySelector('[autofocus]') || focusables(d)[0];
+      if (first) first.focus(); else { d.setAttribute('tabindex', '-1'); d.focus(); }
+    }
+  });
+}
+function onDialogRemoved(entry) {
+  const i = openDialogs.indexOf(entry);
+  if (i >= 0) openDialogs.splice(i, 1);
+  if (entry.opener && document.contains(entry.opener) && typeof entry.opener.focus === 'function') entry.opener.focus();
+}
+export function a11yInstall() {
+  if (a11yInstalled) return;
+  a11yInstalled = true;
+  const scan = () => {
+    document.querySelectorAll('[role="dialog"][aria-modal="true"]').forEach(onDialogAdded);
+    for (const o of [...openDialogs]) if (!document.contains(o.el)) onDialogRemoved(o);
+  };
+  new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
+  document.addEventListener('keydown', e => {
+    const top = openDialogs[openDialogs.length - 1];
+    if (!top || !document.contains(top.el)) return;
+    if (e.key === 'Escape') {
+      const close = top.el.querySelector('[data-dialog-close]');
+      if (close) { e.preventDefault(); close.click(); }
+    } else if (e.key === 'Tab') {
+      const items = focusables(top.el);
+      if (items.length === 0) { e.preventDefault(); return; }
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && (document.activeElement === first || !top.el.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && (document.activeElement === last || !top.el.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+    }
+  }, true);
+  scan();
+}
+
+export function setContrast(high) {
+  if (high) document.documentElement.setAttribute('data-contrast', 'high');
+  else document.documentElement.removeAttribute('data-contrast');
+}

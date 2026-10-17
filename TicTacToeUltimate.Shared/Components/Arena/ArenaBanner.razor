@@ -2,18 +2,18 @@
 @if (Overtime)
 {
     <div class="arena-banner ot" role="status" data-testid="arena-overtime">
-        <span class="t-label">Overtime</span>
-        <span class="big"><BounceText Text="NEXT LINE WINS" Class="wiggle" /></span>
-        @if (FirstMover is not null) { <span class="sub">@(FirstMover == "You" ? "You move first" : $"{FirstMover} moves first")</span> }
+        <span class="t-label">@L.T("arenaBanner.overtime")</span>
+        <span class="big"><BounceText Text="@L.T("arenaBanner.next_line_wins")" Class="wiggle" /></span>
+        @if (FirstMover is not null) { <span class="sub">@(FirstMover == L.T("result.you") ? L.T("arenaBanner.you_move_first") : L.F("arenaBanner.moves_first", FirstMover))</span> }
     </div>
 }
 else
 {
-    <div class="arena-banner @(RedAlert ? "red" : null)" role="timer" aria-label="@($"Round {Ui.Elapsed(RemainingMs)} left")" data-testid="arena-round">
-        <span class="t-label">@(RedAlert ? "Red alert" : "Round")</span>
+    <div class="arena-banner @(RedAlert ? "red" : null)" role="timer" aria-label="@L.F("arenaBanner.round_left", Ui.Elapsed(RemainingMs))" data-testid="arena-round">
+        <span class="t-label">@(RedAlert ? L.T("arenaBanner.red_alert") : L.T("arenaBanner.round"))</span>
         <span class="t-num big">@Ui.Elapsed(RemainingMs)</span>
-        @if (RedAlert) { <span class="x2" aria-label="double damage">×@Multiplier DMG</span> }
-        else if (Multiplier > 1) { <span class="sub">×@Multiplier damage in the last @Ui.Seconds(RedAlertMs)s</span> }
+        @if (RedAlert) { <span class="x2" aria-label="@L.T("arenaBanner.double_damage")">@L.F("arenaBanner.dmg", Multiplier)</span> }
+        else if (Multiplier > 1) { <span class="sub">@L.F("arenaBanner.damage_in_the_last", Multiplier, Ui.Seconds(RedAlertMs))</span> }
     </div>
 }
 
@@ -28,6 +28,6 @@ else
     [Parameter] public int RedAlertMs { get; set; } = 30_000;
     /// <summary>Sudden-death overtime.</summary>
     [Parameter] public bool Overtime { get; set; }
-    /// <summary>Name of who moves first in overtime ("You", "Rook").</summary>
+    /// <summary>Name of who moves first in overtime (L.T("result.you") = "You", or "Rook").</summary>
     [Parameter] public string? FirstMover { get; set; }
 }

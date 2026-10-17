@@ -14,7 +14,8 @@ namespace TicTacToeUltimate.Server.Progression;
 public sealed class PostGameProcessor(
     IGameRepository games, IRatingRepository ratings, RatingService ratingService, TierCalculator tiers, ProgressService progress,
     ITablebaseCache tablebases, IAnalysisService analysis, IUserNotifier notifier, TimeProvider time, ILogger<PostGameProcessor> logger,
-    TicTacToeUltimate.Server.Economy.WalletService? wallet = null)
+    TicTacToeUltimate.Server.Economy.WalletService? wallet = null, TicTacToeUltimate.Server.Moderation.CheatScorer? cheat = null,
+    IUserRepository? users = null)
     : BackgroundService, IMatchResultSink
 {
     private readonly Channel<CompletedMatch> _queue = Channel.CreateUnbounded<CompletedMatch>(new UnboundedChannelOptions { SingleReader = true });
@@ -74,6 +75,11 @@ public sealed class PostGameProcessor(
         // 2. save (idempotency gate)
         var record = new GameRecord(s.MatchId, s, m.Swapped, m.Actions, m.Result, m.StartedAt, m.EndedAt, snapshots);
         if (!await games.SaveCompletedAsync(record, ct)) return false;
+        if (cheat is not null)
+        {
+            try { await cheat.ScoreAsync(record, ct); }
+            catch (Exception ex) when (ex is not OperationCanceledException) { logger.LogWarning(ex, "Anti-cheat scoring failed for {Game}", record.Id); }
+        }
 
         // 3. ratings + tier notifications
         var tierChanges = new TierChangeDto?[2];
@@ -86,8 +92,10 @@ public sealed class PostGameProcessor(
             tierChanges[seat] = change;
             if (change.Promoted || change.Demoted)
             {
+                var locale = users is null ? null : await users.GetLocaleAsync(seats[seat].UserId, ct);
                 var n = new NotificationDto(change.Promoted ? NotificationKind.Promotion : NotificationKind.Demotion,
-                    change.Promoted ? "Promoted!" : "Demoted", $"{change.After.Tier} {Roman(change.After.Division)}".Trim(), s.MatchId, null);
+                    TicTacToeUltimate.Server.Localization.ServerText.Get(locale, change.Promoted ? "notify.promoted" : "notify.demoted"),
+                    $"{TicTacToeUltimate.Server.Localization.ServerText.Get(locale, $"tier.{change.After.Tier}")} {Roman(change.After.Division)}".Trim(), s.MatchId, null);
                 await Safe(() => notifier.ToUserAsync(seats[seat].UserId, c => c.Notification(n)));
             }
         }

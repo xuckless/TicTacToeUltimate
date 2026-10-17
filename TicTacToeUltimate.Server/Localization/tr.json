@@ -1,0 +1,21 @@
+{
+ "notify.demoted": "Küme düştün",
+ "notify.emote": "sana bir ifade gönderdi",
+ "notify.promoted": "Terfi ettin!",
+ "push.comeback.1": "Bert seni bir oyuna davet ediyor. Hâlâ formda mısın?",
+ "push.comeback.2": "Tahta seni özledi. Gündelik bir oyun 90 saniye sürer.",
+ "push.comeback.3": "Şu an yeni rakipler çevrimiçi. Atlar mısın?",
+ "push.comeback.title": "Bert sana meydan okuyor",
+ "push.streak.1": "{0} günlük serin gece yarısı bitiyor. Tek bir oyun onu yaşatır!",
+ "push.streak.2": "Ben Bert. {0} gündür dimdiksin… eski bir taş gibi solmasına izin verme.",
+ "push.streak.3": "Psst — {0} günlük serin seni bekliyor. Hızlı bir oyun?",
+ "push.streak.title": "Bert 👻",
+ "push.your_move.body": "{0} karşısında sıra sende.",
+ "push.your_move.title": "Sıra sende",
+ "tier.Bronze": "Bronz",
+ "tier.Diamond": "Elmas",
+ "tier.Gold": "Altın",
+ "tier.Master": "Usta",
+ "tier.Platinum": "Platin",
+ "tier.Silver": "Gümüş"
+}

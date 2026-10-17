@@ -22,12 +22,44 @@ public sealed class TttOptions
     public ShutdownOptions Shutdown { get; set; } = new();
     public CorsOptions Cors { get; set; } = new();
     public WebOptions Web { get; set; } = new();
+    public ModerationOptions Moderation { get; set; } = new();
+}
+
+/// <summary>Ttt:Moderation. Strike ladder (owner decision 2026-10-16): warn, then chat mutes of 1 h / 24 h / 7 d; bans only by an admin.</summary>
+public sealed class ModerationOptions
+{
+    /// <summary>Strikes count within this window.</summary>
+    public int StrikeWindowDays { get; set; } = 30;
+    /// <summary>Mute length in minutes for strike 2, 3, 4+ (strike 1 is a warning).</summary>
+    public int[] MuteMinutes { get; set; } = [60, 24 * 60, 7 * 24 * 60];
+    /// <summary>Salt for device id hashes (secret in production; falls back to the dev signing key).</summary>
+    public string DeviceSalt { get; set; } = "";
+    public AnthropicModerationOptions Anthropic { get; set; } = new();
+}
+/// <summary>Ttt:Moderation:Anthropic. Without an ApiKey the AI check is off (the word filter still runs).</summary>
+public sealed class AnthropicModerationOptions
+{
+    public string ApiKey { get; set; } = "";
+    public string Model { get; set; } = "claude-haiku-5-5";
+    public int TimeoutMs { get; set; } = 3000;
 }
 
 public sealed class AuthOptions
 {
     public DevAuthOptions Dev { get; set; } = new();
     public SupabaseAuthOptions Supabase { get; set; } = new();
+    public ReviewAuthOptions Review { get; set; } = new();
+}
+/// <summary>
+/// App Store / Play reviewer account: <see cref="Email"/> signs in with the fixed <see cref="Code"/> instead of an emailed one.
+/// Code and Password are secrets (Ttt__Auth__Review__Code / __Password); the server keeps the Supabase user's password in sync.
+/// </summary>
+public sealed class ReviewAuthOptions
+{
+    public string Email { get; set; } = "";
+    public string Code { get; set; } = "";
+    public string Password { get; set; } = "";
+    public bool Enabled => Email.Contains('@') && Code.Length >= 6 && Password.Length >= 12;
 }
 public sealed class DevAuthOptions { public bool Enabled { get; set; } public string SigningKey { get; set; } = ""; public int TokenDays { get; set; } = 30; }
 public sealed class SupabaseAuthOptions

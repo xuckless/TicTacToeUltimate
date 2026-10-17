@@ -1,0 +1,14 @@
+# nl: chat/username filter seed list (machine-assembled 2026-10-16, native review pending).
+# !term = severe (inside words, spacing tricks), term = whole word, ?term = mild (AI check).
+?kanker
+!mongool
+!neger
+!flikker
+kut
+klootzak
+hoer
+?lul
+tering
+godverdomme
+?dom
+?idioot

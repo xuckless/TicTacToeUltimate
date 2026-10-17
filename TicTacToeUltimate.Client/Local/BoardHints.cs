@@ -89,5 +89,41 @@ public static class BoardHints
             : $"⏱ {c}'s oldest vanishes when {c} places next";
     }
 
+    // Localizable variants (the Client project can't reference the Shared localizer): a catalog key plus format args,
+    // rendered by the caller with L.F(hint.Key, hint.Args). The English strings above stay for tests and other callers.
+
+    /// <summary>Like <see cref="BlockedReason"/>, as a localization key + args.</summary>
+    public static LocalizedHint? BlockedReasonText(GameState? state, int cell)
+    {
+        if (state is not { Phase: GamePhase.AwaitingPlacement } s) return null;
+        if (Rules.LegalCells(s).Contains(cell)) return null;
+        var mine = s.ToMove;
+        if (MoverVanish(s) == cell && !s.Rules.VacatedCellPlayable)
+            return new LocalizedHint("boardHints.your_faded_vanishes_blocked", mine.ToString());
+        return s.At(cell) is null ? new LocalizedHint("boardHints.you_cant_play_there") : new LocalizedHint("boardHints.that_cell_is_taken");
+    }
+
+    /// <summary>Like <see cref="MoverCaption"/>, as a localization key + args.</summary>
+    public static LocalizedHint? MoverCaptionText(GameState? state, bool moverIsYou = true)
+    {
+        if (MoverVanish(state) is not int cell || state!.At(cell) is not Color c) return null;
+        var blocked = !state.Rules.VacatedCellPlayable;
+        return moverIsYou
+            ? new LocalizedHint(blocked ? "boardHints.your_faded_vanishes_blocked" : "boardHints.your_faded_vanishes", c.ToString())
+            : new LocalizedHint("boardHints.their_faded_vanishes", c.ToString());
+    }
+
+    /// <summary>Like <see cref="WaitingCaption"/>, as a localization key + args.</summary>
+    public static LocalizedHint? WaitingCaptionText(GameState? state, bool waitingIsYou = false)
+    {
+        if (WaitingVanish(state) is not int cell || state!.At(cell) is not Color c) return null;
+        return waitingIsYou
+            ? new LocalizedHint("boardHints.your_oldest_vanishes", c.ToString())
+            : new LocalizedHint("boardHints.oldest_vanishes_when", c.ToString());
+    }
+
     private static Color Opp(Color c) => c == Color.X ? Color.O : Color.X;
 }
+
+/// <summary>A localizable hint: catalog key + format arguments ({0}, {1}…).</summary>
+public sealed record LocalizedHint(string Key, params object[] Args);

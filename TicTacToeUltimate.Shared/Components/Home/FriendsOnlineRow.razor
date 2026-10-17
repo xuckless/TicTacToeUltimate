@@ -1,9 +1,9 @@
-<Card Title="Friends online">
-    <Aside><a href="social" class="t-small">See all</a></Aside>
+<Card Title="@L.T("friendsOnlineRow.friends_online")">
+    <Aside><a href="social" class="t-small">@L.T("friendsOnlineRow.see_all")</a></Aside>
     <ChildContent>
         @if (Online.Count == 0)
         {
-            <div class="t-empty"><Bert Mood="sleepy" Size="44" /><span>No friends online right now.</span></div>
+            <div class="t-empty"><Bert Mood="sleepy" Size="44" /><span>@L.T("friendsOnlineRow.no_friends_online_right_now")</span></div>
         }
         else
         {

@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "Din tur",
+ "push.your_move.body": "Det er din tur mod {0}.",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "Din stime på {0} dage slutter ved midnat. Ét spil holder den i live!",
+ "push.streak.2": "Bert her. {0} dage i træk… lad den ikke falme som en gammel brik.",
+ "push.streak.3": "Psst — din stime på {0} dage venter. Et hurtigt spil?",
+ "push.comeback.title": "Bert udfordrer dig",
+ "push.comeback.1": "Bert udfordrer dig til et spil. Tror du, du stadig har det?",
+ "push.comeback.2": "Brættet savner dig. Et afslappet spil tager 90 sekunder.",
+ "push.comeback.3": "Nye modstandere er online lige nu. Hopper du med?",
+ "notify.promoted": "Rykket op!",
+ "notify.demoted": "Rykket ned",
+ "notify.emote": "sendte dig en emote",
+ "tier.Bronze": "Bronze",
+ "tier.Silver": "Sølv",
+ "tier.Gold": "Guld",
+ "tier.Platinum": "Platin",
+ "tier.Diamond": "Diamant",
+ "tier.Master": "Mester"
+}

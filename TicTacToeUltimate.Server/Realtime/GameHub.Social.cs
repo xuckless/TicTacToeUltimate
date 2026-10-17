@@ -20,7 +20,11 @@ public sealed partial class GameHub
             throw new HubException(error);
         }
         // Recipient: in-app notification when connected, push when not.
-        var preview = request.Body.Length > 80 ? request.Body[..77] + "…" : request.Body;
+        // Preview from the stored (moderated) text, never the raw request body.
+        var body = message!.Body.StartsWith("emote:", StringComparison.Ordinal)
+            ? TicTacToeUltimate.Server.Localization.ServerText.Get(await services.GetRequiredService<TicTacToeUltimate.Server.Abstractions.Persistence.IUserRepository>().GetLocaleAsync(request.ToUserId, Context.ConnectionAborted), "notify.emote")
+            : message.Body;
+        var preview = body.Length > 80 ? body[..77] + "…" : body;
         var n = new NotificationDto(NotificationKind.Message, me.DisplayName, preview, null, $"social/chat/{me.UserId}");
         if (PresenceTracker.IsOnline(request.ToUserId)) _ = services.GetRequiredService<TicTacToeUltimate.Server.Abstractions.IUserNotifier>().ToUserAsync(request.ToUserId, c => c.Notification(n));
         else _ = services.GetRequiredService<TicTacToeUltimate.Server.Abstractions.IPushSender>().SendAsync(request.ToUserId, n, CancellationToken.None);

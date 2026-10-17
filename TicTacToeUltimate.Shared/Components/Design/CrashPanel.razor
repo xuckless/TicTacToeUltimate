@@ -1,17 +1,22 @@
+@using TicTacToeUltimate.Client.Diagnostics
 @inject NavigationManager Nav
 @inject ILogger<CrashPanel> Log
+@inject CrashReporter Reporter
+@inject IScreenshotProvider Screenshots
 
 @* Shown by the layout ErrorBoundary when a page throws while rendering or handling an event. Without it Blazor Hybrid stops
    rendering and the app looks frozen (that was the "Daily on an offline friend" bug). *@
 <div class="t-card crash-panel" role="alert" data-testid="crash-panel">
     <Bert Mood="shocked" Size="72" />
-    <span class="t-title">Oops, that didn't work</span>
-    <span class="t-small t-muted">Something went wrong on this screen. Your game and progress are safe on the server.</span>
+    <span class="t-title">@L.T("crashPanel.oops_that_didn_t_work")</span>
+    <span class="t-small t-muted">@L.T("crashPanel.something_went_wrong_on_this")</span>
     <div style="display:grid;gap:10px;width:100%;margin-top:8px">
-        <Button Variant="primary" Block="true" OnClick="Recover">Try again</Button>
-        <Button Variant="secondary" Block="true" OnClick="Home">Home</Button>
+        <Button Variant="primary" Block="true" OnClick="Recover">@L.T("crashPanel.try_again")</Button>
+        <Button Variant="secondary" Block="true" OnClick="Home">@L.T("crashPanel.home")</Button>
+        <button type="button" class="t-link-btn" @onclick="OpenReport" data-testid="crash-report">@L.T("crashPanel.tell_us_what_happened")</button>
     </div>
 </div>
+<BugReportSheet Open="_reporting" Screenshot="_shot" OnClose="() => _reporting = false" />
 
 @code {
     /// <summary>The exception.</summary>
@@ -22,7 +27,20 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Exception is not null) Log.LogError(Exception, "Unhandled UI exception");
+        if (Exception is null || ReferenceEquals(Exception, _reported)) return;
+        _reported = Exception;
+        Log.LogError(Exception, "Unhandled UI exception");
+        _ = Reporter.ReportCrashAsync(Exception);   // automatic (owner decision 2026-10-16); the button adds the player's words
+    }
+
+    private Exception? _reported;
+    private bool _reporting;
+    private string? _shot;
+
+    private async Task OpenReport()
+    {
+        _shot = await Screenshots.CaptureBase64PngAsync();
+        _reporting = true;
     }
 
     private Task Recover() => OnRecover.InvokeAsync();

@@ -74,3 +74,43 @@ func TestAdaptiveWinRateNear49(t *testing.T) {
 		}
 	}
 }
+
+// Shadow pool: against a perfect (engine-assisted) player the full-strength profile keeps the player's share of decided
+// games inside 40-70% (owner decision 2026-10-16), i.e. the bot wins 30-60%.
+func TestShadowProfileHoldsCheatersInBand(t *testing.T) {
+	b := New()
+	id := "n3k3-cap3-v0-w1-none"
+	r, _ := engine.ParseID(id)
+	tr := NewTracker("")
+	rng := rand.New(rand.NewPCG(42, 9))
+	wins, losses := 0, 0
+	for g := 0; g < 1500; g++ {
+		s := engine.Initial(r)
+		botColor := engine.Color(g % 2)
+		skill := tr.SkillFor("cheater", 1500, true)
+		for ply := 0; ply < 60 && s.Phase != engine.Ended; ply++ {
+			p := skill
+			if s.ToMove != botColor {
+				p = 1.0
+			}
+			s, _ = s.Place(b.ChooseClassic(id, s, p, rng).Cell)
+		}
+		if s.Phase != engine.Ended || s.Winner == 2 {
+			continue
+		}
+		won := s.Winner == int(botColor)
+		tr.RecordFor("cheater", won, !won, true)
+		if g >= 300 {
+			if won {
+				wins++
+			} else {
+				losses++
+			}
+		}
+	}
+	human := float64(losses) / float64(wins+losses)
+	t.Logf("perfect player won %.1f%% of %d decided games against the shadow profile", human*100, wins+losses)
+	if human < 0.40 || human > 0.70 {
+		t.Errorf("perfect player win rate %.3f outside 0.40-0.70", human)
+	}
+}

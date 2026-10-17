@@ -2,7 +2,7 @@
     <Avatar Name="@Friend.Player.DisplayName" AvatarId="@Friend.Player.AvatarId" />
     <div class="who">
         <div class="name"><a href="@($"u/{Friend.Player.DisplayName}")" style="color:inherit;text-decoration:none">@Friend.Player.DisplayName</a>
-            @if (Friend.UnreadMessages > 0) { <a class="t-chip" href="@($"social/chat/{Friend.Player.UserId}")" aria-label="@($"{Friend.UnreadMessages} unread messages")">@Friend.UnreadMessages</a> }
+            @if (Friend.UnreadMessages > 0) { <a class="t-chip" href="@($"social/chat/{Friend.Player.UserId}")" aria-label="@L.P("friendRow.unread_messages", Friend.UnreadMessages)">@Friend.UnreadMessages</a> }
         </div>
         <div class="meta" style="@(Friend.Presence.Status == PresenceStatus.InGame ? "color:var(--piece-o)" : null)">
             <PresenceDot Status="Friend.Presence.Status" /> @StatusText
@@ -11,13 +11,13 @@
     @switch (Friend.Presence.Status)
     {
         case PresenceStatus.InGame when Friend.Presence.MatchId is not null:
-            <Button Variant="secondary" Small="true" OnClick="() => OnWatch.InvokeAsync(Friend)">Watch</Button>
+            <Button Variant="secondary" Small="true" OnClick="() => OnWatch.InvokeAsync(Friend)">@L.T("friendRow.watch")</Button>
             break;
         case PresenceStatus.Offline:
-            <Button Variant="secondary" Small="true" OnClick="() => OnDaily.InvokeAsync(Friend)">Daily</Button>
+            <Button Variant="secondary" Small="true" OnClick="() => OnDaily.InvokeAsync(Friend)">@L.T("friendRow.daily")</Button>
             break;
         default:
-            <Button Variant="secondary" Small="true" OnClick="() => OnChallenge.InvokeAsync(Friend)">Challenge</Button>
+            <Button Variant="secondary" Small="true" OnClick="() => OnChallenge.InvokeAsync(Friend)">@L.T("challengeCard.challenge")</Button>
             break;
     }
 </div>
@@ -40,10 +40,10 @@
         {
             var tier = Friend.Player.Tier is null ? "" : " · " + Ui.TierName(Friend.Player.Tier);
             if (Friend.Presence.Status != PresenceStatus.Offline) return PresenceDot.Text(Friend.Presence.Status) + tier;
-            if (Friend.LastSeenAt is not DateTimeOffset seen) return "Offline";
+            if (Friend.LastSeenAt is not DateTimeOffset seen) return L.T("friendRow.offline");
             var ago = Now - seen;
-            var s = ago.TotalMinutes < 60 ? $"{Math.Max(1, (int)ago.TotalMinutes)}m ago" : ago.TotalHours < 24 ? $"{(int)ago.TotalHours}h ago" : $"{(int)ago.TotalDays}d ago";
-            return $"Offline · {s}";
+            var s = ago.TotalMinutes < 60 ? L.F("friendRow.minutes_ago", Math.Max(1, (int)ago.TotalMinutes)) : ago.TotalHours < 24 ? L.F("friendRow.hours_ago", (int)ago.TotalHours) : L.F("friendRow.days_ago", (int)ago.TotalDays);
+            return L.F("friendRow.offline_ago", s);
         }
     }
 }

@@ -1,0 +1,9 @@
+# he: chat/username filter seed list (machine-assembled 2026-10-16, native review pending).
+# !term = severe (inside words, spacing tricks), term = whole word, ?term = mild (AI check).
+!זונה
+!מניאק
+!שרמוטה
+זין
+מטומטם
+?טיפש
+?אידיוט

@@ -59,7 +59,9 @@ public static class ErrorCodes
         AnalysisUnavailable = "analysis_unavailable", RewardRequired = "reward_required", AdBlocked = "ad_blocked", ServerUpdating = "server_updating", RewardInvalid = "reward_invalid",
         RewardCapped = "reward_capped", RematchNotAllowed = "rematch_not_allowed", EmoteUnknown = "emote_unknown",
         Timeout = "timeout", ProtocolVersion = "protocol_version", Validation = "validation", Internal = "internal",
-        Forbidden = "forbidden", InsufficientDiamonds = "insufficient_diamonds", ItemUnavailable = "item_unavailable";
+        Forbidden = "forbidden", InsufficientDiamonds = "insufficient_diamonds", ItemUnavailable = "item_unavailable",
+        Banned = "banned", ChatMuted = "chat_muted", MessageBlocked = "message_blocked", AlreadyAppealed = "already_appealed",
+        UsernameBlocked = "username_blocked";
 
     public static string FromMoveError(MoveError e) => e switch
     {

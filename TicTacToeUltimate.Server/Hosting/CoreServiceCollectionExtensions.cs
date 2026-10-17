@@ -58,7 +58,8 @@ public static class CoreServiceCollectionExtensions
     {
         if (chain.Contains(ContractsJsonContext.Default)) return;
         chain.Insert(0, ContractsJsonContext.Default);
-        if (chain.Count == 1) chain.Add(new DefaultJsonTypeInfoResolver());
+        chain.Insert(1, TicTacToeUltimate.Contracts.Admin.AdminJsonContext.Default);
+        if (chain.Count == 2) chain.Add(new DefaultJsonTypeInfoResolver());
     }
 
     public static WebApplication UseTttCore(this WebApplication app)

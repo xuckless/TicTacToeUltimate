@@ -1,10 +1,11 @@
 @if (Open)
 {
     <div class="t-scrim" @onclick="Close">
-        <div class="t-sheet" role="dialog" aria-modal="true" aria-label="@Title" @onclick:stopPropagation="true">
+        @* Focus trap, Escape and focus return come from ttt.js a11yInstall (every aria-modal dialog). *@
+        <div class="t-sheet" role="dialog" aria-modal="true" aria-labelledby="@_titleId" @onclick:stopPropagation="true">
             <header>
-                <h2 class="t-heading">@Title</h2>
-                @if (Dismissible) { <IconButton Label="Close" Icon="close" Round="true" OnClick="Close" /> }
+                <h2 class="t-heading" id="@_titleId">@Title</h2>
+                @if (Dismissible) { <IconButton Label="@L.T("sheet.close")" Icon="close" Round="true" OnClick="Close" data-dialog-close="true" /> }
             </header>
             @ChildContent
         </div>
@@ -12,6 +13,7 @@
 }
 
 @code {
+    private readonly string _titleId = "sheet-" + Guid.NewGuid().ToString("N")[..8];
     /// <summary>Visible.</summary>
     [Parameter] public bool Open { get; set; }
     /// <summary>Title.</summary>

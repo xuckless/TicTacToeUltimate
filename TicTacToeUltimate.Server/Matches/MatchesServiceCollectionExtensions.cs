@@ -26,7 +26,8 @@ public static class MatchesServiceCollectionExtensions
             sp.GetRequiredService<TttOptions>(), sp.GetRequiredService<IMatchBroadcaster>(), sp.GetRequiredService<IMatchResultSink>(),
             sp.GetRequiredService<IUserNotifier>(), sp.GetRequiredService<IPushSender>(), sp.GetRequiredService<IPlayerCardService>(),
             sp.GetRequiredService<UserActivityRegistry>(), sp.GetRequiredService<ILoggerFactory>(), sp.GetService<IDailyMatchRepository>(),
-            halfRtt: id => sp.GetRequiredService<RttTracker>().HalfRtt(id)));   // seeds the first turn's lag credit
+            halfRtt: id => sp.GetRequiredService<RttTracker>().HalfRtt(id),   // seeds the first turn's lag credit
+            users: sp.GetService<IUserRepository>()));
         services.AddSingleton(sp => new MatchGateway(sp.GetRequiredService<MatchRuntime>()));
         services.AddSingleton<IMatchGateway>(sp => sp.GetRequiredService<MatchGateway>());
 

@@ -6,27 +6,27 @@
 @inject NavigationManager Nav
 @inject ToastService Toasts
 
-<PageTitle>Play · Tic Tac Toe Ultimate</PageTitle>
-<h1 class="play-title"><BounceText Text="Play" /></h1>
+<PageTitle>@L.T("play.play_tic_tac_toe_ultimate")</PageTitle>
+<h1 class="play-title"><BounceText Text="@L.T("play.play")" /></h1>
 <ActiveGames />
 
 @foreach (var group in Groups)
 {
-    <section class="mode-group" aria-label="@group">
-        <h2 class="mode-group-title">@group</h2>
+    <section class="mode-group" aria-label="@GroupName(group)">
+        <h2 class="mode-group-title">@GroupName(group)</h2>
         @foreach (var m in Modes.Where(x => x.Group == group))
         {
             var locked = IsGuest && !m.Guests;
             <div class="mode-wrap @(m.Glyph == "X" ? "" : "")">
             <button type="button" class="mode-card" style="--accent:@m.Accent" disabled="@locked"
-                    @onclick="() => Press(m.Tc)" aria-label="@($"{m.Name}{(locked ? ", account required" : "")}")">
+                    @onclick="() => Press(m.Tc)" aria-label="@(locked ? L.F("play.mode_account_required", m.Name) : m.Name)">
                 <span class="mode-art" aria-hidden="true"><Icon Name="@m.Icon" /></span>
                 <span class="mode-text">
                     <span class="mode-name">@m.Name</span>
                     <span class="mode-sub">@m.Sub</span>
                 </span>
                 <span class="mode-side">
-                    @if (locked) { <span class="t-chip"><Icon Name="lock" /> Account</span> }
+                    @if (locked) { <span class="t-chip"><Icon Name="lock" /> @L.T("play.account")</span> }
                                         else if (m.Tc == TimeControl.ArenaRanked && ArenaRating is not null) { <TierBadge Tier="ArenaRating.Tier" /> }
                     else { <Icon Name="next" Class="mode-go" /> }
                 </span>
@@ -41,9 +41,9 @@
             <div class="mode-wrap">
             <a class="mode-card" style="--accent:#2ec27e" href="local" data-testid="play-passplay">
                 <span class="mode-art" aria-hidden="true"><Icon Name="passplay" /></span>
-                <span class="mode-text"><span class="mode-name">Pass &amp; Play</span><span class="mode-sub">One device · offline</span></span>
+                <span class="mode-text"><span class="mode-name">@L.T("localSetup.pass_play")</span><span class="mode-sub">@L.T("home.one_device_offline")</span></span>
                 <span class="mode-side"><Icon Name="next" Class="mode-go" /></span>
-                <span class="mode-watermark" aria-hidden="true">XO</span>
+                <span class="mode-watermark" aria-hidden="true">@L.T("play.xo")</span>
             </a>
             <InfoButton Key="passplay" Class="corner" />
             </div>
@@ -51,24 +51,24 @@
     </section>
 }
 
-<section class="mode-group" aria-label="Play a friend">
-    <h2 class="mode-group-title">Play a friend</h2>
+<section class="mode-group" aria-label="@L.T("play.play_a_friend")">
+    <h2 class="mode-group-title">@L.T("play.play_a_friend")</h2>
     <div class="friend-invite">
         <Bert Mood="wink" Size="56" />
-        <p class="t-small t-muted" style="margin:0;flex:1">Send a link. Friendly games are unrated and allow rematches.</p>
+        <p class="t-small t-muted" style="margin:0;flex:1">@L.T("play.send_a_link_friendly_games")</p>
     </div>
-    <InviteLinkButton Text="Create invite link" CreateLink="CreateLink" Guest="IsGuest" />
-    <p class="t-small t-muted" style="margin:10px 0 4px">Got a code from a friend?</p>
+    <InviteLinkButton Text="@L.T("play.create_invite_link")" CreateLink="CreateLink" Guest="IsGuest" />
+    <p class="t-small t-muted" style="margin:10px 0 4px">@L.T("play.got_a_code_from_a")</p>
     <JoinCodeBox />
 </section>
 
-<Sheet Open="@(Queue.State.Phase is QueuePhase.Entering or QueuePhase.Searching or QueuePhase.Found)" Title="Finding a match" Dismissible="false">
+<Sheet Open="@(Queue.State.Phase is QueuePhase.Entering or QueuePhase.Searching or QueuePhase.Found)" Title="@L.T("play.finding_a_match")" Dismissible="false">
     <div class="t-col" style="padding:0;align-items:center;text-align:center">
         <span class="t-label">@(Queue.State.TimeControl is TimeControl tc ? Ui.TimeControlName(tc) : "")</span>
         @if (Queue.State.Phase == QueuePhase.Found && Queue.State.Found is { } f)
         {
-            <span class="t-title">Match found!</span>
-            <span>vs @f.Opponent.DisplayName</span>
+            <span class="t-title">@L.T("play.match_found")</span>
+            <span>@L.F("play.vs_opponent", f.Opponent.DisplayName)</span>
         }
         else
         {
@@ -77,32 +77,38 @@
             <span class="t-small t-muted">
                 @if (Queue.State.Status is { ServerUpdating: true })
                 {
-                    <span data-testid="queue-updating">The game server is updating. You'll be matched as soon as it's back (usually under a minute).</span>
+                    <span data-testid="queue-updating">@L.T("play.the_game_server_is_updating")</span>
                 }
                 else if (Queue.State.Status is { } st)
                 {
-                    @(st.GuestPool ? "Guest pool" : $"Rating window ±{st.RatingWindow}")
+                    @(st.GuestPool ? L.T("play.guest_pool") : L.F("play.rating_window", st.RatingWindow))
                 }
-                else { <BertLoader Text="Joining queue" Mood="jumpy" /> }
+                else { <BertLoader Text="@L.T("play.joining_queue")" Mood="jumpy" /> }
             </span>
         }
         @if (Queue.State.Error is not null) { <span class="t-alert t-small" role="alert">@Queue.State.Error</span> }
-        <Button Variant="secondary" Block="true" OnClick="Cancel" Disabled="@(Queue.State.Phase == QueuePhase.Found)">Cancel</Button>
+        <Button Variant="secondary" Block="true" OnClick="Cancel" Disabled="@(Queue.State.Phase == QueuePhase.Found)">@L.T("localMatch.cancel")</Button>
     </div>
 </Sheet>
 
 @code {
     private sealed record ModeOption(TimeControl Tc, string Name, string Sub, bool Guests, string Group, string Icon, string Accent, string Glyph, string Guide);
     private static readonly string[] Groups = ["Competitive", "Casual", "Offline"];
+    private static string GroupName(string group) => group switch
+    {
+        "Competitive" => L.T("play.competitive"),
+        "Casual" => L.T("modeGrid.casual"),
+        _ => L.T("presenceDot.offline"),
+    };
 
-    private static readonly ModeOption[] Modes =
+    private static ModeOption[] Modes =>
     [
-        new(TimeControl.ArenaRanked, "Ranked", "Rated · Arena", false, "Competitive", "ranked", "#7442ef", "X", "ranked"),
-        new(TimeControl.Daily, "Daily", "Rated · 1 move a day", false, "Competitive", "calendar", "#ff8a2a", "O", "daily"),
-        new(TimeControl.Casual, "Casual", "Unrated · 15s clock", true, "Casual", "casual", "#2f9be0", "O", "casual"),
-        new(TimeControl.ArenaCasual, "Arena", "Unrated · health bars", true, "Casual", "arena", "#e0457b", "X", "arena"),
-        new(TimeControl.OldSchool, "Old school", "No vanishing", true, "Casual", "play", "#1fb5a0", "X", "oldschool"),
-        new(TimeControl.Unlimited, "Unlimited", "No clock", true, "Casual", "unlimited", "#8a6cff", "O", "unlimited"),
+        new(TimeControl.ArenaRanked, L.T("statGrid.ranked"), L.T("play.rated_arena"), false, "Competitive", "ranked", "#7442ef", "X", "ranked"),
+        new(TimeControl.Daily, L.T("friendRow.daily"), L.T("play.rated_1_move_a"), false, "Competitive", "calendar", "#ff8a2a", "O", "daily"),
+        new(TimeControl.Casual, L.T("modeGrid.casual"), L.T("play.unrated_15s_clock"), true, "Casual", "casual", "#2f9be0", "O", "casual"),
+        new(TimeControl.ArenaCasual, L.T("modeGrid.arena"), L.T("play.unrated_health_bars"), true, "Casual", "arena", "#e0457b", "X", "arena"),
+        new(TimeControl.OldSchool, L.T("modeGrid.old_school"), L.T("localSetup.no_vanishing"), true, "Casual", "play", "#1fb5a0", "X", "oldschool"),
+        new(TimeControl.Unlimited, L.T("localSetup.unlimited"), L.T("localSetup.no_clock"), true, "Casual", "unlimited", "#8a6cff", "O", "unlimited"),
     ];
 
     [SupplyParameterFromQuery(Name = "tc")] private string? Tc { get; set; }
@@ -168,8 +174,8 @@
     {
         if (tc == TimeControl.Daily) { Nav.NavigateTo("daily"); return; }
         try { await Queue.EnterAsync(tc); }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't join the queue.", ToastKind.Error); return; }
-        if (Queue.State is { Phase: QueuePhase.Idle, Error: { } err }) Toasts.Show(Ui.ErrorToastText(err, "Couldn't join the queue."), err == ErrorCodes.ServerUpdating ? ToastKind.Info : ToastKind.Error);
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show(L.T("play.couldn_t_join_the_queue"), ToastKind.Error); return; }
+        if (Queue.State is { Phase: QueuePhase.Idle, Error: { } err }) Toasts.Show(Ui.ErrorToastText(err, L.T("play.couldn_t_join_the_queue")), err == ErrorCodes.ServerUpdating ? ToastKind.Info : ToastKind.Error);
     }
 
     private Task Cancel() => Queue.LeaveAsync();

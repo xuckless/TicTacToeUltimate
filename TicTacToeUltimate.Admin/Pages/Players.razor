@@ -1,0 +1,27 @@
+@page "/players"
+@inject AdminApi Api
+@inject NavigationManager Nav
+
+<PageTitle>Players · TTT Admin</PageTitle>
+<div class="page-head"><div><h1>Players</h1><span class="muted small">Search by username prefix or paste a player id.</span></div>
+    <form class="row" @onsubmit="Search"><input type="search" placeholder="username or id" @bind="_q" aria-label="Search players" /><button class="btn" type="submit">Search</button></form></div>
+<div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>Player</th><th>Kind</th><th>Country</th><th>Joined</th><th>Last seen</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var p in _list)
+    {
+        <tr class="clickable" @onclick='() => Nav.NavigateTo($"players/{p.Id}")'>
+            <td><strong>@(p.Username ?? p.DisplayName)</strong>@if (p.Username is not null && p.Username != p.DisplayName) { <span class="muted"> · @p.DisplayName</span> }</td>
+            <td>@p.Kind</td><td>@p.Country</td><td><Ago At="p.CreatedAt" /></td><td><Ago At="p.LastSeenAt" /></td>
+            <td>@if (p.Online) { <span class="badge good">online</span> } @if (p.Shadow) { <span class="badge accent">shadow</span> }</td>
+        </tr>
+    }
+    </tbody>
+</table></div></div>
+
+@code {
+    private string _q = "";
+    private AdminPlayerDto[] _list = [];
+    protected override async Task OnInitializedAsync() => _list = await Api.PlayersAsync(null) ?? [];
+    private async Task Search() => _list = await Api.PlayersAsync(_q) ?? [];
+}

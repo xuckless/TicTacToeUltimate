@@ -3,7 +3,7 @@
    an edge. Tap him for a reaction. Menus only (placed in AppShell). Hidden under reduced motion. *@
 @if (_run > 0)
 {
-    <button type="button" class="bert-fly @_path @(_booped ? "booped" : null)" style="--y:@(_y)%" @key="_run" aria-label="@(_cast == "bert" ? "Bert" : "X and O")" title="Boop!" @onclick="Boop">
+    <button type="button" class="bert-fly @_path @(_booped ? "booped" : null)" style="--y:@(_y)%" @key="_run" aria-label="@(_cast == "bert" ? "Bert" : L.T("bertFlyby.x_and_o"))" title="@L.T("bertFlyby.boop")" @onclick="Boop">
         @switch (_cast)
         {
             case "x": <PieceBuddy Kind="Color.X" Mood="@(_booped ? "cheer" : _buddyMood)" Size="@(_path == "peek" ? 70 : 58)" /> break;

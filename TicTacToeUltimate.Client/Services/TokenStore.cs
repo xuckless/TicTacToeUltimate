@@ -11,6 +11,9 @@ public sealed class TokenStore(ISecureStore secure)
     /// <summary>Current token or null.</summary>
     public string? Token { get; private set; }
 
+    /// <summary>This install's device id (sent as X-Ttt-Device so bans cover devices; set at startup).</summary>
+    public string? DeviceId { get; set; }
+
     /// <summary>Restores the persisted token.</summary>
     public async Task<string?> LoadAsync()
     {

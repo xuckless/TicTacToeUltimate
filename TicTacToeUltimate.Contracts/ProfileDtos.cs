@@ -41,7 +41,13 @@ public sealed record TierBandDto(Tier Tier, int MinRating, int DivisionWidth);
 public sealed record AdConfigDto(int InterstitialEveryGames, bool SkipAfterTwoLosses, int MinSecondsBetween = 0, int FirstAfterGames = 0);
 public sealed record ModeConfigDto(TimeControl TimeControl, MatchMode Mode, RuleSetDto Rules, bool Rated, bool GuestsAllowed, ArenaRulesDto? Arena = null);
 public sealed record AppConfigDto(int ProtocolVersion, bool DevAuth, bool SupabaseAuth, string? SupabaseUrl, string? SupabaseAnonKey,
-    ModeConfigDto[] Modes, EmoteDto[] Emotes, TierBandDto[] Tiers, int LeaderboardMinGames, AdConfigDto Ads, string WebBaseUrl);
+    ModeConfigDto[] Modes, EmoteDto[] Emotes, TierBandDto[] Tiers, int LeaderboardMinGames, AdConfigDto Ads, string WebBaseUrl,
+    string? ReviewEmail = null);
+
+/// <summary>POST /api/auth/review: the App Store / Play reviewer account signs in with a fixed code (no email is sent).</summary>
+public sealed record ReviewSignInDto(string Email, string Code);
+/// <summary>A Supabase session for the reviewer account.</summary>
+public sealed record ReviewSessionDto(string AccessToken, string RefreshToken, int ExpiresIn);
 
 /// <summary>POST /api/auth/claim-guest body: the device's guest token.</summary>
 public sealed record ClaimGuestDto(string GuestToken);

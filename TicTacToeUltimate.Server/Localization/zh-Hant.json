@@ -1,0 +1,22 @@
+{
+ "_machine": true,
+ "notify.demoted": "降級",
+ "notify.emote": "傳給你一個表情",
+ "notify.promoted": "晉級！",
+ "push.comeback.1": "Bert 向你下戰帖。你寶刀未老嗎？",
+ "push.comeback.2": "棋盤想你了。休閒對局只要 90 秒。",
+ "push.comeback.3": "現在有新對手在線上，要來一局嗎？",
+ "push.comeback.title": "Bert 向你挑戰",
+ "push.streak.1": "你的 {0} 天連續紀錄將在午夜中斷。玩一局就能保住！",
+ "push.streak.2": "我是 Bert。已經連續 {0} 天了…別讓它像舊棋子一樣消失。",
+ "push.streak.3": "嘿——你的 {0} 天連續紀錄在等你。來一局快的？",
+ "push.streak.title": "Bert 👻",
+ "push.your_move.body": "和 {0} 的對局輪到你下了。",
+ "push.your_move.title": "輪到你了",
+ "tier.Bronze": "青銅",
+ "tier.Diamond": "鑽石",
+ "tier.Gold": "黃金",
+ "tier.Master": "大師",
+ "tier.Platinum": "白金",
+ "tier.Silver": "白銀"
+}

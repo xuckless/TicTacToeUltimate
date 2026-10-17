@@ -36,9 +36,10 @@ public sealed partial class GameHub
         var rating = 1200;
         if (!me.IsGuest && services.GetService<IRatingRepository>() is { } ratings)
             rating = (int)Math.Round((await ratings.GetAsync(me.UserId, RatingPools.For(tc), ct)).Rating);
+        var shadow = services.GetService<TicTacToeUltimate.Server.Moderation.ModerationService>() is { } mod && await mod.IsShadowAsync(me.UserId, ct);
         if (activity.TryEnterQueue(me.UserId, tc) is { } err) return Reject(err);
         Matchmaker.Post(new EnterQueueCommand(new QueueEntry(me.UserId, rec?.DisplayName ?? me.DisplayName, me.Kind, tc, rating,
-            PresenceTracker.Region(me.UserId), now)));
+            PresenceTracker.Region(me.UserId), now) { Shadow = shadow }));
         return new QueueTicketDto(true, null, tc, now);
     }
 

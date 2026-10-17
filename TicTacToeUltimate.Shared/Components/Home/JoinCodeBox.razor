@@ -3,10 +3,10 @@
 @inject ToastService Toasts
 
 @* Enter a room / challenge code by hand (links were the only way in). Opens the existing lobby page at /c/{code}. *@
-<form class="join-code" @onsubmit="Join" @onsubmit:preventDefault="true" aria-label="Join with a code">
-    <input class="t-input join-code-input" value="@_code" @oninput="e => _code = Normalize(e.Value?.ToString())" placeholder="Room code" maxlength="12"
-           autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Room code" data-testid="join-code" />
-    <Button Variant="secondary" Type="submit" Disabled="@(_busy || _code.Length < 4)" data-testid="join-code-go">Join</Button>
+<form class="join-code" @onsubmit="Join" @onsubmit:preventDefault="true" aria-label="@L.T("joinCodeBox.join_with_a_code")">
+    <input class="t-input join-code-input" value="@_code" @oninput="e => _code = Normalize(e.Value?.ToString())" placeholder="@L.T("joinCodeBox.room_code")" maxlength="12"
+           autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="@L.T("joinCodeBox.room_code")" data-testid="join-code" />
+    <Button Variant="secondary" Type="submit" Disabled="@(_busy || _code.Length < 4)" data-testid="join-code-go">@L.T("joinCodeBox.join")</Button>
 </form>
 
 @code {
@@ -22,11 +22,11 @@
         try
         {
             var c = await Social.GetChallengeAsync(_code);
-            if (c is null) { Toasts.Show("No game with that code. Check it and try again.", ToastKind.Error); return; }
-            if (c.Status != ChallengeStatus.Open) { Toasts.Show("That game has already started or expired.", ToastKind.Error); return; }
+            if (c is null) { Toasts.Show(L.T("joinCodeBox.no_game_with_that"), ToastKind.Error); return; }
+            if (c.Status != ChallengeStatus.Open) { Toasts.Show(L.T("joinCodeBox.that_game_has_already"), ToastKind.Error); return; }
             Nav.NavigateTo($"c/{c.Code}");
         }
-        catch (Exception) { Toasts.Show("Couldn't look up that code. Check your connection.", ToastKind.Error); }
+        catch (Exception) { Toasts.Show(L.T("joinCodeBox.couldn_t_look_up"), ToastKind.Error); }
         finally { _busy = false; }
     }
 }

@@ -11,11 +11,11 @@
 @inject IHaptics Haptics
 @inject NavigationManager Nav
 
-<PageTitle>Arena · Pass &amp; Play · Tic Tac Toe Ultimate</PageTitle>
+<PageTitle>@L.T("modeGrid.arena") · @L.T("localSetup.pass_play") · Tic Tac Toe Ultimate</PageTitle>
 
 @if (_g is null)
 {
-    <BertLoader Text="Starting" Splash="true" Mood="jumpy" />
+    <BertLoader Text="@L.T("localArena.starting")" Splash="true" Mood="jumpy" />
 }
 else
 {
@@ -23,7 +23,7 @@ else
     <div class="match @(g.RedAlert || g.State.Phase == ArenaPhase.Overtime ? "sd" : "arena")" data-testid="local-arena">
         <ThrownEmote Text="@_thrownText" FromBottom="_thrownFromBottom" Key="_thrownKey" />
         <div class="match-header">
-            <span>Pass &amp; Play · Arena</span>
+            <span>@L.T("localSetup.pass_play") · @L.T("modeGrid.arena")</span>
             <span class="t-num" data-testid="local-arena-score">@g.NameOf(0) @g.Score[0] – @g.Score[1] @g.NameOf(1)</span>
         </div>
         @if (g.IsLive)
@@ -36,7 +36,7 @@ else
 
         <div class="match-board">
             <div class="local-banner @(g.State.ToMove == Color.X ? "x" : "o") @(g.IsLive ? null : "ended")" role="status">
-                @(g.IsLive ? $"{g.State.ToMove}'s turn ({g.NameOf(g.ToMoveSeat)}) · {Ui.Seconds(g.MoveLeftMs)}s" : "Round over")
+                @(g.IsLive ? L.F("localArena.s_turn_seconds", g.State.ToMove, g.NameOf(g.ToMoveSeat), Ui.Seconds(g.MoveLeftMs)) : L.T("localArena.round_over"))
             </div>
             <div class="arena-board-wrap">
                 <Board Size="g.Rules.Board.BoardSize" Cells="@g.Board" Ghost="g.Ghost" Legal="g.LegalCells" Interactive="@(g.IsLive && !g.Paused)"
@@ -52,8 +52,8 @@ else
         @SeatRow(0)
 
         <div class="match-actions">
-            <Button Variant="ghost" OnClick="g.TogglePause">@(g.Paused ? "Resume" : "Pause")</Button>
-            <Button Variant="ghost" Href="local">Leave</Button>
+            <Button Variant="ghost" OnClick="g.TogglePause">@(g.Paused ? L.T("resumeBanner.resume") : L.T("localMatch.pause"))</Button>
+            <Button Variant="ghost" Href="local">@L.T("localArena.leave")</Button>
         </div>
     </div>
 
@@ -62,12 +62,12 @@ else
         <div class="t-scrim">
             <div class="t-sheet result-overlay" data-testid="local-arena-over">
                 <Bert Mood="cheer" Size="72" />
-                <span class="t-hero"><BounceText Text="@(g.WinnerSeat is int w ? $"{g.NameOf(w)} wins!" : "Draw")" /></span>
+                <span class="t-hero"><BounceText Text="@(g.WinnerSeat is int w ? L.F("localMatch.wins_excl", g.NameOf(w)) : L.T("match.draw"))" /></span>
                 <Scoreboard Name0="@g.NameOf(0)" Name1="@g.NameOf(1)" Score0="g.Score[0]" Score1="g.Score[1]" Color0="g.ColorOf(0)" Color1="g.ColorOf(1)"
                             Winner="g.WinnerSeat" Reason="@EndText(g.State.End)" />
-                <Button OnClick="Rematch">Rematch · swap colours</Button>
-                <Button Variant="secondary" OnClick="() => _showOverlay = false">View board</Button>
-                <Button Variant="ghost" Href="local">New setup</Button>
+                <Button OnClick="Rematch">@L.T("localArena.rematch_swap_colours")</Button>
+                <Button Variant="secondary" OnClick="() => _showOverlay = false">@L.T("localArena.view_board")</Button>
+                <Button Variant="ghost" Href="local">@L.T("localArena.new_setup")</Button>
             </div>
         </div>
     }
@@ -87,7 +87,7 @@ else
     private void ThrowEmote(string id)
     {
         if (_emoteSeat is not int seat) return;
-        _thrownText = EmoteCatalog.All.FirstOrDefault(e => e.Id == id)?.Text ?? id;
+        _thrownText = EmoteCatalog.All.FirstOrDefault(e => e.Id == id) is { } emote ? Ui.EmoteText(emote) : id;
         _thrownFromBottom = seat == 0;
         _thrownKey++;
     }
@@ -110,7 +110,7 @@ else
                            Steps="g.Rules.Ramp.Length" Preview="@(active ? 0 : ArenaEngine.NextLineDamage(g.State, piece == Color.X ? Color.O : Color.X))"
                            Hit="@(g.LastHit is { } h && h.Attacker != piece)" HitKey="g.HitKey" />
             </div>
-            <button type="button" class="t-iconbtn t-iconbtn--round seat-emote" aria-label="@($"Emote from {g.NameOf(seat)}")" @onclick="() => _emoteSeat = seat"><Icon Name="emote" /></button>
+            <button type="button" class="t-iconbtn t-iconbtn--round seat-emote" aria-label="@L.F("localMatch.emote_from", g.NameOf(seat))" @onclick="() => _emoteSeat = seat"><Icon Name="emote" /></button>
         </div>
     };
 
@@ -156,17 +156,17 @@ else
         if (g.HitKey != _lastHitKey && g.LastHit is { } hit)
         {
             _lastHitKey = g.HitKey;
-            if (hit.Crit) Impact("crit", $"CRITICAL! −{hit.Damage}", "streak", 1600);
+            if (hit.Crit) Impact("crit", L.F("match.critical", hit.Damage), "streak", 1600);
             else Impact("shatter", $"−{hit.Damage}", hit.Attacker == Color.X ? "piece-x" : "piece-o", 700);
             if (Settings.State.Sfx) { try { Sound.Play(hit.Crit ? SoundCue.Crit : SoundCue.Shatter); } catch (Exception) { /* audio optional */ } }
             if (Settings.State.Haptics) { try { Haptics.Play(HapticCue.Win); } catch (Exception) { /* haptics optional */ } }
         }
-        if (g.RedAlert && !_redAlertShown && g.IsLive) { _redAlertShown = true; Impact("suddendeath", "RED ALERT ×2", "alert-fill"); }
+        if (g.RedAlert && !_redAlertShown && g.IsLive) { _redAlertShown = true; Impact("suddendeath", L.T("match.red_alert_x2"), "alert-fill"); }
         if (!g.IsLive && !_showOverlay)
         {
             var ko = g.State.End == ArenaEnd.Knockout;
             if (g.WinnerSeat is not null) _confetti++;
-            Impact("win", ko ? "K.O.!" : g.WinnerSeat is int w ? $"{g.NameOf(w).ToUpperInvariant()} WINS!" : "DRAW",
+            Impact("win", ko ? L.T("localArena.ko") : g.WinnerSeat is int w ? L.F("localMatch.name_wins_caps", g.NameOf(w).ToUpperInvariant()) : L.T("match.draw_caps"),
                 g.State.Winner == Color.O ? "piece-o" : "piece-x");
             _ = RevealOverlayLater(Settings.State.ImpactFrames ? 1400 : 0);
         }
@@ -189,10 +189,10 @@ else
 
     private static string EndText(ArenaEnd e) => e switch
     {
-        ArenaEnd.Knockout => "Knockout",
-        ArenaEnd.Decision => "Time! Higher health wins",
-        ArenaEnd.Overtime => "Overtime: next line won",
-        _ => "Draw",
+        ArenaEnd.Knockout => L.T("localArena.knockout"),
+        ArenaEnd.Decision => L.T("localArena.time_higher_health_wins"),
+        ArenaEnd.Overtime => L.T("localArena.overtime_next_line_won"),
+        _ => L.T("match.draw"),
     };
 
     /// <inheritdoc />

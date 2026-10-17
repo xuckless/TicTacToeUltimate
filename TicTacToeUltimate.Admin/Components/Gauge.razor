@@ -1,0 +1,14 @@
+<div class="gauge">
+    <div class="row" style="justify-content:space-between"><span>@Label</span><span class="mono">@Text</span></div>
+    <div class="gauge-track" role="meter" aria-label="@Label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@((int)Percent)">
+        <div class="gauge-fill @(Percent >= Crit ? "crit" : Percent >= Warn ? "warn" : "")" style="width:@Math.Clamp(Percent, 0, 100).ToString("0.#", CultureInfo.InvariantCulture)%"></div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public double Percent { get; set; }
+    [Parameter] public string Text { get; set; } = "";
+    [Parameter] public double Warn { get; set; } = 80;
+    [Parameter] public double Crit { get; set; } = 90;
+}

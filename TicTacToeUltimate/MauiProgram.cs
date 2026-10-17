@@ -72,6 +72,8 @@ public static class MauiProgram
         s.Replace(ServiceDescriptor.Singleton<IDeepLinkSource>(sp => sp.GetRequiredService<MauiDeepLinkSource>()));
         s.Replace(ServiceDescriptor.Singleton<IShareService, MauiShareService>());
         s.Replace(ServiceDescriptor.Singleton<IPushService, PushService>());
+        s.Replace(ServiceDescriptor.Singleton<TicTacToeUltimate.Client.Diagnostics.IDeviceDescription, MauiDeviceDescription>());
+        s.AddSingleton<ITextScaleProvider, MauiTextScale>();
         s.AddSingleton<IBannerAds, NativeBannerAds>();   // the native AdMob banner lives under the web view; the HTML slot renders nothing
 #if IOS || ANDROID
         s.AddSingleton<AdMobAdProvider>();
@@ -82,6 +84,10 @@ public static class MauiProgram
         s.AddTttClientFallbacks();
 
         var app = builder.Build();
+        NativeCrashFile.Install();
+        var crashes = app.Services.GetRequiredService<TicTacToeUltimate.Client.Diagnostics.CrashReporter>();
+        crashes.InstallGlobalHandlers();
+        _ = Task.Run(async () => { await Task.Delay(TimeSpan.FromSeconds(5)); await NativeCrashFile.SendPendingAsync(crashes); });
 #if DEBUG
         // Dev hook: SIMCTL_CHILD_TTT_DEV_ROUTE=dev/ads?run=rewarded xcrun simctl launch … opens a route at startup.
         if (Environment.GetEnvironmentVariable("TTT_DEV_ROUTE") is { Length: > 0 } route)

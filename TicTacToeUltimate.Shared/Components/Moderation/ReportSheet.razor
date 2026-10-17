@@ -1,0 +1,72 @@
+@inject IModerationStore Moderation
+@inject ToastService Toasts
+
+@* Report a chat message, a profile, or cheating after a match (owner decision 2026-10-16). *@
+<Sheet Open="Open" Title="@Title" OnClose="Close">
+    <div class="t-col" style="padding:0;gap:12px">
+        <p class="t-small t-muted" style="margin:0">@Intro</p>
+        <div class="report-reasons" role="radiogroup" aria-label="@L.T("reportSheet.reason")">
+            @foreach (var r in Reasons)
+            {
+                <button type="button" role="radio" aria-checked="@(_reason == r ? "true" : "false")" class="t-chip @(_reason == r ? "on" : "")"
+                        @onclick="() => _reason = r" data-testid="@($"reason-{r}")">@ReasonText(r)</button>
+            }
+        </div>
+        <div class="t-field">
+            <label class="t-label" for="report-note">@L.T("reportSheet.anything_else_optional")</label>
+            <textarea id="report-note" class="t-input" rows="3" maxlength="500" @bind="_note" @bind:event="oninput"></textarea>
+        </div>
+        <Button Variant="primary" Block="true" OnClick="Send" Disabled="@(_busy || _reason is null)" data-testid="report-send">@L.T("bugReportSheet.send_report")</Button>
+        <p class="t-small t-muted" style="margin:0">@L.T("reportSheet.reports_are_private_the_player")</p>
+    </div>
+</Sheet>
+
+@code {
+    private string? _reason;
+    private string _note = "";
+    private bool _busy;
+
+    /// <summary>Visible.</summary>
+    [Parameter] public bool Open { get; set; }
+    /// <summary>Close requested.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+    /// <summary>The reported player.</summary>
+    [Parameter] public Guid Target { get; set; }
+    /// <summary>The reported player's name (for the title).</summary>
+    [Parameter] public string TargetName { get; set; } = "";
+    /// <summary>chat | profile | cheating.</summary>
+    [Parameter] public string Kind { get; set; } = ReportKinds.Profile;
+    /// <summary>Reported message (chat).</summary>
+    [Parameter] public long? MessageId { get; set; }
+    /// <summary>Game (cheating).</summary>
+    [Parameter] public Guid? GameId { get; set; }
+
+    private string[] Reasons => ReportKinds.Reasons.TryGetValue(Kind, out var r) ? r : [];
+    private string Title => Kind switch { ReportKinds.Chat => L.T("reportSheet.report_message"), ReportKinds.Cheating => L.T("reportSheet.report_cheating"), _ => L.F("reportSheet.report_name", TargetName) };
+    private string Intro => Kind switch
+    {
+        ReportKinds.Chat => L.T("reportSheet.we_ll_review_this_message"),
+        ReportKinds.Cheating => L.T("reportSheet.think_this_opponent_used"),
+        _ => L.T("reportSheet.what_s_wrong_with_this"),
+    };
+
+    /// <summary>Reason id → text.</summary>
+    public static string ReasonText(string id) => id switch
+    {
+        "harassment" => L.T("reportSheet.reason_harassment"), "hate" => L.T("reportSheet.reason_hate"), "sexual" => L.T("reportSheet.reason_sexual"), "spam" => L.T("reportSheet.reason_spam"),
+        "threats" => L.T("reportSheet.reason_threats"), "personal_info" => L.T("reportSheet.reason_personal_info"), "offensive_name" => L.T("reportSheet.reason_offensive_name"),
+        "impersonation" => L.T("reportSheet.reason_impersonation"), "engine" => L.T("reportSheet.reason_engine"), "multiple_accounts" => L.T("reportSheet.reason_multiple_accounts"), _ => L.T("reportSheet.reason_other"),
+    };
+
+    private async Task Send()
+    {
+        if (_reason is null) return;
+        _busy = true;
+        var err = await Moderation.ReportAsync(new ReportRequestDto(Target, Kind, _reason, string.IsNullOrWhiteSpace(_note) ? null : _note.Trim(), MessageId, GameId));
+        _busy = false;
+        if (err is null) { Toasts.Show(L.T("reportSheet.thanks_we_ll_take_a"), ToastKind.Success); await Close(); }
+        else Toasts.Show(err == ErrorCodes.RateLimited ? L.T("reportSheet.you_ve_sent_a_lot") : L.T("reportSheet.couldn_t_send_the_report"), ToastKind.Error);
+    }
+
+    private async Task Close() { _reason = null; _note = ""; await OnClose.InvokeAsync(); }
+}

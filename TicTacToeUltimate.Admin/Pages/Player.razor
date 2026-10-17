@@ -1,0 +1,86 @@
+@page "/players/{Id:guid}"
+@inject AdminApi Api
+
+<PageTitle>Player · TTT Admin</PageTitle>
+@if (_d is { } d)
+{
+    var p = d.Player;
+    <div class="page-head">
+        <div><h1>@(p.Username ?? p.DisplayName)</h1>
+            <div class="row small muted"><span class="mono">@p.Id</span><span>@p.Kind</span>@if (p.Country is not null) { <span>@p.Country</span> }
+                <span>joined <Ago At="p.CreatedAt" /></span><span>seen <Ago At="p.LastSeenAt" /></span>
+                @if (p.Online) { <span class="badge good">online</span> } @if (p.Shadow) { <span class="badge accent">shadow pool</span> } @if (d.Rating is int rating) { <span>rating @rating</span> }</div></div>
+    </div>
+    <div class="grid two">
+        <div class="card"><h2>Actions</h2>
+            <PenaltyActions PlayerId="p.Id" OnApplied="Load" />
+            <div class="row" style="margin-top:10px">
+                <button class="btn" type="button" @onclick="Purge">Hide all their messages</button>
+                <button class="btn" type="button" @onclick="() => Shadow(!p.Shadow)">@(p.Shadow ? "Remove from shadow pool" : "Put in shadow pool")</button>
+            </div>
+            @if (_msg is not null) { <p class="small muted" role="status">@_msg</p> }
+        </div>
+        <div class="card"><h2>Fair play</h2>
+            @{ var s = d.Suspicion; }
+            <table class="kv"><tbody>
+                <tr><td>Recent games scored</td><td class="num">@s.Games</td></tr>
+                <tr><td>Critical positions</td><td class="num">@s.Critical</td></tr>
+                <tr><td>Perfect in critical positions</td><td class="num">@Fmt.Pct(s.Accuracy)</td></tr>
+                <tr><td>Win rate</td><td class="num">@Fmt.Pct(s.WinRate)</td></tr>
+                <tr><td>Average think time (critical)</td><td class="num">@s.ThinkMsAvg ms</td></tr>
+                <tr><td>Cheating reports</td><td class="num">@s.CheatingReports</td></tr>
+            </tbody></table>
+            @if (s.OverThreshold) { <p><span class="badge serious">over the anti-cheat threshold</span></p> }
+        </div>
+        <div class="card"><h2>Penalties</h2>
+            @if (d.Penalties.Length == 0) { <p class="muted small">None.</p> }
+            else
+            {
+                <div class="table-wrap"><table><thead><tr><th>Kind</th><th>Reason</th><th>When</th><th>Until</th><th>By</th><th></th></tr></thead><tbody>
+                @foreach (var x in d.Penalties)
+                {
+                    <tr><td>@x.Kind @if (x.Active) { <span class="badge critical">active</span> } @if (x.AppealStatus is { } a) { <span class="badge">appeal @a</span> }</td>
+                        <td>@x.Reason</td><td><Ago At="x.StartsAt" /></td><td>@(x.EndsAt?.ToLocalTime().ToString("g") ?? (x.Kind is "ban" or "shadow" ? "permanent" : "–"))</td>
+                        <td>@x.Source@(x.CreatedBy is { } by && by != x.Source ? $" · {by}" : "")</td>
+                        <td>@if (x.RevokedAt is null && x.Active) { <button class="btn" type="button" @onclick="() => Revoke(x.Id)">Revoke</button> } else if (x.RevokedAt is not null) { <span class="muted small">revoked</span> }</td></tr>
+                }
+                </tbody></table></div>
+            }
+        </div>
+        <div class="card"><h2>Reports against this player</h2>
+            @if (d.ReportsAgainst.Length == 0) { <p class="muted small">None.</p> }
+            else { <table class="kv"><tbody>@foreach (var r in d.ReportsAgainst) { <tr><td>@r.Kind · @r.Reason</td><td>by @r.ReporterName</td><td>@r.Status</td><td><Ago At="r.CreatedAt" /></td></tr> }</tbody></table> }
+        </div>
+        <div class="card"><h2>Auto-moderation</h2>
+            @if (d.Events.Length == 0) { <p class="muted small">No strikes.</p> }
+            else { <table class="kv"><tbody>@foreach (var e in d.Events) { <tr><td>@e.Kind</td><td class="mono">@e.Text</td><td><Ago At="e.At" /></td></tr> }</tbody></table> }
+        </div>
+        <div class="card"><h2>Devices</h2>
+            <p class="small muted" style="margin-top:0">Salted hashes. Bans cover every device listed here.</p>
+            @foreach (var dev in d.Devices) { <div class="mono">@dev</div> }
+            @if (d.SameDevicePlayers.Length > 0)
+            {
+                <h2 style="margin-top:12px">Other accounts on these devices</h2>
+                @foreach (var o in d.SameDevicePlayers) { <div><a href="@($"players/{o}")" class="mono">@o</a></div> }
+            }
+        </div>
+        <div class="card" style="grid-column:1/-1"><h2>Recent games</h2>
+            <div class="table-wrap"><table><thead><tr><th>Ended</th><th>Mode</th><th>Opponent</th><th>Result</th><th>How</th><th class="num">Plies</th></tr></thead><tbody>
+            @foreach (var g in d.Games) { <tr><td><Ago At="g.EndedAt" /></td><td>@g.TimeControl</td><td>@g.Opponent</td><td>@g.Result</td><td>@g.EndReason</td><td class="num">@g.Plies</td></tr> }
+            </tbody></table></div>
+        </div>
+    </div>
+}
+else { <p class="muted">Loading…</p> }
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private AdminPlayerDetailDto? _d;
+    private string? _msg;
+
+    protected override Task OnParametersSetAsync() => Load();
+    private async Task Load() => _d = await Api.PlayerAsync(Id);
+    private async Task Revoke(long id) { await Api.RevokeAsync(id); await Load(); }
+    private async Task Purge() { var r = await Api.PurgeChatAsync(Id); _msg = r is { Ok: true } ? "Their messages are hidden." : "Failed."; }
+    private async Task Shadow(bool on) { await Api.ShadowAsync(Id, on); await Load(); }
+}

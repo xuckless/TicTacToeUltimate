@@ -3,7 +3,7 @@
 {
     @if (Text.StartsWith("bert:", StringComparison.Ordinal))
     {
-        <span class="emote-bubble bert-bubble" role="status" aria-label="@($"Bert {Text[5..]}")"><Bert Mood="@Text[5..]" Size="56" /></span>
+        <span class="emote-bubble bert-bubble" role="status" aria-label="@L.F("emotePicker.bert_mood", Text[5..])"><Bert Mood="@Text[5..]" Size="56" /></span>
     }
     else
     {

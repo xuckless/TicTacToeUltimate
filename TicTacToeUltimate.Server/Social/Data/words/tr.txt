@@ -1,0 +1,15 @@
+# tr: chat/username filter seed list (machine-assembled 2026-10-16, native review pending).
+# !term = severe (inside words, spacing tricks), term = whole word, ?term = mild (AI check).
+!orospu
+!piç
+!ibne
+!amk
+!sik
+amına
+siktir
+yarrak
+göt
+pezevenk
+kahpe
+?aptal
+?salak

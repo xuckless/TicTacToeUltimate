@@ -24,7 +24,13 @@ public static class ClientServiceCollectionExtensions
         services.AddSingleton<TokenStore>();
         services.AddSingleton<ClockSync>();
         services.AddSingleton(_ => new SupabaseAuthClient(new HttpClient { Timeout = TimeSpan.FromSeconds(20) }));
-        services.AddSingleton(sp => new TttApiClient(new HttpClient { BaseAddress = options.BackendBaseUrl }, sp.GetRequiredService<TokenStore>()));
+        services.AddSingleton<TicTacToeUltimate.Client.Diagnostics.DiagnosticsTrail>();
+        services.AddSingleton<TicTacToeUltimate.Client.Diagnostics.RingLoggerProvider>();
+        services.AddSingleton<ILoggerProvider>(sp => sp.GetRequiredService<TicTacToeUltimate.Client.Diagnostics.RingLoggerProvider>());
+        services.AddSingleton<TicTacToeUltimate.Client.Diagnostics.CrashReporter>();
+        services.AddSingleton<TicTacToeUltimate.Client.Diagnostics.Telemetry>();
+        services.AddSingleton(sp => new TttApiClient(new HttpClient { BaseAddress = options.BackendBaseUrl }, sp.GetRequiredService<TokenStore>(),
+            sp.GetRequiredService<TicTacToeUltimate.Client.Diagnostics.DiagnosticsTrail>()));
         services.AddSingleton<RealtimeClient>(sp => new RealtimeClient(options, sp.GetRequiredService<TokenStore>(),
             sp.GetRequiredService<ClockSync>(), sp.GetRequiredService<ILogger<RealtimeClient>>(), sp.GetService<IAppLifecycle>()));
         services.AddSingleton<IRealtimeTransport>(sp => sp.GetRequiredService<RealtimeClient>());
@@ -45,6 +51,8 @@ public static class ClientServiceCollectionExtensions
         services.AddSingleton<IActiveMatchesStore>(sp => sp.GetRequiredService<ActiveMatchesStore>());
         services.AddSingleton<ProgressStore>();
         services.AddSingleton<IProgressStore>(sp => sp.GetRequiredService<ProgressStore>());
+        services.AddSingleton<ModerationStore>();
+        services.AddSingleton<IModerationStore>(sp => sp.GetRequiredService<ModerationStore>());
         services.AddSingleton<IGameQueries, GameQueries>();
         services.AddSingleton<AdCoordinator>();
         services.AddSingleton<IAdCoordinator>(sp => sp.GetRequiredService<AdCoordinator>());

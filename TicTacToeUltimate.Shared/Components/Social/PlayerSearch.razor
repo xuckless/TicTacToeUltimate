@@ -1,16 +1,16 @@
 @implements IDisposable
 
 <div class="t-col" style="padding:0">
-    <TextField Label="Find players" HideLabel="true" Placeholder="Find players by username" Value="@_query" ValueChanged="OnQuery" MaxLength="16" />
+    <TextField Label="@L.T("playerSearch.find_players")" HideLabel="true" Placeholder="@L.T("playerSearch.find_players_by_username")" Value="@_query" ValueChanged="OnQuery" MaxLength="16" />
     @if (_results.Count > 0)
     {
-        <section class="t-card" aria-label="Search results" style="padding:4px 16px">
+        <section class="t-card" aria-label="@L.T("playerSearch.search_results")" style="padding:4px 16px">
             @foreach (var p in _results)
             {
                 <div class="t-listrow">
                     <Avatar Name="@p.DisplayName" AvatarId="@p.AvatarId" />
                     <div class="who"><div class="name">@p.DisplayName <BotBadge Kind="p.Kind" /></div><div class="meta">@Ui.TierName(p.Tier)</div></div>
-                    <Button Variant="secondary" Small="true" OnClick="() => OnAdd.InvokeAsync(p)">Add</Button>
+                    <Button Variant="secondary" Small="true" OnClick="() => OnAdd.InvokeAsync(p)">@L.T("playerSearch.add")</Button>
                 </div>
             }
         </section>

@@ -93,6 +93,7 @@ func Run(ctx context.Context, d Deps, p Persona, req Request) (res Result, err e
 		arena    bool
 		skill    float64
 		opponent string
+		shadow   bool
 		actionN  int
 	)
 	for {
@@ -136,7 +137,8 @@ func Run(ctx context.Context, d Deps, p Persona, req Request) (res Result, err e
 			if gs.Opponent.Rating != nil {
 				rating = *gs.Opponent.Rating
 			}
-			skill = d.Tracker.Skill(opponent, rating)
+			shadow = gs.OpponentShadow
+			skill = d.Tracker.SkillFor(opponent, rating, shadow)
 			_ = send(protocol.Simple{Type: "unseek", ID: "s2"}) // one game per session
 			log.Info("game start", "match", gs.MatchID, "vs", gs.Opponent.DisplayName, "rating", rating, "skill", fmt.Sprintf("%.2f", skill), "arena", arena)
 			emote(gs.MatchID, banter.OnStart(), time.Duration(800+rng.IntN(1500))*time.Millisecond)
@@ -183,7 +185,7 @@ func Run(ctx context.Context, d Deps, p Persona, req Request) (res Result, err e
 			decided := ge.Outcome == "XWins" || ge.Outcome == "OWins"
 			res.BotWon = decided && ge.YouWon
 			res.BotLost = decided && !ge.YouWon
-			d.Tracker.Record(opponent, res.BotWon, res.BotLost)
+			d.Tracker.RecordFor(opponent, res.BotWon, res.BotLost, shadow)
 			log.Info("game end", "outcome", ge.Outcome, "reason", ge.Reason, "botWon", ge.YouWon)
 			// The match actor lingers after the end, so a closing emote lands on the result screen.
 			if id := banter.OnEnd(res.BotWon, decided); id != "" {

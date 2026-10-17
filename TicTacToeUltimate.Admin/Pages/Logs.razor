@@ -1,0 +1,30 @@
+@page "/logs"
+@inject AdminApi Api
+@implements IDisposable
+
+<PageTitle>Logs · TTT Admin</PageTitle>
+<div class="page-head"><div><h1>Logs</h1><span class="muted small">Newest first, 500 lines. Server lines come from the server itself; bots and Caddy from the ttt-ops sidecar.</span></div></div>
+<div class="row" style="margin-bottom:10px">
+    <div class="seg" role="group" aria-label="Service">@foreach (var s in new[] { "server", "bots", "caddy", "ops" }) { <button type="button" class="@(_service == s ? "on" : "")" @onclick="() => Set(s)">@s</button> }</div>
+    <select @bind="_level" @bind:after="Load" aria-label="Level"><option value="">All levels</option><option value="Warning">Warnings + errors</option><option value="Error">Errors</option></select>
+    <form @onsubmit="Load" class="row"><input type="search" placeholder="Search" @bind="_q" aria-label="Search logs" /><button class="btn" type="submit">Search</button></form>
+    <label class="small"><input type="checkbox" @bind="_follow" /> Follow (5 s)</label>
+</div>
+<pre style="max-height:70vh">@foreach (var l in _lines) {@($"{l.At.ToLocalTime():HH:mm:ss} {l.Level,-11} {l.Text}\n")}</pre>
+
+@code {
+    private string _service = "server", _level = "", _q = "";
+    private bool _follow;
+    private LogEntryDto[] _lines = [];
+    private Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+        _timer = new Timer(async _ => { if (_follow) { await Load(); await InvokeAsync(StateHasChanged); } }, null, 5000, 5000);
+    }
+
+    private async Task Set(string s) { _service = s; await Load(); }
+    private async Task Load() => _lines = await Api.LogsAsync(_service, _level, _q) ?? [];
+    public void Dispose() => _timer?.Dispose();
+}

@@ -1,4 +1,4 @@
-<div class="move-list" aria-label="Moves">
+<div class="move-list" aria-label="@L.T("moveList.moves")">
     @for (var i = 0; i < Actions.Count; i++)
     {
         var ply = i + 1;
@@ -24,8 +24,8 @@
 
     private string Describe(ActionDto a) => a.Kind switch
     {
-        ActionKind.Swap => "swap",
-        ActionKind.KeepSides => "keep",
-        _ => $"{a.Color} {(char)('a' + a.Cell!.Value % Size)}{a.Cell!.Value / Size + 1}{(a.Auto ? " (auto)" : "")}",
+        ActionKind.Swap => L.T("moveList.swap"),
+        ActionKind.KeepSides => L.T("moveList.keep"),
+        _ => $"{a.Color} {(char)('a' + a.Cell!.Value % Size)}{a.Cell!.Value / Size + 1}{(a.Auto ? " " + L.T("moveList.auto") : "")}",
     };
 }

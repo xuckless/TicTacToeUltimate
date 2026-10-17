@@ -6,6 +6,8 @@ const API = [/^\/api\//, /^\/hubs\//, /^\/health$/];
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // The admin API is only reachable through admin.alidirect.dev (Cloudflare Access in front).
+    if (/^\/api\/admin(\/|$)/.test(url.pathname)) return new Response('Not found', { status: 404 });
     if (API.some(r => r.test(url.pathname))) {
       const target = new URL(url.pathname + url.search, env.ORIGIN);
       const headers = new Headers(request.headers);

@@ -25,6 +25,9 @@ public sealed class SocialStore : StoreBase<SocialState>, ISocialStore
             Friends = [.. s.Friends.Select(f => f.Player.UserId == p.UserId ? f with { Presence = p } : f)],
         });
         rt.DirectMessageReceived += OnMessage;
+        // Moderation removed a message (abusive, found after delivery): drop it from the thread.
+        rt.MessageHiddenReceived += h => Update(s => s.Threads.TryGetValue(h.FriendId, out var t)
+            ? s with { Threads = s.Threads.SetItem(h.FriendId, [.. t.Where(m => m.Id != h.MessageId)]) } : s);
         rt.ChallengeReceived += c => Update(s => s with { IncomingChallenges = [.. s.IncomingChallenges.Where(x => x.Code != c.Code), c] });
         rt.ChallengeUpdated += c => Update(s => s with
         {

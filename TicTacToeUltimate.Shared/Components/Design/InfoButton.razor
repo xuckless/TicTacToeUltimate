@@ -2,7 +2,7 @@
 @* Small (?) button that opens a sheet explaining a mode or option in detail (ModeGuide). *@
 @if (Entry is { } e)
 {
-    <button type="button" class="info-btn @Class" aria-label="@($"About {e.Title}")" @onclick="Show" @onclick:stopPropagation="true" @onclick:preventDefault="true">?</button>
+    <button type="button" class="info-btn @Class" aria-label="@L.F("infoButton.about", e.Title)" @onclick="Show" @onclick:stopPropagation="true" @onclick:preventDefault="true">?</button>
     <Sheet Open="_open" Title="@e.Title" OnClose="() => _open = false">
         <div class="guide" style="--accent:@e.Accent">
             <div class="guide-head">

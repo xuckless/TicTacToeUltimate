@@ -1,19 +1,19 @@
 @* Home / Play entry card for Arena (health) mode. *@
 <div class="arena-card" data-testid="arena-card">
     <div class="arena-card-head">
-        <span class="t-label">Arena · new</span>
-        <span class="big"><BounceText Text="Health Arena" /></span>
-        <span class="sub">Lines shatter and deal damage · 125 HP · 2:00 rounds · ×2 red alert</span>
+        <span class="t-label">@L.T("arenaCard.arena_new")</span>
+        <span class="big"><BounceText Text="@L.T("arenaCard.health_arena")" /></span>
+        <span class="sub">@L.T("arenaCard.lines_shatter_and_deal_damage")</span>
     </div>
     <div class="arena-card-actions">
-        <a class="mode-btn" href="play?tc=ArenaCasual"><Icon Name="arena" Class="mode-ico" /><span class="t-label">Casual Arena</span><span class="sub">5s per move · unrated</span></a>
+        <a class="mode-btn" href="play?tc=ArenaCasual"><Icon Name="arena" Class="mode-ico" /><span class="t-label">@L.T("arenaCard.casual_arena")</span><span class="sub">@L.T("arenaCard.5s_per_move_unrated")</span></a>
         @if (Guest)
         {
-            <a class="mode-btn" href="signin" aria-label="Arena Ranked Ladder (account required)"><Icon Name="ranked" Class="mode-ico" /><span class="t-label">Ranked Ladder</span><span class="sub">Account only</span></a>
+            <a class="mode-btn" href="signin?mode=login" aria-label="@L.T("arenaCard.arena_ranked_ladder_account_required")"><Icon Name="ranked" Class="mode-ico" /><span class="t-label">@L.T("arenaCard.ranked_ladder")</span><span class="sub">@L.T("arenaCard.account_only")</span></a>
         }
         else
         {
-            <a class="mode-btn" href="play?tc=ArenaRanked"><Icon Name="ranked" Class="mode-ico" /><span class="t-label">Ranked Ladder</span><span class="sub">@(Rating is { } r ? $"Arena {r.Rating}" : "Own rating")</span></a>
+            <a class="mode-btn" href="play?tc=ArenaRanked"><Icon Name="ranked" Class="mode-ico" /><span class="t-label">@L.T("arenaCard.ranked_ladder")</span><span class="sub">@(Rating is { } r ? L.F("arenaCard.arena_rating", r.Rating) : L.T("arenaCard.own_rating"))</span></a>
         }
     </div>
 </div>

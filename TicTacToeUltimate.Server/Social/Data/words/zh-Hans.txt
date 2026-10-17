@@ -1,0 +1,14 @@
+# zh-Hans: chat/username filter seed list (machine-assembled 2026-10-16, native review pending).
+# !term = severe (inside words, spacing tricks), term = whole word, ?term = mild (AI check).
+!操你妈
+!傻逼
+!去死
+!婊子
+!日你
+!黑鬼
+他妈的
+滚蛋
+王八蛋
+贱人
+?笨蛋
+?白痴

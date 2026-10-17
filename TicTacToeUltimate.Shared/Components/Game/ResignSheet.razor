@@ -1,7 +1,7 @@
-<Sheet Open="Open" Title="Resign?" OnClose="OnClose">
-    <p class="t-muted">@(Rated ? "You will lose rating points." : "The game ends as a loss.")</p>
-    <Button Variant="danger" Block="true" OnClick="Confirm">Resign</Button>
-    <Button Variant="secondary" Block="true" OnClick="OnClose">Keep playing</Button>
+<Sheet Open="Open" Title="@L.T("resignSheet.resign")" OnClose="OnClose">
+    <p class="t-muted">@(Rated ? L.T("resignSheet.you_will_lose_rating") : L.T("resignSheet.the_game_ends_as"))</p>
+    <Button Variant="danger" Block="true" OnClick="Confirm">@L.T("matchActions.resign")</Button>
+    <Button Variant="secondary" Block="true" OnClick="OnClose">@L.T("resignSheet.keep_playing")</Button>
 </Sheet>
 
 @code {

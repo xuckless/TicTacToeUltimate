@@ -53,6 +53,7 @@ public sealed class SettingsStore(IKeyValueStore kv, ISoundService sound) : Stor
         ["theme"] = s.Theme.ToString(), ["sfx"] = s.Sfx, ["music"] = s.Music, ["haptics"] = s.Haptics,
         ["impactFrames"] = s.ImpactFrames, ["motion"] = s.Motion.ToString(), ["guidedMode"] = s.ThreatHints,
         ["muteOpponentEmotes"] = s.MuteOpponentEmotes, ["sfxVolume"] = s.SfxVolume, ["musicVolume"] = s.MusicVolume,
+        ["language"] = s.Language, ["highContrast"] = s.HighContrast, ["soundCaptions"] = s.SoundCaptions,
     }.ToJsonString();
 
     /// <summary>Parses settings; missing or invalid fields fall back to defaults.</summary>
@@ -68,7 +69,7 @@ public sealed class SettingsStore(IKeyValueStore kv, ISoundService sound) : Stor
                 Bool(o, "sfx", d.Sfx), Bool(o, "music", d.Music), Bool(o, "haptics", d.Haptics), Bool(o, "impactFrames", d.ImpactFrames),
                 Enum.TryParse<MotionPreference>(Str(o, "motion"), out var motion) ? motion : d.Motion,
                 Bool(o, "guidedMode", d.ThreatHints), Bool(o, "muteOpponentEmotes", d.MuteOpponentEmotes),
-                Volume(o, "sfxVolume", d.SfxVolume), Volume(o, "musicVolume", d.MusicVolume));
+                Volume(o, "sfxVolume", d.SfxVolume), Volume(o, "musicVolume", d.MusicVolume)) { Language = Str(o, "language") ?? d.Language, HighContrast = Bool(o, "highContrast", false), SoundCaptions = Bool(o, "soundCaptions", false) };
         }
         catch (Exception e) when (e is JsonException or InvalidOperationException or FormatException)
         {

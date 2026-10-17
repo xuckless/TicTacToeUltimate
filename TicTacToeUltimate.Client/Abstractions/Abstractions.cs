@@ -32,14 +32,18 @@ public interface IAdProvider
 /// <summary>Detects a browser ad blocker (web AdSense only; absent elsewhere).</summary>
 public interface IAdBlockDetector { ValueTask<bool> IsBlockedAsync(); }
 /// <summary>Real banner ads (web AdSense). Absent = the stub banner.</summary>
+/// <summary>Where a display ad sits: a horizontal strip (menus, match), an in-feed card (lists, result) or the desktop side rail.</summary>
+public enum AdSlotKind { Banner, Feed, Rail }
 public interface IBannerAds
 {
-    string? BannerSlot { get; }
-    ValueTask RenderBannerAsync(object host);   // an ElementReference
+    bool Has(AdSlotKind kind);
+    ValueTask RenderAsync(object host, AdSlotKind kind);   // host is an ElementReference
 }
 public sealed record AdOverlayRequest(string Kind /* "interstitial" | "rewarded" */, RewardKind? Reward, int Seconds);
 /// <summary>Implemented by Shared (WP6): renders the stub ad modal; returns true when the countdown completed (false if closed early).</summary>
 public interface IAdOverlay { Task<bool> ShowAsync(AdOverlayRequest request, CancellationToken ct); }
+/// <summary>The device's text-size setting as a multiplier (iOS Dynamic Type, Android font scale); 1 on the web, where the browser's own text size applies.</summary>
+public interface ITextScaleProvider { double Scale { get; } }
 public interface IShareService { ValueTask<string> ShareLinkAsync(string title, string text, Uri url); } // "shared" | "copied" | "failed"
 public interface IAppLifecycle { bool IsForeground { get; } bool IsOnline { get; } event Action? Resumed; event Action? Suspended; event Action<bool>? NetworkChanged; }
 public interface IDeepLinkSource { Uri? InitialLink { get; } event Action<Uri>? LinkOpened; }

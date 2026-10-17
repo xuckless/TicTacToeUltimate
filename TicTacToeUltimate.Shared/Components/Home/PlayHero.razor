@@ -52,7 +52,7 @@
     /// <summary>Line under the title when no rating.</summary>
     [Parameter] public string? Subtitle { get; set; }
 
-    private string Kicker => Guest ? "Casual · sudden death" : "Ranked · Arena";
-    private string Title => Guest ? "Play Casual" : "Play Ranked";
+    private string Kicker => Guest ? L.T("playHero.casual_sudden_death") : L.T("playHero.ranked_arena");
+    private string Title => Guest ? L.T("playHero.play_casual") : L.T("playHero.play_ranked");
     private string Href => Guest ? "play?tc=Casual" : "play?tc=ArenaRanked";
 }

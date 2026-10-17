@@ -1,0 +1,13 @@
+# no: chat/username filter seed list (machine-assembled 2026-10-16, native review pending).
+# !term = severe (inside words, spacing tricks), term = whole word, ?term = mild (AI check).
+!neger
+?homo
+!fitte
+hore
+kuk
+faen
+jævla
+javla
+dritt
+?idiot
+?dum

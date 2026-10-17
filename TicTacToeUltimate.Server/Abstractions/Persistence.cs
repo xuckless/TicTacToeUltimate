@@ -23,6 +23,11 @@ public interface IUserRepository
     Task UpdateProfileAsync(Guid id, ProfilePatch patch, CancellationToken ct);
     /// <summary>Store: a bought name change adds renames.</summary>
     Task AddRenamesAsync(Guid id, int count, CancellationToken ct);
+    /// <summary>Moderation: drop the username (the player must pick a new one, for free) and show a neutral name meanwhile.</summary>
+    Task ResetUsernameAsync(Guid id, CancellationToken ct);
+    /// <summary>UI language for pushes and notifications (players.locale).</summary>
+    Task SetLocaleAsync(Guid id, string locale, CancellationToken ct);
+    Task<string?> GetLocaleAsync(Guid id, CancellationToken ct);
     Task TouchAsync(Guid id, DateTimeOffset lastSeenAt, CancellationToken ct);
     Task<IReadOnlyList<UserRecord>> SearchAsync(string prefix, int take, CancellationToken ct);
     Task<IReadOnlyList<UserRecord>> ListAsync(int take, CancellationToken ct);        // dev user picker
@@ -98,6 +103,12 @@ public interface IChatRepository
     Task<IReadOnlyList<DirectMessageRecord>> PageAsync(Guid a, Guid b, long? beforeId, int take, CancellationToken ct); // newest first
     Task MarkReadAsync(Guid reader, Guid other, long upToId, DateTimeOffset at, CancellationToken ct);
     Task<IReadOnlyDictionary<Guid, int>> UnreadCountsAsync(Guid reader, CancellationToken ct);
+    /// <summary>One message (hidden ones included: moderation evidence).</summary>
+    Task<DirectMessageRecord?> GetAsync(long id, CancellationToken ct);
+    /// <summary>Moderation: hide a message (kept as evidence, never shown again).</summary>
+    Task HideAsync(long id, DateTimeOffset at, CancellationToken ct);
+    /// <summary>Moderation "purge chat": hide everything a player sent. Returns how many.</summary>
+    Task<int> HideAllFromAsync(Guid sender, DateTimeOffset at, CancellationToken ct);
 }
 
 public sealed record StreakRecord(Guid UserId, int Current, int Best, DateOnly? LastPlayedDay, int Freezes);

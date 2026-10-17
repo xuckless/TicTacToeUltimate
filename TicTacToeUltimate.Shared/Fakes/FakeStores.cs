@@ -41,7 +41,7 @@ public sealed class FakeSessionStore() : FakeStore<SessionState>(MockupFixtures.
     /// <inheritdoc />
     public Task<string?> SendCodeAsync(string email) { Calls.Add("SendCode:" + email); return Task.FromResult<string?>(null); }
     /// <inheritdoc />
-    public Task<string?> VerifyCodeAsync(string email, string code) { Calls.Add("VerifyCode:" + code); return Task.FromResult<string?>(code == "123456" ? null : "That code didn't work. Check it and try again."); }
+    public Task<string?> VerifyCodeAsync(string email, string code) { Calls.Add("VerifyCode:" + code); return Task.FromResult<string?>(code == "123456" ? null : "auth.code_invalid"); }
     public Task<string?> ResetPasswordAsync(string email) { Calls.Add("Reset:" + email); return Task.FromResult<string?>(null); }
     public Task<bool> CompleteRedirectAsync(string fragment) => Task.FromResult(false);
     public Task<string?> SetPasswordAsync(string password) => Task.FromResult<string?>(null);
@@ -53,6 +53,19 @@ public sealed class FakeSessionStore() : FakeStore<SessionState>(MockupFixtures.
     public Task<CommandAckDto> SetUsernameAsync(string username, bool acceptTos) { Calls.Add($"SetUsername:{username}"); return Task.FromResult(new CommandAckDto(acceptTos, acceptTos ? null : ErrorCodes.TosRequired)); }
     /// <inheritdoc />
     public Task<CommandAckDto> UpdateProfileAsync(UpdateProfileDto patch) { Calls.Add("UpdateProfile"); return Task.FromResult(new CommandAckDto(true, null)); }
+}
+
+/// <summary>Fake <see cref="IModerationStore"/>.</summary>
+public sealed class FakeModerationStore() : FakeStore<ModerationState>(ModerationState.Empty), IModerationStore
+{
+    /// <inheritdoc />
+    public Task<string?> ReportAsync(ReportRequestDto report) { Calls.Add($"Report:{report.Kind}:{report.Reason}"); return Task.FromResult<string?>(null); }
+    /// <inheritdoc />
+    public Task<string?> AppealAsync(long penaltyId, string text) { Calls.Add($"Appeal:{penaltyId}"); return Task.FromResult<string?>(null); }
+    /// <inheritdoc />
+    public Task LoadStandingAsync() { Calls.Add("LoadStanding"); return Task.CompletedTask; }
+    /// <inheritdoc />
+    public void DismissNotice() => Set(State with { Notice = null });
 }
 
 /// <summary>Fake <see cref="IQueueStore"/>.</summary>
@@ -254,6 +267,7 @@ public static class FakeServiceCollectionExtensions
         services.TryAddSingleton<FakeProgressStore>(); services.TryAddSingleton<IProgressStore>(sp => sp.GetRequiredService<FakeProgressStore>());
         services.TryAddSingleton<FakeWalletStore>(); services.TryAddSingleton<IWalletStore>(sp => sp.GetRequiredService<FakeWalletStore>());
         services.TryAddSingleton<FakeActiveMatchesStore>(); services.TryAddSingleton<IActiveMatchesStore>(sp => sp.GetRequiredService<FakeActiveMatchesStore>());
+        services.TryAddSingleton<FakeModerationStore>(); services.TryAddSingleton<IModerationStore>(sp => sp.GetRequiredService<FakeModerationStore>());
         services.TryAddSingleton<FakeSettingsStore>(); services.TryAddSingleton<ISettingsStore>(sp => sp.GetRequiredService<FakeSettingsStore>());
         services.TryAddSingleton<FakeAdCoordinator>(); services.TryAddSingleton<IAdCoordinator>(sp => sp.GetRequiredService<FakeAdCoordinator>());
         services.TryAddSingleton<IGameQueries, FakeGameQueries>();

@@ -1,9 +1,9 @@
 <div class="stat-grid">
-    <div class="stat"><span class="t-label">Ranked</span><span class="num primary">@(Ranked?.Rating.ToString(CultureInfo.InvariantCulture) ?? "—")</span>
-        <span class="t-small" style="font-size:12px;color:@(Ranked?.WeekDelta >= 0 ? "var(--success)" : "var(--alert)")">@(Ranked is null ? "" : $"{Ui.Delta(Ranked.WeekDelta)} this week")</span></div>
-    <div class="stat"><span class="t-label">Win rate</span><span class="num">@Percent(Stats.WinRate)</span><span class="t-muted" style="font-size:12px">@Stats.GamesPlayed games played</span></div>
-    <div class="stat"><span class="t-label">Daily</span><span class="num">@(Daily?.Rating.ToString(CultureInfo.InvariantCulture) ?? "—")</span><span class="t-muted" style="font-size:12px">@Stats.DailyInProgress games in progress</span></div>
-    <div class="stat"><span class="t-label">Best streak</span><span class="num streak">@Stats.BestStreak</span><span class="t-muted" style="font-size:12px">Current @Stats.CurrentStreak days</span></div>
+    <div class="stat"><span class="t-label">@L.T("statGrid.ranked")</span><span class="num primary">@(Ranked?.Rating.ToString(CultureInfo.InvariantCulture) ?? "—")</span>
+        <span class="t-small" style="font-size:12px;color:@(Ranked?.WeekDelta >= 0 ? "var(--success)" : "var(--alert)")">@(Ranked is null ? "" : L.F("statGrid.this_week", Ui.Delta(Ranked.WeekDelta)))</span></div>
+    <div class="stat"><span class="t-label">@L.T("statGrid.win_rate")</span><span class="num">@Percent(Stats.WinRate)</span><span class="t-muted" style="font-size:12px">@L.P("statGrid.games_played", Stats.GamesPlayed)</span></div>
+    <div class="stat"><span class="t-label">@L.T("friendRow.daily")</span><span class="num">@(Daily?.Rating.ToString(CultureInfo.InvariantCulture) ?? "—")</span><span class="t-muted" style="font-size:12px">@L.P("statGrid.games_in_progress", Stats.DailyInProgress)</span></div>
+    <div class="stat"><span class="t-label">@L.T("statGrid.best_streak")</span><span class="num streak">@Stats.BestStreak</span><span class="t-muted" style="font-size:12px">@L.P("statGrid.current_days", Stats.CurrentStreak)</span></div>
 </div>
 
 @code {

@@ -1,15 +1,15 @@
-<Sheet Open="Open" Title="Emotes" OnClose="OnClose">
+<Sheet Open="Open" Title="@L.T("emotePicker.emotes")" OnClose="OnClose">
     <div class="emote-grid bert-grid">
         @foreach (var e in (Emotes ?? EmoteCatalog.All).Where(e => e.Kind == "bert"))
         {
             var mood = e.Text.StartsWith("bert:", StringComparison.Ordinal) ? e.Text[5..] : "happy";
-            <button type="button" aria-label="@($"Bert {mood}")" title="@mood" @onclick="() => Pick(e.Id)"><Bert Mood="@mood" Size="52" /></button>
+            <button type="button" aria-label="@L.F("emotePicker.bert_mood", mood)" title="@mood" @onclick="() => Pick(e.Id)"><Bert Mood="@mood" Size="52" /></button>
         }
     </div>
     <div class="emote-grid">
         @foreach (var e in (Emotes ?? EmoteCatalog.All).Where(e => e.Kind == "phrase"))
         {
-            <button type="button" @onclick="() => Pick(e.Id)">@e.Text</button>
+            <button type="button" @onclick="() => Pick(e.Id)">@Ui.EmoteText(e)</button>
         }
     </div>
 </Sheet>

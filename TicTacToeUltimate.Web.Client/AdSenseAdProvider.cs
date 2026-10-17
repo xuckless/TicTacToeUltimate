@@ -35,14 +35,17 @@ public sealed class AdSenseAdProvider(IJSRuntime js, AdSenseOptions options) : I
     }
 
     /// <inheritdoc />
-    public string? BannerSlot => options.BannerSlot;
+    public bool Has(AdSlotKind kind) => SlotFor(kind) is not null;
 
     /// <inheritdoc />
-    public async ValueTask RenderBannerAsync(object host)
+    public async ValueTask RenderAsync(object host, AdSlotKind kind)
     {
-        try { if (await EnsureAsync() && options.BannerSlot is { } slot) await js.InvokeAsync<bool>("tttAds.banner", host, slot); }
+        try { if (await EnsureAsync() && SlotFor(kind) is { } slot) await js.InvokeAsync<bool>("tttAds.banner", host, slot, kind.ToString().ToLowerInvariant()); }
         catch (JSException) { /* blocked by an ad blocker: leave the slot empty */ }
     }
+
+    // The display unit serves the strip and the in-feed card (its shape comes from the container); the vertical unit serves the rail.
+    private string? SlotFor(AdSlotKind kind) => kind == AdSlotKind.Rail ? options.RailSlot : options.BannerSlot;
 
     private bool? _blocked;
 
@@ -63,5 +66,5 @@ public sealed class AdSenseAdProvider(IJSRuntime js, AdSenseOptions options) : I
     }
 }
 
-/// <summary>Ads:AdSenseClient (ca-pub-…), Ads:AdSenseBannerSlot, Ads:TestMode.</summary>
-public sealed record AdSenseOptions(string Client, string? BannerSlot, bool TestMode);
+/// <summary>Ads:AdSenseClient (ca-pub-…), Ads:AdSenseBannerSlot (display unit), Ads:AdSenseRailSlot (vertical unit), Ads:TestMode.</summary>
+public sealed record AdSenseOptions(string Client, string? BannerSlot, string? RailSlot, bool TestMode);

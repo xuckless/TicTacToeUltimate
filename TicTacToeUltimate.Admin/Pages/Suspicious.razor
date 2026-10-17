@@ -1,0 +1,23 @@
+@page "/suspicious"
+@inject AdminApi Api
+
+<PageTitle>Suspicious · TTT Admin</PageTitle>
+<div class="page-head"><div><h1>Suspicious players</h1><span class="muted small">Shadow-pool players and anyone reported for cheating. Shadow players only meet strong bots or each other; their win rate is held at 40-70%.</span></div></div>
+<div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>Player</th><th>Kind</th><th class="num">Games</th><th class="num">Critical</th><th class="num">Perfect</th><th class="num">Win rate</th><th class="num">Think</th><th class="num">Reports</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var s in _list)
+    {
+        <tr><td><a href="@($"players/{s.UserId}")">@s.Name</a> @if (s.Shadow) { <span class="badge accent">shadow</span> } @if (s.OverThreshold) { <span class="badge serious">over threshold</span> }</td>
+            <td>@s.Kind</td><td class="num">@s.Games</td><td class="num">@s.Critical</td><td class="num">@Fmt.Pct(s.Accuracy)</td><td class="num">@Fmt.Pct(s.WinRate)</td>
+            <td class="num">@s.ThinkMsAvg ms</td><td class="num">@s.CheatingReports</td>
+            <td><button class="btn" type="button" @onclick="() => Toggle(s)">@(s.Shadow ? "Clear" : "Shadow")</button></td></tr>
+    }
+    </tbody>
+</table></div></div>
+
+@code {
+    private SuspicionRowDto[] _list = [];
+    protected override async Task OnInitializedAsync() => _list = await Api.SuspiciousAsync() ?? [];
+    private async Task Toggle(SuspicionRowDto s) { await Api.ShadowAsync(s.UserId, !s.Shadow); _list = await Api.SuspiciousAsync() ?? []; }
+}

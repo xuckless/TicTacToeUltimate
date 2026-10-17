@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+  <!-- Admin site for admin.alidirect.dev (Cloudflare Access in front). Talks only to /api/admin; references Contracts only. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TicTacToeUltimate.Contracts\TicTacToeUltimate.Contracts.csproj" />
+  </ItemGroup>
+</Project>

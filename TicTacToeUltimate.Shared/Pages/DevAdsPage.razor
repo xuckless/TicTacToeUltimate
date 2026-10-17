@@ -5,15 +5,15 @@
 
 @if (!Options.IsDevelopment)
 {
-    <p class="t-muted">Not available.</p>
+    <p class="t-muted">@L.T("devAds.not_available")</p>
 }
 else
 {
-    <h1 class="t-title">Ad test</h1>
+    <h1 class="t-title">@L.T("devAds.ad_test")</h1>
     <p class="t-small t-muted">Provider: @Ads.GetType().Name · available: @Ads.IsAvailable</p>
     <div class="t-row" style="gap:8px">
-        <Button OnClick="() => Run(true)">Interstitial</Button>
-        <Button Variant="secondary" OnClick="() => Run(false)">Rewarded</Button>
+        <Button OnClick="() => Run(true)">@L.T("devAds.interstitial")</Button>
+        <Button Variant="secondary" OnClick="() => Run(false)">@L.T("devAds.rewarded")</Button>
     </div>
     <p data-testid="ad-result" style="margin-top:12px">@_result</p>
 }

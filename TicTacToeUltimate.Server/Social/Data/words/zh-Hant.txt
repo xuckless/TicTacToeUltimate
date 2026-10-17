@@ -1,0 +1,13 @@
+# zh-Hant: chat/username filter seed list (machine-assembled 2026-10-16, native review pending).
+# !term = severe (inside words, spacing tricks), term = whole word, ?term = mild (AI check).
+!操你媽
+!幹你娘
+!傻逼
+!去死
+!婊子
+他媽的
+滾蛋
+王八蛋
+賤人
+?笨蛋
+?白痴

@@ -1,0 +1,20 @@
+# es: chat/username filter seed list (machine-assembled 2026-10-16, native review pending).
+# !term = severe (inside words, spacing tricks), term = whole word, ?term = mild (AI check).
+!maricón
+!maricon
+!puta
+!hijodeputa
+!negrata
+gilipollas
+cabrón
+cabron
+mierda
+coño
+cono
+joder
+pendejo
+zorra
+mamón
+?idiota
+?tonto
+?imbécil

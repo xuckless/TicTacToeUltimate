@@ -1,1 +1,5 @@
 Luckiest Guy (Astigmatic), Fredoka (Milena Brandão, Hafontia) and Chakra Petch (Cadson Demak) are licensed under the SIL Open Font License 1.1 (https://openfontlicense.org). Files downloaded from Google Fonts on 2026-10-15.
+
+Non-Latin fonts in intl/ (vendored by tools/fonts/fetch_intl.py from Google Fonts, all SIL Open Font License 1.1):
+Rubik (Hubert & Fischer, Meir Sadan, Cyreal), Vazirmatn (Saber Rastikerdar), Mitr (Cadson Demak),
+M PLUS Rounded 1c (M+ Fonts Project), Jua (Woowahan Brothers), ZCOOL KuaiLe (Liu Zhengjiang, ZCOOL).

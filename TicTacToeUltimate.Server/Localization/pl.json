@@ -1,0 +1,21 @@
+{
+ "notify.demoted": "Spadek",
+ "notify.emote": "wysłał(a) ci emotkę",
+ "notify.promoted": "Awans!",
+ "push.comeback.1": "Bert wyzywa cię na pojedynek. Myślisz, że wciąż to masz?",
+ "push.comeback.2": "Plansza za tobą tęskni. Gra swobodna trwa 90 sekund.",
+ "push.comeback.3": "Nowi przeciwnicy są teraz online. Wskakujesz?",
+ "push.comeback.title": "Bert cię wyzywa",
+ "push.streak.1": "Twoja {0}-dniowa seria kończy się o północy. Jedna gra ją uratuje!",
+ "push.streak.2": "Tu Bert. {0} dni z rzędu… nie daj jej zniknąć jak stary pionek.",
+ "push.streak.3": "Psst — twoja {0}-dniowa seria czeka. Szybka gra?",
+ "push.streak.title": "Bert 👻",
+ "push.your_move.body": "Twoja kolej w grze z {0}.",
+ "push.your_move.title": "Twój ruch",
+ "tier.Bronze": "Brąz",
+ "tier.Diamond": "Diament",
+ "tier.Gold": "Złoto",
+ "tier.Master": "Mistrz",
+ "tier.Platinum": "Platyna",
+ "tier.Silver": "Srebro"
+}

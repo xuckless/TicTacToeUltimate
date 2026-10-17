@@ -5,7 +5,7 @@
         <div class="t-row t-small t-muted" style="gap:8px">
             <TierBadge Tier="Card.Tier" Provisional="Card.Provisional" />
             @if (Card.Country is not null) { <span>·</span><CountryFlag Country="@Card.Country" /> }
-            @if (JoinedAt is DateTimeOffset j) { <span>· Joined @j.ToString("MMM yyyy", CultureInfo.InvariantCulture)</span> }
+            @if (JoinedAt is DateTimeOffset j) { <span>@L.F("profileHeader.joined", j.ToString("MMM yyyy", CultureInfo.InvariantCulture))</span> }
         </div>
     </div>
 </div>

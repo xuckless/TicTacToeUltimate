@@ -7,6 +7,19 @@ using TicTacToeUltimate.Server.Ratings;
 namespace TicTacToeUltimate.Server.Social;
 
 /// <summary>IPlayerCardService backed by users + ratings. Rating/tier are shown only for visible pools.</summary>
+/// <summary>
+/// Bots carry no BOT badge (owner decision 2026-10-16; the Terms say opponents may be AI): public DTOs show them as
+/// ordinary accounts with a stable, plausible rating. Internally (seats, matchmaking, ratings, admin) they stay bots.
+/// </summary>
+public static class BotPersona
+{
+    /// <summary>The kind other players see.</summary>
+    public static AccountKind PublicKind(AccountKind k) => k == AccountKind.Bot ? AccountKind.Account : k;
+
+    /// <summary>A stable rating in 1150..1650 from the bot's id.</summary>
+    public static int Rating(Guid botId) => 1150 + (int)(BitConverter.ToUInt32(botId.ToByteArray(), 0) % 501);
+}
+
 public sealed class PlayerCardService(IUserRepository users, IRatingRepository ratings, RatingService ratingService, TierCalculator tiers) : IPlayerCardService
 {
     public async Task<PlayerCardDto> GetCardAsync(Guid userId, RatingPool pool, CancellationToken ct)
@@ -22,14 +35,19 @@ public sealed class PlayerCardService(IUserRepository users, IRatingRepository r
         {
             if (!map.TryGetValue(id, out var u)) { result[id] = new PlayerCardDto(id, "Player", "a1", null, AccountKind.Account, null, null, false); continue; }
             TierDto? tier = null; int? rating = null; var provisional = false;
-            if (visible && u.Kind != AccountKind.Guest)
+            if (visible && u.Kind == AccountKind.Bot)
+            {
+                rating = BotPersona.Rating(id);
+                tier = tiers.For(rating.Value);
+            }
+            else if (visible && u.Kind != AccountKind.Guest)
             {
                 var r = await ratings.GetAsync(id, pool, ct);
                 rating = (int)Math.Round(r.Rating);
                 provisional = ratingService.IsProvisional(r);
                 tier = tiers.For(r.Rating);
             }
-            result[id] = new PlayerCardDto(id, u.DisplayName, u.AvatarId, u.Country, u.Kind, tier, rating, provisional);
+            result[id] = new PlayerCardDto(id, u.DisplayName, u.AvatarId, u.Country, BotPersona.PublicKind(u.Kind), tier, rating, provisional);
         }
         return result;
     }
@@ -84,7 +102,9 @@ public sealed class ChatRateLimiter(TimeProvider time, double perSecond = 1, int
 /// <summary>Friends, blocks and DMs (§6.7 Social).</summary>
 public sealed class SocialService(
     IUserRepository users, IFriendRepository friends, IChatRepository chat, IPlayerCardService cards, PresenceLookup presence,
-    IUserNotifier notifier, ProfanityFilter profanity, ChatRateLimiter limiter, TimeProvider time, ILogger<SocialService> logger)
+    IUserNotifier notifier, ProfanityFilter profanity, ChatRateLimiter limiter, TimeProvider time, ILogger<SocialService> logger,
+    TicTacToeUltimate.Server.Moderation.ModerationService? moderation = null, TicTacToeUltimate.Server.Moderation.ChatFilter? filter = null,
+    TicTacToeUltimate.Server.Moderation.AiModerator? ai = null)
 {
     /// <summary>Max DM length.</summary>
     public const int MaxBody = 500;
@@ -182,10 +202,41 @@ public sealed class SocialService(
         if (await friends.IsBlockedEitherWayAsync(me, to, ct)) return (null, ErrorCodes.Blocked);
         if (!await friends.AreFriendsAsync(me, to, ct)) return (null, ErrorCodes.NotFriends);
         if (!limiter.TryTake(me)) return (null, ErrorCodes.RateLimited);
-        var rec = await chat.AppendAsync(me, to, profanity.Mask(text), time.GetUtcNow(), ct);
+        if (moderation is not null && await moderation.ChatMuteAsync(me, ct) is not null) return (null, ErrorCodes.ChatMuted);
+        // Auto-moderation (owner decision 2026-10-16): abusive words are never delivered and cost a strike; links, emails and
+        // phone numbers are refused without one; anything doubtful is delivered, then checked by the AI and hidden if abusive.
+        var check = text.StartsWith("emote:", StringComparison.Ordinal) || filter is null
+            ? new TicTacToeUltimate.Server.Moderation.FilterResult(TicTacToeUltimate.Server.Moderation.FilterVerdict.Allow)
+            : filter.Check(text);
+        if (check.Verdict == TicTacToeUltimate.Server.Moderation.FilterVerdict.Block)
+        {
+            if (moderation is not null) await moderation.StrikeAsync(me, "filter_block", text, new { check.Term, check.Reason, to }, ct);
+            return (null, ErrorCodes.MessageBlocked);
+        }
+        if (check.Verdict == TicTacToeUltimate.Server.Moderation.FilterVerdict.Reject) return (null, ErrorCodes.MessageBlocked);
+        var rec = await chat.AppendAsync(me, to, filter is null ? profanity.Mask(text) : text, time.GetUtcNow(), ct);
         var dto = ToDto(rec);
         await Safe(() => notifier.ToUsersAsync([to, me], c => c.DirectMessage(dto)));
+        if (check.Verdict == TicTacToeUltimate.Server.Moderation.FilterVerdict.Uncertain && ai is { Enabled: true }) _ = ReviewLaterAsync(rec, check);
         return (dto, null);
+    }
+
+    /// <summary>The AI looks at a delivered, doubtful message; if abusive it disappears for both sides and the sender gets a strike.</summary>
+    private async Task ReviewLaterAsync(DirectMessageRecord rec, TicTacToeUltimate.Server.Moderation.FilterResult check)
+    {
+        try
+        {
+            var verdict = await ai!.CheckAsync(rec.Body, isUsername: false, CancellationToken.None);
+            if (verdict is not { Abusive: true, Severity: >= 2 }) return;
+            await chat.HideAsync(rec.Id, time.GetUtcNow(), CancellationToken.None);
+            var hiddenForSender = new MessageHiddenDto(rec.Id, rec.To);
+            var hiddenForRecipient = new MessageHiddenDto(rec.Id, rec.From);
+            await Safe(() => notifier.ToUserAsync(rec.From, c => c.MessageHidden(hiddenForSender)));
+            await Safe(() => notifier.ToUserAsync(rec.To, c => c.MessageHidden(hiddenForRecipient)));
+            if (moderation is not null)
+                await moderation.StrikeAsync(rec.From, "ai_hide", rec.Body, new { check.Term, verdict.Category, verdict.Severity, verdict.Reason, messageId = rec.Id }, CancellationToken.None);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException) { logger.LogWarning(ex, "AI review of message {Id} failed", rec.Id); }
     }
 
     /// <summary>Marks messages from <paramref name="friendId"/> read.</summary>

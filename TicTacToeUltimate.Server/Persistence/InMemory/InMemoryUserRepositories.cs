@@ -102,6 +102,21 @@ public sealed class InMemoryUserRepository : IUserRepository
         }
     }
 
+    private readonly Dictionary<Guid, string> _locales = [];
+    public Task SetLocaleAsync(Guid id, string locale, CancellationToken ct) { lock (_gate) _locales[id] = locale; return Task.CompletedTask; }
+    public Task<string?> GetLocaleAsync(Guid id, CancellationToken ct) { lock (_gate) return Task.FromResult(_locales.TryGetValue(id, out var l) ? l : null); }
+
+    public Task ResetUsernameAsync(Guid id, CancellationToken ct)
+    {
+        lock (_gate)
+            if (_byId.TryGetValue(id, out var u))
+            {
+                if (u.Username is { } n) _byName.Remove(n);
+                _byId[id] = u with { Username = null, DisplayName = $"Player#{Random.Shared.Next(1000, 10000)}", RenamesLeft = Math.Max(1, u.RenamesLeft) };
+            }
+        return Task.CompletedTask;
+    }
+
     public Task AddRenamesAsync(Guid id, int count, CancellationToken ct)
     {
         lock (_gate) if (_byId.TryGetValue(id, out var u)) _byId[id] = u with { RenamesLeft = u.RenamesLeft + count };

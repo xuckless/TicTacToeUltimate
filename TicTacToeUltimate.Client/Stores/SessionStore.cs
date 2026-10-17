@@ -66,6 +66,7 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
         // The server can be restarting (deploy, VM reboot). Keep trying for up to a minute, showing a "waking up"
         // buffer, before falling back to offline mode.
         var started = DateTime.UtcNow;
+        _tokens.DeviceId ??= await DeviceIdAsync();
         for (var attempt = 0; ; attempt++)
         {
             try
@@ -129,6 +130,11 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
         {
             // OnUnauthorized handles guest re-mint / sign-out.
         }
+        catch (TttApiException e) when (e.Code == ErrorCodes.Banned)
+        {
+            // The moderation store shows the ban notice; nothing else may run (no hub connection).
+            Update(s => s with { Status = SessionStatus.SignedIn });
+        }
         catch (Exception ex)
         {
             // Offline with a token: stay signed in optimistically and keep trying to connect.
@@ -186,35 +192,50 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     /// <inheritdoc />
     public async Task SignInGuestAsync() => await CompleteSignInAsync(await _api.GuestTokenAsync(new GuestTokenRequestDto(await DeviceIdAsync())), true);
 
+    private bool IsReviewEmail(string email) =>
+        State.Config?.ReviewEmail is { Length: > 0 } review && string.Equals(email.Trim(), review, StringComparison.OrdinalIgnoreCase);
+
     /// <inheritdoc />
     public async Task<string?> SendCodeAsync(string email)
     {
-        if (Supabase() is not { } s) return "Email sign-in isn't available right now.";
+        if (Supabase() is not { } s) return "auth.email_unavailable";
+        if (IsReviewEmail(email)) return null;   // the reviewer types the fixed code; no email is sent
         return await _supa.SendCodeAsync(s.Url, s.Key, email.Trim().ToLowerInvariant());
     }
 
     /// <inheritdoc />
     public async Task<string?> VerifyCodeAsync(string email, string code)
     {
-        if (Supabase() is not { } s) return "Email sign-in isn't available right now.";
+        if (Supabase() is not { } s) return "auth.email_unavailable";
+        if (IsReviewEmail(email))
+        {
+            try
+            {
+                var rs = await _api.ReviewSignInAsync(new ReviewSignInDto(email.Trim(), code.Trim()));
+                if (rs is null) return "auth.code_invalid";
+                return await AdoptSupabaseSessionAsync(new SupabaseSession(rs.AccessToken, rs.RefreshToken,
+                    DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + Math.Max(60, rs.ExpiresIn) * 1000L));
+            }
+            catch (TttApiException) { return "auth.code_invalid"; }
+        }
         var r = await _supa.VerifyCodeAsync(s.Url, s.Key, email.Trim().ToLowerInvariant(), code.Trim());
-        if (r.Session is null) return r.Error ?? "That code didn't work. Check it and try again.";
+        if (r.Session is null) return r.Error ?? "auth.code_invalid";
         return await AdoptSupabaseSessionAsync(r.Session);
     }
 
     /// <inheritdoc />
     public async Task<string?> SignInEmailAsync(string email, string password)
     {
-        if (Supabase() is not { } s) return "Email sign-in isn't available right now.";
+        if (Supabase() is not { } s) return "auth.email_unavailable";
         var r = await _supa.SignInAsync(s.Url, s.Key, email.Trim(), password);
-        if (r.Session is null) return r.Error ?? "Sign-in failed.";
+        if (r.Session is null) return r.Error ?? "auth.sign_in_failed";
         return await AdoptSupabaseSessionAsync(r.Session);
     }
 
     /// <inheritdoc />
     public async Task<(bool NeedsConfirmation, string? Error)> SignUpEmailAsync(string email, string password)
     {
-        if (Supabase() is not { } s) return (false, "Email sign-up isn't available right now.");
+        if (Supabase() is not { } s) return (false, "auth.signup_unavailable");
         var r = await _supa.SignUpAsync(s.Url, s.Key, email.Trim(), password, RedirectUrl());
         if (r.Error is not null) return (false, r.Error);
         if (r.Session is null) return (true, null);
@@ -224,7 +245,7 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     /// <inheritdoc />
     public async Task<string?> ResetPasswordAsync(string email)
     {
-        if (Supabase() is not { } s) return "Password reset isn't available right now.";
+        if (Supabase() is not { } s) return "auth.reset_unavailable";
         return await _supa.RecoverAsync(s.Url, s.Key, email.Trim(), RedirectUrl());
     }
 
@@ -239,7 +260,7 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
     /// <inheritdoc />
     public async Task<string?> SetPasswordAsync(string password)
     {
-        if (Supabase() is not { } s || _tokens.Token is not { } at) return "Sign in first.";
+        if (Supabase() is not { } s || _tokens.Token is not { } at) return "auth.sign_in_first";
         return await _supa.UpdatePasswordAsync(s.Url, s.Key, at, password);
     }
 
@@ -257,7 +278,7 @@ public sealed class SessionStore : StoreBase<SessionState>, ISessionStore
         ScheduleRefresh(session.ExpiresAtMs);
         MeDto me;
         try { me = await _api.GetMeAsync(); }
-        catch (Exception ex) { _logger.LogWarning(ex, "Account load failed"); return "Signed in, but the game server didn't answer. Try again."; }
+        catch (Exception ex) { _logger.LogWarning(ex, "Account load failed"); return "auth.server_no_answer"; }
         if (guestToken is not null && me.Kind == AccountKind.Account)
         {
             try { await _api.ClaimGuestAsync(new ClaimGuestDto(guestToken)); me = await _api.GetMeAsync(); }

@@ -5,12 +5,12 @@
         <span class="t-num arena-hp-num" aria-hidden="true">@Math.Max(0, Hp)<small>/@Max</small></span>
     </div>
     <div class="arena-hp-track" role="meter" aria-valuemin="0" aria-valuemax="@Max" aria-valuenow="@Math.Max(0, Hp)"
-         aria-label="@($"{Label} health {Math.Max(0, Hp)} of {Max}")">
+         aria-label="@L.F("healthBar.health_of", Label, Math.Max(0, Hp), Max)">
         <div class="arena-hp-fill" style="width:@Pct(Math.Max(0, Hp))%"></div>
         @if (Preview > 0 && Hp > 0)
         {
             var g = Math.Min(Preview, Hp);
-            <div class="arena-hp-ghost" style="left:@Pct(Hp - g)%;width:@Pct(g)%" title="@($"Next hit −{Preview}")"></div>
+            <div class="arena-hp-ghost" style="left:@Pct(Hp - g)%;width:@Pct(g)%" title="@L.F("healthBar.next_hit", Preview)"></div>
         }
         @foreach (var t in Ticks)
         {

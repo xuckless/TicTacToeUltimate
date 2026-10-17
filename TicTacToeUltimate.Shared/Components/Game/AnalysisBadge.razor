@@ -11,8 +11,8 @@
     /// <summary>Badge class/text for a move class.</summary>
     public static (string Css, string Text) Classify(Engine.Analysis.MoveClass c) => c switch
     {
-        Engine.Analysis.MoveClass.Blunder => ("blunder", "Blunder!"),
-        Engine.Analysis.MoveClass.Best => ("win", "Best"),
-        _ => ("draw", "Good"),
+        Engine.Analysis.MoveClass.Blunder => ("blunder", L.T("analysisBadge.blunder")),
+        Engine.Analysis.MoveClass.Best => ("win", L.T("analysisBadge.best")),
+        _ => ("draw", L.T("analysisBadge.good")),
     };
 }

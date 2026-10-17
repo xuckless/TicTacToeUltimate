@@ -4,14 +4,14 @@
     <header class="quest-head">
         <Bert Mood="@GhostMood" Size="58" />
         <div class="quest-head-text">
-            <h2 id="quest-title" class="quest-title">Daily quests</h2>
+            <h2 id="quest-title" class="quest-title">@L.T("questCard.daily_quests")</h2>
             <span class="t-small t-muted">@HeadLine</span>
         </div>
         <span class="quest-reset">@ResetsText</span>
     </header>
     @if (Progress is null)
     {
-        <BertLoader Text="Loading quests" Mood="sleepy" />
+        <BertLoader Text="@L.T("questCard.loading_quests")" Mood="sleepy" />
     }
     else
     {
@@ -23,16 +23,16 @@
                 <li class="quest @(q.Completed ? "done" : null) badge-@Badge(q)">
                     <span class="quest-badge" aria-hidden="true"><Icon Name="@BadgeIcon(q)" /></span>
                     <div class="quest-body">
-                        <div class="quest-row"><span class="quest-name">@q.Title</span><span class="quest-count">@Math.Min(q.Progress, q.Target)/@q.Target</span></div>
-                        <div class="quest-bar" role="progressbar" aria-label="@q.Title" aria-valuemin="0" aria-valuemax="@q.Target" aria-valuenow="@Math.Min(q.Progress, q.Target)">
+                        <div class="quest-row"><span class="quest-name">@QuestTitle(q)</span><span class="quest-count">@Math.Min(q.Progress, q.Target)/@q.Target</span></div>
+                        <div class="quest-bar" role="progressbar" aria-label="@QuestTitle(q)" aria-valuemin="0" aria-valuemax="@q.Target" aria-valuenow="@Math.Min(q.Progress, q.Target)">
                             @for (var i = 0; i < segments; i++)
                             {
                                 <span class="seg @(i < filled ? "on" : null)" style="--i:@i"></span>
                             }
                         </div>
                     </div>
-                    <LocalBurst Trigger="@(_burstId == q.QuestId ? _burst : 0)" Text="QUEST COMPLETE!" Color="var(--badge, var(--streak))" />
-                    <span class="quest-chest @(q.Completed ? "open" : null)" title="@(q.Completed ? "Reward earned" : "Reward")">
+                    <LocalBurst Trigger="@(_burstId == q.QuestId ? _burst : 0)" Text="@L.T("questCard.quest_complete")" Color="var(--badge, var(--streak))" />
+                    <span class="quest-chest @(q.Completed ? "open" : null)" title="@(q.Completed ? L.T("questCard.reward_earned") : L.T("questCard.reward"))">
                         <Icon Name="@(q.Completed ? "gift" : "chest")" />
                         @if (q.Completed) { <span class="quest-check"><Icon Name="check" /></span> }
                     </span>
@@ -41,7 +41,7 @@
         </ul>
         @if (Progress.ExtraQuestAvailable && OnExtraQuest.HasDelegate)
         {
-            <Button Variant="ghost" Small="true" OnClick="OnExtraQuest"><Icon Name="diamond" /> Bonus quest · 50</Button>
+            <Button Variant="ghost" Small="true" OnClick="OnExtraQuest"><Icon Name="diamond" /> @L.T("questCard.bonus_quest_50")</Button>
         }
     }
 </section>
@@ -91,8 +91,16 @@
         : Done > 0 ? "wink"
         : Progress.Quests.Any(q => q.Progress > 0) ? "happy" : "sleepy";
 
-    private string HeadLine => Progress is null ? "" : Total > 0 && Done == Total ? "All done. See you tomorrow!"
-        : Done > 0 ? $"{Done} of {Total} done. Keep it going!" : "Win games to fill the bars.";
+    private string HeadLine => Progress is null ? "" : Total > 0 && Done == Total ? L.T("questCard.all_done_see_you")
+        : Done > 0 ? L.F("questCard.done_of_total", Done, Total) : L.T("questCard.win_games_to_fill");
+
+    /// <summary>Quest title from its id (the server's English title is the fallback for unknown ids).</summary>
+    public static string QuestTitle(QuestDto q) => q.QuestId switch
+    {
+        "win1" or "win3" or "win5" => L.P("quest.win_games", q.Target),
+        "bonus" => L.P("quest.bonus_reach_wins", q.Target),
+        _ => q.Title,
+    };
 
     private static string Badge(QuestDto q) => q.Bonus ? "bonus" : q.Target switch { <= 1 => "spark", <= 3 => "flame", _ => "crown" };
     private static string BadgeIcon(QuestDto q) => Badge(q) switch { "spark" => "bolt", "flame" => "flame", "crown" => "crown", _ => "gift" };
@@ -103,7 +111,7 @@
         {
             if (Progress is null || NowMs <= 0) return "";
             var left = TimeSpan.FromMilliseconds(Math.Max(0, Progress.ResetsAtMs - NowMs));
-            return left.TotalHours >= 1 ? $"{(int)left.TotalHours}h left" : $"{Math.Max(1, (int)left.TotalMinutes)}m left";
+            return left.TotalHours >= 1 ? L.F("common.hours_left", (int)left.TotalHours) : L.F("common.minutes_left", Math.Max(1, (int)left.TotalMinutes));
         }
     }
 }

@@ -1,10 +1,10 @@
 <div class="t-listrow">
     <Avatar Name="@Other.DisplayName" AvatarId="@Other.AvatarId" />
-    <div class="who"><div class="name">@Other.DisplayName</div><div class="meta">@(Request.Direction == FriendRequestDirection.Incoming ? "Wants to be friends" : "Request sent")</div></div>
+    <div class="who"><div class="name">@Other.DisplayName</div><div class="meta">@(Request.Direction == FriendRequestDirection.Incoming ? L.T("friendRequestRow.wants_to_be_friends") : L.T("profile.request_sent"))</div></div>
     @if (Request.Direction == FriendRequestDirection.Incoming)
     {
-        <Button Variant="primary" Small="true" OnClick="() => OnRespond.InvokeAsync((Request, true))">Accept</Button>
-        <IconButton Label="Decline" Icon="close" Round="true" OnClick="() => OnRespond.InvokeAsync((Request, false))" />
+        <Button Variant="primary" Small="true" OnClick="() => OnRespond.InvokeAsync((Request, true))">@L.T("challengeCard.accept")</Button>
+        <IconButton Label="@L.T("challengeCard.decline")" Icon="close" Round="true" OnClick="() => OnRespond.InvokeAsync((Request, false))" />
     }
 </div>
 

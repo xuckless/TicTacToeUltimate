@@ -1,7 +1,7 @@
 <div class="match-actions">
-    <IconButton Label="Emotes" Icon="emote" OnClick="OnEmote" Disabled="Disabled" />
-    <IconButton Label="Resign" Icon="flag" OnClick="OnResign" Disabled="@(Disabled || Ended)" />
-    <IconButton Label="More" Icon="more" OnClick="OnMenu" />
+    <IconButton Label="@L.T("emotePicker.emotes")" Icon="emote" OnClick="OnEmote" Disabled="Disabled" />
+    <IconButton Label="@L.T("matchActions.resign")" Icon="flag" OnClick="OnResign" Disabled="@(Disabled || Ended)" />
+    <IconButton Label="@L.T("matchActions.more")" Icon="more" OnClick="OnMenu" />
 </div>
 
 @code {

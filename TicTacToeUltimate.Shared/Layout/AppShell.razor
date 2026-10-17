@@ -5,48 +5,50 @@
 
 <Wallpaper />
 <BertFlyby />
+<PenaltyNoticeHost />
 <div class="shell">
-    <aside class="t-side" aria-label="Sidebar">
-        <a class="brand" href="" aria-label="Tic Tac Toe Ultimate home"><img src="_content/TicTacToeUltimate.Shared/img/favicon.svg" alt="" /></a>
+    <aside class="t-side" aria-label="@L.T("appShell.sidebar")">
+        <a class="brand" href="" aria-label="@L.T("appShell.tic_tac_toe_ultimate_home")"><img src="_content/TicTacToeUltimate.Shared/img/favicon.svg" alt="" /></a>
         @foreach (var item in Primary)
         {
-            <NavLink href="@item.Href" Match="@item.Match"><Icon Name="@item.Icon" />@item.Label</NavLink>
+            <NavLink href="@item.Href" Match="@item.Match"><Icon Name="@item.Icon" />@L.T(item.Label)</NavLink>
         }
         <hr style="border:0;border-top:1px solid var(--line);width:100%" />
         @if (!Session.State.IsGuest)
         {
-            <NavLink href="daily"><Icon Name="calendar" />Daily@(Session.State.DailyYourTurn > 0 ? $" ({Session.State.DailyYourTurn})" : "")</NavLink>
-            <NavLink href="leaderboards"><Icon Name="trophy" />Leaderboards</NavLink>
+            <NavLink href="daily"><Icon Name="calendar" />@L.T("friendRow.daily")@(Session.State.DailyYourTurn > 0 ? $" ({Session.State.DailyYourTurn})" : "")</NavLink>
+            <NavLink href="leaderboards"><Icon Name="trophy" />@L.T("appShell.leaderboards")</NavLink>
         }
-        <NavLink href="local"><Icon Name="passplay" />Pass &amp; Play</NavLink>
-        <NavLink href="history"><Icon Name="history" />History</NavLink>
-        <NavLink href="settings"><Icon Name="settings" />Settings</NavLink>
+        <NavLink href="local"><Icon Name="passplay" />@L.T("localSetup.pass_play")</NavLink>
+        <NavLink href="history"><Icon Name="history" />@L.T("appShell.history")</NavLink>
+        <NavLink href="settings"><Icon Name="settings" />@L.T("appShell.settings")</NavLink>
     </aside>
     <div class="shell-main">
         <ConnectionBanner Phase="Session.State.Connection" Attempt="Session.State.ReconnectAttempt" />
         <CascadingValue Name="AdsAllowed" Value="true" IsFixed="true">
             <main id="main" class="page"><ResumeBanner /><AdBlockNotice /><ErrorBoundary @ref="_errors"><ChildContent>@Body</ChildContent><ErrorContent Context="ex"><CrashPanel Exception="ex" OnRecover="() => _errors?.Recover()" /></ErrorContent></ErrorBoundary></main>
+            <AdSlot Kind="AdSlotKind.Rail" />
         </CascadingValue>
     </div>
-    <nav class="t-nav" aria-label="Main">
+    <nav class="t-nav" aria-label="@L.T("appShell.main")">
         @foreach (var item in Primary)
         {
-            <NavLink href="@item.Href" Match="@item.Match"><span class="nav-ico"><Icon Name="@item.Icon" />@if (item.Href == "social" && Unread > 0) { <span class="badge">@Unread</span> }</span>@item.Label</NavLink>
+            <NavLink href="@item.Href" Match="@item.Match"><span class="nav-ico"><Icon Name="@item.Icon" />@if (item.Href == "social" && Unread > 0) { <span class="badge">@Unread</span> }</span>@L.T(item.Label)</NavLink>
         }
     </nav>
 </div>
 
 @code {
     private ErrorBoundary? _errors;
-    private sealed record NavItem(string Href, string Label, string Icon, NavLinkMatch Match);
+    private sealed record NavItem(string Href, string Label /* catalog key */, string Icon, NavLinkMatch Match);
 
     private static readonly NavItem[] Primary =
     [
-        new("", "Home", "home", NavLinkMatch.All),
-        new("play", "Play", "play", NavLinkMatch.Prefix),
-        new("store", "Store", "diamond", NavLinkMatch.Prefix),
-        new("social", "Social", "social", NavLinkMatch.Prefix),
-        new("profile", "Profile", "profile", NavLinkMatch.Prefix),
+        new("", "crashPanel.home", "home", NavLinkMatch.All),
+        new("play", "play.play", "play", NavLinkMatch.Prefix),
+        new("store", "store.store", "diamond", NavLinkMatch.Prefix),
+        new("social", "social.social", "social", NavLinkMatch.Prefix),
+        new("profile", "appShell.profile", "profile", NavLinkMatch.Prefix),
     ];
 
     private int Unread => Session.State.IsGuest ? 0 : Social.State.Friends.Sum(f => f.UnreadMessages);

@@ -1,8 +1,8 @@
-<Sheet Open="Open" Title="Swap sides?" Dismissible="false">
-    <p>Your opponent opened. You can take their <PieceGlyph Color="Color.X" /> position, or keep playing <PieceGlyph Color="Color.O" />.</p>
+<Sheet Open="Open" Title="@L.T("swapDecisionSheet.swap_sides")" Dismissible="false">
+    <p>@((MarkupString)L.F("swapDecisionSheet.your_opponent_opened_take", "<span class=\"t-piece x\">X</span>", "<span class=\"t-piece o\">O</span>"))</p>
     <div class="swap-choices">
-        <Button Variant="primary" OnClick="() => OnDecide.InvokeAsync(true)">Swap</Button>
-        <Button Variant="secondary" OnClick="() => OnDecide.InvokeAsync(false)">Keep</Button>
+        <Button Variant="primary" OnClick="() => OnDecide.InvokeAsync(true)">@L.T("swapDecisionSheet.swap")</Button>
+        <Button Variant="secondary" OnClick="() => OnDecide.InvokeAsync(false)">@L.T("swapDecisionSheet.keep")</Button>
     </div>
 </Sheet>
 

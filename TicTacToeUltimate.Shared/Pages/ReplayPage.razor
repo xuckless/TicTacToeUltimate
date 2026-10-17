@@ -5,47 +5,47 @@
 @inject ToastService Toasts
 @implements IDisposable
 
-<PageTitle>Replay · Tic Tac Toe Ultimate</PageTitle>
-<h1 class="t-title">Replay</h1>
+<PageTitle>@L.T("replay.replay_tic_tac_toe_ultimate")</PageTitle>
+<h1 class="t-title">@L.T("replay.replay")</h1>
 
 @if (_game is null)
 {
-    @if (_loading) { <BertLoader Text="Loading game" Mood="think" /> } else { <p class="t-muted">Game not found.</p> }
+    @if (_loading) { <BertLoader Text="@L.T("replay.loading_game")" Mood="think" /> } else { <p class="t-muted">@L.T("replay.game_not_found")</p> }
 }
 else
 {
     var frame = _frames[_ply];
     var final = _ply == _frames.Count - 1;
     <p class="t-small t-muted" style="margin:0">
-        @string.Join(" vs ", _game.Seats.Select(s => s.Player.DisplayName)) · @Ui.TimeControlName(_game.TimeControl) · @Ui.ReasonText(_game.Result.Reason)
+        @L.F("replay.summary", string.Join(L.T("replay.vs_separator"), _game.Seats.Select(s => s.Player.DisplayName)), Ui.TimeControlName(_game.TimeControl), Ui.ReasonText(_game.Result.Reason))
     </p>
     <div style="display:grid;place-items:center">
         <Board Size="_game.Rules.BoardSize" Cells="@frame.Board" Ghost="@(final ? null : frame.Ghost)" LastPlaced="frame.LastPlaced"
                WinLine="@(final ? _game.Result.WinLine : null)" Winner="Winner" Interactive="false" />
     </div>
     <ReplayScrubber Ply="_ply" Max="_frames.Count - 1" PlyChanged="p => Seek(p)" />
-    <div class="replay-controls" aria-label="Playback">
-        <Button Variant="@(_playing ? "secondary" : "primary")" Small="true" OnClick="TogglePlay" data-testid="replay-play"><Icon Name="@(_playing ? "close" : "play")" /> @(_playing ? "Pause" : _ply >= _frames.Count - 1 ? "Replay from start" : "Play")</Button>
-        <div class="t-seg" role="group" aria-label="Speed">
+    <div class="replay-controls" aria-label="@L.T("replay.playback")">
+        <Button Variant="@(_playing ? "secondary" : "primary")" Small="true" OnClick="TogglePlay" data-testid="replay-play"><Icon Name="@(_playing ? "close" : "play")" /> @(_playing ? L.T("replay.pause") : _ply >= _frames.Count - 1 ? L.T("replay.replay_from_start") : L.T("play.play"))</Button>
+        <div class="t-seg" role="group" aria-label="@L.T("replay.speed")">
             @foreach (var sp in new[] { 1, 2, 4, 8 })
             {
                 <button type="button" aria-pressed="@(_speed == sp ? "true" : "false")" @onclick="() => _speed = sp">@(sp)×</button>
             }
         </div>
-        <span class="t-small t-muted">@(_ply > 0 && _ply <= _frames.Count - 1 ? $"thought {Ui.Elapsed(_frames[_ply].ThinkMs)}" : "as it happened")</span>
+        <span class="t-small t-muted">@(_ply > 0 && _ply <= _frames.Count - 1 ? L.F("replay.thought", Ui.Elapsed(_frames[_ply].ThinkMs)) : L.T("replay.as_it_happened"))</span>
     </div>
     @if (_analysis is null && AnalysisPossible)
     {
-        <Card Title="Perfect-play review">
-            <p class="t-small t-muted" style="margin:0">@(_analysisError ?? "See which moves won and which were blunders.")</p>
+        <Card Title="@L.T("replay.perfect_play_review")">
+            <p class="t-small t-muted" style="margin:0">@(_analysisError ?? L.T("replay.see_which_moves_won"))</p>
             @if (_unlocked)
             {
-                <Button Variant="secondary" OnClick="LoadAnalysis" Disabled="_busy">Try again</Button>
+                <Button Variant="secondary" OnClick="LoadAnalysis" Disabled="_busy">@L.T("crashPanel.try_again")</Button>
             }
             else
             {
-                <Button Variant="primary" OnClick="Unlock" Disabled="_busy"><Icon Name="diamond" /> Unlock · 20</Button>
-                <a class="t-small" href="store">Need Diamonds? Earn them in the Store</a>
+                <Button Variant="primary" OnClick="Unlock" Disabled="_busy"><Icon Name="diamond" /> @L.T("replay.unlock_20")</Button>
+                <a class="t-small" href="store">@L.T("replay.need_diamonds_earn_them_in")</a>
             }
         </Card>
     }
@@ -121,9 +121,9 @@ else
         _analysisError = err switch
         {
             null => null,
-            ErrorCodes.AnalysisWarming => "Analysis is warming up. Try again in a moment.",
+            ErrorCodes.AnalysisWarming => L.T("replay.analysis_is_warming_up"),
             ErrorCodes.RewardRequired => null,
-            _ => "Analysis isn't available for this game.",
+            _ => L.T("replay.analysis_isn_t_available"),
         };
     }
 
@@ -134,8 +134,8 @@ else
         {
             var r = await Wallet.BuyAsync("analysis", Id);
             if (r.Ok || r.Error == ErrorCodes.ItemUnavailable) await LoadAnalysis();
-            else if (r.Error == ErrorCodes.InsufficientDiamonds) Toasts.Show("The review costs 20 Diamonds. Win games or watch an ad in the Store.", ToastKind.Info);
-            else Toasts.Show(Ui.ErrorToastText(r.Error, "Couldn't unlock the review."), ToastKind.Error);
+            else if (r.Error == ErrorCodes.InsufficientDiamonds) Toasts.Show(L.T("replay.the_review_costs_20"), ToastKind.Info);
+            else Toasts.Show(Ui.ErrorToastText(r.Error, L.T("replay.couldn_t_unlock_the_review")), ToastKind.Error);
         }
         finally { _busy = false; }
     }

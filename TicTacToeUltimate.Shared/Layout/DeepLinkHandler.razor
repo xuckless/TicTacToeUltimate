@@ -1,5 +1,6 @@
 @inject IDeepLinkSource Links
 @inject NavigationManager Nav
+@inject IServiceProvider Services
 @implements IDisposable
 @* Opens app links (tttu://c/CODE, https://<site>/c/CODE, …) at the matching route. Web: no-op (the URL is the route). *@
 
@@ -11,8 +12,11 @@
         if (Links.InitialLink is { } first) Open(first);
     }
 
-    private void Open(Uri uri) => _ = InvokeAsync(() =>
+    private void Open(Uri uri) => _ = InvokeAsync(async () =>
     {
+        // Campaign attribution for app installs opened from a tracked link (…?c=<slug>).
+        if (Services.GetService(typeof(TicTacToeUltimate.Client.Diagnostics.Telemetry)) is TicTacToeUltimate.Client.Diagnostics.Telemetry telemetry)
+            await telemetry.SetCampaignAsync(System.Web.HttpUtility.ParseQueryString(uri.Query)["c"]);
         if (RouteOf(uri) is { } route) Nav.NavigateTo(route);
     });
 

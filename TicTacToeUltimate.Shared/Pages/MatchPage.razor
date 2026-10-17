@@ -8,12 +8,12 @@
 @inject ISettingsStore Settings
 @inject NavigationManager Nav
 
-<PageTitle>@(_view?.IsMyTurn == true && _view.Result is null ? "Your move · " : "")Tic Tac Toe Ultimate</PageTitle>
+<PageTitle>@(_view?.IsMyTurn == true && _view.Result is null ? L.T("activeGames.your_move") + " · " : "")Tic Tac Toe Ultimate</PageTitle>
 
 @if (_view is null)
 {
-    @if (_error is not null) { <div class="splash" role="status">@_error</div> } else { <BertLoader Text="Loading match" Splash="true" Mood="jumpy" /> }
-    @if (_error is not null) { <div style="display:grid;place-items:center"><Button Href="">Home</Button></div> }
+    @if (_error is not null) { <div class="splash" role="status">@_error</div> } else { <BertLoader Text="@L.T("match.loading_match")" Splash="true" Mood="jumpy" /> }
+    @if (_error is not null) { <div style="display:grid;place-items:center"><Button Href="">@L.T("crashPanel.home")</Button></div> }
 }
 else
 {
@@ -26,18 +26,18 @@ else
         @if (_view.LastError == ErrorCodes.MatchNotFound && _view.Result is null)
         {
             @* The server restarted and this live game is gone: say so instead of leaving a frozen board. *@
-            <div class="t-scrim" role="dialog" aria-modal="true" aria-label="Game interrupted" data-testid="match-interrupted">
+            <div class="t-scrim" role="dialog" aria-modal="true" aria-label="@L.T("match.game_interrupted")" data-testid="match-interrupted">
                 <div class="t-sheet result-overlay">
                     <Bert Mood="sad" Size="72" />
-                    <span class="t-title">Game interrupted</span>
-                    <span class="t-small t-muted">The game server restarted and this game was lost. It doesn't count: no rating, streak or quest change.</span>
-                    <Button Variant="primary" Href="play">Play again</Button>
-                    <Button Variant="secondary" Href="">Home</Button>
+                    <span class="t-title">@L.T("match.game_interrupted")</span>
+                    <span class="t-small t-muted">@L.T("match.the_game_server_restarted_and")</span>
+                    <Button Variant="primary" Href="play">@L.T("match.play_again")</Button>
+                    <Button Variant="secondary" Href="">@L.T("crashPanel.home")</Button>
                 </div>
             </div>
         }
         <MatchHeader Mode="snap.Mode" TimeControl="snap.TimeControl" Clock="_clock" Spectators="snap.SpectatorCount" />
-        <h1 class="sr-only">Match vs @(opp?.Player.DisplayName ?? "opponent")</h1>
+        <h1 class="sr-only">@L.F("match.match_vs", opp?.Player.DisplayName ?? L.T("match.opponent_lower"))</h1>
         @if (IsArena && !Ended)
         {
             <ArenaBanner RemainingMs="RoundLeft" RedAlert="ArenaRed" Multiplier="ArenaRulesDto!.RedAlertMultiplier" RedAlertMs="ArenaRulesDto.RedAlertMs"
@@ -46,7 +46,7 @@ else
 
         <PlayerCard Seat="opp" Piece="@(opp?.Color ?? Color.O)" Active="@IsActive(opp)" SuddenDeath="sd" Urgency="UrgencyFor(opp)"
                     ClockMs="ClockFor(opp)" ShowClock="HasClock" LongClock="IsDaily" Ended="Ended" Emote="@EmoteFor(opp)"
-                    Tag="@($"{(sd ? "SUDDEN DEATH" : Ui.ModeLabel(snap.Mode, snap.TimeControl))} · {MatchHeader.InfoText(snap.TimeControl, _clock, snap.SpectatorCount)}")" />
+                    Tag="@($"{(sd ? L.T("matchHeader.sudden_death") : Ui.ModeLabel(snap.Mode, snap.TimeControl))} · {MatchHeader.InfoText(snap.TimeControl, _clock, snap.SpectatorCount)}")" />
         @if (IsArena && opp is not null) { <HealthBar @key="@($"hp{opp.Seat}")" Hp="HpOf(opp.Seat)" Max="ArenaRulesDto!.Hp" TickEvery="TickEvery" Piece="opp.Color" Label="@opp.Player.DisplayName"
                                                       Preview="PreviewOn(opp.Seat)" Streak="StreakOf(opp.Seat)" Steps="ArenaRulesDto.Ramp.Length"
                                                       ComboBroken="@(_brokenSeat == opp.Seat)" Hit="@(HitOn(opp.Seat))" HitKey="_hitKey" /> }
@@ -79,7 +79,7 @@ else
             @if (_view.LastError is not null) { <div class="t-alert t-small" role="alert">@ErrorText(_view.LastError)</div> }
         </div>
 
-        @if (IsArena && me is not null) { <HealthBar @key="@($"hp{me.Seat}")" Hp="HpOf(me.Seat)" Max="ArenaRulesDto!.Hp" TickEvery="TickEvery" Piece="me.Color" Label="@(_view.IsSpectator ? me.Player.DisplayName : "You")"
+        @if (IsArena && me is not null) { <HealthBar @key="@($"hp{me.Seat}")" Hp="HpOf(me.Seat)" Max="ArenaRulesDto!.Hp" TickEvery="TickEvery" Piece="me.Color" Label="@(_view.IsSpectator ? me.Player.DisplayName : L.T("result.you"))"
                                                      Preview="PreviewOn(me.Seat)" Streak="StreakOf(me.Seat)" Steps="ArenaRulesDto.Ramp.Length"
                                                      ComboBroken="@(_brokenSeat == me.Seat)" Hit="@(HitOn(me.Seat))" HitKey="_hitKey" /> }
         <PlayerCard Seat="me" IsMe="@(!_view.IsSpectator)" Piece="@(me?.Color ?? Color.X)" Active="@IsActive(me)" SuddenDeath="sd" Urgency="UrgencyFor(me)"
@@ -91,6 +91,7 @@ else
         <MatchActions Disabled="_view.IsSpectator" Ended="Ended" OnEmote="() => _emotes = true" OnResign="() => _resign = true" OnMenu="() => _menu = true" />
         <AdSlot />
         <div class="sr-only" aria-live="polite">@Announcement</div>
+        <div class="sr-only" aria-live="assertive">@ClockWarning(me)</div>
     </div>
 
     <SwapDecisionSheet Open="SwapOpen" OnDecide="Decide" />
@@ -101,12 +102,12 @@ else
 
     @if (Ended && _showOverlay)
     {
-        <div class="match-over" role="dialog" aria-modal="true" aria-label="Game over">
+        <div class="match-over" role="dialog" aria-modal="true" aria-label="@L.T("localMatch.game_over")">
             <div class="t-card">
                 <span class="t-label">@Ui.ReasonText(_view.Result!.Reason)</span>
                 <span class="t-hero"><BounceText Text="@ResultTitle" /></span>
-                @if (_view.IsSpectator) { <Button Variant="secondary" OnClick="Leave">Leave</Button> }
-                else { <Button OnClick="GoToResult">Continue</Button> }
+                @if (_view.IsSpectator) { <Button Variant="secondary" OnClick="Leave">@L.T("localArena.leave")</Button> }
+                else { <Button OnClick="GoToResult">@L.T("match.continue")</Button> }
             </div>
         </div>
     }
@@ -150,13 +151,13 @@ else
         if (_view is null)
         {
             try { _view = await Matches.OpenAsync(Id); }
-            catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { _error = "Couldn't open this match."; }
+            catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { _error = L.T("match.couldnt_open_this_match"); }
             _view ??= Matches.State.Matches.GetValueOrDefault(Id);
-            if (_view is null) _error ??= "Match not found.";
+            if (_view is null) _error ??= L.T("match.match_not_found");
         }
         _sawLive = _view is { Result: null };
         // Fresh match (nobody has moved yet): kick it off with a GO! impact frame.
-        if (_view is { Result: null, IsSpectator: false } v && v.Snapshot.Ply == 0) Impact("start", "GO!", "primary-fill", 900);
+        if (_view is { Result: null, IsSpectator: false } v && v.Snapshot.Ply == 0) Impact("start", L.T("match.go"), "primary-fill", 900);
         Derive();
     }
 
@@ -188,11 +189,11 @@ else
         {
             _lastThrownAt = em.ShownAtMs;
             var muted = em.Seat != MySeatNo && Settings.State.MuteOpponentEmotes;
-            if (!muted) { _thrownText = em.Text; _thrownFromMe = em.Seat == MySeatNo || (_view.IsSpectator && em.Seat == 0); _thrownKey++; }
+            if (!muted) { _thrownText = Ui.EmoteText(em.EmoteId, em.Text); _thrownFromMe = em.Seat == MySeatNo || (_view.IsSpectator && em.Seat == 0); _thrownKey++; }
         }
         var edge = AlertClass;
         Ambience.Set(AmbienceMode.Match, sd || edge.Contains("sd"), Ended ? ClockUrgency.Idle : _clock?.Urgency ?? ClockUrgency.Idle, edge);
-        if (_prevSd == false && sd && !Ended) Impact("suddendeath", "SUDDEN DEATH", "alert-fill");
+        if (_prevSd == false && sd && !Ended) Impact("suddendeath", L.T("matchHeader.sudden_death"), "alert-fill");
         _prevSd = sd;
         DeriveArena();
 
@@ -203,8 +204,8 @@ else
             if (_sawLive && !_view.IsSpectator)
             {
                 var r = MyResult;
-                if (r == GameResultForUser.Win) { slammed = Impact("win", "VICTORY!", Winner == Color.O ? "piece-o" : "piece-x"); _confetti++; }
-                else if (r == GameResultForUser.Loss) slammed = Impact("loss", "DEFEAT", "alert-fill");
+                if (r == GameResultForUser.Win) { slammed = Impact("win", L.T("match.victory"), Winner == Color.O ? "piece-o" : "piece-x"); _confetti++; }
+                else if (r == GameResultForUser.Loss) slammed = Impact("loss", L.T("match.defeat"), "alert-fill");
                 _navCts = new CancellationTokenSource();
                 _ = NavigateToResultLater(_navCts.Token);
             }
@@ -252,12 +253,12 @@ else
             _hitKey++;
             _brokenSeat = h.BrokenStreak > 0 ? 1 - h.Seat : null;
             var token = ColorOfSeat(h.Seat) == Color.O ? "piece-o" : "piece-x";
-            if (h.Crit) Impact("crit", $"CRITICAL! −{h.Damage}", token, 1600);
+            if (h.Crit) Impact("crit", L.F("match.critical", h.Damage), token, 1600);
             else Impact("shatter", $"−{h.Damage}{(h.RedAlert ? " ×2" : "")}", token, 650);
         }
         else if (_brokenSeat is not null && h is null) _brokenSeat = null;
-        if (ArenaRed && !_redSeen) { _redSeen = true; Impact("redalert", "RED ALERT ×2", "alert-fill"); }
-        if (a?.Overtime == true && !_otSeen && !Ended) { _otSeen = true; Impact("suddendeath", "OVERTIME", "alert-fill"); }
+        if (ArenaRed && !_redSeen) { _redSeen = true; Impact("redalert", L.T("match.red_alert_x2"), "alert-fill"); }
+        if (a?.Overtime == true && !_otSeen && !Ended) { _otSeen = true; Impact("suddendeath", L.T("match.overtime"), "alert-fill"); }
     }
 
     // ---- arena view ----
@@ -285,7 +286,7 @@ else
     }
 
     private string? OvertimeFirstName => ArenaDto?.OvertimeFirstSeat is int s
-        ? (s == MySeatNo && _view?.IsSpectator == false ? "You" : _view?.Snapshot.Seats.FirstOrDefault(x => x.Seat == s)?.Player.DisplayName)
+        ? (s == MySeatNo && _view?.IsSpectator == false ? L.T("result.you") : _view?.Snapshot.Seats.FirstOrDefault(x => x.Seat == s)?.Player.DisplayName)
         : null;
 
     private async Task NavigateToResultLater(CancellationToken ct)
@@ -327,7 +328,7 @@ else
     private void Blocked(int cell)
     {
         if (!CanMove || _view is null) return;
-        _blocked = BoardHints.BlockedReason(EngineState, cell) ?? "You can't play there";
+        _blocked = Render(BoardHints.BlockedReasonText(EngineState, cell)) ?? L.T("boardHints.you_cant_play_there");
         _blockedPly = _view.Snapshot.Ply;
     }
 
@@ -347,6 +348,12 @@ else
 
     private bool IsActive(SeatDto? s) => s is not null && !Ended && ToMoveSeat == s.Seat;
     private ClockUrgency UrgencyFor(SeatDto? s) => IsActive(s) ? _clock?.Urgency ?? ClockUrgency.Normal : ClockUrgency.Idle;
+    // Screen readers hear the move clock at 10 and 5 seconds (the text changes only when the bucket does, so each is said once).
+    private string ClockWarning(SeatDto? me) =>
+        _view is { IsSpectator: false } && IsActive(me) && !IsDaily && _clock?.RemainingMs is int ms && ms > 0
+            ? ms <= 5000 ? L.F("match.seconds_left", 5) : ms <= 10_000 ? L.F("match.seconds_left", 10) : ""
+            : "";
+
     private int? ClockFor(SeatDto? s) => _clock is null ? null : IsActive(s) ? _clock.RemainingMs : _clock.AllowanceMs;
 
     private int? LastPlaced => _view?.Snapshot.Actions.LastOrDefault(a => a.Kind == ActionKind.Place)?.Cell;
@@ -376,16 +383,18 @@ else
             if (_view is null || Ended) return (null, null);
             var spectator = _view.IsSpectator;
             if (EngineState is { } e)
-                return (BoardHints.MoverCaption(e, moverIsYou: _view.IsMyTurn), BoardHints.WaitingCaption(e, waitingIsYou: !_view.IsMyTurn && !spectator));
+                return (Render(BoardHints.MoverCaptionText(e, moverIsYou: _view.IsMyTurn)), Render(BoardHints.WaitingCaptionText(e, waitingIsYou: !_view.IsMyTurn && !spectator)));
             if (Ghost is not int g) return (null, null);
             var c = _view.Snapshot.Board.Length > g ? _view.Snapshot.Board[g] : '.';
             if (c == '.') return (null, null);
             var mine = MySeatDto is { } me && (me.Color == Color.X ? 'X' : 'O') == c;
             var blocked = !_view.Snapshot.Rules.VacatedCellPlayable;
-            if (_view.IsMyTurn && mine) return ($"Your faded {c} vanishes when you place{(blocked ? " — you can't play there this turn" : "")}", null);
-            return (_view.IsMyTurn ? $"Faded {c} vanishes when you place" : $"Faded {c} vanishes on their move", null);
+            if (_view.IsMyTurn && mine) return (L.F(blocked ? "boardHints.your_faded_vanishes_blocked" : "boardHints.your_faded_vanishes", c), null);
+            return (_view.IsMyTurn ? L.F("match.faded_vanishes_when_you", c) : L.F("match.faded_vanishes_on_their", c), null);
         }
     }
+
+    private static string? Render(LocalizedHint? h) => h is null ? null : L.F(h.Key, h.Args);
 
     private GameResultForUser MyResult
     {
@@ -400,14 +409,14 @@ else
     }
 
     private string ResultTitle => _view!.IsSpectator
-        ? Winner is Color w ? $"{w} wins" : "Draw"
-        : MyResult switch { GameResultForUser.Win => "VICTORY!", GameResultForUser.Loss => "DEFEAT", GameResultForUser.Draw => "DRAW", _ => "ABORTED" };
+        ? Winner is Color w ? L.F("match.wins", w) : L.T("match.draw")
+        : MyResult switch { GameResultForUser.Win => L.T("match.victory"), GameResultForUser.Loss => L.T("match.defeat"), GameResultForUser.Draw => L.T("match.draw_caps"), _ => L.T("match.aborted") };
 
     private string? EmoteFor(SeatDto? s)
     {
         if (s is null || _view is null) return null;
         if (s.Seat != MySeatNo && Settings.State.MuteOpponentEmotes) return null;
-        return _view.RecentEmotes.LastOrDefault(e => e.Seat == s.Seat)?.Text;
+        return _view.RecentEmotes.LastOrDefault(e => e.Seat == s.Seat) is { } em ? Ui.EmoteText(em.EmoteId, em.Text) : null;
     }
 
     private string Announcement
@@ -417,25 +426,25 @@ else
             var a = _view?.Snapshot.Actions.LastOrDefault();
             if (a is null) return "";
             if (IsArena && ArenaDto?.LastHit is { } h && h.Ply == a.Ply)
-                return $"{(h.Seat == MySeatNo && !_view!.IsSpectator ? "You" : "Opponent")} shattered {h.Lines} line{(h.Lines > 1 ? "s" : "")} for {h.Damage} damage{(h.Crit ? ", critical hit" : "")}";
+                return L.P("match.shattered_lines", h.Lines, h.Seat == MySeatNo && !_view!.IsSpectator ? L.T("result.you") : L.T("playerCard.opponent"), h.Damage) + (h.Crit ? ", " + L.T("match.critical_hit") : "");
             var n = _view!.Snapshot.Rules.BoardSize;
-            var who = a.Seat == MySeatNo && !_view.IsSpectator ? "You" : "Opponent";
+            var who = a.Seat == MySeatNo && !_view.IsSpectator ? L.T("result.you") : L.T("playerCard.opponent");
             return a.Kind switch
             {
-                ActionKind.Swap => $"{who} swapped sides",
-                ActionKind.KeepSides => $"{who} kept sides",
-                _ => $"{who} placed {a.Color} at row {a.Cell / n + 1}, column {a.Cell % n + 1}{(a.VanishedCell is int v ? $"; piece at row {v / n + 1}, column {v % n + 1} vanished" : "")}",
+                ActionKind.Swap => L.F("match.swapped_sides", who),
+                ActionKind.KeepSides => L.F("match.kept_sides", who),
+                _ => L.F("match.placed_at_row", who, a.Color, a.Cell / n + 1, a.Cell % n + 1) + (a.VanishedCell is int v ? "; " + L.F("match.piece_at_row_vanished", v / n + 1, v % n + 1) : ""),
             };
         }
     }
 
     private static string ErrorText(string code) => code switch
     {
-        ErrorCodes.NotYourTurn => "Not your turn",
-        ErrorCodes.CellJustVacated => "That cell just emptied. Pick another.",
-        ErrorCodes.Occupied => "That cell is taken",
-        ErrorCodes.StalePly => "Board updated. Try again.",
-        _ => "Move rejected",
+        ErrorCodes.NotYourTurn => L.T("match.not_your_turn"),
+        ErrorCodes.CellJustVacated => L.T("match.that_cell_just_emptied"),
+        ErrorCodes.Occupied => L.T("boardHints.that_cell_is_taken"),
+        ErrorCodes.StalePly => L.T("match.board_updated_try_again"),
+        _ => L.T("match.move_rejected"),
     };
 
     // ---- intents ----

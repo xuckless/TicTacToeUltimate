@@ -4,47 +4,49 @@
 @inject TicTacToeUltimate.Client.Abstractions.ClientOptions Options
 @inject NavigationManager Nav
 
-<PageTitle>@(Editing ? "Edit profile" : "Welcome") · Tic Tac Toe Ultimate</PageTitle>
-<h1 class="t-title">@(Editing ? "Edit profile" : "Pick your name")</h1>
+<PageTitle>@(Editing ? L.T("onboarding.edit_profile_tic_tac_toe") : L.T("onboarding.welcome_tic_tac_toe"))</PageTitle>
+<h1 class="t-title">@(Editing ? L.T("settings.edit_profile") : L.T("onboarding.pick_your_name"))</h1>
 
 @if (Editing && (Session.State.Me?.RenamesLeft ?? 0) == 0)
 {
-    <div class="t-field"><span class="t-label">Username</span><div class="t-input" aria-readonly="true">@_username</div><span class="t-small t-muted">Your free rename is used. A name change token comes with the store.</span></div>
+    <div class="t-field"><span class="t-label">@L.T("onboarding.username")</span><div class="t-input" aria-readonly="true">@_username</div><span class="t-small t-muted">@L.T("onboarding.your_free_rename_is_used")</span></div>
 }
 else
 {
-    <TextField Label="Username" Value="@_username" ValueChanged="v => _username = v.ToLowerInvariant()" MaxLength="16" Placeholder="e.g. ali_xo"
-               Hint="@(Editing ? "3–16 characters: a–z, 0–9 and _. This uses your 1 free rename." : "3–16 characters: a–z, 0–9 and _. You get 1 free rename.")" Error="@UsernameError" />
+    <TextField Label="@L.T("onboarding.username")" Value="@_username" ValueChanged="v => _username = v.ToLowerInvariant()" MaxLength="16" Placeholder="@L.T("onboarding.e_g_ali_xo")"
+               Hint="@(Editing ? L.T("onboarding.username_hint_rename") : L.T("onboarding.username_hint_new"))" Error="@UsernameError" />
 }
 
 <div class="t-field">
-    <label class="t-label" for="country">Country</label>
+    <label class="t-label" for="country">@L.T("onboarding.country")</label>
     <select id="country" class="t-input" @bind="_country">
-        <option value="">Prefer not to say</option>
+        <option value="">@L.T("onboarding.prefer_not_to_say")</option>
         @foreach (var c in Countries) { <option value="@c">@c</option> }
     </select>
 </div>
 
 <div class="t-field">
-    <span class="t-label">Avatar</span>
+    <span class="t-label">@L.T("onboarding.avatar")</span>
     <div class="avatar-grid">
         @foreach (var (id, glyph) in Avatar.Presets)
         {
-            <button type="button" aria-pressed="@(_avatar == id ? "true" : "false")" aria-label="@($"Avatar {glyph}")" @onclick="() => _avatar = id">@glyph</button>
+            <button type="button" aria-pressed="@(_avatar == id ? "true" : "false")" aria-label="@L.F("onboarding.avatar_glyph", glyph)" @onclick="() => _avatar = id">@glyph</button>
         }
     </div>
 </div>
 
 @if (!Editing)
 {
-    <label class="t-toggle"><span>I am 13 or older and accept the <a href="@Web("terms/")" target="_blank" rel="noopener" @onclick:stopPropagation="true">Terms of Service</a> and <a href="@Web("privacy/")" target="_blank" rel="noopener" @onclick:stopPropagation="true">Privacy Policy</a></span><input type="checkbox" @bind="_tos" /></label>
+    <label class="t-toggle"><span>@((MarkupString)L.F("onboarding.accept_terms", Link("terms/", "onboarding.terms_of_service"), Link("privacy/", "onboarding.privacy_policy")))</span><input type="checkbox" @bind="_tos" /></label>
 }
 @if (_error is not null) { <p class="t-alert" role="alert">@_error</p> }
-<Button Variant="primary" Block="true" OnClick="Submit" Disabled="@(_busy || UsernameError is not null || _username.Length == 0 || (!_tos && !Editing))">@(Editing ? "Save" : "Let's play")</Button>
-@if (Editing) { <Button Variant="secondary" Block="true" Href="settings">Cancel</Button> }
+<Button Variant="primary" Block="true" OnClick="Submit" Disabled="@(_busy || UsernameError is not null || _username.Length == 0 || (!_tos && !Editing))">@(Editing ? L.T("onboarding.save") : L.T("onboarding.lets_play"))</Button>
+@if (Editing) { <Button Variant="secondary" Block="true" Href="settings">@L.T("localMatch.cancel")</Button> }
 
 @code {
     private string Web(string path) => new Uri(Options.WebBaseUrl, path).ToString();
+    private string Link(string path, string key) =>
+        $"<a href=\"{System.Net.WebUtility.HtmlEncode(Web(path))}\" target=\"_blank\" rel=\"noopener\">{System.Net.WebUtility.HtmlEncode(L.T(key))}</a>";
     private static readonly string[] Countries = ["US", "CA", "GB", "AU", "DE", "FR", "ES", "IT", "BR", "MX", "IN", "PK", "JP", "KR", "NL", "SE", "PL", "TR", "AE", "NG"];
     private static readonly System.Text.RegularExpressions.Regex UsernameRx = new("^[a-z0-9_]{3,16}$", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
@@ -55,7 +57,7 @@ else
     /// <summary>Client-side username rule (server re-checks uniqueness and the profanity filter).</summary>
     public static bool IsValidUsername(string? s) => s is not null && UsernameRx.IsMatch(s);
 
-    private string? UsernameError => _username.Length == 0 || IsValidUsername(_username) ? null : "Use 3–16 characters: a–z, 0–9 and _";
+    private string? UsernameError => _username.Length == 0 || IsValidUsername(_username) ? null : L.T("onboarding.use_3_16_characters");
 
     /// <summary>An account that already has a username is editing (avatar / country / optional rename); ToS was accepted at creation.</summary>
     private bool Editing => Session.State.Me is { Kind: AccountKind.Account, Username: not null };
@@ -79,11 +81,11 @@ else
             {
                 _error = ack.Error switch
                 {
-                    ErrorCodes.UsernameTaken => "That name is taken.",
-                    ErrorCodes.UsernameInvalid => "That name isn't allowed.",
-                    ErrorCodes.TosRequired => "Please accept the Terms of Service.",
-                    ErrorCodes.NoRenamesLeft => "You've used your free rename.",
-                    _ => "Couldn't save your name.",
+                    ErrorCodes.UsernameTaken => L.T("onboarding.that_name_is_taken"),
+                    ErrorCodes.UsernameInvalid => L.T("onboarding.that_name_isn_t_allowed"),
+                    ErrorCodes.TosRequired => L.T("onboarding.please_accept_the_terms"),
+                    ErrorCodes.NoRenamesLeft => L.T("onboarding.you_ve_used_your_free"),
+                    _ => L.T("onboarding.couldn_t_save_your_name"),
                 };
                 return;
             }

@@ -1,0 +1,22 @@
+{
+ "_machine": true,
+ "notify.demoted": "降格",
+ "notify.emote": "があなたにエモートを送りました",
+ "notify.promoted": "昇格！",
+ "push.comeback.1": "Bertが勝負を挑んでいます。腕はなまってない？",
+ "push.comeback.2": "盤面があなたを待っています。カジュアル対局なら90秒で終わります。",
+ "push.comeback.3": "新しい対戦相手がオンライン中。参加する？",
+ "push.comeback.title": "Bertからの挑戦状",
+ "push.streak.1": "{0}日の連続記録は今夜0時で途切れます。1局遊べばキープ！",
+ "push.streak.2": "Bertだよ。{0}日連続…古い駒みたいに消さないでね。",
+ "push.streak.3": "ねえ、{0}日の連続記録が待ってるよ。サクッと1局どう？",
+ "push.streak.title": "Bert 👻",
+ "push.your_move.body": "{0}との対局、あなたの番です。",
+ "push.your_move.title": "あなたの番です",
+ "tier.Bronze": "ブロンズ",
+ "tier.Diamond": "ダイヤモンド",
+ "tier.Gold": "ゴールド",
+ "tier.Master": "マスター",
+ "tier.Platinum": "プラチナ",
+ "tier.Silver": "シルバー"
+}

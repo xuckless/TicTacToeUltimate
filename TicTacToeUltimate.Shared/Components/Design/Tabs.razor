@@ -2,7 +2,7 @@
     @foreach (var item in Items)
     {
         var selected = item == Active;
-        <button type="button" role="tab" aria-selected="@(selected ? "true" : "false")" @onclick="() => Select(item)">@item</button>
+        <button type="button" role="tab" aria-selected="@(selected ? "true" : "false")" @onclick="() => Select(item)">@(Caption?.Invoke(item) ?? item)</button>
     }
 </div>
 
@@ -13,6 +13,8 @@
     [Parameter] public string? Active { get; set; }
     /// <summary>Selection changed.</summary>
     [Parameter] public EventCallback<string> ActiveChanged { get; set; }
+    /// <summary>Optional display text for a caption (localized); the caption itself stays the value.</summary>
+    [Parameter] public Func<string, string>? Caption { get; set; }
     /// <summary>Accessible label.</summary>
     [Parameter] public string? Label { get; set; }
 

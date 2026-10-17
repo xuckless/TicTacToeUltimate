@@ -35,6 +35,10 @@ internal sealed class FakeTransport : IRealtimeTransport
     public event Action? FriendsChanged;
     public event Action<DirectMessageDto>? DirectMessageReceived;
     public event Action<NotificationDto>? NotificationReceived;
+#pragma warning disable CS0067 // not raised by these tests
+    public event Action<PenaltyDto>? PenaltyReceived;
+    public event Action<MessageHiddenDto>? MessageHiddenReceived;
+#pragma warning restore CS0067
 #pragma warning restore CS0067
 
     public void Push(MatchEventEnvelope e) => MatchEventReceived?.Invoke(e);

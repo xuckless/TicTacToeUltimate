@@ -1,0 +1,22 @@
+{
+ "_machine": true,
+ "notify.demoted": "강등",
+ "notify.emote": "님이 이모트를 보냈어요",
+ "notify.promoted": "승급!",
+ "push.comeback.1": "Bert가 한 판 붙자고 해요. 아직 실력 녹슬지 않았죠?",
+ "push.comeback.2": "보드가 당신을 그리워해요. 일반전은 90초면 끝나요.",
+ "push.comeback.3": "지금 새로운 상대들이 접속해 있어요. 들어올래요?",
+ "push.comeback.title": "Bert의 도전장",
+ "push.streak.1": "{0}일 스트릭이 자정에 끝나요. 한 판이면 지킬 수 있어요!",
+ "push.streak.2": "Bert예요. {0}일째 순항 중… 오래된 말처럼 사라지게 두지 마세요.",
+ "push.streak.3": "쉿 — {0}일 스트릭이 기다리고 있어요. 빠르게 한 판?",
+ "push.streak.title": "Bert 👻",
+ "push.your_move.body": "{0}님과의 게임, 내 차례예요.",
+ "push.your_move.title": "내 차례예요",
+ "tier.Bronze": "브론즈",
+ "tier.Diamond": "다이아몬드",
+ "tier.Gold": "골드",
+ "tier.Master": "마스터",
+ "tier.Platinum": "플래티넘",
+ "tier.Silver": "실버"
+}

@@ -1,11 +1,11 @@
-<section class="t-card" style="padding:4px 16px" aria-label="Challenge">
+<section class="t-card" style="padding:4px 16px" aria-label="@L.T("challengeCard.challenge")">
     <div class="t-listrow">
         <Avatar Name="@Challenge.From.DisplayName" AvatarId="@Challenge.From.AvatarId" />
-        <div class="who"><div class="name">@Challenge.From.DisplayName</div><div class="meta">Challenges you · @Ui.TimeControlName(Challenge.TimeControl)</div></div>
-        <Button Variant="primary" Small="true" OnClick="() => OnAccept.InvokeAsync(Challenge)">Accept</Button>
+        <div class="who"><div class="name">@Challenge.From.DisplayName</div><div class="meta">@L.F("challengeCard.challenges_you", Ui.TimeControlName(Challenge.TimeControl))</div></div>
+        <Button Variant="primary" Small="true" OnClick="() => OnAccept.InvokeAsync(Challenge)">@L.T("challengeCard.accept")</Button>
         @if (OnDecline.HasDelegate)
         {
-            <IconButton Label="Decline" Icon="close" Round="true" OnClick="() => OnDecline.InvokeAsync(Challenge)" />
+            <IconButton Label="@L.T("challengeCard.decline")" Icon="close" Round="true" OnClick="() => OnDecline.InvokeAsync(Challenge)" />
         }
     </div>
 </section>

@@ -5,6 +5,15 @@ window.tttAds = (() => {
   function init(publisherId, testMode) {
     if (ready || !publisherId) return ready;
     client = publisherId;
+    window.adsbygoogle = window.adsbygoogle || [];
+    window.adBreak = window.adConfig = function (o) { window.adsbygoogle.push(o); };
+    ready = true;
+    // The production build puts the AdSense tag in <head> (site review needs it in the static HTML); never load it twice.
+    if (document.querySelector('script[src*="adsbygoogle.js"]')) {
+      scriptState = 'loaded';
+      window.adConfig({ preloadAdBreaks: 'on', sound: 'on' });
+      return true;
+    }
     const s = document.createElement('script');
     s.async = true; s.crossOrigin = 'anonymous';
     s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(publisherId);
@@ -13,10 +22,7 @@ window.tttAds = (() => {
     s.onload = () => { scriptState = 'loaded'; };
     s.onerror = () => { scriptState = 'failed'; };
     document.head.appendChild(s);
-    window.adsbygoogle = window.adsbygoogle || [];
-    window.adBreak = window.adConfig = function (o) { window.adsbygoogle.push(o); };
     window.adConfig({ preloadAdBreaks: 'on', sound: 'on' });
-    ready = true;
     return true;
   }
   // Never block the game: if no ad starts within 5 s (no fill, ad blocker, script blocked) resolve as "no ad";
@@ -51,16 +57,26 @@ window.tttAds = (() => {
         adBreakDone: () => finish(result) });
     }, 'unavailable');
   }
-  function banner(el, slot) {
-    if (!ready || !el || !slot || el.dataset.filled) return false;
+  // kind: 'banner' (a strip as tall as its container: 100px on menus, 50px in a match), 'feed' (a responsive card in
+  // lists and on the result screen) or 'rail' (desktop side skyscraper, 160 or 300 wide). Hidden containers are skipped:
+  // AdSense rejects a slot with no width.
+  function banner(el, slot, kind) {
+    if (!ready || !el || !slot || el.dataset.filled || el.offsetWidth === 0) return false;
     el.innerHTML = '';
     const ins = document.createElement('ins');
     ins.className = 'adsbygoogle';
-    ins.style.display = 'block';
     ins.setAttribute('data-ad-client', client);
     ins.setAttribute('data-ad-slot', slot);
-    ins.setAttribute('data-ad-format', 'horizontal');
-    ins.setAttribute('data-full-width-responsive', 'true');
+    if (kind === 'feed') {
+      ins.style.display = 'block';
+      ins.setAttribute('data-ad-format', 'auto');
+      ins.setAttribute('data-full-width-responsive', 'true');
+    } else if (kind === 'rail') {
+      ins.style.cssText = 'display:inline-block;width:' + (el.offsetWidth >= 300 ? 300 : 160) + 'px;height:600px';
+    } else {
+      // A fixed-height responsive unit: AdSense fits the creative to the box, so the board never gets squeezed.
+      ins.style.cssText = 'display:block;width:100%;height:' + el.clientHeight + 'px';
+    }
     el.appendChild(ins);
     try { (window.adsbygoogle = window.adsbygoogle || []).push({}); el.dataset.filled = '1'; return true; } catch (e) { return false; }
   }

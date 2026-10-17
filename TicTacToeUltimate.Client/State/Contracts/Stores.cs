@@ -50,6 +50,21 @@ public interface ISessionStore : IStore<SessionState>
     Task<CommandAckDto> UpdateProfileAsync(UpdateProfileDto patch);
 }
 
+/// <summary>Moderation as this player sees it: a ban (blocks the app), a notice to show once (warning or mute), standing.</summary>
+public sealed record ModerationState(PenaltyDto? Ban, PenaltyDto? Notice, StandingDto? Standing)
+{ public static ModerationState Empty { get; } = new(null, null, null); }
+public interface IModerationStore : IStore<ModerationState>
+{
+    /// <summary>Reports a player (chat message, profile or cheating). Returns an error code or null.</summary>
+    Task<string?> ReportAsync(ReportRequestDto report);
+    /// <summary>Appeals a ban or mute (once per penalty). Returns an error code or null.</summary>
+    Task<string?> AppealAsync(long penaltyId, string text);
+    /// <summary>Reloads penalties in force.</summary>
+    Task LoadStandingAsync();
+    /// <summary>The player has seen the notice.</summary>
+    void DismissNotice();
+}
+
 public enum QueuePhase { Idle, Entering, Searching, Found }
 public sealed record QueueState(QueuePhase Phase, TimeControl? TimeControl, QueueStatusDto? Status, MatchFoundDto? Found, string? Error)
 { public static QueueState Idle { get; } = new(QueuePhase.Idle, null, null, null, null); }
@@ -168,7 +183,15 @@ public enum ThemePreference { System, Dark, Light }
 public enum MotionPreference { System, Reduced, Full }
 public sealed record SettingsState(ThemePreference Theme, bool Sfx, bool Music, bool Haptics, bool ImpactFrames,
     MotionPreference Motion, bool ThreatHints, bool MuteOpponentEmotes, double SfxVolume, double MusicVolume)
-{ public static SettingsState Default { get; } = new(ThemePreference.Dark, true, false, true, true, MotionPreference.System, false, false, 0.8, 0.5); }
+{
+    public static SettingsState Default { get; } = new(ThemePreference.Dark, true, false, true, true, MotionPreference.System, false, false, 0.8, 0.5);
+    /// <summary>UI language: "system" (device/browser language) or a code from Localizer.Languages.</summary>
+    public string Language { get; init; } = "system";
+    /// <summary>Stronger colours, borders and focus outlines (accessibility).</summary>
+    public bool HighContrast { get; init; }
+    /// <summary>Short on-screen captions for sound cues (deaf / hard-of-hearing players).</summary>
+    public bool SoundCaptions { get; init; }
+}
 public interface ISettingsStore : IStore<SettingsState>
 {
     Task LoadAsync();

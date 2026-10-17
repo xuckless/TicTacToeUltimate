@@ -1,7 +1,7 @@
 <div class="replay-scrubber">
-    <IconButton Label="Previous move" Icon="prev" Disabled="@(Ply <= 0)" OnClick="() => Go(Ply - 1)" />
-    <input type="range" min="0" max="@Max" value="@Ply" aria-label="Move" @oninput="OnInput" />
-    <IconButton Label="Next move" Icon="next" Disabled="@(Ply >= Max)" OnClick="() => Go(Ply + 1)" />
+    <IconButton Label="@L.T("replayScrubber.previous_move")" Icon="prev" Disabled="@(Ply <= 0)" OnClick="() => Go(Ply - 1)" />
+    <input type="range" min="0" max="@Max" value="@Ply" aria-label="@L.T("replayScrubber.move")" @oninput="OnInput" />
+    <IconButton Label="@L.T("replayScrubber.next_move")" Icon="next" Disabled="@(Ply >= Max)" OnClick="() => Go(Ply + 1)" />
     <span class="t-num t-small">@Ply/@Max</span>
 </div>
 

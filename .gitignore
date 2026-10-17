@@ -63,3 +63,6 @@ deploy/vm/.env
 DEPLOYMENT_GUIDE.md
 .wrangler/
 TODO.md
+deploy/admin/out/
+deploy/admin/publish/
+tools/a11y/node_modules/

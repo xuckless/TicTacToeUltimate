@@ -491,9 +491,12 @@ internal sealed class MatchActor
         Emit(new TurnStarted(_state.Ply, _state.ToMove, seat, _state.Phase, Clock(), _state.LegalCells), now);
         if (IsDaily && _state.Ply > 0 && SeatSetupOf(seat) is { Kind: not AccountKind.Bot } who)
         {
-            var n = new NotificationDto(NotificationKind.DailyYourTurn, "Your move", $"It's your turn against {_cards[1 - seat].DisplayName}.", Id, null);
+            var opponent = _cards[1 - seat].DisplayName;
             _outbox.Writer.TryWrite(new CallbackItem(async () =>
             {
+                var locale = _rt.Users is { } repo ? await repo.GetLocaleAsync(who.UserId, CancellationToken.None).ConfigureAwait(false) : null;
+                var n = new NotificationDto(NotificationKind.DailyYourTurn, TicTacToeUltimate.Server.Localization.ServerText.Get(locale, "push.your_move.title"),
+                    TicTacToeUltimate.Server.Localization.ServerText.Get(locale, "push.your_move.body", opponent), Id, null);
                 await _rt.Notifier.ToUserAsync(who.UserId, cl => cl.Notification(n)).ConfigureAwait(false);
                 await _rt.Push.SendAsync(who.UserId, n, CancellationToken.None).ConfigureAwait(false);
             }));

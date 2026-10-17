@@ -1,0 +1,45 @@
+@inject AdminApi Api
+
+@* Every penalty needs a reason; the player sees it on their notice. *@
+<div class="grid" style="gap:8px">
+    <input type="text" placeholder="Reason (shown to the player)" @bind="_reason" @bind:event="oninput" aria-label="Reason" />
+    <div class="row">
+        <button class="btn" type="button" disabled="@Off" @onclick='() => Apply("warn", null)'>Warn</button>
+        <button class="btn" type="button" disabled="@Off" @onclick='() => Apply("chat_mute", 60)'>Mute 1 h</button>
+        <button class="btn" type="button" disabled="@Off" @onclick='() => Apply("chat_mute", 1440)'>Mute 24 h</button>
+        <button class="btn" type="button" disabled="@Off" @onclick='() => Apply("chat_mute", 10080)'>Mute 7 d</button>
+        <button class="btn danger" type="button" disabled="@Off" @onclick='() => Apply("ban", 1440)'>Ban 1 d</button>
+        <button class="btn danger" type="button" disabled="@Off" @onclick='() => Apply("ban", 10080)'>Ban 7 d</button>
+        <button class="btn danger" type="button" disabled="@Off" @onclick='() => Apply("ban", 43200)'>Ban 30 d</button>
+        <button class="btn danger" type="button" disabled="@Off" @onclick="Permanent">@(_confirm ? "Confirm permanent ban" : "Ban forever")</button>
+        <button class="btn" type="button" disabled="@Off" @onclick='() => Apply("username_reset", null)'>Reset username</button>
+    </div>
+    @if (_done is not null) { <span class="small muted" role="status">@_done</span> }
+</div>
+
+@code {
+    private string _reason = "";
+    private string? _done;
+    private bool _busy, _confirm;
+
+    [Parameter, EditorRequired] public Guid PlayerId { get; set; }
+    [Parameter] public EventCallback OnApplied { get; set; }
+
+    private bool Off => _busy || string.IsNullOrWhiteSpace(_reason);
+
+    private async Task Permanent()
+    {
+        if (!_confirm) { _confirm = true; return; }
+        _confirm = false;
+        await Apply("ban", null);
+    }
+
+    private async Task Apply(string kind, int? minutes)
+    {
+        _busy = true;
+        var r = await Api.PenalizeAsync(PlayerId, new PenaltyRequestDto(kind, _reason.Trim(), minutes));
+        _busy = false;
+        _done = r is { Ok: true } ? $"Applied: {kind}{(minutes is int m ? $" ({m / 60} h)" : "")}." : "Failed.";
+        if (r is { Ok: true }) { _reason = ""; await OnApplied.InvokeAsync(); }
+    }
+}

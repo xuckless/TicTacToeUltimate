@@ -1,0 +1,21 @@
+{
+ "notify.demoted": "Nedflyttad",
+ "notify.emote": "skickade en emote till dig",
+ "notify.promoted": "Uppflyttad!",
+ "push.comeback.1": "Bert utmanar dig till ett parti. Tror du att du fortfarande har det?",
+ "push.comeback.2": "Brädet saknar dig. Ett Casual-parti tar 90 sekunder.",
+ "push.comeback.3": "Nya motståndare är online just nu. Hoppa in?",
+ "push.comeback.title": "Bert utmanar dig",
+ "push.streak.1": "Din {0} dagars svit tar slut vid midnatt. Ett parti håller den vid liv!",
+ "push.streak.2": "Bert här. {0} dagar i rad… låt den inte blekna som en gammal pjäs.",
+ "push.streak.3": "Psst — din {0} dagars svit väntar. Ett snabbt parti?",
+ "push.streak.title": "Bert 👻",
+ "push.your_move.body": "Det är din tur mot {0}.",
+ "push.your_move.title": "Ditt drag",
+ "tier.Bronze": "Brons",
+ "tier.Diamond": "Diamant",
+ "tier.Gold": "Guld",
+ "tier.Master": "Mästare",
+ "tier.Platinum": "Platina",
+ "tier.Silver": "Silver"
+}

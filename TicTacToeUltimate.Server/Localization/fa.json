@@ -1,0 +1,21 @@
+{
+ "push.your_move.title": "نوبت توست",
+ "push.your_move.body": "نوبت توست در برابر {0}.",
+ "push.streak.title": "Bert 👻",
+ "push.streak.1": "زنجیره‌ی {0} روزه‌ات نیمه‌شب تمام می‌شود. یک بازی زنده نگهش می‌دارد!",
+ "push.streak.2": "Bert هستم. {0} روز پشت سر هم… نگذار مثل یک مهره‌ی قدیمی ناپدید شود.",
+ "push.streak.3": "پیس — زنجیره‌ی {0} روزه‌ات منتظر است. یک بازی سریع؟",
+ "push.comeback.title": "Bert تو را به چالش می‌کشد",
+ "push.comeback.1": "Bert تو را به یک بازی دعوت می‌کند. فکر می‌کنی هنوز واردی؟",
+ "push.comeback.2": "صفحه دلش برایت تنگ شده. یک بازی معمولی 90 ثانیه طول می‌کشد.",
+ "push.comeback.3": "حریف‌های جدید همین الان آنلاین‌اند. می‌آیی؟",
+ "notify.promoted": "ارتقا!",
+ "notify.demoted": "تنزل",
+ "notify.emote": "برایت یک شکلک فرستاد",
+ "tier.Bronze": "برنز",
+ "tier.Silver": "نقره",
+ "tier.Gold": "طلا",
+ "tier.Platinum": "پلاتین",
+ "tier.Diamond": "الماس",
+ "tier.Master": "استاد"
+}

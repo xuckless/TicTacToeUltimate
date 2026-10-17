@@ -2,11 +2,11 @@ using TicTacToeUltimate.Client.Abstractions;
 
 namespace TicTacToeUltimate.Services;
 
-/// <summary>Mobile: the banner is a native AdMob view in MainPage, so the Blazor <c>AdSlot</c> renders nothing (BannerSlot null).</summary>
+/// <summary>Mobile: the banner is a native AdMob view in MainPage, so every Blazor <c>AdSlot</c> renders nothing.</summary>
 public sealed class NativeBannerAds : IBannerAds
 {
     /// <inheritdoc />
-    public string? BannerSlot => null;
+    public bool Has(AdSlotKind kind) => false;
     /// <inheritdoc />
-    public ValueTask RenderBannerAsync(object host) => ValueTask.CompletedTask;
+    public ValueTask RenderAsync(object host, AdSlotKind kind) => ValueTask.CompletedTask;
 }

@@ -4,23 +4,26 @@
 @inject ISocialStore Social
 @inject ToastService Toasts
 
-<PageTitle>Chat · Tic Tac Toe Ultimate</PageTitle>
+<PageTitle>@L.T("chat.chat_tic_tac_toe_ultimate")</PageTitle>
 <div class="t-row" style="flex-wrap:nowrap">
-    <a class="t-iconbtn t-iconbtn--round" href="social" aria-label="Back"><Icon Name="back" /></a>
-    <h1 class="t-heading">@(Friend?.Player.DisplayName ?? "Chat")</h1>
+    <a class="t-iconbtn t-iconbtn--round" href="social" aria-label="@L.T("chat.back")"><Icon Name="back" /></a>
+    <h1 class="t-heading">@(Friend?.Player.DisplayName ?? L.T("chat.chat"))</h1>
 </div>
 
 @if (Friend is null)
 {
-    <p class="t-muted">@(Social.State.Loaded ? "You can only chat with mutual friends." : "Loading…")</p>
+    <p class="t-muted">@(Social.State.Loaded ? L.T("chat.you_can_only_chat_with") : L.T("chat.loading"))</p>
 }
 else
 {
-    <MessageList Messages="Messages" MeId="@(Session.State.Me?.UserId ?? Guid.Empty)" />
+    <MessageList Messages="Messages" MeId="@(Session.State.Me?.UserId ?? Guid.Empty)" OnReport="m => _reportMessage = m" />
+    <ReportSheet Open="_reportMessage is not null" Kind="@ReportKinds.Chat" Target="UserId" TargetName="@(Friend.Player.DisplayName)"
+                 MessageId="_reportMessage?.Id" OnClose="() => _reportMessage = null" />
     <Composer OnSend="Send" />
 }
 
 @code {
+    private DirectMessageDto? _reportMessage;
     /// <summary>Friend id.</summary>
     [Parameter] public Guid UserId { get; set; }
 
@@ -38,7 +41,7 @@ else
             await Social.LoadThreadAsync(UserId);
             await Social.MarkReadAsync(UserId);
         }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show("Couldn't load messages.", ToastKind.Error); }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show(L.T("chat.couldn_t_load_messages"), ToastKind.Error); }
     }
 
     private int _seen;
@@ -54,7 +57,7 @@ else
     private async Task<bool> Send(string body)
     {
         var ack = await Social.SendMessageAsync(UserId, body);
-        if (!ack.Ok) Toasts.Show(ack.Error == ErrorCodes.NotFriends ? "You can only message mutual friends." : "Message not sent.", ToastKind.Error);
+        if (!ack.Ok) Toasts.Show(ack.Error == ErrorCodes.NotFriends ? L.T("chat.you_can_only_message_mutual") : Ui.ErrorToastText(ack.Error, L.T("chat.message_not_sent")), ToastKind.Error);
         return ack.Ok;
     }
 }

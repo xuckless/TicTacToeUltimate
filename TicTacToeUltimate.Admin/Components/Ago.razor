@@ -1,0 +1,15 @@
+<time datetime="@At.ToString("o")" title="@At.ToLocalTime().ToString("u")">@Text</time>
+
+@code {
+    [Parameter, EditorRequired] public DateTimeOffset At { get; set; }
+
+    private string Text
+    {
+        get
+        {
+            var d = DateTimeOffset.UtcNow - At;
+            return d.TotalSeconds < 60 ? "just now" : d.TotalMinutes < 60 ? $"{(int)d.TotalMinutes}m ago" : d.TotalHours < 24 ? $"{(int)d.TotalHours}h ago"
+                : d.TotalDays < 30 ? $"{(int)d.TotalDays}d ago" : At.ToLocalTime().ToString("yyyy-MM-dd");
+        }
+    }
+}

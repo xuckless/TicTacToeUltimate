@@ -7,7 +7,7 @@
         <span class="sb-score">
             <b class="@(Winner == 0 ? "lead" : null)" @key="@($"a{Score0}")">@Score0</b><i>–</i><b class="@(Winner == 1 ? "lead" : null)" @key="@($"b{Score1}")">@Score1</b>
         </span>
-        @if (Draws > 0) { <span class="sb-draws">@Draws drawn</span> }
+        @if (Draws > 0) { <span class="sb-draws">@L.P("scoreboard.drawn", Draws)</span> }
     </div>
     @Side(1, Name1, Color1)
 </div>

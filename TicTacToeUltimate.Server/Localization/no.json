@@ -1,0 +1,21 @@
+{
+ "notify.demoted": "Rykket ned",
+ "notify.emote": "sendte deg en emote",
+ "notify.promoted": "Rykket opp!",
+ "push.comeback.1": "Bert utfordrer deg til et spill. Tror du du har det i deg fortsatt?",
+ "push.comeback.2": "Brettet savner deg. Et uformelt spill tar 90 sekunder.",
+ "push.comeback.3": "Nye motstandere er på nett akkurat nå. Blir du med?",
+ "push.comeback.title": "Bert utfordrer deg",
+ "push.streak.1": "Rekka di på {0} dager slutter ved midnatt. Ett spill holder den i live!",
+ "push.streak.2": "Bert her. {0} dager på rad… ikke la den blekne som en gammel brikke.",
+ "push.streak.3": "Psst — rekka di på {0} dager venter. Et kjapt spill?",
+ "push.streak.title": "Bert 👻",
+ "push.your_move.body": "Det er din tur mot {0}.",
+ "push.your_move.title": "Ditt trekk",
+ "tier.Bronze": "Bronse",
+ "tier.Diamond": "Diamant",
+ "tier.Gold": "Gull",
+ "tier.Master": "Mester",
+ "tier.Platinum": "Platina",
+ "tier.Silver": "Sølv"
+}

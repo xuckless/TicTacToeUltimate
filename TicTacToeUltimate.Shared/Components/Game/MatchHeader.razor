@@ -1,7 +1,7 @@
 <div class="match-header">
     @if (Clock?.SuddenDeath == true)
     {
-        <Chip Alert="true">SUDDEN DEATH</Chip>
+        <Chip Alert="true">@L.T("matchHeader.sudden_death")</Chip>
     }
     else
     {
@@ -27,15 +27,15 @@
     public static string InfoText(TimeControl TimeControl, ClockView? Clock, int Spectators)
     {
         {
-            var spect = Spectators > 0 ? $" · {Spectators} watching" : "";
+            var spect = Spectators > 0 ? " · " + L.F("matchHeader.watching", Spectators) : "";
             if (Clock is null || Clock.AllowanceMs is null)
-                return TimeControl == TimeControl.Unlimited ? "No clock" + spect : spect.TrimStart(' ', '·');
-            var game = $"Game {Ui.Elapsed(Clock.GameElapsedMs)}";
+                return TimeControl == TimeControl.Unlimited ? L.T("matchHeader.no_clock") + spect : spect.TrimStart(' ', '·');
+            var game = L.F("matchHeader.game_elapsed", Ui.Elapsed(Clock.GameElapsedMs));
             if (TimeControl == TimeControl.Daily) return game + spect;
             var now = Ui.Seconds(Clock.AllowanceMs.Value);
             if (Clock.SuddenDeath && Clock.NextAllowanceMs is int next && Clock.NextStepInMs is int inMs && next != Clock.AllowanceMs)
-                return $"{game} · window {now}s → {Ui.Seconds(next)}s in {Math.Max(0, (int)Math.Ceiling(inMs / 1000.0))}s{spect}";
-            return Clock.SuddenDeath ? $"{game} · window {now}s{spect}" : $"{game} · move {now}s{spect}";
+                return L.F("matchHeader.window_step", game, now, Ui.Seconds(next), Math.Max(0, (int)Math.Ceiling(inMs / 1000.0))) + spect;
+            return Clock.SuddenDeath ? L.F("matchHeader.window", game, now) + spect : L.F("matchHeader.move", game, now) + spect;
         }
     }
 }

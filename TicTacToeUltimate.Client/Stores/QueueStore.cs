@@ -12,8 +12,12 @@ public sealed class QueueStore : StoreBase<QueueState>, IQueueStore
     private bool _wasOnline;
 
     /// <summary>Creates the store.</summary>
-    public QueueStore(IRealtimeTransport rt, ISoundService sound, IHaptics haptics, ISettingsStore settings) : base(QueueState.Idle)
+    private readonly TicTacToeUltimate.Client.Diagnostics.Telemetry? _telemetry;
+
+    public QueueStore(IRealtimeTransport rt, ISoundService sound, IHaptics haptics, ISettingsStore settings,
+        TicTacToeUltimate.Client.Diagnostics.Telemetry? telemetry = null) : base(QueueState.Idle)
     {
+        _telemetry = telemetry;
         _rt = rt;
         rt.QueueStatusReceived += status => Update(s => s.Phase is QueuePhase.Searching or QueuePhase.Entering
             ? s with { Phase = QueuePhase.Searching, Status = status } : s);
@@ -47,6 +51,7 @@ public sealed class QueueStore : StoreBase<QueueState>, IQueueStore
     /// <inheritdoc />
     public async Task EnterAsync(TimeControl timeControl)
     {
+        _telemetry?.Track(TicTacToeUltimate.Contracts.TelemetryKinds.Queue, "join", ("tc", timeControl.ToString()));
         Update(_ => new QueueState(QueuePhase.Entering, timeControl, null, null, null));
         try
         {

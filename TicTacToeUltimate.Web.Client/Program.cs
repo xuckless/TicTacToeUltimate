@@ -33,6 +33,7 @@ builder.Services.Replace(ServiceDescriptor.Singleton<IPlatformInfo, WebPlatformI
 if (NonEmpty(builder.Configuration["Ads:AdSenseClient"]) is { } adClient)
 {
     var adOptions = new AdSenseOptions(adClient, NonEmpty(builder.Configuration["Ads:AdSenseBannerSlot"]),
+        NonEmpty(builder.Configuration["Ads:AdSenseRailSlot"]),
         string.Equals(builder.Configuration["Ads:TestMode"], "true", StringComparison.OrdinalIgnoreCase));
     builder.Services.AddSingleton(adOptions);
     builder.Services.AddSingleton<AdSenseAdProvider>();
@@ -47,6 +48,7 @@ else
 builder.Services.AddTttClientFallbacks();
 
 var host = builder.Build();
+host.Services.GetRequiredService<TicTacToeUltimate.Client.Diagnostics.CrashReporter>().InstallGlobalHandlers();
 
 // Dev-only "?as={username}": sign this tab in as a fixture user without touching localStorage (two tabs can play).
 if (options.IsDevelopment)

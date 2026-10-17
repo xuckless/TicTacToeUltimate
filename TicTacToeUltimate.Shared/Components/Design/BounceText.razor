@@ -1,14 +1,25 @@
 @* Headline text whose letters sit at alternating heights and tilts (Luckiest Guy "bouncy" style).
-   Screen readers get the plain string; the per-letter spans are decorative. *@
-<span class="t-bounce @Class" role="text" aria-label="@Text">@for (var i = 0; i < Text.Length; i++)
+   Screen readers get the plain string; the per-letter spans are decorative.
+   Scripts whose letters join (Arabic, Persian), read right-to-left (Hebrew) or stack marks (Thai) render whole: splitting them would break the
+   letter shapes or reverse the order. Latin text inside a right-to-left page keeps its own left-to-right order. *@
+@if (JoinedScript)
 {
-    var c = Text[i];
-    <span aria-hidden="true" class="@(c == ' ' ? "sp" : null)" style="--i:@i">@c</span>
-}</span>
+    <span class="t-bounce t-bounce--whole @Class" dir="auto">@Text</span>
+}
+else
+{
+    <span class="t-bounce @Class" role="text" aria-label="@Text" dir="ltr">@for (var i = 0; i < Text.Length; i++)
+    {
+        var c = Text[i];
+        <span aria-hidden="true" class="@(c == ' ' ? "sp" : null)" style="--i:@i">@c</span>
+    }</span>
+}
 
 @code {
     /// <summary>The headline string.</summary>
     [Parameter, EditorRequired] public string Text { get; set; } = "";
     /// <summary>Extra CSS classes (e.g. "wiggle" for an idle bob).</summary>
     [Parameter] public string? Class { get; set; }
+
+    private bool JoinedScript => Text.Any(c => c is >= '\u0590' and <= '\u08FF' or >= '\uFB1D' and <= '\uFEFC' or >= '\u0E00' and <= '\u0E7F');
 }

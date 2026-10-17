@@ -12,4 +12,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- English is always in the assembly (fallback + first render); other languages are fetched from _content/…/i18n/. -->
+    <EmbeddedResource Include="wwwroot/i18n/en.json" LogicalName="i18n.en.json" />
+  </ItemGroup>
 </Project>

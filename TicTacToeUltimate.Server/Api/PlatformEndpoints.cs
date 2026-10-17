@@ -42,7 +42,8 @@ public static class PlatformEndpoints
         }).ToArray();
         var s = o.Auth.Supabase;
         return new AppConfigDto(ProtocolInfo.Version, o.Auth.Dev.Enabled, s.Enabled, s.Enabled ? s.Url : null, s.Enabled ? s.AnonKey : null, modes,
-            EmoteCatalog.All.ToArray(), tiers.Bands, o.Ratings.MinRatedGames, new AdConfigDto(o.Ads.InterstitialEveryGames, o.Ads.SkipAfterTwoLosses, o.Ads.MinSecondsBetween, o.Ads.FirstAfterGames), o.Web.BaseUrl);
+            EmoteCatalog.All.ToArray(), tiers.Bands, o.Ratings.MinRatedGames, new AdConfigDto(o.Ads.InterstitialEveryGames, o.Ads.SkipAfterTwoLosses, o.Ads.MinSecondsBetween, o.Ads.FirstAfterGames), o.Web.BaseUrl,
+            s.Enabled && o.Auth.Review.Enabled ? o.Auth.Review.Email.Trim().ToLowerInvariant() : null);
     }
 
     private static IResult From<T>(OpResult<T> r) => r.Ok ? Results.Ok(r.Value) : ApiErrors.Problem(r.Status, r.Error!);
@@ -67,11 +68,22 @@ public static class PlatformEndpoints
         // Guests (device-bound, server-signed tokens) exist in every environment.
         api.MapPost("/auth/guest", async (GuestTokenRequestDto req, AccountService a, CancellationToken ct) => From(await a.GuestTokenAsync(req, ct)))
             .AllowAnonymous().RequireRateLimiting(RateLimits.Auth);
+        // App Store / Play review: a fixed account with a fixed code (the reviewer can't receive our emails).
+        api.MapPost("/auth/review", async (ReviewSignInDto req, ReviewAccount review, CancellationToken ct) =>
+            await review.SignInAsync(req, ct) is { } session ? Results.Ok(session) : ApiErrors.Problem(401, ErrorCodes.Forbidden))
+            .AllowAnonymous().RequireRateLimiting(RateLimits.Auth);
         // After an email sign-in: move the device's guest history into the account (the guest token proves ownership).
         api.MapPost("/auth/claim-guest", async (ClaimGuestDto req, HttpContext http, AccountService a, CancellationToken ct) =>
             From(await a.ClaimGuestAsync(http.Me().UserId, req.GuestToken, ct))).RequireAuthorization(Account);
 
         // ---- me ----
+        api.MapPut("/me/locale", async (SetLocaleDto req, HttpContext http, IUserRepository users, CancellationToken ct) =>
+        {
+            var code = (req.Locale ?? "").Trim();
+            if (code.Length is 0 or > 10 || !code.All(ch => char.IsAsciiLetter(ch) || ch == '-')) return ApiErrors.Problem(400, ErrorCodes.Validation);
+            await users.SetLocaleAsync(http.Me().UserId, code, ct);
+            return Results.NoContent();
+        }).RequireAuthorization();
         api.MapGet("/me", async (HttpContext http, AccountService a, IUserRepository users, TimeProvider time, CancellationToken ct) =>
         {
             var me = http.Me();
@@ -109,6 +121,8 @@ public static class PlatformEndpoints
             var card = await cards.GetCardAsync(u.Id, RatingPools.Headline, ct);
             var visible = await ratings.VisibleAsync(u.Id, time.GetUtcNow(), ct);
             var list = await games.ListForUserAsync(u.Id, null, 500, ct);
+            if (u.Kind == AccountKind.Bot && card is { Rating: int botRating, Tier: { } botTier })
+                visible = [new RatingDto(RatingPools.Headline, botRating, 60, Math.Max(list.Count, 40), false, botTier, 0)];
             int wins = 0, losses = 0, draws = 0;
             foreach (var g in list)
             {
