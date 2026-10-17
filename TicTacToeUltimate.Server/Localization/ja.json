@@ -18,5 +18,6 @@
  "tier.Gold": "ゴールド",
  "tier.Master": "マスター",
  "tier.Platinum": "プラチナ",
- "tier.Silver": "シルバー"
+ "tier.Silver": "シルバー",
+ "notify.challenge": "が対戦を申し込みました"
 }

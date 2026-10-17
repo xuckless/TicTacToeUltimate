@@ -40,6 +40,35 @@ public class SocialTests
     }
 
     [Fact]
+    public async Task FriendRequestToABotLooksSentButIsNeverStored()
+    {
+        using var p = new TestPlatform();
+        var a = await p.UserAsync(N("fa"));
+        var bot = await p.UserAsync(N("fb"), AccountKind.Bot);
+        var s = p.Get<SocialService>();
+        Assert.True((await s.RequestAsync(a.Id, null, bot.Id, default)).Ok);
+        Assert.Empty((await s.OverviewAsync(a.Id, default)).Requests);
+        Assert.Empty(p.Notifier.Of<FriendRequestDto>(bot.Id));
+    }
+
+    [Fact]
+    public async Task ChallengeCardsArePostedByTheServerOnly()
+    {
+        using var p = new TestPlatform();
+        var a = await p.UserAsync(N("ca"));
+        var b = await p.UserAsync(N("cb"));
+        await p.Get<IFriendRepository>().RequestAsync(a.Id, b.Id, p.Time.GetUtcNow(), default);
+        await p.Get<IFriendRepository>().RequestAsync(b.Id, a.Id, p.Time.GetUtcNow(), default);
+        var s = p.Get<SocialService>();
+        Assert.Equal(ErrorCodes.Validation, (await s.SendAsync(a.Id, b.Id, "challenge:ABCD2345", default)).Error);
+        var posted = await s.PostChallengeAsync(a.Id, b.Id, "ABCD2345", default);
+        Assert.Equal("challenge:ABCD2345", posted!.Body);
+        Assert.Single(p.Notifier.Of<DirectMessageDto>(b.Id));
+        var stranger = await p.UserAsync(N("cs"));
+        Assert.Null(await s.PostChallengeAsync(a.Id, stranger.Id, "ABCD2346", default));
+    }
+
+    [Fact]
     public async Task RateLimitOnePerSecondBurstFive()
     {
         using var p = new TestPlatform();

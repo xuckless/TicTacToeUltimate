@@ -2,6 +2,8 @@
 @inject IGameQueries Queries
 @inject IProgressStore Progress
 @inject IWalletStore Wallet
+@inject ISettingsStore Settings
+@inject ISoundService Sound
 @inject ToastService Toasts
 @implements IDisposable
 
@@ -16,24 +18,41 @@ else
 {
     var frame = _frames[_ply];
     var final = _ply == _frames.Count - 1;
+    var top = _game.Seats.FirstOrDefault(s => s.Seat == 1);
+    var bottom = _game.Seats.FirstOrDefault(s => s.Seat == 0);
     <p class="t-small t-muted" style="margin:0">
         @L.F("replay.summary", string.Join(L.T("replay.vs_separator"), _game.Seats.Select(s => s.Player.DisplayName)), Ui.TimeControlName(_game.TimeControl), Ui.ReasonText(_game.Result.Reason))
     </p>
-    <div style="display:grid;place-items:center">
-        <Board Size="_game.Rules.BoardSize" Cells="@frame.Board" Ghost="@(final ? null : frame.Ghost)" LastPlaced="frame.LastPlaced"
-               WinLine="@(final ? _game.Result.WinLine : null)" Winner="Winner" Interactive="false" />
-    </div>
-    <ReplayScrubber Ply="_ply" Max="_frames.Count - 1" PlyChanged="p => Seek(p)" />
-    <div class="replay-controls" aria-label="@L.T("replay.playback")">
-        <Button Variant="@(_playing ? "secondary" : "primary")" Small="true" OnClick="TogglePlay" data-testid="replay-play"><Icon Name="@(_playing ? "close" : "play")" /> @(_playing ? L.T("replay.pause") : _ply >= _frames.Count - 1 ? L.T("replay.replay_from_start") : L.T("play.play"))</Button>
-        <div class="t-seg" role="group" aria-label="@L.T("replay.speed")">
-            @foreach (var sp in new[] { 1, 2, 4, 8 })
+    <div class="replay-stage @(frame.Arena?.RedAlert == true && !final ? "red" : null)">
+        @if (top is not null) { <ReplayPlayer Seat="top" Piece="ColorOfSeat(top, frame)" Frame="frame" ToMove="@ToMove(top, frame, final)" HitKey="_hitKey" HitOn="@HitOn(top, frame)" ArenaMax="ArenaHp" /> }
+        <div class="arena-board-wrap @HitStopClass">
+            <Board Size="_game.Rules.BoardSize" Cells="@frame.Board" Ghost="@(final ? null : frame.Ghost)" LastPlaced="frame.LastPlaced"
+                   Vanished="frame.Vanished" VanishedColor="frame.VanishedColor" VanishKey="_ply"
+                   WinLine="@(final && frame.Arena is null ? _game.Result.WinLine : null)" Winner="Winner" Interactive="false" SuddenDeath="@(frame.Arena?.RedAlert == true && !final)" />
+            @if (_burst is { } hit)
             {
-                <button type="button" aria-pressed="@(_speed == sp ? "true" : "false")" @onclick="() => _speed = sp">@(sp)×</button>
+                <ShatterBurst Size="_game.Rules.BoardSize" Cells="hit.Hit.Shattered" Piece="hit.Hit.Attacker" Damage="hit.Hit.Damage" Crit="hit.Hit.Crit" RedAlert="hit.Hit.RedAlert" Ply="hit.Ply" />
             }
         </div>
-        <span class="t-small t-muted">@(_ply > 0 && _ply <= _frames.Count - 1 ? L.F("replay.thought", Ui.Elapsed(_frames[_ply].ThinkMs)) : L.T("replay.as_it_happened"))</span>
+        @if (bottom is not null) { <ReplayPlayer Seat="bottom" Piece="ColorOfSeat(bottom, frame)" Frame="frame" ToMove="@ToMove(bottom, frame, final)" HitKey="_hitKey" HitOn="@HitOn(bottom, frame)" ArenaMax="ArenaHp" /> }
     </div>
+
+    <MoveWheel Actions="_game.Actions" Current="_ply" Analysis="_analysis?.Plies" Size="_game.Rules.BoardSize" OnSelect="Seek" />
+
+    <div class="replay-controls" aria-label="@L.T("replay.playback")">
+        <input class="replay-range" type="range" min="0" max="@(_frames.Count - 1)" value="@_ply" aria-label="@L.T("replayScrubber.move")" @oninput="OnRange" />
+        <div class="replay-buttons">
+            <IconButton Label="@L.T("replayScrubber.previous_move")" Icon="prev" Round="true" Disabled="@(_ply <= 0)" OnClick="() => Step(-1)" />
+            <button type="button" class="replay-play @(_playing ? "on" : null)" @onclick="TogglePlay" data-testid="replay-play"
+                    aria-label="@(_playing ? L.T("replay.pause") : final ? L.T("replay.replay_from_start") : L.T("play.play"))">
+                @if (_playing) { <span class="pause-bars" aria-hidden="true"></span> } else if (final) { <Icon Name="refresh" /> } else { <span class="play-tri" aria-hidden="true"></span> }
+            </button>
+            <IconButton Label="@L.T("replayScrubber.next_move")" Icon="next" Round="true" Disabled="@final" OnClick="() => Step(1)" />
+            <button type="button" class="replay-speed" @onclick="CycleSpeed" data-testid="replay-speed" aria-label="@L.F("replay.speed_value", SpeedText)">@SpeedText</button>
+        </div>
+        <span class="t-small t-muted replay-meta"><span class="t-num">@_ply/@(_frames.Count - 1)</span> · @(_ply > 0 ? L.F("replay.thought", Ui.Elapsed(frame.ThinkMs)) : L.T("replay.as_it_happened"))</span>
+    </div>
+
     @if (_analysis is null && AnalysisPossible)
     {
         <Card Title="@L.T("replay.perfect_play_review")">
@@ -49,7 +68,8 @@ else
             }
         </Card>
     }
-    <MoveList Actions="_game.Actions" Current="_ply" Analysis="_analysis?.Plies" OnSelect="p => _ply = p" Size="_game.Rules.BoardSize" />
+    <ImpactFrame Kind="@_impactKind" Text="@_impactText" Token="@_impactToken" Trigger="_impactTrigger" DurationMs="_impactDuration" />
+    <Confetti Trigger="_confetti" />
 }
 
 @code {
@@ -59,23 +79,34 @@ else
     private string? _analysisError;
     private int _ply;
     private bool _loading = true, _busy, _unlocked, _playing;
-    private int _speed = 1;
     private CancellationTokenSource? _playCts;
 
-    /// <summary>Clash-Royale-style playback: each move appears after the time the player actually took (capped at 8 s, divided by the speed).</summary>
+    // Speed: one button cycles 1× → 2× → 0.5× → 1× (owner, 2026-10-16).
+    private static readonly double[] Speeds = [1, 2, 0.5];
+    private int _speedIndex;
+    private double Speed => Speeds[_speedIndex];
+    private string SpeedText => Speed == 0.5 ? "0.5×" : $"{Speed:0}×";
+    private void CycleSpeed() => _speedIndex = (_speedIndex + 1) % Speeds.Length;
+
+    // Effects: everything the players saw when a move landed, replayed when the replay moves forward by one.
+    private (ArenaHit Hit, int Ply)? _burst;
+    private int _hitKey, _impactTrigger, _confetti, _impactDuration = 1400;
+    private string _impactKind = "win", _impactText = "", _impactToken = "alert-fill";
+
+    /// <summary>Clash-Royale-style playback: each move appears after the time the player actually took (capped at 8 s, scaled by the speed).</summary>
     private async Task TogglePlay()
     {
         if (_playing) { Stop(); return; }
-        if (_ply >= _frames.Count - 1) _ply = 0;
+        if (_ply >= _frames.Count - 1) Show(0, effects: false);
         _playing = true;
         var cts = _playCts = new CancellationTokenSource();
         try
         {
             while (_ply < _frames.Count - 1 && !cts.IsCancellationRequested)
             {
-                var wait = Math.Clamp(_frames[_ply + 1].ThinkMs, 400, 8000) / _speed;
+                var wait = (int)(Math.Clamp(_frames[_ply + 1].ThinkMs, 400, 8000) / Speed);
                 await Task.Delay(wait, cts.Token);
-                _ply++;
+                Show(_ply + 1, effects: true);
                 StateHasChanged();
             }
         }
@@ -84,10 +115,88 @@ else
     }
 
     private void Stop() { _playCts?.Cancel(); _playCts = null; _playing = false; }
-    private void Seek(int p) { Stop(); _ply = p; }
+
+    private void Step(int delta) { Stop(); Show(_ply + delta, effects: delta == 1); }
+
+    // Jumping (wheel, slider): effects only for a single step forward, so scrubbing never fires a burst of impacts.
+    private void Seek(int ply) { Stop(); Show(ply, effects: ply == _ply + 1); }
+
+    private void OnRange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v)) Seek(v);
+    }
+
+    private void Show(int ply, bool effects)
+    {
+        _ply = Math.Clamp(ply, 0, _frames.Count - 1);
+        _burst = null;
+        if (effects) PlayEffects(_frames[_ply], _ply == _frames.Count - 1);
+    }
+
+    private void PlayEffects(ReplayFrame f, bool final)
+    {
+        var prev = _frames[Math.Max(0, f.Ply - 1)];
+        if (f.Mover is Color mover) Cue(mover == Color.X ? SoundCue.PlaceX : SoundCue.PlaceO);
+        if (f.Vanished is not null) Cue(SoundCue.Vanish);
+        if (f.Arena is { } a)
+        {
+            if (a.Hit is { } h)
+            {
+                _burst = (h, f.Ply);
+                _hitKey++;
+                Cue(h.Crit ? SoundCue.Crit : SoundCue.Shatter);
+                if (h.BrokenStreak > 0) Cue(SoundCue.ComboBreak);
+                var token = h.Attacker == Color.O ? "piece-o" : "piece-x";
+                if (h.Crit) Impact("crit", L.F("match.critical", h.Damage), token, 1600);
+                else Impact("shatter", $"−{h.Damage}{(h.RedAlert ? " ×2" : "")}", token, 650);
+            }
+            if (a.RedAlert && prev.Arena?.RedAlert != true && !final) { Cue(SoundCue.RedAlert); Impact("redalert", L.T("match.red_alert_x2"), "alert-fill"); }
+            if (a.Overtime && prev.Arena?.Overtime != true && !final) { Cue(SoundCue.SuddenDeath); Impact("suddendeath", L.T("match.overtime"), "alert-fill"); }
+        }
+        if (final && _game is not null)
+        {
+            Cue(SoundCue.Win);
+            if (WinnerName is { } name)
+            {
+                var token = Winner == Color.O ? "piece-o" : "piece-x";
+                if (_game.Result.Reason == EndReason.Knockout) Impact("win", L.T("localArena.ko"), token, 1600);
+                else Impact("win", L.F("localMatch.wins_excl", name), token, 1600);
+                _confetti++;
+            }
+        }
+    }
+
+    private void Impact(string kind, string text, string token, int durationMs = 1400)
+    {
+        if (!Settings.State.ImpactFrames) return;
+        _impactKind = kind; _impactText = text; _impactToken = token; _impactDuration = durationMs;
+        _impactTrigger++;
+    }
+
+    private void Cue(SoundCue cue)
+    {
+        if (!Settings.State.Sfx) return;
+        try { Sound.Play(cue); } catch (Exception) { /* audio is optional */ }
+    }
+
+    private string HitStopClass => _burst is null ? "" : $"hs-{_hitKey % 2}{(_burst.Value.Hit.Crit ? " hs-crit" : "")}";
 
     /// <inheritdoc />
     public void Dispose() => Stop();
+
+    // Seat colours as they were at this position: before a pie swap the seats held the other colours.
+    private Color ColorOfSeat(SeatDto seat, ReplayFrame f) => f.Swapped == _game!.Swapped ? seat.Color : (seat.Color == Color.X ? Color.O : Color.X);
+
+    private bool ToMove(SeatDto seat, ReplayFrame f, bool final)
+    {
+        if (final) return false;
+        var next = f.Mover switch { Color.X => Color.O, Color.O => Color.X, _ => f.Ply == 0 ? Color.X : Color.O };   // after the pie decision, O moves
+        return ColorOfSeat(seat, f) == next;
+    }
+
+    private bool HitOn(SeatDto seat, ReplayFrame f) => _burst is { } b && b.Ply == f.Ply && ColorOfSeat(seat, f) != b.Hit.Attacker;
+
+    private int ArenaHp => _frames.Count > 0 && _frames[0].Arena is { } a ? a.HpX : 125;
 
     /// <summary>The tablebase covers classic 3x3 games only: not Arena (scoring layer), not Old school, not aborted games.</summary>
     private bool AnalysisPossible => _game is not null && _game.Result.Reason != EndReason.Aborted && _game.Actions.Length > 0
@@ -98,6 +207,7 @@ else
     [SupplyParameterFromQuery(Name = "analysis")] private int? AnalysisFlag { get; set; }
 
     private Color? Winner => _game?.Result.Outcome switch { Outcome.XWins => Color.X, Outcome.OWins => Color.O, _ => null };
+    private string? WinnerName => _game?.Result.WinnerSeat is int s ? _game.Seats.FirstOrDefault(x => x.Seat == s)?.Player.DisplayName : null;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()

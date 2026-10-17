@@ -1,0 +1,92 @@
+@* Replay moves as a horizontal thumb wheel: the current move sits in the middle at full size, its neighbours get smaller
+   and fade out, and the trail runs right to left as the game advances (future moves wait on the right). Tap a move to jump
+   to it; drag, scroll or use the arrow keys to turn the wheel one move at a time. *@
+<div class="move-wheel" dir="ltr" role="listbox" tabindex="0" aria-label="@L.T("moveList.moves")" aria-activedescendant="@($"mw-{Current}")"
+     @onkeydown="OnKey" @onwheel="OnWheel" @onwheel:preventDefault="true"
+     @onpointerdown="OnDown" @onpointermove="OnMove" @onpointerup="OnUp" @onpointercancel="OnUp">
+    @for (var ply = Math.Max(0, Current - Reach); ply <= Math.Min(Actions.Count, Current + Reach); ply++)
+    {
+        var p = ply;
+        var d = p - Current;
+        var a = p == 0 ? null : Actions[p - 1];
+        var mark = a is null ? null : Analysis?.FirstOrDefault(x => x.Ply == a.Ply);
+        <button type="button" id="@($"mw-{p}")" role="option" aria-selected="@(d == 0 ? "true" : "false")" tabindex="-1"
+                class="mw-item d@(Math.Abs(d)) @(a?.Color switch { Color.X => "x", Color.O => "o", _ => null }) @(mark is null ? null : AnalysisBadge.Classify(mark.Class).Css)"
+                style="--off:@Offset(d)px" @onclick="() => Tap(p)">
+            <span class="mw-ply">@(p == 0 ? "" : p.ToString(CultureInfo.InvariantCulture))</span>
+            <span class="mw-move">@(a is null ? L.T("moveWheel.start") : Describe(a))</span>
+            @if (d == 0 && mark is not null) { <AnalysisBadge Analysis="mark" /> }
+        </button>
+    }
+</div>
+
+@code {
+    private const int Reach = 3;
+    private static readonly int[] Gaps = [0, 96, 168, 222];   // centre-to-centre distance for |d| = 0..3 (items shrink outwards)
+
+    /// <summary>Actions in order (ply 1 = Actions[0]).</summary>
+    [Parameter] public IReadOnlyList<ActionDto> Actions { get; set; } = [];
+    /// <summary>Current ply (0 = empty board).</summary>
+    [Parameter] public int Current { get; set; }
+    /// <summary>Unlocked analysis (marks blunders and best moves).</summary>
+    [Parameter] public IReadOnlyList<PlyAnalysisDto>? Analysis { get; set; }
+    /// <summary>Board size for coordinates.</summary>
+    [Parameter] public int Size { get; set; } = 3;
+    /// <summary>A ply was picked.</summary>
+    [Parameter] public EventCallback<int> OnSelect { get; set; }
+
+    private double? _dragX;
+    private bool _dragged;
+    private double _wheel;
+
+    private static int Offset(int d) => Math.Sign(d) * Gaps[Math.Min(Math.Abs(d), Gaps.Length - 1)];
+
+    private string Describe(ActionDto a) => a.Kind switch
+    {
+        ActionKind.Swap => L.T("moveList.swap"),
+        ActionKind.KeepSides => L.T("moveList.keep"),
+        _ => $"{a.Color} {(char)('a' + a.Cell!.Value % Size)}{a.Cell!.Value / Size + 1}{(a.Auto ? " " + L.T("moveList.auto") : "")}",
+    };
+
+    private Task Select(int ply) => OnSelect.InvokeAsync(Math.Clamp(ply, 0, Actions.Count));
+
+    // A drag that turned the wheel ends with a click on whatever item is under the finger: ignore that one.
+    private Task Tap(int ply)
+    {
+        if (_dragged) { _dragged = false; return Task.CompletedTask; }
+        return Select(ply);
+    }
+
+    private Task OnKey(KeyboardEventArgs e) => e.Key switch
+    {
+        "ArrowRight" => Select(Current + 1),
+        "ArrowLeft" => Select(Current - 1),
+        "Home" => Select(0),
+        "End" => Select(Actions.Count),
+        _ => Task.CompletedTask,
+    };
+
+    // One notch (or a trackpad swipe of about 60 px) turns the wheel one move.
+    private Task OnWheel(WheelEventArgs e)
+    {
+        _wheel += Math.Abs(e.DeltaX) > Math.Abs(e.DeltaY) ? e.DeltaX : e.DeltaY;
+        if (Math.Abs(_wheel) < 60) return Task.CompletedTask;
+        var step = Math.Sign(_wheel);
+        _wheel = 0;
+        return Select(Current + step);
+    }
+
+    private void OnDown(PointerEventArgs e) { _dragX = e.ClientX; _dragged = false; }
+
+    // Dragging left pulls the next move into the middle, like turning a wheel with the thumb.
+    private Task OnMove(PointerEventArgs e)
+    {
+        if (_dragX is not double x || Math.Abs(e.ClientX - x) < 48) return Task.CompletedTask;
+        var step = e.ClientX < x ? 1 : -1;
+        _dragX = e.ClientX;
+        _dragged = true;
+        return Select(Current + step);
+    }
+
+    private void OnUp(PointerEventArgs e) => _dragX = null;
+}

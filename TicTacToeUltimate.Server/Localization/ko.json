@@ -18,5 +18,6 @@
  "tier.Gold": "골드",
  "tier.Master": "마스터",
  "tier.Platinum": "플래티넘",
- "tier.Silver": "실버"
+ "tier.Silver": "실버",
+ "notify.challenge": "님이 대전을 신청했어요"
 }

@@ -17,5 +17,6 @@
  "tier.Gold": "طلا",
  "tier.Platinum": "پلاتین",
  "tier.Diamond": "الماس",
- "tier.Master": "استاد"
+ "tier.Master": "استاد",
+ "notify.challenge": "شما را به یک بازی دعوت کرد"
 }

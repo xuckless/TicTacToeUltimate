@@ -17,5 +17,6 @@
  "tier.Gold": "Guld",
  "tier.Master": "Mästare",
  "tier.Platinum": "Platina",
- "tier.Silver": "Silver"
+ "tier.Silver": "Silver",
+ "notify.challenge": "utmanar dig till en match"
 }

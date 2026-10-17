@@ -7,7 +7,11 @@
 <PageTitle>@L.T("chat.chat_tic_tac_toe_ultimate")</PageTitle>
 <div class="t-row" style="flex-wrap:nowrap">
     <a class="t-iconbtn t-iconbtn--round" href="social" aria-label="@L.T("chat.back")"><Icon Name="back" /></a>
-    <h1 class="t-heading">@(Friend?.Player.DisplayName ?? L.T("chat.chat"))</h1>
+    <h1 class="t-heading" style="flex:1">@(Friend?.Player.DisplayName ?? L.T("chat.chat"))</h1>
+    @if (Friend is not null)
+    {
+        <Button Variant="primary" Small="true" OnClick="() => _picking = true" data-testid="chat-challenge-open"><Icon Name="swords" /> @L.T("challengeCard.challenge")</Button>
+    }
 </div>
 
 @if (Friend is null)
@@ -20,10 +24,27 @@ else
     <ReportSheet Open="_reportMessage is not null" Kind="@ReportKinds.Chat" Target="UserId" TargetName="@(Friend.Player.DisplayName)"
                  MessageId="_reportMessage?.Id" OnClose="() => _reportMessage = null" />
     <Composer OnSend="Send" />
+    <ChallengeModePicker Open="_picking" TargetName="@Friend.Player.DisplayName" Busy="_sending" Guest="@Session.State.IsGuest"
+                         OnPick="SendChallenge" OnClose="() => _picking = false" />
 }
 
 @code {
     private DirectMessageDto? _reportMessage;
+    private bool _picking, _sending;
+
+    /// <summary>?challenge=1 opens the mode picker (Challenge buttons on profiles and the friends list land here).</summary>
+    [SupplyParameterFromQuery(Name = "challenge")] private int? ChallengeFlag { get; set; }
+    /// <summary>?daily=1 sends a Daily challenge straight away (the friends list's Daily button).</summary>
+    [SupplyParameterFromQuery(Name = "daily")] private int? DailyFlag { get; set; }
+
+    // The server posts the challenge into this thread as a card, so there is nothing else to show here.
+    private async Task SendChallenge(TimeControl tc)
+    {
+        _sending = true;
+        try { await Social.CreateChallengeAsync(new CreateChallengeDto(tc, UserId)); }
+        catch (Exception ex) { Toasts.Show(Ui.ErrorToastText(ErrorText.Code(ex), L.T("social.couldn_t_send_the_challenge")), ToastKind.Error); }
+        finally { _sending = false; _picking = false; }
+    }
     /// <summary>Friend id.</summary>
     [Parameter] public Guid UserId { get; set; }
 
@@ -40,6 +61,8 @@ else
             if (Friend is null) return;
             await Social.LoadThreadAsync(UserId);
             await Social.MarkReadAsync(UserId);
+            if (DailyFlag == 1) await SendChallenge(TimeControl.Daily);
+            else if (ChallengeFlag == 1) _picking = true;
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException) { Toasts.Show(L.T("chat.couldn_t_load_messages"), ToastKind.Error); }
     }

@@ -18,5 +18,6 @@
  "tier.Gold": "黄金",
  "tier.Master": "大师",
  "tier.Platinum": "铂金",
- "tier.Silver": "白银"
+ "tier.Silver": "白银",
+ "notify.challenge": "向你发起了对战"
 }

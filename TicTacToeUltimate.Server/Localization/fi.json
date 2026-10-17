@@ -17,5 +17,6 @@
  "tier.Gold": "Kulta",
  "tier.Master": "Mestari",
  "tier.Platinum": "Platina",
- "tier.Silver": "Hopea"
+ "tier.Silver": "Hopea",
+ "notify.challenge": "haastoi sinut peliin"
 }

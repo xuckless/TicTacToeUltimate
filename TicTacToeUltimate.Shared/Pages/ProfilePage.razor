@@ -32,7 +32,6 @@ else
     }
     else if (!IsSelf)
     {
-        <ChallengeModePicker Open="_picking" TargetName="@_profile.Card.DisplayName" Busy="_sending" OnPick="SendChallenge" OnClose="() => _picking = false" />
         @if (_profile.Presence is { Status: PresenceStatus.InGame, MatchId: Guid live })
         {
             <a class="daily-nudge" href="@($"match/{live}")" data-testid="watch-live"><Icon Name="eye" /><span>@((MarkupString)L.T("profile.playing_right_now_watch"))</span><span class="t-chip">@L.T("friendRow.watch")</span></a>
@@ -44,7 +43,7 @@ else
                 case FriendStatus.RequestSent: <Button Variant="secondary" Small="true" Disabled="true">@L.T("profile.request_sent")</Button> break;
                 case FriendStatus.RequestReceived: <Button Variant="primary" Small="true" Href="social">@L.T("profile.respond_to_request")</Button> break;
                 case FriendStatus.Friends:
-                    <Button Variant="primary" Small="true" OnClick="() => _picking = true">@L.T("challengeCard.challenge")</Button>
+                    <Button Variant="primary" Small="true" Href="@($"social/chat/{_profile.Card.UserId}?challenge=1")">@L.T("challengeCard.challenge")</Button>
                     <Button Variant="secondary" Small="true" Href="@($"social/chat/{_profile.Card.UserId}")">@L.T("composer.message")</Button>
                     break;
             }
@@ -103,20 +102,6 @@ else
         var ack = await Social.SendRequestAsync(_profile!.Card.DisplayName);
         Toasts.Show(ack.Ok ? L.T("profile.request_sent") : Ui.ErrorToastText(ack.Error, L.T("profile.couldn_t_send_the_request")), ack.Ok ? ToastKind.Success : ToastKind.Error);
         if (ack.Ok) _profile = _profile with { FriendStatus = FriendStatus.RequestSent };
-    }
-
-    private bool _picking, _sending;
-
-    private async Task SendChallenge(TimeControl tc)
-    {
-        _sending = true;
-        try
-        {
-            await Social.CreateChallengeAsync(new CreateChallengeDto(tc, _profile!.Card.UserId));
-            Toasts.Show(L.F("social.challenge_sent_to", _profile.Card.DisplayName), ToastKind.Success);
-        }
-        catch (Exception ex) { Toasts.Show(Ui.ErrorToastText(ErrorText.Code(ex), L.T("social.couldn_t_send_the_challenge")), ToastKind.Error); }
-        finally { _sending = false; _picking = false; }
     }
 
     private async Task Block()

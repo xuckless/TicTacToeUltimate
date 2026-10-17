@@ -27,8 +27,18 @@ else
     var opp = _view.Snapshot.Seats.FirstOrDefault(x => x.Seat != (_view.MySeat ?? 0));
     <div class="result-page">
         <div class="t-result @BannerClass" data-testid="result-banner">
-            <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-                <Bert Mood="@(YourResult switch { GameResultForUser.Win => "cheer", GameResultForUser.Loss => "sad", _ => "shocked" })" Size="72" />
+            <span class="rb-rays" aria-hidden="true"></span>
+            <span class="rb-gloss" aria-hidden="true"></span>
+            @if (YourResult == GameResultForUser.Win)
+            {
+                <span class="rb-spark s1" aria-hidden="true"></span><span class="rb-spark s2" aria-hidden="true"></span>
+                <span class="rb-spark s3" aria-hidden="true"></span><span class="rb-spark s4" aria-hidden="true"></span>
+            }
+            <div class="rb-content">
+                <div class="rb-cast" aria-hidden="true">
+                    <Bert Mood="@(YourResult switch { GameResultForUser.Win => "cheer", GameResultForUser.Loss => "sad", _ => "shocked" })" Size="72" />
+                    @if (YourResult == GameResultForUser.Win && MyColor is Color c) { <PieceBuddy Kind="c" Mood="cheer" Size="60" Class="rb-buddy" /> }
+                </div>
                 <span class="t-label">@Ui.ReasonText(r.Reason, _view.IsSpectator ? null : YourResult)</span>
                 <h1><BounceText Text="@Title" /></h1>
                 <span class="result-sub">@L.P("result.sub", _view.Snapshot.Ply, opp?.Player.DisplayName ?? L.T("result.opponent"), Ui.Elapsed(_view.Snapshot.Clock?.GameElapsedMsAtTurnStart ?? 0))</span>
@@ -39,14 +49,40 @@ else
             </div>
         </div>
 
+        @* Play again / rematch first: one tap from the banner (owner, 2026-10-16). *@
+        <div class="result-actions">
+            @if (!_view.IsSpectator)
+            {
+                <button type="button" class="play-again" @onclick="NewMatch" data-testid="play-again">
+                    <span class="play-again-title"><BounceText Text="@L.T("match.play_again")" /></span>
+                    <span class="play-again-sub">@(_view.Snapshot.TimeControl == TimeControl.Daily ? L.T("result.start_another_daily_game") : L.F("result.find_a_new_opponent", Ui.TimeControlName(_view.Snapshot.TimeControl).ToLowerInvariant()))</span>
+                </button>
+            }
+            @if (RematchAllowed)
+            {
+                <Button Variant="secondary" Block="true" OnClick="Rematch" Disabled="@(_view.RematchOfferedByMe || _rematchExpired)" data-testid="rematch">
+                    @(_rematchExpired ? L.T("result.no_answer_to_the") : _view.RematchOfferedByMe ? L.F("result.rematch_offered", _rematchLeft) : _view.RematchOfferedByOpponent ? L.T("result.accept_rematch") : L.T("result.rematch"))
+                </Button>
+            }
+            @if (_view.Snapshot.Rated) { <div class="t-small t-muted" style="text-align:center">@L.T("result.no_rematch_in_ranked_games")</div> }
+        </div>
+
         @if (!_view.IsSpectator && opp is not null)
         {
             var me = _view.Snapshot.Seats.FirstOrDefault(x => x.Seat == (_view.MySeat ?? 0));
-            <div class="result-social" data-testid="result-social">
-                <div class="rs-player">
-                    <Avatar Name="@opp.Player.DisplayName" AvatarId="@opp.Player.AvatarId" />
-                    <span class="t-small">@opp.Player.DisplayName <BotBadge Kind="opp.Player.Kind" /></span>
-                    @if (EmoteFor(opp.Seat) is { } oe) { <EmoteBubble Text="@oe" /> }
+            <section class="result-social t-card" data-testid="result-social" aria-label="@L.F("match.match_vs", opp.Player.DisplayName)">
+                <div class="rs-vs">
+                    <div class="rs-player">
+                        <Avatar Name="@opp.Player.DisplayName" AvatarId="@opp.Player.AvatarId" />
+                        <span class="rs-name">@opp.Player.DisplayName <BotBadge Kind="opp.Player.Kind" /></span>
+                        @if (EmoteFor(opp.Seat) is { } oe) { <EmoteBubble Text="@oe" /> }
+                    </div>
+                    <span class="rs-versus" aria-hidden="true">VS</span>
+                    <div class="rs-player">
+                        <Avatar Name="@me?.Player.DisplayName" AvatarId="@me?.Player.AvatarId" />
+                        <span class="rs-name">@L.T("result.you")</span>
+                        @if (me is not null && EmoteFor(me.Seat) is { } ye) { <EmoteBubble Text="@ye" /> }
+                    </div>
                 </div>
                 <div class="rs-actions">
                     @if (_emotesOpen)
@@ -57,18 +93,13 @@ else
                     {
                         <Button Variant="primary" Small="true" OnClick="AddFriend" Disabled="_busy" data-testid="result-add-friend"><Icon Name="social" /> @L.T("profile.add_friend")</Button>
                     }
-                    else if (_friendSent) { <span class="t-chip">@L.T("profile.request_sent")</span> }
-                    <Button Variant="ghost" Small="true" OnClick="() => _reportCheating = true" data-testid="report-cheating"><Icon Name="flag" /> @L.T("messageList.report")</Button>
+                    else if (_friendSent) { <span class="t-chip rs-chip">@L.T("profile.request_sent")</span> }
+                    <IconButton Label="@L.T("messageList.report")" Icon="flag" Round="true" OnClick="() => _reportCheating = true" data-testid="report-cheating" />
                 </div>
                 <ReportSheet Open="_reportCheating" Kind="@ReportKinds.Cheating" Target="opp.Player.UserId" TargetName="@opp.Player.DisplayName"
                              GameId="_view.Snapshot.MatchId" OnClose="() => _reportCheating = false" />
-                <div class="rs-player">
-                    <Avatar Name="@me?.Player.DisplayName" AvatarId="@me?.Player.AvatarId" />
-                    <span class="t-small">@L.T("result.you")</span>
-                    @if (me is not null && EmoteFor(me.Seat) is { } ye) { <EmoteBubble Text="@ye" /> }
-                </div>
                 <ThrownEmote Text="@_thrownText" FromBottom="_thrownFromMe" Key="_thrownKey" />
-            </div>
+            </section>
             <EmotePicker Open="_emotes" Emotes="Session.State.Config?.Emotes" OnPick="SendEmote" OnClose="() => _emotes = false" />
         }
 
@@ -93,6 +124,11 @@ else
             </Card>
         }
 
+        @if (s?.Progress is { } progress && QuestsToShow is { Count: > 0 } shown)
+        {
+            <QuestCard Progress="progress" NowMs="DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()" JustCompleted="JustCompleted" ShowOnly="shown" />
+        }
+
         @if (s?.AnalysisAvailable == true)
         {
             <Card Label="@L.T("replay.perfect_play_review")">
@@ -109,28 +145,7 @@ else
             </Card>
         }
 
-        @if (s?.Progress is { } progress && progress.Quests.Length > 0)
-        {
-            <QuestCard Progress="progress" NowMs="DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()" JustCompleted="JustCompleted" />
-        }
-
-        <div class="result-actions">
-            @if (!_view.IsSpectator)
-            {
-                <button type="button" class="play-again" @onclick="NewMatch" data-testid="play-again">
-                    <span class="play-again-title"><BounceText Text="@L.T("match.play_again")" /></span>
-                    <span class="play-again-sub">@(_view.Snapshot.TimeControl == TimeControl.Daily ? L.T("result.start_another_daily_game") : L.F("result.find_a_new_opponent", Ui.TimeControlName(_view.Snapshot.TimeControl).ToLowerInvariant()))</span>
-                </button>
-            }
-            @if (RematchAllowed)
-            {
-                <Button Variant="secondary" Block="true" OnClick="Rematch" Disabled="@(_view.RematchOfferedByMe || _rematchExpired)" data-testid="rematch">
-                    @(_rematchExpired ? L.T("result.no_answer_to_the") : _view.RematchOfferedByMe ? L.F("result.rematch_offered", _rematchLeft) : _view.RematchOfferedByOpponent ? L.T("result.accept_rematch") : L.T("result.rematch"))
-                </Button>
-            }
-            <Button Variant="secondary" Block="true" OnClick="Home">@L.T("crashPanel.home")</Button>
-            @if (_view.Snapshot.Rated) { <div class="t-small t-muted" style="text-align:center">@L.T("result.no_rematch_in_ranked_games")</div> }
-        </div>
+        <Button Variant="secondary" Block="true" OnClick="Home">@L.T("crashPanel.home")</Button>
         <AdSlot Kind="AdSlotKind.Feed" />
     </div>
     <ImpactFrame Kind="promotion" Text="@L.T("result.promoted")" Token="@($"tier-{s?.Tier?.After.Tier.ToString().ToLowerInvariant()}")" Trigger="_promoTrigger" />
@@ -241,10 +256,32 @@ else
         }
     }
 
-    // Win quests advance by one per win, so a quest sitting exactly on its target after a win was finished by this game.
-    private string[] JustCompleted => YourResult == GameResultForUser.Win
-        ? (_view?.Summary?.Progress?.Quests.Where(q => q.Completed && q.Progress == q.Target).Select(q => q.QuestId).ToArray() ?? [])
-        : [];
+    private Color? MyColor => _view?.Snapshot.Seats.FirstOrDefault(x => x.Seat == (_view.MySeat ?? 0))?.Color;
+
+    /// <summary>Quests worth showing after a game: started but not finished, plus any this game just finished (they burst).</summary>
+    private IReadOnlyCollection<string>? QuestsToShow
+    {
+        get
+        {
+            if (_view?.Summary?.Progress is not { } p) return null;
+            var just = JustCompleted;
+            return p.Quests.Where(q => (q.Progress > 0 && !q.Completed) || just.Contains(q.QuestId)).Select(q => q.QuestId).ToArray();
+        }
+    }
+
+    // Win quests advance by one per win and their progress is capped at the target, so today's win count is the highest
+    // win-quest progress and a quest was finished by this game exactly when its target equals that count. (Checking
+    // Progress == Target alone would re-celebrate "Win 1 game" after every later win.) Other quests keep the simple rule.
+    private string[] JustCompleted
+    {
+        get
+        {
+            if (YourResult != GameResultForUser.Win || _view?.Summary?.Progress is not { } p) return [];
+            var wins = p.Quests.Where(q => q.QuestId.StartsWith("win", StringComparison.Ordinal)).Select(q => q.Progress).DefaultIfEmpty(0).Max();
+            return p.Quests.Where(q => q.Completed && q.Progress == q.Target && (!q.QuestId.StartsWith("win", StringComparison.Ordinal) || q.Target == wins))
+                .Select(q => q.QuestId).ToArray();
+        }
+    }
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()

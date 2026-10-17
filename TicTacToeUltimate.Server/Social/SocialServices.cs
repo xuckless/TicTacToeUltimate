@@ -139,6 +139,8 @@ public sealed class SocialService(
     public async Task<CommandAckDto> RequestAsync(Guid me, string? username, Guid? userId, CancellationToken ct)
     {
         var target = userId is { } id ? await users.GetAsync(id, ct) : await users.GetByUsernameAsync((username ?? "").Trim(), ct);
+        // Bots look like ordinary accounts (no BOT badge), so a request to one "succeeds" for the sender but is never stored.
+        if (target is { Kind: AccountKind.Bot }) return new(true, null);
         if (target is null || target.Kind != AccountKind.Account) return new(false, ErrorCodes.Validation);
         if (target.Id == me) return new(false, ErrorCodes.Validation);
         var result = await friends.RequestAsync(me, target.Id, time.GetUtcNow(), ct);
@@ -199,6 +201,8 @@ public sealed class SocialService(
         if (text.Length is 0 or > MaxBody) return (null, ErrorCodes.Validation);
         // Game emotes in chat: "emote:<EmoteCatalog id>"; anything else with that prefix is refused.
         if (text.StartsWith("emote:", StringComparison.Ordinal) && !EmoteCatalog.IsKnown(text["emote:".Length..])) return (null, ErrorCodes.EmoteUnknown);
+        // Challenge cards ("challenge:<code>") are posted only by the server when a friend challenge is created.
+        if (text.StartsWith(ChallengePrefix, StringComparison.Ordinal)) return (null, ErrorCodes.Validation);
         if (await friends.IsBlockedEitherWayAsync(me, to, ct)) return (null, ErrorCodes.Blocked);
         if (!await friends.AreFriendsAsync(me, to, ct)) return (null, ErrorCodes.NotFriends);
         if (!limiter.TryTake(me)) return (null, ErrorCodes.RateLimited);
@@ -219,6 +223,22 @@ public sealed class SocialService(
         await Safe(() => notifier.ToUsersAsync([to, me], c => c.DirectMessage(dto)));
         if (check.Verdict == TicTacToeUltimate.Server.Moderation.FilterVerdict.Uncertain && ai is { Enabled: true }) _ = ReviewLaterAsync(rec, check);
         return (dto, null);
+    }
+
+    /// <summary>Body prefix of a challenge card in a chat thread; the rest is the challenge code.</summary>
+    public const string ChallengePrefix = "challenge:";
+
+    /// <summary>
+    /// Friend challenges live in the chat (owner decision 2026-10-16): the server posts a "challenge:&lt;code&gt;" card from the
+    /// challenger into the thread, where both sides see its live status and the friend accepts or declines it.
+    /// </summary>
+    public async Task<DirectMessageDto?> PostChallengeAsync(Guid from, Guid to, string code, CancellationToken ct)
+    {
+        if (!await friends.AreFriendsAsync(from, to, ct)) return null;
+        var rec = await chat.AppendAsync(from, to, ChallengePrefix + code, time.GetUtcNow(), ct);
+        var dto = ToDto(rec);
+        await Safe(() => notifier.ToUsersAsync([to, from], c => c.DirectMessage(dto)));
+        return dto;
     }
 
     /// <summary>The AI looks at a delivered, doubtful message; if abusive it disappears for both sides and the sender gets a strike.</summary>
