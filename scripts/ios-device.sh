@@ -53,6 +53,8 @@ case "${1:-}" in
     # the Push Notifications capability (App ID → Capabilities → Push Notifications, regenerate the profile), or signing fails.
     ENT=()
     if [[ "${TTT_IOS_PUSH:-0}" == "1" ]]; then ENT=(-p:CodesignEntitlements="Platforms/iOS/Entitlements.Development.plist"); fi
+    # TTT_IOS_IGNORE_XCODE=1 builds with an Xcode point release newer than the iOS workload expects (e.g. 27.1 vs 27.0).
+    if [[ "${TTT_IOS_IGNORE_XCODE:-0}" == "1" ]]; then ENT+=(-p:ValidateXcodeVersion=false); fi
     dotnet build "$PROJ" -f net10.0-ios -r ios-arm64 -c Debug -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE" ${ENT[@]+"${ENT[@]}"}
     dotnet build "$PROJ" -f net10.0-ios -r ios-arm64 -c Debug -t:Run --no-restore \
       -p:CodesignKey="$DEV_KEY" -p:CodesignProvision="$PROFILE" -p:_DeviceName="$UDID" ${ENT[@]+"${ENT[@]}"}
