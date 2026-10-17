@@ -5,7 +5,11 @@
     }
     @foreach (var m in Messages)
     {
-        @if (EmoteOf(m.Body) is { } e)
+        @if (m.Body.StartsWith("challenge:", StringComparison.Ordinal))
+        {
+            <ChallengeChatCard @key="m.Id" Code="@m.Body["challenge:".Length..]" Mine="@(m.From == MeId)" />
+        }
+        else if (EmoteOf(m.Body) is { } e)
         {
             <div class="msg emote @(m.From == MeId ? "mine" : null)" aria-label="@L.F("messageList.emote", Ui.EmoteText(e))">
                 @if (e.Text.StartsWith("bert:", StringComparison.Ordinal)) { <Bert Mood="@e.Text[5..]" Size="96" Bob="false" /> }

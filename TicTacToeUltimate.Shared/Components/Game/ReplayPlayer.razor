@@ -1,0 +1,33 @@
+@* One player in a replay: avatar, name, the piece they held at this position (it changes after a pie swap), a turn marker,
+   and in Arena the health bar with combo and hit flashes exactly as they were at this move. *@
+<div class="replay-seat @(ToMove ? "active" : null)">
+<div class="replay-player">
+    <Avatar Name="@Seat.Player.DisplayName" AvatarId="@Seat.Player.AvatarId" />
+    <span class="rp-name">@Seat.Player.DisplayName</span>
+    <span class="rp-piece @(Piece == Color.X ? "x" : "o")" aria-label="@L.F("replayPlayer.plays", Piece)">@Piece</span>
+    @if (ToMove) { <span class="rp-turn">@L.T("replayPlayer.to_move")</span> }
+</div>
+@if (Frame.Arena is { } a)
+{
+    var broken = a.Hit is { BrokenStreak: > 0 } h && h.Attacker != Piece;
+    <HealthBar Hp="a.Hp(Piece)" Max="ArenaMax" TickEvery="25" Piece="Piece" Label="@Seat.Player.DisplayName"
+               Streak="a.Streak(Piece)" ComboBroken="broken" Hit="HitOn" HitKey="HitKey" />
+}
+</div>
+
+@code {
+    /// <summary>Seat.</summary>
+    [Parameter, EditorRequired] public SeatDto Seat { get; set; } = default!;
+    /// <summary>Colour this seat held at the shown position.</summary>
+    [Parameter] public Color Piece { get; set; }
+    /// <summary>Position shown.</summary>
+    [Parameter, EditorRequired] public ReplayFrame Frame { get; set; } = default!;
+    /// <summary>This seat moves next.</summary>
+    [Parameter] public bool ToMove { get; set; }
+    /// <summary>Arena: this seat took the hit shown.</summary>
+    [Parameter] public bool HitOn { get; set; }
+    /// <summary>Changes per hit so the flash replays.</summary>
+    [Parameter] public int HitKey { get; set; }
+    /// <summary>Arena starting HP.</summary>
+    [Parameter] public int ArenaMax { get; set; } = 125;
+}

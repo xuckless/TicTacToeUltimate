@@ -60,7 +60,8 @@ else
 
     private string Preview(DirectMessageDto m)
     {
-        var body = m.Body.StartsWith("emote:", StringComparison.Ordinal) ? L.T("messages.sent_an_emote") : m.Body;
+        var body = m.Body.StartsWith("emote:", StringComparison.Ordinal) ? L.T("messages.sent_an_emote")
+            : m.Body.StartsWith("challenge:", StringComparison.Ordinal) ? L.T("chatChallenge.preview") : m.Body;
         var text = body.Length > 60 ? body[..57] + "…" : body;
         return m.From == Session.State.Me?.UserId ? L.F("messages.you_prefix", text) : text;
     }

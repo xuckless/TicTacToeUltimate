@@ -264,14 +264,35 @@ public sealed class SharedUiTests : IDisposable
     }
 
     [Fact]
-    public void SocialPage_daily_challenge_to_offline_friend_renders_waiting_card()
+    public void SocialPage_daily_challenge_goes_through_the_chat()
     {
+        // Friend challenges live in the chat (owner, 2026-10-16): Daily opens the thread, which sends it and shows the card.
         var cut = _ctx.Render<SocialPage>();
-        var daily = cut.FindAll("button").First(b => b.TextContent.Trim() == "Daily");
-        daily.Click();
-        cut.WaitForAssertion(() => Assert.Contains("Waiting for tic_tac_tess", cut.Markup, StringComparison.Ordinal));
-        Assert.Contains("Daily", cut.Markup, StringComparison.Ordinal);
-        cut.FindAll("button").First(b => b.TextContent.Trim() == "Cancel").Click();
+        cut.FindAll("button").First(b => b.TextContent.Trim() == "Daily").Click();
+        var uri = Get<NavigationManager>().Uri;
+        Assert.Contains("/social/chat/", uri, StringComparison.Ordinal);
+        Assert.EndsWith("?daily=1", uri, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MessageList_renders_a_challenge_card_for_challenge_messages()
+    {
+        var me = Guid.NewGuid();
+        var friend = Guid.NewGuid();
+        var msgs = new[] { new DirectMessageDto(1, friend, me, "challenge:ABCD2345", DateTimeOffset.UtcNow, null) };
+        var cut = _ctx.Render<TicTacToeUltimate.Shared.Components.Social.MessageList>(p => p.Add(x => x.Messages, msgs).Add(x => x.MeId, me));
+        var card = cut.Find("[data-testid=chat-challenge]");
+        Assert.Contains("Challenged you!", card.TextContent, StringComparison.Ordinal);
+        Assert.DoesNotContain("challenge:ABCD2345", cut.Markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Board_plays_the_vanish_of_a_just_removed_piece()
+    {
+        var cut = _ctx.Render<Board>(p => p.Add(x => x.Cells, ".XO......").Add(x => x.Vanished, 0).Add(x => x.VanishedColor, Color.X));
+        var cell = cut.Find("[data-cell='0']");
+        Assert.Contains("x", cell.ClassList);
+        Assert.NotNull(cell.QuerySelector(".glyph.vanishing"));
     }
 
     [Fact]
@@ -295,6 +316,11 @@ public sealed class SharedUiTests : IDisposable
         Assert.Equal(9, frames.Count);
         Assert.Equal("XXOOO..XX", frames[7].Board);
         Assert.Equal(0, frames[7].Ghost);   // window full: X's first piece fades next
+        // The replay knows what happened on each move: who moved and which piece vanished (for its animation and sound).
+        Assert.Equal(Color.O, frames[8].Mover);
+        Assert.Equal(0, frames[8].Vanished);
+        Assert.Equal(Color.X, frames[8].VanishedColor);
+        Assert.Null(frames[3].Vanished);
         var engine = TicTacToeUltimate.Engine.Rules.Replay(rules.ToEngine(), cells.Select(TicTacToeUltimate.Engine.GameAction.Place));
         Assert.Equal(TicTacToeUltimate.Engine.Notation.Board(engine), frames[8].Board);
         Assert.Equal('.', frames[8].Board[0]);

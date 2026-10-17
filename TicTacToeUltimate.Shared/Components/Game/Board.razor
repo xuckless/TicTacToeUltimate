@@ -16,16 +16,21 @@
         var pending = Pending == cell && piece is null;
         var shown = pending ? PendingColor : piece;
         var win = EffectiveWinLine.Contains(cell);
+        var vanishing = shown is null && Vanished == cell && VanishedColor is not null && !Mini;
         var enabled = Interactive && !pending && (Legal is null ? piece is null : Legal.Contains(cell));
         var explain = Interactive && !enabled && !pending && OnBlockedSelected.HasDelegate;
         <button type="button" role="gridcell" data-cell="@cell"
-                class="t-cell @PieceClass(shown) @(ghost ? "fading" : null) @(aging ? "aging" : null) @(threat ? "threat" : null) @(pending ? "pending" : null) @(win ? "win" : null) @(explain ? "blocked" : null)"
+                class="t-cell @PieceClass(shown ?? (vanishing ? VanishedColor : null)) @(ghost ? "fading" : null) @(aging ? "aging" : null) @(threat ? "threat" : null) @(pending ? "pending" : null) @(win ? "win" : null) @(explain ? "blocked" : null)"
                 aria-disabled="@(!enabled ? "true" : null)" tabindex="@(Mini || cell != FocusCell ? "-1" : "0")"
                 aria-label="@CellLabel(cell, piece, ghost, aging, threat, win)"
                 @onclick="() => Select(cell, enabled, explain)" @onkeydown="e => OnKey(e, cell)">
             @if (shown is not null)
             {
                 <span class="glyph @(LastPlaced == cell || pending ? "placed" : null)" aria-hidden="true">@(shown == Color.X ? "X" : "O")</span>
+            }
+            else if (vanishing)
+            {
+                <span @key="@($"v{VanishKey}")" class="glyph vanishing" aria-hidden="true">@(VanishedColor == Color.X ? "X" : "O")</span>
             }
         </button>
     }
@@ -69,6 +74,12 @@
     [Parameter] public Color? PendingColor { get; set; }
     /// <summary>Most recently placed cell (place animation).</summary>
     [Parameter] public int? LastPlaced { get; set; }
+    /// <summary>Cell whose piece just vanished: it shrinks and fades out once (replays). Null when none.</summary>
+    [Parameter] public int? Vanished { get; set; }
+    /// <summary>Colour of the piece that vanished from <see cref="Vanished"/>.</summary>
+    [Parameter] public Color? VanishedColor { get; set; }
+    /// <summary>Changes per position so the vanish animation replays when the same cell empties again.</summary>
+    [Parameter] public int VanishKey { get; set; }
     /// <summary>Red-alert frame.</summary>
     [Parameter] public bool SuddenDeath { get; set; }
     /// <summary>Mini, non-interactive preview.</summary>

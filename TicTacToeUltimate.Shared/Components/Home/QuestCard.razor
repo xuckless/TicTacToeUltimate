@@ -16,7 +16,7 @@
     else
     {
         <ul class="quest-list">
-            @foreach (var q in Progress.Quests)
+            @foreach (var q in Progress.Quests.Where(q => ShowOnly is null || ShowOnly.Contains(q.QuestId)))
             {
                 var segments = Math.Clamp(q.Target, 1, 5);
                 var filled = q.Target == 0 ? 0 : (int)Math.Round((double)Math.Min(q.Progress, q.Target) / q.Target * segments);
@@ -47,6 +47,9 @@
 </section>
 
 @code {
+    /// <summary>Only these quest ids get a row (the header still counts all quests). Null shows every quest.</summary>
+    [Parameter] public IReadOnlyCollection<string>? ShowOnly { get; set; }
+
     /// <summary>Progress.</summary>
     [Parameter] public ProgressDto? Progress { get; set; }
     /// <summary>Current server time in ms (for "Resets in 6h").</summary>

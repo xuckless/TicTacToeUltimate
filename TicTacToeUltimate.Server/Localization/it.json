@@ -17,5 +17,6 @@
  "tier.Gold": "Oro",
  "tier.Platinum": "Platino",
  "tier.Diamond": "Diamante",
- "tier.Master": "Maestro"
+ "tier.Master": "Maestro",
+ "notify.challenge": "ti sfida a una partita"
 }

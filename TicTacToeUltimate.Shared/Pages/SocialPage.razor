@@ -31,18 +31,6 @@ else
     {
         <ChallengeCard Challenge="c" OnAccept="Accept" OnDecline="Decline" />
     }
-    @foreach (var c in Social.State.OutgoingChallenges)
-    {
-        var to = Social.State.Friends.FirstOrDefault(f => f.Player.UserId == c.ToUserId)?.Player.DisplayName ?? L.T("social.your_friend");
-        <Card data-testid="outgoing-challenge">
-            <div class="t-listrow" style="border:0;padding:0">
-                <BertLoader Text="@null" Mood="think" />
-                <div class="who"><div class="name">@L.F("social.waiting_for", to)</div><div class="meta">@L.F("social.unrated_code", Ui.TimeControlName(c.TimeControl), c.Code)</div></div>
-                <Button Variant="secondary" Small="true" OnClick="() => Social.CancelChallengeAsync(c.Code)">@L.T("localMatch.cancel")</Button>
-            </div>
-        </Card>
-    }
-
     <div class="t-spread"><h2 class="t-heading">@L.T("social.friends")</h2><span class="t-small t-muted">@L.P("social.online_count", OnlineCount)@(IncomingRequests.Count > 0 ? " · " + L.P("social.request_count", IncomingRequests.Count) : "")</span></div>
 
     @if (IncomingRequests.Count > 0)
@@ -62,8 +50,6 @@ else
         }
     </section>
 
-    <ChallengeModePicker Open="_pickFor is not null" TargetName="@(_pickFor?.Player.DisplayName ?? "")" Busy="_sending" Guest="@Session.State.IsGuest"
-                         OnPick="SendPicked" OnClose="() => _pickFor = null" />
     <InviteLinkButton CreateLink="CreateLink" Guest="@Session.State.IsGuest" />
     <p class="t-small t-muted" style="margin:10px 0 4px">@L.T("play.got_a_code_from_a")</p>
     <JoinCodeBox />
@@ -99,30 +85,10 @@ else
 
     private Task Decline(ChallengeDto c) => Social.DeclineChallengeAsync(c.Code);
 
-    private FriendDto? _pickFor;
-    private bool _sending;
 
-    // Same options as invite links: open the mode picker for this friend.
-    private void Challenge(FriendDto f) => _pickFor = f;
-    private async Task Daily(FriendDto f) => await CreateFor(f, TimeControl.Daily);
-
-    private async Task SendPicked(TimeControl tc)
-    {
-        if (_pickFor is not { } f) return;
-        _sending = true;
-        try { await CreateFor(f, tc); }
-        finally { _sending = false; _pickFor = null; }
-    }
-
-    private async Task CreateFor(FriendDto f, TimeControl tc)
-    {
-        try
-        {
-            await Social.CreateChallengeAsync(new CreateChallengeDto(tc, f.Player.UserId));
-            Toasts.Show(L.F("social.challenge_sent_to", f.Player.DisplayName), ToastKind.Success);
-        }
-        catch (Exception ex) { Toasts.Show(Ui.ErrorToastText(ErrorText.Code(ex), L.T("social.couldn_t_send_the_challenge")), ToastKind.Error); }
-    }
+    // Friend challenges go through the chat (owner decision 2026-10-16): the picker opens there and the challenge appears as a card.
+    private void Challenge(FriendDto f) => Nav.NavigateTo($"social/chat/{f.Player.UserId}?challenge=1");
+    private void Daily(FriendDto f) => Nav.NavigateTo($"social/chat/{f.Player.UserId}?daily=1");
 
     private void Watch(FriendDto f)
     {

@@ -17,5 +17,6 @@
  "tier.Gold": "Золото",
  "tier.Platinum": "Платина",
  "tier.Diamond": "Алмаз",
- "tier.Master": "Мастер"
+ "tier.Master": "Мастер",
+ "notify.challenge": "вызывает вас на игру"
 }

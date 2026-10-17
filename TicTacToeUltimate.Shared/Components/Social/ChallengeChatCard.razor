@@ -1,0 +1,110 @@
+@inherits StoreComponent
+@inject ISocialStore Social
+@inject NavigationManager Nav
+@inject ToastService Toasts
+
+@* A friend challenge inside the chat thread ("challenge:<code>" message). Live status comes from the social store's open
+   challenges; anything else (accepted, declined, expired, cancelled) is fetched once by code. *@
+<div class="chat-challenge @(Mine ? "mine" : null) @StatusClass" data-testid="chat-challenge">
+    <span class="cc-icon" aria-hidden="true"><Icon Name="@(Challenge is { } c ? LobbyModes.All.FirstOrDefault(m => m.Tc == c.TimeControl)?.Icon ?? "play" : "play")" /></span>
+    <div class="cc-body">
+        <span class="cc-title">@(Mine ? L.T("chatChallenge.you_challenged") : L.T("chatChallenge.challenged_you"))</span>
+        <span class="cc-mode">@(Challenge is { } ch ? Ui.TimeControlName(ch.TimeControl) : "…") · @StatusText</span>
+    </div>
+    @if (Challenge is { Status: ChallengeStatus.Open } open)
+    {
+        @if (Mine)
+        {
+            <Button Variant="secondary" Small="true" Disabled="_busy" OnClick="Cancel" data-testid="chat-challenge-cancel">@L.T("localMatch.cancel")</Button>
+        }
+        else
+        {
+            <Button Variant="primary" Small="true" Disabled="_busy" OnClick="Accept" data-testid="chat-challenge-accept">@L.T("challengeCard.accept")</Button>
+            <IconButton Label="@L.T("challengeCard.decline")" Icon="close" Round="true" OnClick="Decline" />
+        }
+    }
+    else if (Challenge is { Status: ChallengeStatus.Accepted, MatchId: Guid id })
+    {
+        <Button Variant="secondary" Small="true" Href="@($"match/{id}")">@L.T("chatChallenge.open_game")</Button>
+    }
+</div>
+
+@code {
+    /// <summary>Challenge code from the message body.</summary>
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+    /// <summary>Sent by the local user.</summary>
+    [Parameter] public bool Mine { get; set; }
+
+    private ChallengeDto? _fetched;
+    private bool _busy, _fetching;
+
+    private ChallengeDto? Challenge =>
+        Social.State.IncomingChallenges.FirstOrDefault(c => c.Code == Code)
+        ?? Social.State.OutgoingChallenges.FirstOrDefault(c => c.Code == Code)
+        ?? _fetched;
+
+    private string StatusClass => Challenge?.Status is ChallengeStatus.Open or null ? "open" : "closed";
+
+    private string StatusText => Challenge?.Status switch
+    {
+        null => L.T("chat.loading"),
+        ChallengeStatus.Open => Mine ? L.T("chatChallenge.waiting") : L.T("chatChallenge.unrated_friendly"),
+        ChallengeStatus.Accepted => L.T("chatChallenge.accepted"),
+        ChallengeStatus.Declined => L.T("chatChallenge.declined"),
+        ChallengeStatus.Cancelled => L.T("chatChallenge.cancelled"),
+        _ => L.T("chatChallenge.expired"),
+    };
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        Subscribe(Social);
+        await RefreshAsync();
+    }
+
+    /// <inheritdoc />
+    protected override void OnStoresChanged()
+    {
+        // An open challenge that leaves the store was accepted, declined, cancelled or expired: read its final state.
+        if (_fetched is { Status: ChallengeStatus.Open } && !InStore) _ = RefreshAsync();
+    }
+
+    private bool InStore => Social.State.IncomingChallenges.Any(c => c.Code == Code) || Social.State.OutgoingChallenges.Any(c => c.Code == Code);
+
+    private async Task RefreshAsync()
+    {
+        if (_fetching || (InStore && _fetched is not null)) return;
+        _fetching = true;
+        try { _fetched = await Social.GetChallengeAsync(Code); }
+        finally { _fetching = false; }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Accept()
+    {
+        _busy = true;
+        try
+        {
+            var r = await Social.AcceptChallengeAsync(Code);
+            if (r.Accepted && r.MatchId is Guid id) { Nav.NavigateTo($"match/{id}"); return; }
+            Toasts.Show(Ui.ErrorToastText(r.Error, L.T("social.that_challenge_is_no_longer")), ToastKind.Error);
+            _fetched = null;
+            await RefreshAsync();
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task Decline()
+    {
+        _busy = true;
+        try { await Social.DeclineChallengeAsync(Code); _fetched = null; await RefreshAsync(); }
+        finally { _busy = false; }
+    }
+
+    private async Task Cancel()
+    {
+        _busy = true;
+        try { await Social.CancelChallengeAsync(Code); _fetched = null; await RefreshAsync(); }
+        finally { _busy = false; }
+    }
+}

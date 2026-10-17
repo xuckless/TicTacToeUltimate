@@ -89,6 +89,7 @@ type Collector struct {
 	prevTx    uint64
 	prevAt    time.Time
 	egress    Egress
+	conts     []Container // last container snapshot, refreshed in the background (Docker's stats call takes ~2 s each)
 }
 
 // NewCollector with the Docker API on a unix socket.
@@ -109,6 +110,7 @@ func (c *Collector) Run(ctx context.Context) {
 	defer t.Stop()
 	for {
 		c.sample()
+		go c.refreshContainers()
 		select {
 		case <-ctx.Done():
 			return
@@ -228,64 +230,90 @@ func (c *Collector) get(path string, v any) error {
 	return json.NewDecoder(res.Body).Decode(v)
 }
 
-// Containers lists containers with one-shot stats (CPU %, memory) and restart counts. Read-only Docker API calls only.
+// Containers returns the latest background snapshot (at most one sampling interval old), so callers never wait on Docker.
 func (c *Collector) Containers() []Container {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return append([]Container(nil), c.conts...)
+}
+
+func (c *Collector) refreshContainers() {
+	if out := c.ReadContainers(); out != nil {
+		c.mu.Lock()
+		c.conts = out
+		c.mu.Unlock()
+	}
+}
+
+// ReadContainers lists containers with stats (CPU %, memory) and restart counts, querying all containers in parallel.
+// Read-only Docker API calls only.
+func (c *Collector) ReadContainers() []Container {
 	var list []dockerContainer
 	if c.get("/containers/json?all=1", &list) != nil {
 		return nil
 	}
-	out := make([]Container, 0, len(list))
-	for _, d := range list {
-		ct := Container{Name: serviceName(d), Image: d.Image, State: d.State}
-		var insp struct {
-			RestartCount int `json:"RestartCount"`
-			State        struct {
-				StartedAt time.Time `json:"StartedAt"`
-			} `json:"State"`
-		}
-		if c.get("/containers/"+d.ID+"/json", &insp) == nil {
-			ct.Restarts = insp.RestartCount
-			if !insp.State.StartedAt.IsZero() {
-				t := insp.State.StartedAt
-				ct.StartedAt = &t
-			}
-		}
-		if d.State == "running" {
-			var s struct {
-				CPU struct {
-					Usage struct {
-						Total uint64 `json:"total_usage"`
-					} `json:"cpu_usage"`
-					System uint64 `json:"system_cpu_usage"`
-					Online int    `json:"online_cpus"`
-				} `json:"cpu_stats"`
-				PreCPU struct {
-					Usage struct {
-						Total uint64 `json:"total_usage"`
-					} `json:"cpu_usage"`
-					System uint64 `json:"system_cpu_usage"`
-				} `json:"precpu_stats"`
-				Mem struct {
-					Usage uint64            `json:"usage"`
-					Limit uint64            `json:"limit"`
-					Stats map[string]uint64 `json:"stats"`
-				} `json:"memory_stats"`
-			}
-			if c.get("/containers/"+d.ID+"/stats?stream=false", &s) == nil {
-				if dSys := s.CPU.System - s.PreCPU.System; dSys > 0 && s.CPU.Usage.Total >= s.PreCPU.Usage.Total {
-					online := s.CPU.Online
-					if online == 0 {
-						online = 1
-					}
-					ct.CPUPercent = float64(s.CPU.Usage.Total-s.PreCPU.Usage.Total) / float64(dSys) * float64(online) * 100
-				}
-				ct.MemBytes = s.Mem.Usage - s.Mem.Stats["inactive_file"]
-				ct.MemLimitBytes = s.Mem.Limit
-			}
-		}
-		out = append(out, ct)
+	out := make([]Container, len(list))
+	var wg sync.WaitGroup
+	for i, d := range list {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			out[i] = c.readContainer(d)
+		}()
 	}
+	wg.Wait()
 	return out
+}
+
+func (c *Collector) readContainer(d dockerContainer) Container {
+	ct := Container{Name: serviceName(d), Image: d.Image, State: d.State}
+	var insp struct {
+		RestartCount int `json:"RestartCount"`
+		State        struct {
+			StartedAt time.Time `json:"StartedAt"`
+		} `json:"State"`
+	}
+	if c.get("/containers/"+d.ID+"/json", &insp) == nil {
+		ct.Restarts = insp.RestartCount
+		if !insp.State.StartedAt.IsZero() {
+			t := insp.State.StartedAt
+			ct.StartedAt = &t
+		}
+	}
+	if d.State == "running" {
+		var s struct {
+			CPU struct {
+				Usage struct {
+					Total uint64 `json:"total_usage"`
+				} `json:"cpu_usage"`
+				System uint64 `json:"system_cpu_usage"`
+				Online int    `json:"online_cpus"`
+			} `json:"cpu_stats"`
+			PreCPU struct {
+				Usage struct {
+					Total uint64 `json:"total_usage"`
+				} `json:"cpu_usage"`
+				System uint64 `json:"system_cpu_usage"`
+			} `json:"precpu_stats"`
+			Mem struct {
+				Usage uint64            `json:"usage"`
+				Limit uint64            `json:"limit"`
+				Stats map[string]uint64 `json:"stats"`
+			} `json:"memory_stats"`
+		}
+		if c.get("/containers/"+d.ID+"/stats?stream=false", &s) == nil {
+			if dSys := s.CPU.System - s.PreCPU.System; dSys > 0 && s.CPU.Usage.Total >= s.PreCPU.Usage.Total {
+				online := s.CPU.Online
+				if online == 0 {
+					online = 1
+				}
+				ct.CPUPercent = float64(s.CPU.Usage.Total-s.PreCPU.Usage.Total) / float64(dSys) * float64(online) * 100
+			}
+			ct.MemBytes = s.Mem.Usage - s.Mem.Stats["inactive_file"]
+			ct.MemLimitBytes = s.Mem.Limit
+		}
+	}
+	return ct
 }
 
 func serviceName(d dockerContainer) string {

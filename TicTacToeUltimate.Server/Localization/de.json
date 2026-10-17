@@ -17,5 +17,6 @@
  "tier.Gold": "Gold",
  "tier.Platinum": "Platin",
  "tier.Diamond": "Diamant",
- "tier.Master": "Meister"
+ "tier.Master": "Meister",
+ "notify.challenge": "fordert dich zu einem Spiel heraus"
 }
