@@ -51,4 +51,39 @@ public sealed class CrashReporterTests
         await reporter.FlushAsync();
         Assert.Single(handler.Bodies);
     }
+
+    // Stand-in for System.Runtime.InteropServices.JavaScript.JSException (browser only); matched by type name.
+    private sealed class JSException(string message) : Exception(message);
+
+    private sealed class AbortingHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) =>
+            throw new JSException("AbortError: Fetch is aborted");
+    }
+
+    [Fact]
+    public async Task Opaque_cross_origin_script_errors_and_browser_aborts_are_not_reported()   // GitHub issues #5 and #6
+    {
+        var handler = new Handler { Online = true };
+        var trail = new DiagnosticsTrail();
+        var api = new TttApiClient(new HttpClient(handler) { BaseAddress = new Uri("http://test/") }, new TokenStore(new InMemorySecureStore()), trail);
+        var reporter = new CrashReporter(api, trail, new RingLoggerProvider(), new TestPlatform(), new InMemoryKeyValueStore());
+
+        await reporter.ReportCrashAsync("js:Error", "Script error.", "");
+        await reporter.ReportCrashAsync("js:UnhandledRejection", "AbortError: Fetch is aborted", "");
+        await reporter.ReportCrashAsync(new JSException("AbortError: Fetch is aborted"));
+        Assert.Empty(handler.Bodies);
+
+        await reporter.ReportCrashAsync("js:TypeError", "x is undefined", "app.js:1:2");
+        await reporter.ReportCrashAsync("js:TypeError", "x is undefined", "app.js:1:2");   // same JS error within a minute: once
+        Assert.Single(handler.Bodies);
+    }
+
+    [Fact]
+    public async Task A_fetch_the_browser_aborted_is_a_network_error()   // GitHub issue #6
+    {
+        var api = new TttApiClient(new HttpClient(new AbortingHandler()) { BaseAddress = new Uri("http://test/") }, new TokenStore(new InMemorySecureStore()), new DiagnosticsTrail());
+        var e = await Assert.ThrowsAsync<HttpRequestException>(() => api.GetConfigAsync());
+        Assert.True(BrowserAbort.Is(e));
+    }
 }

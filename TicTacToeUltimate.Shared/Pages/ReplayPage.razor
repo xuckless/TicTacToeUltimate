@@ -1,5 +1,6 @@
 @page "/replay/{Id:guid}"
 @inject IGameQueries Queries
+@inject ISessionStore Session
 @inject IProgressStore Progress
 @inject IWalletStore Wallet
 @inject ISettingsStore Settings
@@ -18,8 +19,10 @@ else
 {
     var frame = _frames[_ply];
     var final = _ply == _frames.Count - 1;
-    var top = _game.Seats.FirstOrDefault(s => s.Seat == 1);
-    var bottom = _game.Seats.FirstOrDefault(s => s.Seat == 0);
+    // Like the live match: you sit at the bottom when you played this game; otherwise seat A is at the bottom.
+    var mine = _game.Seats.FirstOrDefault(s => s.Player.UserId == Session.State.Me?.UserId);
+    var bottom = mine ?? _game.Seats.FirstOrDefault(s => s.Seat == 0);
+    var top = _game.Seats.FirstOrDefault(s => s != bottom);
     <p class="t-small t-muted" style="margin:0">
         @L.F("replay.summary", string.Join(L.T("replay.vs_separator"), _game.Seats.Select(s => s.Player.DisplayName)), Ui.TimeControlName(_game.TimeControl), Ui.ReasonText(_game.Result.Reason))
     </p>

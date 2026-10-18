@@ -59,6 +59,18 @@ public sealed class RingLoggerProvider : ILoggerProvider
     }
 }
 
+/// <summary>Fetches the browser aborted on its own (sleep, frozen tab, network change, page unload). Not a crash.</summary>
+public static class BrowserAbort
+{
+    /// <summary>True for a JSException (or one wrapped inside) whose message is a fetch AbortError.</summary>
+    public static bool Is(Exception? ex)
+    {
+        for (var e = ex; e is not null; e = e.InnerException)
+            if (e.GetType().Name == "JSException" && e.Message.Contains("AbortError", StringComparison.Ordinal)) return true;
+        return false;
+    }
+}
+
 /// <summary>The current app route (Shared provides it from NavigationManager).</summary>
 public interface ICurrentRoute { string? Route { get; } }
 
@@ -85,6 +97,7 @@ public sealed class CrashReporter(TttApiClient api, DiagnosticsTrail trail, Ring
     /// <summary>Reports an exception. Same error within a minute is sent once.</summary>
     public async Task ReportCrashAsync(Exception ex, string? component = null)
     {
+        if (BrowserAbort.Is(ex)) return;
         var key = ex.GetType().FullName + "|" + ex.Message;
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (_recent.TryGetValue(key, out var at) && now - at < 60_000) return;
@@ -97,9 +110,26 @@ public sealed class CrashReporter(TttApiClient api, DiagnosticsTrail trail, Ring
     /// <summary>A crash report the platform layer captured as text (JS errors, native crash files).</summary>
     public async Task ReportCrashAsync(string type, string message, string? stack, string? component = null)
     {
+        if (IsNoise(type, message, stack)) return;
+        var key = type + "|" + message;
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (_recent.TryGetValue(key, out var at) && now - at < 60_000) return;
+        _recent[key] = now;
         var d = await DescribeAsync();
         await SendAsync(new CrashReportDto("crash", platform.Platform.ToString(), platform.AppVersion, d.Os, d.Device, d.Browser, d.Locale, d.Screen,
             Route(), component, type, message, stack, null, logs.Snapshot(), trail.Snapshot(), null, null, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+    }
+
+    /// <summary>
+    /// JS errors that carry nothing to fix: "Script error." is what browsers report for an error inside a cross-origin script
+    /// (ads, Google scripts) with the message, file and stack hidden; AbortError is a fetch the browser cancelled itself.
+    /// </summary>
+    public static bool IsNoise(string type, string? message, string? stack)
+    {
+        var m = message?.Trim() ?? "";
+        if (m.Contains("AbortError", StringComparison.Ordinal) || type.EndsWith("AbortError", StringComparison.Ordinal)) return true;
+        var opaque = m.Equals("Script error.", StringComparison.OrdinalIgnoreCase) || m.Equals("Script error", StringComparison.OrdinalIgnoreCase);
+        return opaque && (string.IsNullOrWhiteSpace(stack) || stack.Trim() == ":0:0");
     }
 
     /// <summary>Player bug report (optional screenshot and the last crash, if any).</summary>

@@ -118,6 +118,31 @@ public sealed class SharedUiTests : IDisposable
         Assert.Equal(0, frames[6].Ghost);  // X to move holding 3: its oldest (0)
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void Replay_puts_you_at_the_bottom_whichever_seat_you_played(int mySeat)
+    {
+        var rules = new RuleSetDto("n3k3-cap3-v0-w1-none", 3, 3, RemovalKind.PerPlayerCap, 3, false, true, OpeningRule.None);
+        var me = MockupFixtures.Ali;
+        var opp = MockupFixtures.Kestrel;
+        var seats = new[]
+        {
+            new SeatDto(0, mySeat == 0 ? me : opp, Color.X, true, null),
+            new SeatDto(1, mySeat == 1 ? me : opp, Color.O, true, null),
+        };
+        var actions = new[] { new ActionDto(0, 0, ActionKind.Place, 4, Color.X, null, 800, false) };
+        ((FakeGameQueries)Get<IGameQueries>()).Game = new GameRecordDto(Guid.NewGuid(), MatchMode.Casual, TicTacToeUltimate.Engine.Clocks.TimeControl.Casual, false, rules, seats, false,
+            actions, new MatchResultDto(Outcome.XWins, 0, EndReason.Resign, [], false, null), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+        ((FakeSessionStore)Get<ISessionStore>()).Set(MockupFixtures.SignedInSession);
+
+        var cut = _ctx.Render<ReplayPage>(p => p.Add(x => x.Id, Guid.NewGuid()));
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".replay-seat").Count));
+        var cards = cut.FindAll(".replay-seat");
+        Assert.Contains(opp.DisplayName, cards[0].TextContent, StringComparison.Ordinal);
+        Assert.Contains(me.DisplayName, cards[1].TextContent, StringComparison.Ordinal);
+    }
+
     // ---------- Clock ----------
 
     [Theory]

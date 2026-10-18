@@ -188,6 +188,8 @@ export function diagInstall(dotnetRef) {
   window.addEventListener('error', e => {
     try {
       const err = e.error;
+      // Errors inside cross-origin scripts (ads) arrive as an opaque "Script error." with no file or stack: nothing to report.
+      if (!err && !e.filename) return;
       dotnetRef.invokeMethodAsync('OnJsError', err && err.name ? err.name : 'Error', String(e.message || err || 'script error'),
         String((err && err.stack) || (e.filename ? e.filename + ':' + e.lineno + ':' + e.colno : '')));
     } catch { }
@@ -195,6 +197,7 @@ export function diagInstall(dotnetRef) {
   window.addEventListener('unhandledrejection', e => {
     try {
       const r = e.reason;
+      if (r && r.name === 'AbortError') return;
       dotnetRef.invokeMethodAsync('OnJsError', 'UnhandledRejection', String((r && r.message) || r || 'rejected promise'), String((r && r.stack) || ''));
     } catch { }
   });
